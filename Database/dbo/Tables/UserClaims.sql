@@ -1,17 +1,17 @@
 ﻿CREATE TABLE [dbo].[UserClaims] (
-    [ClaimID]    INT NOT NULL,
-    [UserID]    INT NOT NULL,
-    CONSTRAINT [PK_dbo_UserClaims] PRIMARY KEY CLUSTERED ([ClaimID] ASC, [UserID] ASC),
-	CONSTRAINT [FK_dbo_UserClaims_dbo_Claims] FOREIGN KEY ([ClaimID]) REFERENCES [dbo].[Claims] ([ClaimID]) ON DELETE CASCADE,
-	CONSTRAINT [FK_dbo_UserClaims_dbo_Users] FOREIGN KEY ([UserID]) REFERENCES [dbo].[Users] ([UserID]) ON DELETE CASCADE
+    [ClaimId]    INT NOT NULL,
+    [UserId]    INT NOT NULL,
+    CONSTRAINT [PK_dbo_UserClaims] PRIMARY KEY CLUSTERED ([ClaimId] ASC, [UserId] ASC),
+	CONSTRAINT [FK_dbo_UserClaims_dbo_Claims] FOREIGN KEY ([ClaimId]) REFERENCES [dbo].[Claims] ([ClaimId]) ON DELETE CASCADE,
+	CONSTRAINT [FK_dbo_UserClaims_dbo_Users] FOREIGN KEY ([UserId]) REFERENCES [dbo].[Users] ([UserId]) ON DELETE CASCADE
 );
 
 GO
 
 CREATE NONCLUSTERED INDEX [IX_dbo_UserClaims_UserID]
-    ON [dbo].[UserClaims]([UserID] ASC);
+    ON [dbo].[UserClaims]([UserId] ASC);
 
 GO
 
 CREATE NONCLUSTERED INDEX [IX_dbo_UserClaims_ClaimID]
-    ON [dbo].[UserClaims]([ClaimID] ASC);
+    ON [dbo].[UserClaims]([ClaimId] ASC);
