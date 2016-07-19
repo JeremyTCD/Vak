@@ -5,9 +5,9 @@ VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jering.ASP.NET.Identity.Dapper", "Jering.ASP.NET.Identity.Dapper\Jering.ASP.NET.Identity.Dapper.csproj", "{835BEC2A-C185-49CB-AE76-645C6B5A2A2F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{AE586A3A-3E1D-4FB1-B95A-4452FE6B8885}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Jering.ASP.NET.Identity.Dapper.Tests", "UnitTests\Jering.ASP.NET.Identity.Dapper.Tests.csproj", "{AE586A3A-3E1D-4FB1-B95A-4452FE6B8885}"
 EndProject
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Database", "Database\Database.sqlproj", "{E767C181-28A6-40DB-8C8C-32893DFECEEC}"
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Jering.ASP.NET.Identity.Dapper.Database", "Database\Jering.ASP.NET.Identity.Dapper.Database.sqlproj", "{E767C181-28A6-40DB-8C8C-32893DFECEEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
