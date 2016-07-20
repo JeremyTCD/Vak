@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNet.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using System;
 
 namespace Jering.ASP.NET.Identity.Dapper
@@ -6,14 +6,13 @@ namespace Jering.ASP.NET.Identity.Dapper
     /// <summary>
     /// Class that implements the ASP.NET Identity IUser interface 
     /// </summary>
-    public class Member : IUser<int>
+    public class Member
     {
         /// <summary>
         /// Default constructor 
         /// </summary>
         public Member()
         {
-            //  Id = Guid.NewGuid().ToString();
         }
 
         /// <summary>
@@ -23,57 +22,67 @@ namespace Jering.ASP.NET.Identity.Dapper
         public Member(string memberName)
             : this()
         {
-            UserName = memberName;
+            Username = memberName;
         }
 
         /// <summary>
         /// Member ID
         /// </summary>
-        public int Id { get; set; }
+        public int MemberId { get; set; }
 
         /// <summary>
-        /// Member's name
+        /// Member's username
         /// </summary>
-        public string UserName { get; set; }
+        public string Username { get; set; }
 
         /// <summary>
-        ///     Email
+        /// Member's normalized username
         /// </summary>
-        public virtual string Email { get; set; }
+        public string NormalizedUsername { get; set; }
+
+        /// <summary>
+        /// Email
+        /// </summary>
+        public string Email { get; set; }
+
+        /// <summary>
+        ///  Email
+        /// </summary>
+        public string NormalizedEmail { get; set; }
 
         /// <summary>
         ///     True if the email is confirmed, default is false
         /// </summary>
-        public virtual bool EmailConfirmed { get; set; }
+        public bool EmailConfirmed { get; set; }
 
         /// <summary>
         ///     The salted/hashed form of the member password
         /// </summary>
-        public virtual string PasswordHash { get; set; }
+        public string PasswordHash { get; set; }
 
         /// <summary>
         ///     A random value that should change whenever a members credentials have changed (password changed, login removed)
         /// </summary>
-        public virtual string SecurityStamp { get; set; }
+        public string SecurityStamp { get; set; }
 
         /// <summary>
         ///     Is two factor enabled for the member
         /// </summary>
-        public virtual bool TwoFactorEnabled { get; set; }
+        public bool TwoFactorEnabled { get; set; }
 
         /// <summary>
         ///     DateTime in UTC when lockout ends, any time in the past is considered not locked out.
         /// </summary>
-        public virtual DateTime? LockoutEndDateUtc { get; set; }
+        public DateTime? LockoutEndDateUtc { get; set; }
 
         /// <summary>
         ///     Is lockout enabled for this member
         /// </summary>
-        public virtual bool LockoutEnabled { get; set; }
+        public bool LockoutEnabled { get; set; }
 
         /// <summary>
         ///     Used to record failures for the purposes of lockout
         /// </summary>
-        public virtual int AccessFailedCount { get; set; }
+        public int AccessFailedCount { get; set; }
     }
 }
