@@ -71,7 +71,7 @@
     <Build Include="Security\Website.sql" />
     <Build Include="Website\Stored Procedures\GetMemberIdByUsername.sql" />
     <Build Include="Website\Stored Procedures\GetMember.sql" />
-    <Build Include="Website\Stored Procedures\GetMemberByUsername.sql" />
+    <Build Include="Website\Stored Procedures\GetMemberByNormalizedUsername.sql" />
     <Build Include="Website\Stored Procedures\GetMemberByEmail.sql" />
     <Build Include="Website\Stored Procedures\GetMemberPasswordHash.sql" />
     <Build Include="Website\Stored Procedures\SetMemberPasswordHash.sql" />
