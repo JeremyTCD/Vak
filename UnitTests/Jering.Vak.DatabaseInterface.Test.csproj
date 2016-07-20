@@ -169,9 +169,9 @@
     <Compile Include="MemberTableTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Jering.ASP.NET.Identity.Dapper\Jering.ASP.NET.Identity.Dapper.csproj">
+    <ProjectReference Include="..\Jering.ASP.NET.Identity.Dapper\Jering.Vak.DatabaseInterface.csproj">
       <Project>{835bec2a-c185-49cb-ae76-645c6b5a2a2f}</Project>
-      <Name>Jering.ASP.NET.Identity.Dapper</Name>
+      <Name>Jering.Vak.DatabaseInterface</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
