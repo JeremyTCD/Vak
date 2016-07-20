@@ -1,9 +1,9 @@
 ﻿CREATE PROCEDURE [Website].[GetMember]
-	@Id INT
+	@MemberId INT
 AS
 BEGIN
-	SELECT [Username], [PasswordHash], [SecurityStamp], [Email], [EmailConfirmed], [TwoFactorEnabled], [AccessFailedCount], [LockoutEndDateUTC], [LockoutEnabled], [MemberId] AS Id 
+	SELECT *
 	FROM [dbo].[Members] 
-	WHERE [MemberId]=@Id  
+	WHERE [MemberId]=@MemberId  
 END
 

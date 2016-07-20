@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [Website].[DeleteMember]
-	@Id INT
+	@MemberId INT
 AS
 BEGIN
-	Delete from [dbo].[Members] where [MemberId] = @Id
+	Delete from [dbo].[Members] where [MemberId] = @MemberId
 END
