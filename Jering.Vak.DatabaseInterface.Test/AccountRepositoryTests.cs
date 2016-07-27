@@ -25,6 +25,8 @@ namespace Jering.Vak.DatabaseInterface.Test
         private Func<Task> _resetRolesTable { get; }
         private Func<Task> _resetAccountsTable { get; }
 
+        // TODO ensure that functions that should trigger security stamp renewal do so.
+
         public AccountRepositoryTests(DatabaseFixture databaseFixture)
         {
             _databaseFixture = databaseFixture;
@@ -51,11 +53,22 @@ namespace Jering.Vak.DatabaseInterface.Test
             byte[] hash = sha256.ComputeHash(Encoding.Unicode.GetBytes("$PassworD" + "Email@Jering.com"));
             Assert.Equal(1, account.AccountId);
             Assert.Equal("Email@Jering.com", account.Email);
-            Assert.Equal(hash, account.PasswordHash);
             Assert.Equal(null, account.Username);
-            Assert.Equal(null, account.SecurityStamp);
+            Assert.NotEqual(null, account.SecurityStamp);
+            Assert.Equal(36, account.SecurityStamp.Length);
             Assert.Equal(false, account.EmailConfirmed);
             Assert.Equal(false, account.TwoFactorEnabled);
+        }
+
+        public async Task CreateAccountAsync_PasswordHashCreatedTest()
+        {
+            // Ensure that expected password hash has been generated (could use a VerifyAccountAsync function to check) 
+
+            // Arrange
+
+            // Act
+
+            // Assert
         }
 
         [Fact]
@@ -72,6 +85,28 @@ namespace Jering.Vak.DatabaseInterface.Test
             // Assert
             Assert.Equal(51000, sqlException.Number);
             Assert.Equal("An account with this email already exists.", sqlException.Message);
+        }
+
+        [Fact]
+        public async Task GetAccountAsyncTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            Account account = await _accountRepository.CreateAccountAsync("Email@Jering.com", "$PassworD");
+
+            // Act
+            Account retrievedAccount = await _accountRepository.GetAccountAsync(account.AccountId);
+
+            // Assert
+            SHA256 sha256 = SHA256.Create();
+            byte[] hash = sha256.ComputeHash(Encoding.Unicode.GetBytes("$PassworD" + "Email@Jering.com"));
+            Assert.Equal(1, retrievedAccount.AccountId);
+            Assert.Equal("Email@Jering.com", retrievedAccount.Email);
+            Assert.Equal(null, retrievedAccount.Username);
+            Assert.NotEqual(null, retrievedAccount.SecurityStamp);
+            Assert.Equal(36, retrievedAccount.SecurityStamp.Length);
+            Assert.Equal(false, retrievedAccount.EmailConfirmed);
+            Assert.Equal(false, retrievedAccount.TwoFactorEnabled);
         }
 
         [Fact]
@@ -273,6 +308,21 @@ namespace Jering.Vak.DatabaseInterface.Test
             Assert.Equal("Value1", claims[0].Value);
             Assert.Equal("Type2", claims[1].Type);
             Assert.Equal("Value2", claims[1].Value);
+        }
+
+        [Fact]
+        public async Task GetAccountSecurityStampAsyncTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            Account account = await _accountRepository.CreateAccountAsync("Email@Jering.com", "$PassworD");
+
+            // Act
+            string securityStamp = await _accountRepository.GetAccountSecurityStampAsync(account.AccountId);
+
+            // Assert
+            Assert.NotEqual(null, securityStamp);
+            Assert.Equal(36, securityStamp.Length);
         }
     }
 }
