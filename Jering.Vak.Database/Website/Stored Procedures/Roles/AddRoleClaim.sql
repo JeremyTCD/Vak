@@ -3,6 +3,23 @@
 	@ClaimId INT
 AS
 BEGIN
-	INSERT INTO [dbo].[RoleClaims] ([RoleId], [ClaimId])
-	VALUES (@RoleId, @ClaimId)
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON;
+
+	BEGIN TRY
+		INSERT INTO [dbo].[RoleClaims] ([RoleId], [ClaimId])
+		VALUES (@RoleId, @ClaimId)
+	END TRY
+    BEGIN CATCH
+        IF XACT_STATE() <> 0 ROLLBACK;
+		DECLARE @errorNumber INT = ERROR_NUMBER();
+		DECLARE @errorMessage NVARCHAR(MAX);
+
+		IF @errorNumber = 2627 
+			THROW 51000, N'Role already has claim.', 1;
+		ELSE IF @errorNumber = 547
+			THROW 51000, N'Role or claim does not exist.', 1;
+		ELSE
+			THROW 52000, N'An unexpected error occurred.', 1;
+    END CATCH;
 END

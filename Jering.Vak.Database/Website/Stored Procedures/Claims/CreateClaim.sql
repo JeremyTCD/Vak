@@ -16,11 +16,8 @@ BEGIN
 		DECLARE @errorNumber INT = ERROR_NUMBER();
 
 		IF @errorNumber = 2627 
-			BEGIN
-				DECLARE @errorMessage NVARCHAR(MAX) = FORMATMESSAGE(N'A claim with type "%s" and value "%s" already exists.', @Type, @Value);
-				THROW 51000, @errorMessage, 1;
-			END
+			THROW 51000, N'Claim already exists.', 1;
 		ELSE 
-			THROW 51000, N'An unexpected error occurred.', 1;
+			THROW 52000, N'An unexpected error occurred.', 1;
     END CATCH;
 END
