@@ -9,8 +9,9 @@ using Microsoft.Extensions.Options;
 using Jering.Vak.DatabaseInterface;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 
-namespace Jering.Vak.WebApplication.Utility
+namespace Jering.Vak.Authentication
 {
     public class SignInManager
     {
@@ -29,16 +30,16 @@ namespace Jering.Vak.WebApplication.Utility
 
         public async Task SignInAsync(Account account, AuthenticationProperties authenticationProperties)
         {
-            var userPrincipal = await _claimsPrincipalFactory.CreateAsync(account);
+            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalFactory.CreateAsync(account);
 
             //if (authenticationMethod != null)
             //{
                 //userPrincipal.Identities.First().AddClaim(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
             //}
             await _httpContext.Authentication.SignInAsync(
-                _identityOptions.Cookies.ApplicationCookieAuthenticationScheme,
-                userPrincipal,
-                authenticationProperties);
+                    _identityOptions.Cookies.ApplicationCookieAuthenticationScheme,
+                    claimsPrincipal,
+                    authenticationProperties);
         }
     }
 }
