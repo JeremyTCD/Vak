@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Website].[CreateMember]
+﻿CREATE PROCEDURE [Website].[CreateAccount]
 	@Password NVARCHAR(256),  
 	@Email NVARCHAR(256)
 AS
@@ -6,7 +6,7 @@ BEGIN
 	BEGIN TRY
 		DECLARE @PasswordHash BINARY(32) = HASHBYTES(N'SHA2_256', @Password + @Email);
 
-		INSERT INTO [dbo].[Members] ([PasswordHash], [Email])
+		INSERT INTO [dbo].[Accounts] ([PasswordHash], [Email])
 		OUTPUT INSERTED.*
 		VALUES (@PasswordHash, @Email)
 	END TRY

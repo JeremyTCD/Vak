@@ -19,20 +19,20 @@
 //    [Authorize]
 //    public class AccountController : Controller
 //    {
-//        private readonly MemberRepository _memberRepository;
+//        private readonly AccountRepository _accountRepository;
 //        private readonly SignInManager _signInManager;
 //        //private readonly IEmailSender _emailSender;
 //        //private readonly ILogger _logger;
 
 //        public AccountController(
-//            MemberRepository memberRepository, 
+//            AccountRepository accountRepository, 
 //            SignInManager signInManager  //,
 //            //IEmailSender emailSender,
 //            //ISmsSender smsSender,
 //            //ILoggerFactory loggerFactory
 //            )
 //        {
-//            _memberRepository = memberRepository;
+//            _accountRepository = accountRepository;
 //            _signInManager = signInManager;
 //            //_emailSender = emailSender;
 //            //_smsSender = smsSender;
@@ -61,7 +61,7 @@
 //        //    {
 //        //        // This doesn't count login failures towards account lockout
 //        //        // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-//        //        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+//        //        var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.ReaccountMe, lockoutOnFailure: false);
 //        //        if (result.Succeeded)
 //        //        {
 //        //            _logger.LogInformation(1, "User logged in.");
@@ -69,7 +69,7 @@
 //        //        }
 //        //        if (result.RequiresTwoFactor)
 //        //        {
-//        //            return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
+//        //            return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, ReaccountMe = model.ReaccountMe });
 //        //        }
 //        //        if (result.IsLockedOut)
 //        //        {
@@ -107,11 +107,11 @@
 //            ViewData["ReturnUrl"] = returnUrl;
 //            if (ModelState.IsValid)
 //            {
-//                Member member;
+//                Account account;
 
 //                try
 //                {
-//                    member = await _memberRepository.CreateMemberAsync(model.Email, model.Password);
+//                    account = await _accountRepository.CreateAccountAsync(model.Email, model.Password);
 //                    //_logger.LogInformation(3, "User created a new account with password.");
 //                }
 //                catch (SqlException sqlException)
@@ -131,7 +131,7 @@
 //                //await _emailSender.SendEmailAsync(model.Email, "Confirm your account",
 //                //    "Please confirm your account by clicking this link: <a href=\"" + callbackUrl + "\">link</a>");
 
-//                await _signInManager.SignInAsync(member, new AuthenticationProperties { IsPersistent = true,  });
+//                await _signInManager.SignInAsync(account, new AuthenticationProperties { IsPersistent = true,  });
 //                return RedirectToLocal(returnUrl);
 //            }
 //            else
@@ -161,12 +161,12 @@
 //            {
 //                return View("Error");
 //            }
-//            var user = await _memberRepository.FindByIdAsync(userId);
+//            var user = await _accountRepository.FindByIdAsync(userId);
 //            if (user == null)
 //            {
 //                return View("Error");
 //            }
-//            var result = await _memberRepository.ConfirmEmailAsync(user, code);
+//            var result = await _accountRepository.ConfirmEmailAsync(user, code);
 //            return View(result.Succeeded ? "ConfirmEmail" : "Error");
 //        }
 
@@ -188,8 +188,8 @@
 //        {
 //            if (ModelState.IsValid)
 //            {
-//                var user = await _memberRepository.FindByNameAsync(model.Email);
-//                if (user == null || !(await _memberRepository.IsEmailConfirmedAsync(user)))
+//                var user = await _accountRepository.FindByNameAsync(model.Email);
+//                if (user == null || !(await _accountRepository.IsEmailConfirmedAsync(user)))
 //                {
 //                    // Don't reveal that the user does not exist or is not confirmed
 //                    return View("ForgotPasswordConfirmation");
@@ -237,13 +237,13 @@
 //            {
 //                return View(model);
 //            }
-//            var user = await _memberRepository.FindByNameAsync(model.Email);
+//            var user = await _accountRepository.FindByNameAsync(model.Email);
 //            if (user == null)
 //            {
 //                // Don't reveal that the user does not exist
 //                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
 //            }
-//            var result = await _memberRepository.ResetPasswordAsync(user, model.Code, model.Password);
+//            var result = await _accountRepository.ResetPasswordAsync(user, model.Code, model.Password);
 //            if (result.Succeeded)
 //            {
 //                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
@@ -265,16 +265,16 @@
 //        // GET: /Account/SendCode
 //        [HttpGet]
 //        [AllowAnonymous]
-//        public async Task<ActionResult> SendCode(string returnUrl = null, bool rememberMe = false)
+//        public async Task<ActionResult> SendCode(string returnUrl = null, bool reaccountMe = false)
 //        {
 //            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
 //            if (user == null)
 //            {
 //                return View("Error");
 //            }
-//            var userFactors = await _memberRepository.GetValidTwoFactorProvidersAsync(user);
+//            var userFactors = await _accountRepository.GetValidTwoFactorProvidersAsync(user);
 //            var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
-//            return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe });
+//            return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, ReaccountMe = reaccountMe });
 //        }
 
 //        //
@@ -296,7 +296,7 @@
 //            }
 
 //            // Generate the token and send it
-//            var code = await _memberRepository.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
+//            var code = await _accountRepository.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
 //            if (string.IsNullOrWhiteSpace(code))
 //            {
 //                return View("Error");
@@ -305,21 +305,21 @@
 //            var message = "Your security code is: " + code;
 //            if (model.SelectedProvider == "Email")
 //            {
-//                await _emailSender.SendEmailAsync(await _memberRepository.GetEmailAsync(user), "Security Code", message);
+//                await _emailSender.SendEmailAsync(await _accountRepository.GetEmailAsync(user), "Security Code", message);
 //            }
 //            else if (model.SelectedProvider == "Phone")
 //            {
-//                await _smsSender.SendSmsAsync(await _memberRepository.GetPhoneNumberAsync(user), message);
+//                await _smsSender.SendSmsAsync(await _accountRepository.GetPhoneNumberAsync(user), message);
 //            }
 
-//            return RedirectToAction(nameof(VerifyCode), new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe });
+//            return RedirectToAction(nameof(VerifyCode), new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, ReaccountMe = model.ReaccountMe });
 //        }
 
 //        //
 //        // GET: /Account/VerifyCode
 //        [HttpGet]
 //        [AllowAnonymous]
-//        public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null)
+//        public async Task<IActionResult> VerifyCode(string provider, bool reaccountMe, string returnUrl = null)
 //        {
 //            // Require that the user has already logged in via username/password or external login
 //            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
@@ -327,7 +327,7 @@
 //            {
 //                return View("Error");
 //            }
-//            return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe });
+//            return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, ReaccountMe = reaccountMe });
 //        }
 
 //        //
@@ -345,7 +345,7 @@
 //            // The following code protects for brute force attacks against the two factor codes.
 //            // If a user enters incorrect codes for a specified amount of time then the user account
 //            // will be locked out for a specified amount of time.
-//            var result = await _signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe, model.RememberBrowser);
+//            var result = await _signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.ReaccountMe, model.ReaccountBrowser);
 //            if (result.Succeeded)
 //            {
 //                return RedirectToLocal(model.ReturnUrl);
@@ -372,9 +372,9 @@
 //            }
 //        }
 
-//        private Task<Member> GetCurrentUserAsync()
+//        private Task<Account> GetCurrentUserAsync()
 //        {
-//            return _memberRepository.GetUserAsync(HttpContext.User);
+//            return _accountRepository.GetUserAsync(HttpContext.User);
 //        }
 
 //        private IActionResult RedirectToLocal(string returnUrl)

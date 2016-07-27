@@ -10,26 +10,26 @@ using System.Security.Claims;
 namespace Jering.Vak.DatabaseInterface
 {
     /// <summary>
-    /// Provides a lightweight interface for creating, reading and updating members. Functions avoid reading and writing 
+    /// Provides a lightweight interface for creating, reading and updating accounts. Functions avoid reading and writing 
     /// contextually superflous information as much as possible. 
     /// </summary>
-    public class MemberRepository
+    public class AccountRepository
     {
         private SqlConnection _sqlConnection { get; }
 
-        public MemberRepository(SqlConnection sqlConnection)
+        public AccountRepository(SqlConnection sqlConnection)
         {
             _sqlConnection = sqlConnection;
         }
 
         /// <summary>
-        /// Creates a new Member in the Members table
+        /// Creates a new Account in the Accounts table
         /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
-        public async Task<Member> CreateMemberAsync(string email, string password)
+        public async Task<Account> CreateAccountAsync(string email, string password)
         {
-            return await _sqlConnection.QuerySingleAsync<Member>(@"[Website].[CreateMember]",
+            return await _sqlConnection.QuerySingleAsync<Account>(@"[Website].[CreateAccount]",
                 new
                 {
                     Password = password,
@@ -38,81 +38,81 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public Task DeleteMemberAsync(int memberId)
+        public Task DeleteAccountAsync(int accountId)
         {
-            return _sqlConnection.ExecuteAsync(@"[Website].[DeleteMember]",
+            return _sqlConnection.ExecuteAsync(@"[Website].[DeleteAccount]",
                 new
                 {
-                    MemberId = memberId
+                    AccountId = accountId
                 },
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task AddMemberRoleAsync(int memberId, int roleId)
+        public async Task AddAccountRoleAsync(int accountId, int roleId)
         {
-            await _sqlConnection.ExecuteAsync(@"[Website].[AddMemberRole]",
+            await _sqlConnection.ExecuteAsync(@"[Website].[AddAccountRole]",
                 new
                 {
-                    MemberId = memberId,
+                    AccountId = accountId,
                     RoleId = roleId
                 },
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task DeleteMemberRoleAsync(int memberId, int roleId)
+        public async Task DeleteAccountRoleAsync(int accountId, int roleId)
         {
-            await _sqlConnection.ExecuteAsync(@"[Website].[DeleteMemberRole]",
+            await _sqlConnection.ExecuteAsync(@"[Website].[DeleteAccountRole]",
                 new
                 {
-                    MemberId = memberId,
+                    AccountId = accountId,
                     RoleId = roleId
                 },
                 commandType: CommandType.StoredProcedure);
         }
 
         /// <summary>
-        /// Gets a member's roles
+        /// Gets a account's roles
         /// </summary>
-        /// <param name="memberId"></param>
+        /// <param name="accountId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<Role>> GetMemberRolesAsync(int memberId)
+        public async Task<IEnumerable<Role>> GetAccountRolesAsync(int accountId)
         {
-            return await _sqlConnection.QueryAsync<Role>(@"[Website].[GetMemberRoles]",
+            return await _sqlConnection.QueryAsync<Role>(@"[Website].[GetAccountRoles]",
                 new
                 {
-                    MemberId = memberId
+                    AccountId = accountId
                 },
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task AddMemberClaimAsync(int memberId, int claimId)
+        public async Task AddAccountClaimAsync(int accountId, int claimId)
         {
-            await _sqlConnection.ExecuteAsync(@"[Website].[AddMemberClaim]",
+            await _sqlConnection.ExecuteAsync(@"[Website].[AddAccountClaim]",
                 new
                 {
-                    MemberId = memberId,
+                    AccountId = accountId,
                     ClaimId = claimId
                 },
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task DeleteMemberClaimAsync(int memberId, int claimId)
+        public async Task DeleteAccountClaimAsync(int accountId, int claimId)
         {
-            await _sqlConnection.ExecuteAsync(@"[Website].[DeleteMemberClaim]",
+            await _sqlConnection.ExecuteAsync(@"[Website].[DeleteAccountClaim]",
                 new
                 {
-                    MemberId = memberId,
+                    AccountId = accountId,
                     ClaimId = claimId
                 },
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task<IEnumerable<Claim>> GetMemberClaimsAsync(int memberId)
+        public async Task<IEnumerable<Claim>> GetAccountClaimsAsync(int accountId)
         {
-            return await _sqlConnection.QueryAsync<Claim>(@"[Website].[GetMemberClaims]",
+            return await _sqlConnection.QueryAsync<Claim>(@"[Website].[GetAccountClaims]",
                 new
                 {
-                    MemberId = memberId
+                    AccountId = accountId
                 },
                 commandType: CommandType.StoredProcedure);
         }

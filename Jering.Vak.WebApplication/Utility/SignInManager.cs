@@ -27,9 +27,9 @@ namespace Jering.Vak.WebApplication.Utility
         private HttpContext _httpContext { get; }
         private IdentityOptions _identityOptions { get; }
 
-        public async Task SignInAsync(Member member, AuthenticationProperties authenticationProperties)
+        public async Task SignInAsync(Account account, AuthenticationProperties authenticationProperties)
         {
-            var userPrincipal = await _claimsPrincipalFactory.CreateAsync(member);
+            var userPrincipal = await _claimsPrincipalFactory.CreateAsync(account);
 
             //if (authenticationMethod != null)
             //{

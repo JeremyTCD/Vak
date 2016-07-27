@@ -5,32 +5,32 @@ using System.Threading.Tasks;
 
 namespace Jering.Vak.DatabaseInterface
 {
-    public class Member
+    public class Account
     {
         /// <summary>
         /// Default constructor 
         /// </summary>
-        public Member()
+        public Account()
         {
         }
 
         /// <summary>
-        /// Member ID
+        /// Account ID
         /// </summary>
-        public int MemberId { get; set; }
+        public int AccountId { get; set; }
 
         /// <summary>
-        /// Member's username
+        /// Account's username
         /// </summary>
         public string Username { get; set; }
 
         /// <summary>
-        ///     A random value that should change whenever a members credentials have changed (password changed, login removed)
+        ///     A random value that should change whenever a accounts credentials have changed (password changed, login removed)
         /// </summary>
         public string SecurityStamp { get; set; }
 
         /// <summary>
-        ///     The salted/hashed form of the member password
+        ///     The salted/hashed form of the account password
         /// </summary>
         public byte[] PasswordHash { get; set; }
 
@@ -45,7 +45,7 @@ namespace Jering.Vak.DatabaseInterface
         public bool EmailConfirmed { get; set; }
 
         /// <summary>
-        ///     Is two factor enabled for the member
+        ///     Is two factor enabled for the account
         /// </summary>
         public bool TwoFactorEnabled { get; set; }
     }

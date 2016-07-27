@@ -74,24 +74,24 @@
     <Build Include="dbo\Tables\RoleClaims.sql" />
     <Build Include="Website\Stored Procedures\Claims\CreateClaim.sql" />
     <Build Include="Website\Stored Procedures\Claims\DeleteClaim.sql" />
-    <Build Include="Website\Stored Procedures\Members\CreateMember.sql" />
-    <Build Include="Website\Stored Procedures\Members\GetMemberClaims.sql" />
-    <Build Include="Website\Stored Procedures\Members\GetMemberRoles.sql" />
-    <Build Include="Website\Stored Procedures\Members\DeleteMember.sql" />
+    <Build Include="Website\Stored Procedures\Members\CreateAccount.sql" />
+    <Build Include="Website\Stored Procedures\Members\GetAccountClaims.sql" />
+    <Build Include="Website\Stored Procedures\Members\GetAccountRoles.sql" />
+    <Build Include="Website\Stored Procedures\Members\DeleteAccount.sql" />
     <Build Include="Website\Stored Procedures\Roles\CreateRole.sql" />
     <Build Include="Website\Stored Procedures\Roles\GetRoleClaims.sql" />
     <Build Include="Website\Stored Procedures\Roles\DeleteRole.sql" />
     <Build Include="Website\Stored Procedures\Roles\AddRoleClaim.sql" />
     <Build Include="Website\Stored Procedures\Roles\DeleteRoleClaim.sql" />
-    <Build Include="Website\Stored Procedures\Members\DeleteMemberRole.sql" />
-    <Build Include="Website\Stored Procedures\Members\AddMemberRole.sql" />
-    <Build Include="Website\Stored Procedures\Members\AddMemberClaim.sql" />
-    <Build Include="Website\Stored Procedures\Members\DeleteMemberClaim.sql" />
+    <Build Include="Website\Stored Procedures\Members\DeleteAccountRole.sql" />
+    <Build Include="Website\Stored Procedures\Members\AddAccountRole.sql" />
+    <Build Include="Website\Stored Procedures\Members\AddAccountClaim.sql" />
+    <Build Include="Website\Stored Procedures\Members\DeleteAccountClaim.sql" />
   </ItemGroup>
   <ItemGroup>
-    <Build Include="dbo\Tables\MemberClaims.sql" />
-    <Build Include="dbo\Tables\MemberRoles.sql" />
-    <Build Include="dbo\Tables\Members.sql" />
+    <Build Include="dbo\Tables\AccountClaims.sql" />
+    <Build Include="dbo\Tables\AccountRoles.sql" />
+    <Build Include="dbo\Tables\Accounts.sql" />
   </ItemGroup>
   <ItemGroup>
     <RefactorLog Include="Jering.ASP.NET.Identity.Dapper.Database.refactorlog" />

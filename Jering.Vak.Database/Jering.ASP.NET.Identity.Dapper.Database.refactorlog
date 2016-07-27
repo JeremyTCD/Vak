@@ -1,39 +1,39 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Operations Version="1.0" xmlns="http://schemas.microsoft.com/sqlserver/dac/Serialization/2012/02">
   <Operation Name="Rename Refactor" Key="3e0d5554-57af-43b7-bd9c-eeaeca524c39" ChangeDateTime="07/11/2016 10:13:32">
-    <Property Name="ElementName" Value="[dbo].[Members].[MemberID]" />
+    <Property Name="ElementName" Value="[dbo].[Accounts].[AccountID]" />
     <Property Name="ElementType" Value="SqlSimpleColumn" />
-    <Property Name="ParentElementName" Value="[dbo].[Members]" />
+    <Property Name="ParentElementName" Value="[dbo].[Accounts]" />
     <Property Name="ParentElementType" Value="SqlTable" />
-    <Property Name="NewName" Value="[MemberId]" />
+    <Property Name="NewName" Value="[AccountId]" />
   </Operation>
   <Operation Name="Rename Refactor" Key="d63db7ac-6ccc-468f-8935-97db63125928" ChangeDateTime="07/11/2016 10:13:53">
-    <Property Name="ElementName" Value="[dbo].[MemberRoles].[MemberID]" />
+    <Property Name="ElementName" Value="[dbo].[AccountRoles].[AccountID]" />
     <Property Name="ElementType" Value="SqlSimpleColumn" />
-    <Property Name="ParentElementName" Value="[dbo].[MemberRoles]" />
+    <Property Name="ParentElementName" Value="[dbo].[AccountRoles]" />
     <Property Name="ParentElementType" Value="SqlTable" />
-    <Property Name="NewName" Value="[MemberId]" />
+    <Property Name="NewName" Value="[AccountId]" />
   </Operation>
   <Operation Name="Rename Refactor" Key="dbcb3ae1-5279-4cb4-bd44-1b8e9615590b" ChangeDateTime="07/11/2016 10:14:01">
-    <Property Name="ElementName" Value="[dbo].[MemberRoles].[RoleID]" />
+    <Property Name="ElementName" Value="[dbo].[AccountRoles].[RoleID]" />
     <Property Name="ElementType" Value="SqlSimpleColumn" />
-    <Property Name="ParentElementName" Value="[dbo].[MemberRoles]" />
+    <Property Name="ParentElementName" Value="[dbo].[AccountRoles]" />
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="[RoleId]" />
   </Operation>
   <Operation Name="Rename Refactor" Key="57133129-fa59-46e3-862e-41f473dacb36" ChangeDateTime="07/11/2016 10:14:13">
-    <Property Name="ElementName" Value="[dbo].[MemberClaims].[ClaimID]" />
+    <Property Name="ElementName" Value="[dbo].[AccountClaims].[ClaimID]" />
     <Property Name="ElementType" Value="SqlSimpleColumn" />
-    <Property Name="ParentElementName" Value="[dbo].[MemberClaims]" />
+    <Property Name="ParentElementName" Value="[dbo].[AccountClaims]" />
     <Property Name="ParentElementType" Value="SqlTable" />
     <Property Name="NewName" Value="[ClaimId]" />
   </Operation>
   <Operation Name="Rename Refactor" Key="2b411fb6-dc25-4eae-827d-eb429b5de597" ChangeDateTime="07/11/2016 10:14:19">
-    <Property Name="ElementName" Value="[dbo].[MemberClaims].[MemberID]" />
+    <Property Name="ElementName" Value="[dbo].[AccountClaims].[AccountID]" />
     <Property Name="ElementType" Value="SqlSimpleColumn" />
-    <Property Name="ParentElementName" Value="[dbo].[MemberClaims]" />
+    <Property Name="ParentElementName" Value="[dbo].[AccountClaims]" />
     <Property Name="ParentElementType" Value="SqlTable" />
-    <Property Name="NewName" Value="[MemberId]" />
+    <Property Name="NewName" Value="[AccountId]" />
   </Operation>
   <Operation Name="Rename Refactor" Key="6fc575ec-b8db-410d-887d-5a541c75c3fc" ChangeDateTime="07/11/2016 10:14:33">
     <Property Name="ElementName" Value="[dbo].[Roles].[RoleID]" />
@@ -54,6 +54,6 @@
     <Property Name="ElementType" Value="SqlProcedure" />
     <Property Name="ParentElementName" Value="[Website]" />
     <Property Name="ParentElementType" Value="SqlSchema" />
-    <Property Name="NewName" Value="[GetMemberUsername]" />
+    <Property Name="NewName" Value="[GetAccountUsername]" />
   </Operation>
 </Operations>

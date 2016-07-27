@@ -23,7 +23,7 @@ namespace Jering.Vak.DatabaseInterface.Test
         public SqlConnection SqlConnection { get; }
         public RoleRepository RoleRepository { get; }
         public ClaimRepository ClaimRepository { get; }
-        public MemberRepository MemberRepository { get; }
+        public AccountRepository AccountRepository { get; }
 
         public DatabaseFixture()
         {
@@ -37,7 +37,7 @@ namespace Jering.Vak.DatabaseInterface.Test
 
             RoleRepository = new RoleRepository(SqlConnection);
             ClaimRepository = new ClaimRepository(SqlConnection);
-            MemberRepository = new MemberRepository(SqlConnection);
+            AccountRepository = new AccountRepository(SqlConnection);
         }
 
         public void Dispose()
@@ -57,10 +57,10 @@ namespace Jering.Vak.DatabaseInterface.Test
                 "DBCC CHECKIDENT('[dbo].[Roles]', RESEED, 0);", commandType: CommandType.Text);
         }
 
-        public async Task ResetMembersTable()
+        public async Task ResetAccountsTable()
         {
-            await SqlConnection.ExecuteAsync("Delete from [dbo].[Members];" +
-                "DBCC CHECKIDENT('[dbo].[Members]', RESEED, 0);", commandType: CommandType.Text);
+            await SqlConnection.ExecuteAsync("Delete from [dbo].[Accounts];" +
+                "DBCC CHECKIDENT('[dbo].[Accounts]', RESEED, 0);", commandType: CommandType.Text);
         }
     }
 }
