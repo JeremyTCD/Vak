@@ -109,6 +109,41 @@ namespace Jering.Vak.DatabaseInterface.Test
         }
 
         [Fact]
+        public async Task AddAccountRoleAsync_UniqueRoleTest()
+        {
+            // Arrange
+            await _resetRolesTable();
+            await _resetAccountsTable();
+            Account account = await _accountRepository.CreateAccountAsync("Email@Jering.com", "$PassworD");
+            Role role = await _roleRepository.CreateRoleAsync("Name1");
+
+            // Act
+            await _accountRepository.AddAccountRoleAsync(account.AccountId, role.RoleId);
+            SqlException sqlException = await Assert.
+              ThrowsAsync<SqlException>(async () => await _accountRepository.AddAccountRoleAsync(account.AccountId, role.RoleId));
+
+            // Assert
+            Assert.Equal(51000, sqlException.Number);
+            Assert.Equal("Account already has role.", sqlException.Message);
+        }
+
+        [Fact]
+        public async Task AddRoleAccountAsync_AccountAndRoleExistTest()
+        {
+            // Arrange
+            await _resetRolesTable();
+            await _resetAccountsTable();
+
+            // Act
+            SqlException sqlException = await Assert.
+                ThrowsAsync<SqlException>(async () => await _accountRepository.AddAccountRoleAsync(1, 1));
+
+            // Assert
+            Assert.Equal(51000, sqlException.Number);
+            Assert.Equal("Account or role does not exist.", sqlException.Message);
+        }
+
+        [Fact]
         public async Task DeleteAccountRoleAsyncTest()
         {
             // Arrange
@@ -163,6 +198,41 @@ namespace Jering.Vak.DatabaseInterface.Test
             Assert.Equal(1, retrievedClaim.ClaimId);
             Assert.Equal("Type1", retrievedClaim.Type);
             Assert.Equal("Value1", retrievedClaim.Value);
+        }
+
+        [Fact]
+        public async Task AddAccountClaimAsync_UniqueClaimTest()
+        {
+            // Arrange
+            await _resetClaimsTable();
+            await _resetAccountsTable();
+            Account account = await _accountRepository.CreateAccountAsync("Email@Jering.com", "$PassworD");
+            Claim claim = await _claimRepository.CreateClaimAsync("Type1", "Value1");
+
+            // Act
+            await _accountRepository.AddAccountClaimAsync(account.AccountId, claim.ClaimId);
+            SqlException sqlException = await Assert.
+              ThrowsAsync<SqlException>(async () => await _accountRepository.AddAccountClaimAsync(account.AccountId, claim.ClaimId));
+
+            // Assert
+            Assert.Equal(51000, sqlException.Number);
+            Assert.Equal("Account already has claim.", sqlException.Message);
+        }
+
+        [Fact]
+        public async Task AddAccountClaimAsync_AccountAndClaimExistTest()
+        {
+            // Arrange
+            await _resetClaimsTable();
+            await _resetAccountsTable();
+
+            // Act
+            SqlException sqlException = await Assert.
+                ThrowsAsync<SqlException>(async () => await _accountRepository.AddAccountClaimAsync(1, 1));
+
+            // Assert
+            Assert.Equal(51000, sqlException.Number);
+            Assert.Equal("Account or claim does not exist.", sqlException.Message);
         }
 
         [Fact]
