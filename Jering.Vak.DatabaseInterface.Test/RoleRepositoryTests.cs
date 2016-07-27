@@ -47,7 +47,6 @@ namespace Jering.Vak.DatabaseInterface.Test
             Assert.Equal("Name1", role.Name);
         }
 
-
         [Fact]
         public async Task CreateRoleAsync_UniqueNameTest()
         {
@@ -61,7 +60,7 @@ namespace Jering.Vak.DatabaseInterface.Test
 
             // Assert
             Assert.Equal(51000, sqlException.Number);
-            Assert.Equal("A role with name \"Name1\" already exists.", sqlException.Message);
+            Assert.Equal("Role already exists.", sqlException.Message);
         }
 
         [Fact]
@@ -97,6 +96,41 @@ namespace Jering.Vak.DatabaseInterface.Test
             Assert.Equal(1, retrievedClaim.ClaimId);
             Assert.Equal("Type1", retrievedClaim.Type);
             Assert.Equal("Value1", retrievedClaim.Value);
+        }
+
+        [Fact]
+        public async Task AddRoleClaimAsync_UniqueClaimTest()
+        {
+            // Arrange
+            await _resetRolesTable();
+            await _resetClaimsTable();
+            Claim claim = await _claimRepository.CreateClaimAsync("Type1", "Value1");
+            Role role = await _roleRepository.CreateRoleAsync("Name1");
+
+            // Act
+            await _roleRepository.AddRoleClaimAsync(role.RoleId, claim.ClaimId);
+            SqlException sqlException = await Assert.
+              ThrowsAsync<SqlException>(async () => await _roleRepository.AddRoleClaimAsync(role.RoleId, claim.ClaimId));
+
+            // Assert
+            Assert.Equal(51000, sqlException.Number);
+            Assert.Equal("Role already has claim.", sqlException.Message);
+        }
+
+        [Fact]
+        public async Task AddRoleClaimAsync_RoleAndClaimExistTest()
+        {
+            // Arrange
+            await _resetRolesTable();
+            await _resetClaimsTable();
+
+            // Act
+            SqlException sqlException = await Assert.
+                ThrowsAsync<SqlException>(async () => await _roleRepository.AddRoleClaimAsync(1, 1));
+
+            // Assert
+            Assert.Equal(51000, sqlException.Number);
+            Assert.Equal("Role or claim does not exist.", sqlException.Message);
         }
 
         [Fact]

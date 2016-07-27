@@ -59,6 +59,22 @@ namespace Jering.Vak.DatabaseInterface.Test
         }
 
         [Fact]
+        public async Task CreateMemberAsync_UniqueEmailTest()
+        {
+            // Arrange
+            await _resetMembersTable();
+
+            // Act
+            await _memberRepository.CreateMemberAsync("Email@Jering.com", "$PassworD");
+            SqlException sqlException = await Assert.
+              ThrowsAsync<SqlException>(async () => await _memberRepository.CreateMemberAsync("Email@Jering.com", "$PassworD"));
+
+            // Assert
+            Assert.Equal(51000, sqlException.Number);
+            Assert.Equal("An account with this email already exists.", sqlException.Message);
+        }
+
+        [Fact]
         public async Task DeleteMemberAsyncTest()
         {
             // TODO: ensure that deletion cascades

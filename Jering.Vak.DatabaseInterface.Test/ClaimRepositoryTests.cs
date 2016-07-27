@@ -53,7 +53,7 @@ namespace Jering.Vak.DatabaseInterface.Test
 
             // Assert
             Assert.Equal(51000, sqlException.Number);
-            Assert.Equal("A claim with type \"Type1\" and value \"Value1\" already exists.", sqlException.Message);
+            Assert.Equal("Claim already exists.", sqlException.Message);
         }
 
         [Fact]
