@@ -19,7 +19,7 @@ namespace Jering.Vak.DatabaseInterface
         }
 
 
-        public async Task<Claim> CreateClaimAsync(string type, string value)
+        public virtual async Task<Claim> CreateClaimAsync(string type, string value)
         {
             return await _sqlConnection.QuerySingleAsync<Claim>(@"[Website].[CreateClaim]",
                 new
@@ -30,7 +30,7 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public Task DeleteClaimAsync(int claimId)
+        public virtual Task DeleteClaimAsync(int claimId)
         {
             return _sqlConnection.ExecuteAsync(@"[Website].[DeleteClaim]",
                 new

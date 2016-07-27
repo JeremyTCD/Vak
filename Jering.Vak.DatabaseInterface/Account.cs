@@ -30,11 +30,6 @@ namespace Jering.Vak.DatabaseInterface
         public string SecurityStamp { get; set; }
 
         /// <summary>
-        ///     The salted/hashed form of the account password
-        /// </summary>
-        public byte[] PasswordHash { get; set; }
-
-        /// <summary>
         ///  Email
         /// </summary>
         public string Email { get; set; }

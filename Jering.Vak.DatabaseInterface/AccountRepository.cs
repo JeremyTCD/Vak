@@ -27,7 +27,7 @@ namespace Jering.Vak.DatabaseInterface
         /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
-        public async Task<Account> CreateAccountAsync(string email, string password)
+        public virtual async Task<Account> CreateAccountAsync(string email, string password)
         {
             return await _sqlConnection.QuerySingleAsync<Account>(@"[Website].[CreateAccount]",
                 new
@@ -38,7 +38,7 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public Task DeleteAccountAsync(int accountId)
+        public virtual Task DeleteAccountAsync(int accountId)
         {
             return _sqlConnection.ExecuteAsync(@"[Website].[DeleteAccount]",
                 new
@@ -48,7 +48,17 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task AddAccountRoleAsync(int accountId, int roleId)
+        public virtual async Task<Account> GetAccountAsync(int accountId)
+        {
+            return await _sqlConnection.QuerySingleAsync<Account>(@"[Website].[GetAccount]",
+                new
+                {
+                    AccountId = accountId
+                },
+                commandType: CommandType.StoredProcedure);
+        }
+
+        public virtual async Task AddAccountRoleAsync(int accountId, int roleId)
         {
             await _sqlConnection.ExecuteAsync(@"[Website].[AddAccountRole]",
                 new
@@ -59,7 +69,7 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task DeleteAccountRoleAsync(int accountId, int roleId)
+        public virtual async Task DeleteAccountRoleAsync(int accountId, int roleId)
         {
             await _sqlConnection.ExecuteAsync(@"[Website].[DeleteAccountRole]",
                 new
@@ -75,7 +85,7 @@ namespace Jering.Vak.DatabaseInterface
         /// </summary>
         /// <param name="accountId"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<Role>> GetAccountRolesAsync(int accountId)
+        public virtual async Task<IEnumerable<Role>> GetAccountRolesAsync(int accountId)
         {
             return await _sqlConnection.QueryAsync<Role>(@"[Website].[GetAccountRoles]",
                 new
@@ -85,7 +95,7 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task AddAccountClaimAsync(int accountId, int claimId)
+        public virtual async Task AddAccountClaimAsync(int accountId, int claimId)
         {
             await _sqlConnection.ExecuteAsync(@"[Website].[AddAccountClaim]",
                 new
@@ -96,7 +106,7 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task DeleteAccountClaimAsync(int accountId, int claimId)
+        public virtual async Task DeleteAccountClaimAsync(int accountId, int claimId)
         {
             await _sqlConnection.ExecuteAsync(@"[Website].[DeleteAccountClaim]",
                 new
@@ -107,9 +117,19 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task<IEnumerable<Claim>> GetAccountClaimsAsync(int accountId)
+        public virtual async Task<IEnumerable<Claim>> GetAccountClaimsAsync(int accountId)
         {
             return await _sqlConnection.QueryAsync<Claim>(@"[Website].[GetAccountClaims]",
+                new
+                {
+                    AccountId = accountId
+                },
+                commandType: CommandType.StoredProcedure);
+        }
+
+        public virtual async Task<string> GetAccountSecurityStampAsync(int accountId)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<string>(@"[Website].[GetAccountSecurityStamp]",
                 new
                 {
                     AccountId = accountId

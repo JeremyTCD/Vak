@@ -23,7 +23,7 @@ namespace Jering.Vak.DatabaseInterface
         /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
-        public async Task<Role> CreateRoleAsync(string name)
+        public virtual async Task<Role> CreateRoleAsync(string name)
         {
             return await _sqlConnection.QuerySingleAsync<Role>(@"[Website].[CreateRole]",
                 new
@@ -33,7 +33,7 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public Task DeleteRoleAsync(int roleId)
+        public virtual Task DeleteRoleAsync(int roleId)
         {
             return _sqlConnection.ExecuteAsync(@"[Website].[DeleteRole]",
                 new
@@ -43,7 +43,7 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public Task AddRoleClaimAsync(int roleId, int claimId)
+        public virtual Task AddRoleClaimAsync(int roleId, int claimId)
         {
             return _sqlConnection.ExecuteAsync(@"[Website].[AddRoleClaim]",
                 new
@@ -54,7 +54,7 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public Task DeleteRoleClaimAsync(int roleId, int claimId)
+        public virtual Task DeleteRoleClaimAsync(int roleId, int claimId)
         {
             return _sqlConnection.ExecuteAsync(@"[Website].[DeleteRoleClaim]",
                 new
@@ -65,7 +65,7 @@ namespace Jering.Vak.DatabaseInterface
                 commandType: CommandType.StoredProcedure);
         }
 
-        public async Task<IEnumerable<Claim>> GetRoleClaimsAsync(int roleId)
+        public virtual async Task<IEnumerable<Claim>> GetRoleClaimsAsync(int roleId)
         {
             return await _sqlConnection.QueryAsync<Claim>(@"[Website].[GetRoleClaims]",
                 new
