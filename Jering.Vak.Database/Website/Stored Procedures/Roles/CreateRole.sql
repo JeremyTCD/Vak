@@ -17,6 +17,6 @@ BEGIN
 		IF @errorNumber = 2627 
 			THROW 51000, N'Role already exists.', 1;
 		ELSE 
-			THROW 52000, N'An unexpected error occurred.', 1;
+			THROW
     END CATCH;
 END

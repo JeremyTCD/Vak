@@ -1,7 +1,7 @@
 ﻿CREATE TABLE [dbo].[Accounts] (
     [AccountId]		  	 INT IDENTITY(1,1) NOT NULL,
     [Username]		 	 NVARCHAR (256) CONSTRAINT [DF_dbo_Accounts_Username] DEFAULT NULL NULL,
-	[SecurityStamp]      NVARCHAR (MAX) CONSTRAINT [DF_dbo_Accounts_SecurityStamp] DEFAULT NULL NULL,
+	[SecurityStamp]      UNIQUEIDENTIFIER NOT NULL,
     [PasswordHash]		 BINARY(32) NOT NULL,
 	[Email]				 NVARCHAR (256)   NOT NULL,
 	[EmailConfirmed]	 BIT CONSTRAINT [DF_dbo_Accounts_EmailConfirmed] DEFAULT 0 NOT NULL,

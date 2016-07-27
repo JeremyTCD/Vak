@@ -87,6 +87,8 @@
     <Build Include="Website\Stored Procedures\Members\AddAccountRole.sql" />
     <Build Include="Website\Stored Procedures\Members\AddAccountClaim.sql" />
     <Build Include="Website\Stored Procedures\Members\DeleteAccountClaim.sql" />
+    <Build Include="Website\Stored Procedures\Members\GetAccount.sql" />
+    <Build Include="Website\Stored Procedures\Members\GetAccountSecurityStamp.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\AccountClaims.sql" />

@@ -2,6 +2,9 @@
 	@AccountId INT
 AS
 BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON;
+
 	SELECT Roles.RoleId, Roles.Name
 	FROM [dbo].[Accounts] AS Accounts 
 		INNER JOIN [dbo].[AccountRoles] AS AccountRoles

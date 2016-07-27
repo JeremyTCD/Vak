@@ -2,6 +2,9 @@
 	@RoleId INT
 AS
 BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON;
+
 	SELECT Claims.*
 	--Try using exists to perform right semi joins, see if it is more performant
 	FROM [dbo].[Roles] AS Roles

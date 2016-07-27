@@ -2,6 +2,9 @@
 	@AccountId INT
 AS
 BEGIN
+	SET NOCOUNT ON;
+	SET XACT_ABORT ON;
+
 	SELECT Claims.ClaimId, Claims.Type, Claims.Value
 	FROM [dbo].[Accounts] AS Accounts 
 		INNER JOIN [dbo].[AccountClaims] AS AccountClaims

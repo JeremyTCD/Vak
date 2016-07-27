@@ -1,6 +1,6 @@
 ﻿CREATE PROCEDURE [Website].[CreateClaim]
-	@Type NVARCHAR(MAX),  
-	@Value NVARCHAR(MAX)
+	@Type NVARCHAR(256),  
+	@Value NVARCHAR(256)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -18,6 +18,6 @@ BEGIN
 		IF @errorNumber = 2627 
 			THROW 51000, N'Claim already exists.', 1;
 		ELSE 
-			THROW 52000, N'An unexpected error occurred.', 1;
+			THROW
     END CATCH;
 END

@@ -20,6 +20,6 @@ BEGIN
 		ELSE IF @errorNumber = 547
 			THROW 51000, N'Role or claim does not exist.', 1;
 		ELSE
-			THROW 52000, N'An unexpected error occurred.', 1;
+			THROW
     END CATCH;
 END
