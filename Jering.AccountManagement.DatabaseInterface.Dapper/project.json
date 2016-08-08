@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0-*",
+  "buildOptions": {
+    "warningsAsErrors": true,
+    "xmlDoc": true
+  },
+  "dependencies": {
+    "Dapper": "1.50.1-*",
+    "Jering.AccountManagement.DatabaseInterface": "1.0.0-*",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0",
+    "NETStandard.Library": "1.6.0",
+    "System.Data.SqlClient": "4.1.0",
+    "System.Security.Claims": "4.0.1"
+  },
+
+  "frameworks": {
+    "netcoreapp1.0": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.0.0"
+        }
+      }
+    }
+  }
+}
