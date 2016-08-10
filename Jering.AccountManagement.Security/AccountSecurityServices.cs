@@ -4,6 +4,9 @@ using Jering.AccountManagement.DatabaseInterface;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
+using System;
+using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
 
 namespace Jering.AccountManagement.Security
 {
@@ -16,8 +19,7 @@ namespace Jering.AccountManagement.Security
         private IAccountRepository<TAccount> _accountRepository { get; }
         private HttpContext _httpContext { get; }
         private AccountSecurityOptions _securityOptions { get; }
-        private ITokenService<TAccount> _totpTokenService { get; }
-        private ITokenService<TAccount> _dataProtectionTokenService { get; }
+        private Dictionary<string, ITokenService<TAccount>> _tokenServices { get; }
         /// <summary>
         /// The data protection purpose used for email confirmation related methods.
         /// </summary>
@@ -30,21 +32,51 @@ namespace Jering.AccountManagement.Security
         /// <param name="httpContextAccessor"></param>
         /// <param name="securityOptionsAccessor"></param>
         /// <param name="accountRepository"></param>
-        /// <param name="dataProtectionTokenService"></param>
-        /// <param name="totpTokenService"></param>
+        /// <param name="serviceProvider"></param>
         public AccountSecurityServices(ClaimsPrincipalFactory<TAccount> claimsPrincipalFactory, 
             IHttpContextAccessor httpContextAccessor,
             IOptions<AccountSecurityOptions> securityOptionsAccessor,
             IAccountRepository<TAccount> accountRepository,
-            ITokenService<TAccount> totpTokenService,
-            ITokenService<TAccount> dataProtectionTokenService)
+            IServiceProvider serviceProvider)
         {
+            if(claimsPrincipalFactory == null)
+            {
+                throw new ArgumentNullException(nameof(claimsPrincipalFactory));
+            }
+
+            if(httpContextAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(httpContextAccessor));
+            }
+
+            if(IAccountRepository == null)
+            {
+                throw new ArgumentNullException(nameof(accountRepository));
+            }
+
+            if(serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
+            if(securityOptionsAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(securityOptionsAccessor))
+            }
+
             _claimsPrincipalFactory = claimsPrincipalFactory;
             _httpContext = httpContextAccessor.HttpContext;
             _securityOptions = securityOptionsAccessor.Value;
             _accountRepository = accountRepository;
-            _totpTokenService = totpTokenService;
-            _dataProtectionTokenService = dataProtectionTokenService;
+
+            foreach (string tokenServiceName in _securityOptions.TokenServiceOptions.TokenServiceMap.Keys)
+            {
+                ITokenService<TAccount> tokenService = (ITokenService<TAccount>) serviceProvider.GetRequiredService(_securityOptions.TokenServiceOptions.TokenServiceMap[tokenServiceName]);
+                if (tokenService != null)
+                {
+                    _tokenServices[tokenServiceName] = tokenService;
+                }
+            }
         }
 
         /// <summary>
@@ -107,7 +139,7 @@ namespace Jering.AccountManagement.Security
         {
             TAccount account = await _accountRepository.GetAccountAsync(accountId);
 
-            return await _dataProtectionTokenService.ValidateToken(_confirmEmailTokenPurpose, token, account) &&
+            return await _tokenServices[TokenServiceOptions.DataProtectionTokenService].ValidateToken(_confirmEmailTokenPurpose, token, account) &&
                 await _accountRepository.UpdateAccountEmailConfirmedAsync(accountId);
         }
 
@@ -129,7 +161,7 @@ namespace Jering.AccountManagement.Security
         /// <returns>A <see cref="Task"/> that returns true if confirmation email is sent successfully.</returns>
         public virtual async Task<bool> SendConfirmationEmailAsync(TAccount account)
         {
-            string token = await _dataProtectionTokenService.GenerateToken(_confirmEmailTokenPurpose, account);
+            string token = await _tokenServices[TokenServiceOptions.DataProtectionTokenService].GenerateToken(_confirmEmailTokenPurpose, account);
 
             // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
             // Send an email with this link
@@ -150,7 +182,7 @@ namespace Jering.AccountManagement.Security
         /// updates successfully, false otherwise.</returns>
         public virtual async Task<bool> UpdatePasswordAsync(TAccount account, string password, string token)
         {
-            return await _dataProtectionTokenService.ValidateToken(_confirmEmailTokenPurpose, token, account) && 
+            return await _tokenServices[TokenServiceOptions.DataProtectionTokenService].ValidateToken(_confirmEmailTokenPurpose, token, account) && 
                 await _accountRepository.UpdateAccountPasswordHashAsync(account.AccountId, password);
         }
 

@@ -9,7 +9,7 @@ namespace Jering.AccountManagement.Security
     /// <summary>
     /// Specifies options for <see cref="Claim"/>s. 
     /// </summary>
-    public class ClaimsOptions
+    public class ClaimOptions
     {
         /// <summary>
         /// Gets or sets the ClaimType used for a Role claim.

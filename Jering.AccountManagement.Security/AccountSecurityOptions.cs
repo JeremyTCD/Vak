@@ -13,7 +13,7 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// Gets or sets the <see cref="ClaimsOptions"/> for the security library.
         /// </summary>
-        public ClaimsOptions ClaimsOptions { get; set; } = new ClaimsOptions();
+        public ClaimOptions ClaimsOptions { get; set; } = new ClaimOptions();
 
         /// <summary>
         /// Gets or sets the <see cref="CookieOptions"/> for the security library. 
@@ -21,8 +21,8 @@ namespace Jering.AccountManagement.Security
         public CookieOptions CookieOptions { get; set; } = new CookieOptions();
 
         /// <summary>
-        /// Gets or sets the <see cref="DataProtectionTokenOptions"/> for the security library. 
+        /// Gets or sets the <see cref="TokenServiceOptions"/> for the security library. 
         /// </summary>
-        public DataProtectionTokenOptions DataProtectionTokenOptions { get; set; } = new DataProtectionTokenOptions();
+        public TokenServiceOptions TokenServiceOptions { get; set; } = new TokenServiceOptions();
     }
 }

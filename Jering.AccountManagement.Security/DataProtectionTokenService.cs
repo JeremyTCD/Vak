@@ -73,7 +73,7 @@ namespace Jering.AccountManagement.Security
                     using (BinaryReader binaryReader = memoryStream.CreateReader())
                     {
                         DateTimeOffset extractedCreationTime = binaryReader.ReadDateTimeOffset();
-                        DateTimeOffset expirationTime = extractedCreationTime + _securityOptions.DataProtectionTokenOptions.TokenLifespan;
+                        DateTimeOffset expirationTime = extractedCreationTime + _securityOptions.TokenServiceOptions.DataProtectionTokenLifespan;
                         if (expirationTime < DateTimeOffset.UtcNow)
                         {
                             return false;
