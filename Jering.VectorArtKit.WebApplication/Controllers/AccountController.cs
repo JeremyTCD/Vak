@@ -24,12 +24,22 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         //private readonly IEmailSender _emailSender;
 
         public AccountController(
-            VakAccountRepository vakAccountRepository,
+            IAccountRepository<VakAccount> vakAccountRepository,
             AccountSecurityServices<VakAccount> accountSecurityServices
             //IEmailSender emailSender
             )
         {
-            _vakAccountRepository = vakAccountRepository;
+            if(vakAccountRepository == null)
+            {
+                throw new ArgumentNullException(nameof(vakAccountRepository));
+            }
+
+            if (accountSecurityServices == null)
+            {
+                throw new ArgumentNullException(nameof(accountSecurityServices));
+            }
+
+            _vakAccountRepository = (VakAccountRepository) vakAccountRepository;
             _accountSecurityServices = accountSecurityServices;
             //_emailSender = emailSender;
         }

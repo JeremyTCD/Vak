@@ -1,4 +1,10 @@
 {
+  "Data": {
+    "DefaultConnection": {
+      "ConnectionString": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Jering.AccountDatabase;Integrated Security=True;"
+    }
+  },
+
   "dependencies": {
     "Microsoft.NETCore.App": {
       "version": "1.0.0",
@@ -23,7 +29,8 @@
     "System.Security.Claims": "4.0.1",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
     "Jering.AccountManagement.Security": "1.0.0-*",
-    "Jering.AccountManagement.DatabaseInterface.Dapper": "1.0.0-*"
+    "Jering.AccountManagement.DatabaseInterface.Dapper": "1.0.0-*",
+    "Jering.AccountManagement.Extensions": "1.0.0-*"
   },
 
   "tools": {
@@ -43,7 +50,7 @@
 
   "buildOptions": {
     "emitEntryPoint": true,
-    "preserveCompilationContext": true//,
+    "preserveCompilationContext": true //,
     //"warningsAsErrors": true,
     //"xmlDoc": true
   },

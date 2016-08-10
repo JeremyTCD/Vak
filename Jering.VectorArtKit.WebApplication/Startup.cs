@@ -6,6 +6,10 @@ using Microsoft.Extensions.Logging;
 using Jering.AccountManagement.Security;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
+using System.Data.SqlClient;
+using Jering.VectorArtKit.WebApplication.BusinessModel;
+using Jering.AccountManagement.DatabaseInterface;
+using Jering.AccountManagement.Extensions;
 
 namespace Jering.VectorArtKit.WebApplication
 {
@@ -18,22 +22,30 @@ namespace Jering.VectorArtKit.WebApplication
                 .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
-            Configuration = builder.Build();
+            _configurationRoot = builder.Build();
         }
 
-        public IConfigurationRoot Configuration { get; }
+        private IConfigurationRoot _configurationRoot { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
+            // MVC
             services.AddMvc();
+
+            // Data
+            // TODO different connection string for release
+            services.AddScoped<SqlConnection>(_ => new SqlConnection(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
+
+            // Account Management
+            services.AddAccountManagement<VakAccount>(_configurationRoot).
+                AddAccountRepository<VakAccountRepository>().
+                AddDefaultTokenServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+            loggerFactory.AddConsole(_configurationRoot.GetSection("Logging"));
             
             if (env.IsDevelopment())
             {
