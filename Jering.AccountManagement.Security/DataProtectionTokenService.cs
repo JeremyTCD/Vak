@@ -36,7 +36,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="purpose"></param>
         /// <param name="account"></param>
         /// <returns>A string representation of the generated token.</returns>
-        public virtual Task<string> GenerateToken(string purpose, TAccount account)
+        public virtual Task<string> GenerateTokenAsync(string purpose, TAccount account)
         {
             return Task.Factory.StartNew(() =>
             {
@@ -62,7 +62,7 @@ namespace Jering.AccountManagement.Security
         /// <returns>
         /// True if <paramref name="token"/> is valid, false otherwise.
         /// </returns>
-        public virtual Task<bool> ValidateToken(string purpose, string token, TAccount account)
+        public virtual Task<bool> ValidateTokenAsync(string purpose, string token, TAccount account)
         {
             return Task.Factory.StartNew(() =>
             {

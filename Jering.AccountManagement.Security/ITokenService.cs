@@ -17,7 +17,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="purpose"></param>
         /// <param name="account"></param>
         /// <returns>A string representation of the generated token.</returns>
-        Task<string> GenerateToken(string purpose, TAccount account);
+        Task<string> GenerateTokenAsync(string purpose, TAccount account);
 
         /// <summary>
         /// Validates the specified <paramref name="token"/> token for the specified <paramref name="account"/> and <paramref name="purpose"/>.
@@ -28,6 +28,6 @@ namespace Jering.AccountManagement.Security
         /// <returns>
         /// True if <paramref name="token"/> is valid, false otherwise.
         /// </returns>
-        Task<bool> ValidateToken(string purpose, string token, TAccount account);
+        Task<bool> ValidateTokenAsync(string purpose, string token, TAccount account);
     }
 }
