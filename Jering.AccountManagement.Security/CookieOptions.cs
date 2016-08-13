@@ -16,8 +16,7 @@ namespace Jering.AccountManagement.Security
     {
         private static readonly string CookiePrefix = "Jering";
         private static readonly string DefaultApplicationScheme = CookiePrefix + ".Application";
-        private static readonly string DefaultTwoFactorRememberMeScheme = CookiePrefix + ".TwoFactorRememberMe";
-        private static readonly string DefaultTwoFactorUserIdScheme = CookiePrefix + ".TwoFactorUserId";
+        private static readonly string DefaultTwoFactorScheme = CookiePrefix + ".TwoFactor";
 
         /// <summary>
         /// The options for the application cookie.
@@ -35,23 +34,13 @@ namespace Jering.AccountManagement.Security
         };
 
         /// <summary>
-        /// The options for the two factor remember me cookie.
-        /// </summary>
-        public CookieAuthenticationOptions TwoFactorRememberMeCookieOptions { get; set; } = new CookieAuthenticationOptions
-        {
-            AutomaticAuthenticate = false,
-            AuthenticationScheme = DefaultTwoFactorRememberMeScheme,
-            CookieName = DefaultTwoFactorRememberMeScheme
-        };
-
-        /// <summary>
         /// The options for the two factor user id cookie.
         /// </summary>
-        public CookieAuthenticationOptions TwoFactorUserIdCookieOptions { get; set; } = new CookieAuthenticationOptions
+        public CookieAuthenticationOptions TwoFactorCookieOptions { get; set; } = new CookieAuthenticationOptions
         {
             AutomaticAuthenticate = false,
-            AuthenticationScheme = DefaultTwoFactorUserIdScheme,
-            CookieName = DefaultTwoFactorUserIdScheme,
+            AuthenticationScheme = DefaultTwoFactorScheme,
+            CookieName = DefaultTwoFactorScheme,
             ExpireTimeSpan = TimeSpan.FromMinutes(5)
         };
 
