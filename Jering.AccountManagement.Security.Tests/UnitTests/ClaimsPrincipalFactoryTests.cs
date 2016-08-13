@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 using System.Security.Claims;
 using Jering.AccountManagement.DatabaseInterface.Dapper;
 
-namespace Jering.AccountManagement.Security.UnitTests
+namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
     public class ClaimsPrincipalFactoryTests
     {

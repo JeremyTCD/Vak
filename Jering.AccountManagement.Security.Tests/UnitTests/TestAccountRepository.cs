@@ -7,7 +7,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.Security.UnitTests
+namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
     public class TestAccountRepository<TAccount> : IAccountRepository<TAccount> where TAccount : IAccount
     {

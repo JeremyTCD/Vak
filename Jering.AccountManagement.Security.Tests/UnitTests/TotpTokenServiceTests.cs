@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Jering.AccountManagement.Security.UnitTests
+namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
     public class TotpTokenServiceTests
     {
@@ -23,7 +23,7 @@ namespace Jering.AccountManagement.Security.UnitTests
             TotpTokenService<TestAccount> totpTokenService = new TotpTokenService<TestAccount>();
 
             // Act
-            string token = await totpTokenService.GenerateToken("", mockAccount.Object);
+            string token = await totpTokenService.GenerateTokenAsync("", mockAccount.Object);
 
             // Assert
             Assert.NotEqual(null, token);
@@ -39,14 +39,14 @@ namespace Jering.AccountManagement.Security.UnitTests
             // Arrange
             TotpTokenService<TestAccount> totpTokenService = new TotpTokenService<TestAccount>();
             TestAccount account = new TestAccount() { Email = "Email", SecurityStamp = Guid.Empty };
-            string token = await totpTokenService.GenerateToken("", account);
+            string token = await totpTokenService.GenerateTokenAsync("", account);
 
             Mock<TestAccount> mockAccount = new Mock<TestAccount>();
             mockAccount.SetupGet(a => a.Email).Returns(account.Email);
             mockAccount.SetupGet(a => a.SecurityStamp).Returns(account.SecurityStamp);
 
             // Act
-            bool result = await totpTokenService.ValidateToken("", token, mockAccount.Object);
+            bool result = await totpTokenService.ValidateTokenAsync("", token, mockAccount.Object);
 
             // Assert
             Assert.True(result);
@@ -65,8 +65,8 @@ namespace Jering.AccountManagement.Security.UnitTests
             mockAccount.SetupGet(a => a.SecurityStamp).Returns(account.SecurityStamp);
 
             // Act
-            string token = await totpTokenService.GenerateToken("invalid", account);
-            bool result = await totpTokenService.ValidateToken("", token, mockAccount.Object);
+            string token = await totpTokenService.GenerateTokenAsync("invalid", account);
+            bool result = await totpTokenService.ValidateTokenAsync("", token, mockAccount.Object);
 
             // Assert
             Assert.False(result);

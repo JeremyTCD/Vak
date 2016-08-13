@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Moq;
 using Microsoft.Extensions.Options;
 
-namespace Jering.AccountManagement.Security.UnitTests
+namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
     public class DataProtectionTokenServiceTests
     {
@@ -34,7 +34,7 @@ namespace Jering.AccountManagement.Security.UnitTests
             DataProtectionTokenService<TestAccount> dataProtectionTokenService = new DataProtectionTokenService<TestAccount>(dataProtectionProvider, mockOptions.Object);
 
             // Act
-            string token = await dataProtectionTokenService.GenerateToken("", mockAccount.Object);
+            string token = await dataProtectionTokenService.GenerateTokenAsync("", mockAccount.Object);
 
             // Assert
             Assert.NotEqual(null, token);
@@ -59,14 +59,14 @@ namespace Jering.AccountManagement.Security.UnitTests
             DataProtectionTokenService<TestAccount> dataProtectionTokenService = new DataProtectionTokenService<TestAccount>(dataProtectionProvider, mockOptions.Object);
 
             TestAccount account = new TestAccount() { AccountId = 1, SecurityStamp = Guid.Empty };
-            string token = await dataProtectionTokenService.GenerateToken("", account);
+            string token = await dataProtectionTokenService.GenerateTokenAsync("", account);
 
             Mock<TestAccount> mockAccount = new Mock<TestAccount>();
             mockAccount.SetupGet(a => a.AccountId).Returns(account.AccountId);
             mockAccount.SetupGet(a => a.SecurityStamp).Returns(account.SecurityStamp);
 
             // Act
-            bool result = await dataProtectionTokenService.ValidateToken("", token, mockAccount.Object);
+            bool result = await dataProtectionTokenService.ValidateTokenAsync("", token, mockAccount.Object);
 
             // Assert
             Assert.True(result);
@@ -96,8 +96,8 @@ namespace Jering.AccountManagement.Security.UnitTests
             mockAccount.SetupGet(a => a.SecurityStamp).Returns(Guid.NewGuid());
 
             // Act
-            string token = await dataProtectionTokenService.GenerateToken("", account);
-            bool result = await dataProtectionTokenService.ValidateToken("", token, mockAccount.Object);
+            string token = await dataProtectionTokenService.GenerateTokenAsync("", account);
+            bool result = await dataProtectionTokenService.ValidateTokenAsync("", token, mockAccount.Object);
 
             // Assert
             Assert.False(result);
