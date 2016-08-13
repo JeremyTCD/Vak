@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
-using Jering.VectorArtKit.WebApplication.Models;
+using Jering.VectorArtKit.WebApplication.ViewModels;
 using Jering.AccountManagement.DatabaseInterface;
 using Microsoft.AspNetCore.Http.Authentication;
 using System.Data.SqlClient;
@@ -20,16 +20,15 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
     public class AccountController : Controller
     {
         private VakAccountRepository _vakAccountRepository;
-        private AccountSecurityServices<VakAccount> _accountSecurityServices;
+        private IAccountSecurityServices<VakAccount> _accountSecurityServices;
         //private readonly IEmailSender _emailSender;
 
         public AccountController(
             IAccountRepository<VakAccount> vakAccountRepository,
-            AccountSecurityServices<VakAccount> accountSecurityServices
-            //IEmailSender emailSender
+            IAccountSecurityServices<VakAccount> accountSecurityServices
             )
         {
-            if(vakAccountRepository == null)
+            if (vakAccountRepository == null)
             {
                 throw new ArgumentNullException(nameof(vakAccountRepository));
             }
@@ -39,12 +38,18 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 throw new ArgumentNullException(nameof(accountSecurityServices));
             }
 
-            _vakAccountRepository = (VakAccountRepository) vakAccountRepository;
+            _vakAccountRepository = (VakAccountRepository)vakAccountRepository;
             _accountSecurityServices = accountSecurityServices;
             //_emailSender = emailSender;
         }
 
-        // GET: /Account/Login
+        /// <summary>
+        /// GET: /Account/Login
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        /// <returns>
+        /// Login view with anti-forgery token and cookie.
+        /// </returns>
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Login(string returnUrl = null)
@@ -53,7 +58,17 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             return View();
         }
 
-        // POST: /Account/Login
+        /// <summary>
+        /// Post: /Account/Login
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="returnUrl"></param>
+        /// <returns>
+        /// Bad request if anti-forgery credentials are invalid.
+        /// Login view if model state is invalid. 
+        /// Login view with error message if login credentials are invalid. 
+        /// Home index view or return Url view with a valid cookie header if login is successful.
+        /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -62,20 +77,23 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                if (await _accountSecurityServices.PasswordSignInAsync(model.Email, model.Password, new AuthenticationProperties() { IsPersistent = model.RememberMe }))
+                ApplicationSignInResult applicationSignInResult = await _accountSecurityServices.ApplicationPasswordSignInAsync(model.Email,
+                    model.Password,
+                    new AuthenticationProperties() { IsPersistent = model.RememberMe });
+
+                if (applicationSignInResult == ApplicationSignInResult.TwoFactorRequired)
+                {
+                    return RedirectToAction(nameof(VerifyCode), new { RememberMe = model.RememberMe, ReturnUrl = returnUrl});
+                }
+                else if (applicationSignInResult == ApplicationSignInResult.Succeeded)
                 {
                     return RedirectToLocal(returnUrl);
                 }
-                //if (result.RequiresTwoFactor)
-                //{
-                //    return RedirectToAction(nameof(SendCode), new { ReturnUrl = returnUrl, RememberMe = model.RememberMe });
-                //}
 
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                return View(model);
             }
 
-            // If we got this far, something failed, redisplay form
+            // Need to think about disposing of accountSecurityServices 
             return View(model);
         }
 
@@ -117,7 +135,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 await _accountSecurityServices.SendConfirmationEmailAsync(account);
                 // TODO IsPersistent should be set to remember me
-                await _accountSecurityServices.SignInAsync(account, new AuthenticationProperties { IsPersistent = true, });
+                await _accountSecurityServices.ApplicationSignInAsync(account, new AuthenticationProperties { IsPersistent = true, });
                 return RedirectToLocal(returnUrl);
             }
             else
@@ -236,106 +254,42 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             return View();
         }
 
-        // TODO 2 Factor
-        // GET: /Account/SendCode
-        //[HttpGet]
-        //[AllowAnonymous]
-        //public async Task<ActionResult> SendCode(string returnUrl = null, bool reaccountMe = false)
-        //{
-        //    var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-        //    if (user == null)
-        //    {
-        //        return View("Error");
-        //    }
-        //    var userFactors = await _accountRepository.GetValidTwoFactorProvidersAsync(user);
-        //    var factorOptions = userFactors.Select(purpose => new SelectListItem { Text = purpose, Value = purpose }).ToList();
-        //    return View(new SendCodeViewModel { Providers = factorOptions, ReturnUrl = returnUrl, ReaccountMe = reaccountMe });
-        //}
-
-        // TODO 2 Factor
-        // POST: /Account/SendCode
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> SendCode(SendCodeViewModel model)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return View();
-        //    }
-
-        //    var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-        //    if (user == null)
-        //    {
-        //        return View("Error");
-        //    }
-
-        //    // Generate the token and send it
-        //    var code = await _accountRepository.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
-        //    if (string.IsNullOrWhiteSpace(code))
-        //    {
-        //        return View("Error");
-        //    }
-
-        //    var message = "Your security code is: " + code;
-        //    if (model.SelectedProvider == "Email")
-        //    {
-        //        await _emailSender.SendEmailAsync(await _accountRepository.GetEmailAsync(user), "Security Code", message);
-        //    }
-        //    else if (model.SelectedProvider == "Phone")
-        //    {
-        //        await _smsSender.SendSmsAsync(await _accountRepository.GetPhoneNumberAsync(user), message);
-        //    }
-
-        //    return RedirectToAction(nameof(VerifyCode), new { Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, ReaccountMe = model.ReaccountMe });
-        //}
-
-        // TODO 2 Factor
+        //
         // GET: /Account/VerifyCode
-        //[HttpGet]
-        //[AllowAnonymous]
-        //public async Task<IActionResult> VerifyCode(string provider, bool reaccountMe, string returnUrl = null)
-        //{
-        //    // Require that the user has already logged in via username/password or external login
-        //    var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-        //    if (user == null)
-        //    {
-        //        return View("Error");
-        //    }
-        //    return View(new VerifyCodeViewModel { Provider = provider, ReturnUrl = returnUrl, ReaccountMe = reaccountMe });
-        //}
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> VerifyCode(bool rememberMe, string returnUrl = null)
+        {
+            VakAccount vakAccount = await _accountSecurityServices.GetTwoFactorAccountAsync();
+            if (vakAccount == null)
+            {
+                return View("Error");
+            }
+            return View(new VerifyCodeViewModel {RememberMe = rememberMe, ReturnUrl = returnUrl});
+        }
 
-        // TODO 2 Factor
-        //// POST: /Account/VerifyCode
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return View(model);
-        //    }
+        //
+        // POST: /Account/VerifyCode
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
 
-        //    // The following code protects for brute force attacks against the two factor codes.
-        //    // If a user enters incorrect codes for a specified amount of time then the user account
-        //    // will be locked out for a specified amount of time.
-        //    var result = await _signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.ReaccountMe, model.ReaccountBrowser);
-        //    if (result.Succeeded)
-        //    {
-        //        return RedirectToLocal(model.ReturnUrl);
-        //    }
-        //    if (result.IsLockedOut)
-        //    {
-        //        _logger.LogWarning(7, "User account locked out.");
-        //        return View("Lockout");
-        //    }
-        //    else
-        //    {
-        //        ModelState.AddModelError(string.Empty, "Invalid code.");
-        //        return View(model);
-        //    }
-        //}
+            TwoFactorSignInResult twoFactorSignInResult = await _accountSecurityServices.TwoFactorSignInAsync(model.Token, model.RememberMe);
+
+            if (twoFactorSignInResult == TwoFactorSignInResult.Succeeded)
+            {
+                return RedirectToLocal(model.ReturnUrl);
+            }
+
+            ModelState.AddModelError(string.Empty, "Invalid code.");
+            return View(model);
+        }
 
         #region Helpers
 
@@ -349,6 +303,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
         private IActionResult RedirectToLocal(string returnUrl)
         {
+            // This prevents open redirection attacks - http://www.asp.net/mvc/overview/security/preventing-open-redirection-attacks
             if (Url.IsLocalUrl(returnUrl))
             {
                 return Redirect(returnUrl);
