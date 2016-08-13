@@ -13,17 +13,21 @@ namespace Jering.AccountManagement.Security
     /// <summary>
     /// Provides an API for managing Accounts.
     /// </summary>
-    public class AccountSecurityServices<TAccount> where TAccount : IAccount
+    public class AccountSecurityServices<TAccount> : IAccountSecurityServices<TAccount> where TAccount : IAccount
     {
         private ClaimsPrincipalFactory<TAccount> _claimsPrincipalFactory { get; }
         private IAccountRepository<TAccount> _accountRepository { get; }
         private HttpContext _httpContext { get; }
         private AccountSecurityOptions _securityOptions { get; }
-        private Dictionary<string, ITokenService<TAccount>> _tokenServices { get; }
+        private Dictionary<string, ITokenService<TAccount>> _tokenServices { get; } = new Dictionary<string, ITokenService<TAccount>>();
         /// <summary>
         /// The data protection purpose used for email confirmation related methods.
         /// </summary>
         protected const string _confirmEmailTokenPurpose = "EmailConfirmation";
+        /// <summary>
+        /// 
+        /// </summary>
+        protected const string _twoFactorTokenPurpose = "TwoFactor";
 
         /// <summary>
         /// Constructs a new instance of <see cref="AccountSecurityServices{TAccount}"/>.
@@ -33,35 +37,37 @@ namespace Jering.AccountManagement.Security
         /// <param name="securityOptionsAccessor"></param>
         /// <param name="accountRepository"></param>
         /// <param name="serviceProvider"></param>
-        public AccountSecurityServices(ClaimsPrincipalFactory<TAccount> claimsPrincipalFactory, 
+        public AccountSecurityServices(ClaimsPrincipalFactory<TAccount> claimsPrincipalFactory,
             IHttpContextAccessor httpContextAccessor,
             IOptions<AccountSecurityOptions> securityOptionsAccessor,
             IAccountRepository<TAccount> accountRepository,
-            IServiceProvider serviceProvider)
+            IServiceProvider serviceProvider//,
+                                            //IEmailSender emailSender
+            )
         {
-            if(claimsPrincipalFactory == null)
+            if (claimsPrincipalFactory == null)
             {
                 throw new ArgumentNullException(nameof(claimsPrincipalFactory));
             }
 
-            if(httpContextAccessor == null)
+            if (httpContextAccessor == null)
             {
                 throw new ArgumentNullException(nameof(httpContextAccessor));
             }
 
-            if(IAccountRepository == null)
+            if (accountRepository == null)
             {
                 throw new ArgumentNullException(nameof(accountRepository));
             }
 
-            if(serviceProvider == null)
+            if (serviceProvider == null)
             {
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
-            if(securityOptionsAccessor == null)
+            if (securityOptionsAccessor == null)
             {
-                throw new ArgumentNullException(nameof(securityOptionsAccessor))
+                throw new ArgumentNullException(nameof(securityOptionsAccessor));
             }
 
             _claimsPrincipalFactory = claimsPrincipalFactory;
@@ -71,7 +77,7 @@ namespace Jering.AccountManagement.Security
 
             foreach (string tokenServiceName in _securityOptions.TokenServiceOptions.TokenServiceMap.Keys)
             {
-                ITokenService<TAccount> tokenService = (ITokenService<TAccount>) serviceProvider.GetRequiredService(_securityOptions.TokenServiceOptions.TokenServiceMap[tokenServiceName]);
+                ITokenService<TAccount> tokenService = (ITokenService<TAccount>)serviceProvider.GetRequiredService(_securityOptions.TokenServiceOptions.TokenServiceMap[tokenServiceName]);
                 if (tokenService != null)
                 {
                     _tokenServices[tokenServiceName] = tokenService;
@@ -85,9 +91,9 @@ namespace Jering.AccountManagement.Security
         /// <param name="account"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns>A <see cref="Task"/>.</returns>
-        public virtual async Task SignInAsync(TAccount account, AuthenticationProperties authenticationProperties)
+        public virtual async Task ApplicationSignInAsync(TAccount account, AuthenticationProperties authenticationProperties)
         {
-            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalFactory.CreateAsync(account);
+            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalFactory.CreateClaimsPrincipleAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
 
             await _httpContext.Authentication.SignInAsync(
                     _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme,
@@ -103,18 +109,23 @@ namespace Jering.AccountManagement.Security
         /// <param name="password"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns>A <see cref="Task"/> that returns true if sign in is successful and false otherwise.</returns>
-        public virtual async Task<bool> PasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties)
+        public virtual async Task<ApplicationSignInResult> ApplicationPasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties)
         {
             TAccount account = await _accountRepository.GetAccountByEmailAndPasswordAsync(email, password);
             if (account != null)
             {
-                // TODO: Check if 2-factor required. If so do a context.authentiation.SignInAsync with a two factor principal and return
-                // SignInResult.TwoFactorRequired
-                await SignInAsync(account, authenticationProperties);
-                return true;
+                if (account.TwoFactorEnabled)
+                {
+                    await CreateTwoFactorCookieAsync(account, authenticationProperties);
+                    await SendTwoFactorTokenByEmailAsync(account);
+                    return ApplicationSignInResult.TwoFactorRequired;
+                }
+
+                await ApplicationSignInAsync(account, authenticationProperties);
+                return ApplicationSignInResult.Succeeded;
             }
 
-            return false;
+            return ApplicationSignInResult.Failed;
         }
 
         /// <summary>
@@ -124,7 +135,7 @@ namespace Jering.AccountManagement.Security
         public virtual async Task SignOutAsync()
         {
             await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
-            // await _httpContext.Authentication.SignOutAsync(_identityOptions.Cookies.TwoFactorUserIdCookieAuthenticationScheme);
+            await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
         }
 
         /// <summary>
@@ -139,7 +150,7 @@ namespace Jering.AccountManagement.Security
         {
             TAccount account = await _accountRepository.GetAccountAsync(accountId);
 
-            return await _tokenServices[TokenServiceOptions.DataProtectionTokenService].ValidateToken(_confirmEmailTokenPurpose, token, account) &&
+            return await _tokenServices[TokenServiceOptions.DataProtectionTokenService].ValidateTokenAsync(_confirmEmailTokenPurpose, token, account) &&
                 await _accountRepository.UpdateAccountEmailConfirmedAsync(accountId);
         }
 
@@ -161,7 +172,7 @@ namespace Jering.AccountManagement.Security
         /// <returns>A <see cref="Task"/> that returns true if confirmation email is sent successfully.</returns>
         public virtual async Task<bool> SendConfirmationEmailAsync(TAccount account)
         {
-            string token = await _tokenServices[TokenServiceOptions.DataProtectionTokenService].GenerateToken(_confirmEmailTokenPurpose, account);
+            string token = await _tokenServices[TokenServiceOptions.DataProtectionTokenService].GenerateTokenAsync(_confirmEmailTokenPurpose, account);
 
             // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
             // Send an email with this link
@@ -182,18 +193,81 @@ namespace Jering.AccountManagement.Security
         /// updates successfully, false otherwise.</returns>
         public virtual async Task<bool> UpdatePasswordAsync(TAccount account, string password, string token)
         {
-            return await _tokenServices[TokenServiceOptions.DataProtectionTokenService].ValidateToken(_confirmEmailTokenPurpose, token, account) && 
+            return await _tokenServices[TokenServiceOptions.DataProtectionTokenService].ValidateTokenAsync(_confirmEmailTokenPurpose, token, account) &&
                 await _accountRepository.UpdateAccountPasswordHashAsync(account.AccountId, password);
         }
 
-        //public async Task TwoFactorSignInAsync()
-        //{
-        //    await Task.FromResult(0);
-        //}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public async Task SendTwoFactorTokenByEmailAsync(TAccount account)
+        {
+            string token = await _tokenServices[TokenServiceOptions.TotpTokenService].GenerateTokenAsync(_twoFactorTokenPurpose, account);
 
-        //public async Task GetTwoFactorAuthenticationUserAsync()
-        //{
-        //    await Task.FromResult(0);
-        //}        
+            //await _emailSender.SendEmailAsync(await _userManager.GetEmailAsync(account), "Security Code", "Your security code is: " + token);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>
+        /// Null if authentication fails.
+        /// ClaimsPrincipal if authentication succeeds.
+        /// </returns>
+        public async Task<TAccount> GetTwoFactorAccountAsync()
+        {
+            ClaimsPrincipal claimsPrincipal = await _httpContext.Authentication.AuthenticateAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
+
+            if(claimsPrincipal == null)
+            {
+                return default(TAccount);
+            }
+
+            return await _claimsPrincipalFactory.CreateAccountAsync(claimsPrincipal);
+        }
+
+        /// <summary>
+        /// Signs in specified <paramref name="account"/> using specified <paramref name="authenticationProperties"/>.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="authenticationProperties"></param>
+        /// <returns>A <see cref="Task"/>.</returns>
+        public virtual async Task CreateTwoFactorCookieAsync(TAccount account, AuthenticationProperties authenticationProperties)
+        {
+            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalFactory.CreateClaimsPrincipleAsync(account, _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
+
+            // TODO: does making the two factor cookie persistent fuck things up? if the user signs out and signs in again does the old cookie get overwritten?
+            await _httpContext.Authentication.SignInAsync(
+                _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme,
+                claimsPrincipal,
+                authenticationProperties);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="isPersistent"></param>
+        /// <returns></returns>
+        public virtual async Task<TwoFactorSignInResult> TwoFactorSignInAsync(string token, bool isPersistent)
+        {
+            TAccount account = await GetTwoFactorAccountAsync();
+            if (account == null)
+            {
+                return TwoFactorSignInResult.Failed;
+            }
+
+            if (await _tokenServices[TokenServiceOptions.TotpTokenService].ValidateTokenAsync(_twoFactorTokenPurpose, token, account))
+            {
+                // Cleanup two factor user id cookie
+                await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
+
+                await ApplicationSignInAsync(account, new AuthenticationProperties() { IsPersistent = isPersistent });
+                return TwoFactorSignInResult.Succeeded;
+            }
+
+            return TwoFactorSignInResult.Failed;
+        }
     }
 }
