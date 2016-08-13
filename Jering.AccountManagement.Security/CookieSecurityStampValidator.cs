@@ -63,7 +63,7 @@ namespace Jering.AccountManagement.Security
                 }
                 else
                 {
-                    context.ReplacePrincipal(await _claimsPrincipalFactory.CreateAsync(account));
+                    context.ReplacePrincipal(await _claimsPrincipalFactory.CreateClaimsPrincipleAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme));
                     context.ShouldRenew = true;
                 }
             }          

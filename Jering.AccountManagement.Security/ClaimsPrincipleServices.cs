@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using Jering.AccountManagement.DatabaseInterface;
 using System.Collections.Generic;
 using System.Linq;
+using System;
 
 namespace Jering.AccountManagement.Security
 {
@@ -33,11 +34,13 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <param name="account"></param>
+        /// <param name="authenticationMethod"></param>
+        /// <param name="authenticationScheme"></param>
         /// <returns></returns>
-        public virtual async Task<ClaimsPrincipal> CreateAsync(TAccount account)
+        public virtual async Task<ClaimsPrincipal> CreateClaimsPrincipleAsync(TAccount account, string authenticationScheme, string authenticationMethod = null)
         {
             var claimsIdentity = new ClaimsIdentity(
-                _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme,
+                authenticationScheme,
                 _securityOptions.ClaimsOptions.UsernameClaimType,
                 _securityOptions.ClaimsOptions.RoleClaimType);
 
@@ -45,6 +48,7 @@ namespace Jering.AccountManagement.Security
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.UsernameClaimType, account.Email));
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.SecurityStampClaimType, account.SecurityStamp.ToString()));
 
+            // TODO: flag to make addition of roles and extra claims optional. some cookies do not need all this info
             IEnumerable<Role> roles = await _accountRepository.GetAccountRolesAsync(account.AccountId);
             foreach (Role role in roles)
             {
@@ -54,7 +58,39 @@ namespace Jering.AccountManagement.Security
 
             claimsIdentity.AddClaims(ConvertDatabaseInterfaceClaims(await _accountRepository.GetAccountClaimsAsync(account.AccountId)));
 
+            if (authenticationMethod != null)
+            {
+                claimsIdentity.AddClaim(new System.Security.Claims.Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
+            }
+
             return new ClaimsPrincipal(claimsIdentity);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="claimsPrincipal"></param>
+        /// <returns></returns>
+        public virtual Task<TAccount> CreateAccountAsync(ClaimsPrincipal claimsPrincipal)
+        {
+            return Task.Factory.StartNew(() =>
+            {
+                System.Security.Claims.Claim accountIdClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
+                System.Security.Claims.Claim emailClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType);
+                System.Security.Claims.Claim securityStampClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType);
+
+                if (accountIdClaim == null || emailClaim == null || securityStampClaim == null)
+                {
+                    return default(TAccount);
+                }
+
+                return (TAccount)Convert.ChangeType(new
+                {
+                    AccountId = Convert.ToInt32(accountIdClaim.Value),
+                    Email = emailClaim.Value,
+                    SecurityStamp = Guid.Parse(securityStampClaim.Value)
+                }, typeof(TAccount));
+            });
         }
 
         private IEnumerable<System.Security.Claims.Claim> ConvertDatabaseInterfaceClaims(IEnumerable<DatabaseInterface.Claim> databaseInterfaceClaims)
