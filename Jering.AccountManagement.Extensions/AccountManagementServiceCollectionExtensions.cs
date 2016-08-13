@@ -1,4 +1,5 @@
 ﻿using Jering.AccountManagement.DatabaseInterface;
+using Jering.AccountManagement.DatabaseInterface.Dapper;
 using Jering.AccountManagement.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -24,8 +25,10 @@ namespace Jering.AccountManagement.Extensions
         public static AccountManagementBuilder AddAccountManagement<TAccount>(this IServiceCollection services, IConfigurationRoot configurationRoot) where TAccount : IAccount
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<ClaimsPrincipalFactory<TAccount>, ClaimsPrincipalFactory<TAccount>>();
-            services.AddScoped<AccountSecurityServices<TAccount>, AccountSecurityServices<TAccount>>();
+            services.AddScoped<ClaimsPrincipalFactory<TAccount>, ClaimsPrincipalFactory<TAccount>>();
+            services.AddScoped<IAccountSecurityServices<TAccount>, AccountSecurityServices<TAccount>>();
+            services.AddScoped<IRoleRepository, DapperRoleRepository>();
+            services.AddScoped<IClaimRepository, DapperClaimRepository>();
 
             return new AccountManagementBuilder(typeof(TAccount), services);
         }
