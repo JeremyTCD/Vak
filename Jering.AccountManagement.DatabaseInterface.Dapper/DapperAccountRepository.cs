@@ -27,6 +27,11 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         /// <param name="sqlConnection"></param>
         public DapperAccountRepository(SqlConnection sqlConnection)
         {
+            if(sqlConnection == null)
+            {
+                throw new ArgumentNullException(nameof(sqlConnection));
+            }
+
             _sqlConnection = sqlConnection;
         }
 
