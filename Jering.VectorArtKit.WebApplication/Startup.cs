@@ -34,7 +34,7 @@ namespace Jering.VectorArtKit.WebApplication
 
             // Data
             // TODO different connection string for release
-            services.AddScoped<SqlConnection>(_ => new SqlConnection(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
+            services.AddScoped(_ => new SqlConnection(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
 
             // Account Management
             services.AddAccountManagement<VakAccount>(_configurationRoot).
@@ -49,8 +49,8 @@ namespace Jering.VectorArtKit.WebApplication
             
             if (env.IsDevelopment())
             {
-                loggerFactory.AddDebug();
                 app.UseDeveloperExceptionPage();
+                loggerFactory.AddDebug();
                 app.UseBrowserLink();
             }
             else
@@ -59,6 +59,9 @@ namespace Jering.VectorArtKit.WebApplication
             }
 
             app.UseStaticFiles();
+
+            // TODO Create actual views
+            app.UseStatusCodePages("text/plain", "Response, status code: {0}");
 
             AccountSecurityOptions securityOptions = app.ApplicationServices.GetRequiredService<IOptions<AccountSecurityOptions>>().Value;
             app.UseCookieAuthentication(securityOptions.CookieOptions.ApplicationCookieOptions);

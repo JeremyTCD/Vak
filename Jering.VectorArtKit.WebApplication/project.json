@@ -1,10 +1,4 @@
 {
-  "Data": {
-    "DefaultConnection": {
-      "ConnectionString": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Jering.AccountDatabase;Integrated Security=True;"
-    }
-  },
-
   "dependencies": {
     "Microsoft.NETCore.App": {
       "version": "1.0.0",
