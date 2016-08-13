@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Jering.VectorArtKit.WebApplication.Models
+namespace Jering.VectorArtKit.WebApplication.ViewModels
 {
     public class RegisterViewModel
     {

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.VectorArtKit.WebApplication.Models
+namespace Jering.VectorArtKit.WebApplication.ViewModels
 {
     public class LoginViewModel
     {
