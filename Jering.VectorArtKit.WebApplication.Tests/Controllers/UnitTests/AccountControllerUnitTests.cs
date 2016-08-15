@@ -43,7 +43,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.UnitTests
 
             Mock<VakAccountRepository> mockVakAccountRepository = new Mock<VakAccountRepository>(new SqlConnection());
             Mock<IAccountSecurityServices<VakAccount>> mockAccountSecurityServices = new Mock<IAccountSecurityServices<VakAccount>>();
-            mockAccountSecurityServices.Setup(a => a.ApplicationPasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<AuthenticationProperties>())).ReturnsAsync(false);
+            mockAccountSecurityServices.Setup(a => a.ApplicationPasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<AuthenticationProperties>())).ReturnsAsync(ApplicationSignInResult.Failed);
             AccountController accountController = new AccountController(mockVakAccountRepository.Object, mockAccountSecurityServices.Object);
 
             // Act
@@ -52,7 +52,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.UnitTests
             // Assert
             Assert.IsType<ViewResult>(viewResult);
             Assert.Null(viewResult.ViewName);
-            Assert.Equal("Invalid login attempt.", viewResult.ViewData.ModelState.Values.First().Errors.First().ErrorMessage);
+            Assert.Equal("Invalid email or password.", viewResult.ViewData.ModelState.Values.First().Errors.First().ErrorMessage);
         }
     }
 }

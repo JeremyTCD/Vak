@@ -67,7 +67,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// Bad request if anti-forgery credentials are invalid.
         /// Login view if model state is invalid. 
         /// Login view with error message if login credentials are invalid. 
-        /// Home index view or return Url view with a valid cookie header if login is successful.
+        /// Home index view or return Url view with an application cookie if login is successful.
+        /// Redirects to /Account/VerifyCode with a two factor cookie if two factor is required. 
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -83,14 +84,18 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 if (applicationSignInResult == ApplicationSignInResult.TwoFactorRequired)
                 {
-                    return RedirectToAction(nameof(VerifyCode), new { RememberMe = model.RememberMe, ReturnUrl = returnUrl});
+                    return RedirectToAction(nameof(VerifyCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl});
                 }
                 else if (applicationSignInResult == ApplicationSignInResult.Succeeded)
                 {
                     return RedirectToLocal(returnUrl);
                 }
+                else if(applicationSignInResult == ApplicationSignInResult.EmailConfirmationRequired)
+                {
+                    // TODO: handle email confirmation required. Ideally return an emailconfirmation cookie and redirect to an email confirmation view.
+                }
 
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                ModelState.AddModelError(string.Empty, "Invalid email or password.");
             }
 
             // Need to think about disposing of accountSecurityServices 
@@ -135,7 +140,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 await _accountSecurityServices.SendConfirmationEmailAsync(account);
                 // TODO IsPersistent should be set to remember me
-                await _accountSecurityServices.ApplicationSignInAsync(account, new AuthenticationProperties { IsPersistent = true, });
+                // TODO: don't immediately sign user in, redirect to email confirmation page
+                await _accountSecurityServices.ApplicationSignInAsync(account, new AuthenticationProperties { IsPersistent = true});
                 return RedirectToLocal(returnUrl);
             }
             else
@@ -265,7 +271,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             {
                 return View("Error");
             }
-            return View(new VerifyCodeViewModel {RememberMe = rememberMe, ReturnUrl = returnUrl});
+            return View(new VerifyCodeViewModel {IsPersistent = rememberMe, ReturnUrl = returnUrl});
         }
 
         //
@@ -280,7 +286,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 return View(model);
             }
 
-            TwoFactorSignInResult twoFactorSignInResult = await _accountSecurityServices.TwoFactorSignInAsync(model.Token, model.RememberMe);
+            TwoFactorSignInResult twoFactorSignInResult = await _accountSecurityServices.TwoFactorSignInAsync(model.Token, model.IsPersistent);
 
             if (twoFactorSignInResult == TwoFactorSignInResult.Succeeded)
             {

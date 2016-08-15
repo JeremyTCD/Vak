@@ -14,6 +14,6 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels
         public string ReturnUrl { get; set; }
 
         [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; }
+        public bool IsPersistent { get; set; }
     }
 }
