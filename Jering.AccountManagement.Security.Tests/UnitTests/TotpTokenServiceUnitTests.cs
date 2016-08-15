@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
-    public class TotpTokenServiceTests
+    public class TotpTokenServiceUnitTests
     {
 
         [Fact]

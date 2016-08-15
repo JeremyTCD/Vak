@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
-    public class DataProtectionTokenServiceTests
+    public class DataProtectionTokenServiceUnitTests
     {
         [Fact]
         public async Task GenerateToken_GeneratesTokenTest()

@@ -13,6 +13,7 @@
     "Microsoft.Extensions.Configuration.Json": "1.0.0",
     "Microsoft.Extensions.Configuration": "1.0.0",
     "Microsoft.AspNetCore.DataProtection.Extensions": "1.1.0-alpha1-21664",
+    "Jering.VectorArtKit.WebApplication": "1.0.0-*",
     "Jering.AccountManagement.Security": "1.0.0-*",
     "Jering.AccountManagement.DatabaseInterface.Dapper": "1.0.0-*",
     "dotnet-test-xunit": "2.2.0-preview2-build1029"

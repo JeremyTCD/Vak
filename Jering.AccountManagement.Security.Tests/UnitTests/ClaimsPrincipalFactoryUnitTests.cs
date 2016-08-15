@@ -13,7 +13,7 @@ using Jering.AccountManagement.DatabaseInterface.Dapper;
 
 namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
-    public class ClaimsPrincipalFactoryTests
+    public class ClaimsPrincipalFactoryUnitTests
     {
         [Fact]
         public async Task CreateAsync_CreatesClaimsPrincipalTest()
@@ -40,7 +40,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             ClaimsPrincipalFactory<TestAccount> claimsPrincipalFactory = new ClaimsPrincipalFactory<TestAccount>(mockAccountRepository.Object, mockRoleRepository.Object, mockOptions.Object);
 
             // Act
-            ClaimsPrincipal claimsPrincipal = await claimsPrincipalFactory.CreateAsync(account);
+            ClaimsPrincipal claimsPrincipal = await claimsPrincipalFactory.CreateClaimsPrincipalAsync(account, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
 
             // Assert
             ClaimsIdentity claimsIdentity = claimsPrincipal.Identities.First();
