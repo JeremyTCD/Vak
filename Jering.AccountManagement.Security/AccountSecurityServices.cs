@@ -83,7 +83,7 @@ namespace Jering.AccountManagement.Security
         /// <returns>A <see cref="Task"/>.</returns>
         public virtual async Task ApplicationSignInAsync(TAccount account, AuthenticationProperties authenticationProperties)
         {
-            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalFactory.CreateClaimsPrincipalAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalFactory.CreateAccountClaimsPrincipalAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
 
             await _httpContext.Authentication.SignInAsync(
                     _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme,
@@ -245,7 +245,7 @@ namespace Jering.AccountManagement.Security
         /// <returns></returns>
         public virtual async Task CreateTwoFactorCookieAsync(TAccount account)
         {
-            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalFactory.CreateClaimsPrincipleAsync(account.AccountId, _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
+            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalFactory.CreateAccountIdClaimsPrincipleAsync(account.AccountId, _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
 
             await _httpContext.Authentication.SignInAsync(
                 _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme,

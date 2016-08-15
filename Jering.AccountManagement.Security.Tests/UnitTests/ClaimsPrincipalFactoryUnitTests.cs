@@ -40,7 +40,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             ClaimsPrincipalFactory<TestAccount> claimsPrincipalFactory = new ClaimsPrincipalFactory<TestAccount>(mockAccountRepository.Object, mockRoleRepository.Object, mockOptions.Object);
 
             // Act
-            ClaimsPrincipal claimsPrincipal = await claimsPrincipalFactory.CreateClaimsPrincipalAsync(account, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+            ClaimsPrincipal claimsPrincipal = await claimsPrincipalFactory.CreateAccountClaimsPrincipalAsync(account, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
 
             // Assert
             ClaimsIdentity claimsIdentity = claimsPrincipal.Identities.First();

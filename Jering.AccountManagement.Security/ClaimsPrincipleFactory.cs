@@ -34,12 +34,11 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <param name="account"></param>
-        /// <param name="authenticationMethod"></param>
         /// <param name="authenticationScheme"></param>
         /// <returns></returns>
-        public virtual async Task<ClaimsPrincipal> CreateClaimsPrincipleAsync(TAccount account, string authenticationScheme, string authenticationMethod = null)
+        public virtual async Task<ClaimsPrincipal> CreateAccountClaimsPrincipalAsync(TAccount account, string authenticationScheme)
         {
-            var claimsIdentity = new ClaimsIdentity(
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(
                 authenticationScheme,
                 _securityOptions.ClaimsOptions.UsernameClaimType,
                 _securityOptions.ClaimsOptions.RoleClaimType);
@@ -58,38 +57,24 @@ namespace Jering.AccountManagement.Security
 
             claimsIdentity.AddClaims(ConvertDatabaseInterfaceClaims(await _accountRepository.GetAccountClaimsAsync(account.AccountId)));
 
-            if (authenticationMethod != null)
-            {
-                claimsIdentity.AddClaim(new System.Security.Claims.Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
-            }
-
             return new ClaimsPrincipal(claimsIdentity);
         }
 
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="claimsPrincipal"></param>
+        /// <param name="accountId"></param>
+        /// <param name="authenticationScheme"></param>
         /// <returns></returns>
-        public virtual Task<TAccount> CreateAccountAsync(ClaimsPrincipal claimsPrincipal)
+        public virtual Task<ClaimsPrincipal> CreateAccountIdClaimsPrincipleAsync(int accountId, string authenticationScheme)
         {
             return Task.Factory.StartNew(() =>
             {
-                System.Security.Claims.Claim accountIdClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
-                System.Security.Claims.Claim emailClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType);
-                System.Security.Claims.Claim securityStampClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType);
+                ClaimsIdentity claimsIdentity = new ClaimsIdentity(authenticationScheme);
 
-                if (accountIdClaim == null || emailClaim == null || securityStampClaim == null)
-                {
-                    return default(TAccount);
-                }
+                claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.AccountIdClaimType, accountId.ToString()));
 
-                return (TAccount)Convert.ChangeType(new
-                {
-                    AccountId = Convert.ToInt32(accountIdClaim.Value),
-                    Email = emailClaim.Value,
-                    SecurityStamp = Guid.Parse(securityStampClaim.Value)
-                }, typeof(TAccount));
+                return new ClaimsPrincipal(claimsIdentity);
             });
         }
 

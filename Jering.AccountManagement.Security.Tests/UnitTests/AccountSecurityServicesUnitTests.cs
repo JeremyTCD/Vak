@@ -152,7 +152,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockOptions.Setup(o => o.Value).Returns(new AccountSecurityOptions());
 
             ClaimsPrincipalFactory<IAccount> claimsPrincipalFactory = new ClaimsPrincipalFactory<IAccount>(null, null, mockOptions.Object);
-            ClaimsPrincipal claimsPrincipal = await claimsPrincipalFactory.CreateClaimsPrincipleAsync(account.AccountId, "");
+            ClaimsPrincipal claimsPrincipal = await claimsPrincipalFactory.CreateAccountIdClaimsPrincipleAsync(account.AccountId, "");
 
             Mock<AuthenticationManager> mockAuthenticationManager = new Mock<AuthenticationManager>();
             mockAuthenticationManager.Setup(a => a.AuthenticateAsync(It.IsAny<string>())).ReturnsAsync(claimsPrincipal);
