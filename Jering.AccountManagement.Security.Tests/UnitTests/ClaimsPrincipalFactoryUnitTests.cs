@@ -16,7 +16,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
     public class ClaimsPrincipalFactoryUnitTests
     {
         [Fact]
-        public async Task CreateAsync_CreatesClaimsPrincipalTest()
+        public async Task CreateAccountClaimsPrincipalAsync_CreatesClaimsPrincipalTest()
         {
             // Arrange
             Mock<TestAccountRepository<TestAccount>> mockAccountRepository = new Mock<TestAccountRepository<TestAccount>>(null);
@@ -57,6 +57,30 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             Assert.True(claims.Any(c => c.Type == accountClaim.Type && c.Value == accountClaim.Value));
             mockAccountRepository.VerifyAll();
             mockRoleRepository.VerifyAll();
+            mockOptions.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CreateAccountIdClaimsPrincipalAsync_CreatesClaimsPrincipalTest()
+        {
+            // Arrange
+            Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
+            AccountSecurityOptions securityOptions = new AccountSecurityOptions();
+            mockOptions.Setup(o => o.Value).Returns(securityOptions);
+
+            ClaimsPrincipalFactory<TestAccount> claimsPrincipalFactory = new ClaimsPrincipalFactory<TestAccount>(null, null, mockOptions.Object);
+
+            // Act
+            ClaimsPrincipal claimsPrincipal = await claimsPrincipalFactory.CreateAccountIdClaimsPrincipalAsync(0, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+
+            // Assert
+            ClaimsIdentity claimsIdentity = claimsPrincipal.Identities.First();
+            Assert.NotNull(claimsIdentity);
+            Assert.Equal(1, claimsPrincipal.Identities.Count());
+            Assert.Equal(securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme, claimsIdentity.AuthenticationType);
+            List<System.Security.Claims.Claim> claims = claimsIdentity.Claims.ToList();
+            Assert.NotNull(claims);
+            Assert.True(claims.Any(c => c.Type == securityOptions.ClaimsOptions.AccountIdClaimType && c.Value == 0.ToString()));
             mockOptions.VerifyAll();
         }
     }

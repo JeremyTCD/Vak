@@ -27,7 +27,7 @@ namespace Jering.AccountManagement.Security
         {
             _accountRepository = accountRepository;
             _roleRepository = roleRepository;
-            _securityOptions = securityOptionsAccessor.Value;
+            _securityOptions = securityOptionsAccessor?.Value;
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="accountId"></param>
         /// <param name="authenticationScheme"></param>
         /// <returns></returns>
-        public virtual Task<ClaimsPrincipal> CreateAccountIdClaimsPrincipleAsync(int accountId, string authenticationScheme)
+        public virtual Task<ClaimsPrincipal> CreateAccountIdClaimsPrincipalAsync(int accountId, string authenticationScheme)
         {
             return Task.Factory.StartNew(() =>
             {

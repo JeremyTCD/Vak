@@ -245,7 +245,7 @@ namespace Jering.AccountManagement.Security
         /// <returns></returns>
         public virtual async Task CreateTwoFactorCookieAsync(TAccount account)
         {
-            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalFactory.CreateAccountIdClaimsPrincipleAsync(account.AccountId, _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
+            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalFactory.CreateAccountIdClaimsPrincipalAsync(account.AccountId, _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
 
             await _httpContext.Authentication.SignInAsync(
                 _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme,
