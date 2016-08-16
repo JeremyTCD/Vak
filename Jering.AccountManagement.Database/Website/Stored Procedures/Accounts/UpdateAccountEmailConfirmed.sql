@@ -6,7 +6,8 @@ BEGIN
 	SET XACT_ABORT ON;
 
 	UPDATE [dbo].[Accounts]
-	SET [EmailConfirmed] = 1, [SecurityStamp] = NEWID()
+	SET [SecurityStamp] = CASE WHEN [EmailConfirmed] = 1 THEN [SecurityStamp] ELSE NEWID() END, 
+		[EmailConfirmed] = 1
 	WHERE AccountId = @AccountId;
 
 	SELECT @@ROWCOUNT;

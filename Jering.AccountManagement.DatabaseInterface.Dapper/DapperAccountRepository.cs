@@ -259,6 +259,23 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         }
 
         /// <summary>
+        /// Sets TwoFactorEnabled of account with specified <paramref name="accountId"/> to <paramref name="twoFactorEnabled"/>. 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="twoFactorEnabled"></param>
+        /// <returns>True if successful, false otherwise.</returns>
+        public virtual async Task<bool> UpdateAccountTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountTwoFactorEnabled]",
+                new
+                {
+                    AccountId = accountId,
+                    TwoFactorEnabled = twoFactorEnabled
+                },
+                commandType: CommandType.StoredProcedure) > 0;
+        }
+
+        /// <summary>
         /// Sets PasswordHash of account with specified <paramref name="accountId"/> to 
         /// hash generated from <paramref name="password"/>. 
         /// </summary>
