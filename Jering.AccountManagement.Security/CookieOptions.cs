@@ -55,10 +55,5 @@ namespace Jering.AccountManagement.Security
             AuthenticationScheme = DefaultEmailConfirmationScheme,
             CookieName = DefaultEmailConfirmationScheme
         };
-
-        /// <summary>
-        /// Lifespan of cookie security stamps.
-        /// </summary>
-        public TimeSpan CookieSecurityStampLifespan { get; set; } = TimeSpan.FromMinutes(30);
     }
 }
