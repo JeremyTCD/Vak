@@ -11,7 +11,7 @@ namespace Jering.AccountManagement.Security
     /// <summary>
     /// Provides methods to create a claims principal for a given account.
     /// </summary>
-    public class ClaimsPrincipalFactory<TAccount> where TAccount : IAccount
+    public class ClaimsPrincipalServices<TAccount> where TAccount : IAccount
     {
         private IAccountRepository<TAccount> _accountRepository { get; }
         private IRoleRepository _roleRepository { get; }
@@ -23,7 +23,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="accountRepository"></param>
         /// <param name="roleRepository"></param>
         /// <param name="securityOptionsAccessor"></param>
-        public ClaimsPrincipalFactory(IAccountRepository<TAccount> accountRepository, IRoleRepository roleRepository, IOptions<AccountSecurityOptions> securityOptionsAccessor)
+        public ClaimsPrincipalServices(IAccountRepository<TAccount> accountRepository, IRoleRepository roleRepository, IOptions<AccountSecurityOptions> securityOptionsAccessor)
         {
             _accountRepository = accountRepository;
             _roleRepository = roleRepository;
@@ -36,7 +36,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="account"></param>
         /// <param name="authenticationScheme"></param>
         /// <returns></returns>
-        public virtual async Task<ClaimsPrincipal> CreateAccountClaimsPrincipalAsync(TAccount account, string authenticationScheme)
+        public virtual async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(TAccount account, string authenticationScheme)
         {
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
                 authenticationScheme,
@@ -61,21 +61,49 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
+        /// Creates an account from a <paramref name="claimsPrincipal"/> instance.
+        /// </summary>
+        /// <param name="claimsPrincipal"></param>
+        /// <param name="authenticationScheme"></param>
+        /// <returns>
+        /// Account if <paramref name="claimsPrincipal"/> is valid.
+        /// Null if <paramref name="claimsPrincipal"/> is invalid.
+        /// </returns>
+        public virtual TAccount CreateAccount(ClaimsPrincipal claimsPrincipal, string authenticationScheme)
+        {
+            System.Security.Claims.Claim emailClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType);
+            System.Security.Claims.Claim accountIdClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
+            System.Security.Claims.Claim securityStampClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType);
+
+            if (claimsPrincipal.Identity.AuthenticationType == authenticationScheme &&
+                emailClaim != null &&
+                accountIdClaim != null &&
+                securityStampClaim != null)
+            {
+                TAccount account = (TAccount)Activator.CreateInstance(typeof(TAccount));
+
+                account.Email = emailClaim.Value;
+                account.AccountId = Convert.ToInt32(accountIdClaim.Value);
+                account.SecurityStamp = Guid.Parse(securityStampClaim.Value);
+
+                return account;
+            }
+            return default(TAccount);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="authenticationScheme"></param>
         /// <returns></returns>
-        public virtual Task<ClaimsPrincipal> CreateAccountIdClaimsPrincipalAsync(int accountId, string authenticationScheme)
+        public virtual ClaimsPrincipal CreateClaimsPrincipal(int accountId, string authenticationScheme)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                ClaimsIdentity claimsIdentity = new ClaimsIdentity(authenticationScheme);
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(authenticationScheme);
 
-                claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.AccountIdClaimType, accountId.ToString()));
+            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.AccountIdClaimType, accountId.ToString()));
 
-                return new ClaimsPrincipal(claimsIdentity);
-            });
+            return new ClaimsPrincipal(claimsIdentity);
         }
 
         private IEnumerable<System.Security.Claims.Claim> ConvertDatabaseInterfaceClaims(IEnumerable<DatabaseInterface.Claim> databaseInterfaceClaims)

@@ -13,7 +13,7 @@ using Jering.AccountManagement.DatabaseInterface.Dapper;
 
 namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
-    public class ClaimsPrincipalFactoryUnitTests
+    public class ClaimsPrincipalServicesUnitTests
     {
         [Fact]
         public async Task CreateAccountClaimsPrincipalAsync_CreatesClaimsPrincipalTest()
@@ -37,10 +37,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityOptions securityOptions = new AccountSecurityOptions();
             mockOptions.Setup(o => o.Value).Returns(securityOptions);
 
-            ClaimsPrincipalFactory<TestAccount> claimsPrincipalFactory = new ClaimsPrincipalFactory<TestAccount>(mockAccountRepository.Object, mockRoleRepository.Object, mockOptions.Object);
+            ClaimsPrincipalServices<TestAccount> claimsPrincipalFactory = new ClaimsPrincipalServices<TestAccount>(mockAccountRepository.Object, mockRoleRepository.Object, mockOptions.Object);
 
             // Act
-            ClaimsPrincipal claimsPrincipal = await claimsPrincipalFactory.CreateAccountClaimsPrincipalAsync(account, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+            ClaimsPrincipal claimsPrincipal = await claimsPrincipalFactory.CreateClaimsPrincipalAsync(account, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
 
             // Assert
             ClaimsIdentity claimsIdentity = claimsPrincipal.Identities.First();
@@ -61,17 +61,70 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         }
 
         [Fact]
-        public async Task CreateAccountIdClaimsPrincipalAsync_CreatesClaimsPrincipalTest()
+        public void CreateAccount_ReturnsAccountIfClaimsPrincipalIsValid()
         {
             // Arrange
             Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
             AccountSecurityOptions securityOptions = new AccountSecurityOptions();
             mockOptions.Setup(o => o.Value).Returns(securityOptions);
 
-            ClaimsPrincipalFactory<TestAccount> claimsPrincipalFactory = new ClaimsPrincipalFactory<TestAccount>(null, null, mockOptions.Object);
+            string email = "email@test.com";
+            int accountId = 1;
+            Guid securityStamp = Guid.NewGuid();
+
+            System.Security.Claims.Claim emailClaim = new System.Security.Claims.Claim(securityOptions.ClaimsOptions.UsernameClaimType, email);
+            System.Security.Claims.Claim accountIdClaim = new System.Security.Claims.Claim(securityOptions.ClaimsOptions.AccountIdClaimType, accountId.ToString());
+            System.Security.Claims.Claim securityStampClaim = new System.Security.Claims.Claim(securityOptions.ClaimsOptions.SecurityStampClaimType, securityStamp.ToString());
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+            claimsIdentity.AddClaim(emailClaim);
+            claimsIdentity.AddClaim(accountIdClaim);
+            claimsIdentity.AddClaim(securityStampClaim);
+            ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+            ClaimsPrincipalServices<Account> claimsPrincipalServices = new ClaimsPrincipalServices<Account>(null, null, mockOptions.Object);
 
             // Act
-            ClaimsPrincipal claimsPrincipal = await claimsPrincipalFactory.CreateAccountIdClaimsPrincipalAsync(0, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+            Account account = claimsPrincipalServices.CreateAccount(claimsPrincipal, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+
+            // Assert
+            Assert.NotNull(account);
+            Assert.Equal(email, account.Email);
+            Assert.Equal(accountId, account.AccountId);
+            Assert.Equal(securityStamp, account.SecurityStamp);
+        }
+
+        [Fact]
+        public void CreateAccount_ReturnsNullIfClaimsPrincipalIsInvalid()
+        {
+            // Arrange
+            Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
+            AccountSecurityOptions securityOptions = new AccountSecurityOptions();
+            mockOptions.Setup(o => o.Value).Returns(securityOptions);
+
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+            ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+
+            ClaimsPrincipalServices<Account> claimsPrincipalServices = new ClaimsPrincipalServices<Account>(null, null, mockOptions.Object);
+
+            // Act
+            Account account = claimsPrincipalServices.CreateAccount(claimsPrincipal, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+
+            // Assert
+            Assert.Null(account);
+        }
+
+        [Fact]
+        public void CreateAccountIdClaimsPrincipal_CreatesClaimsPrincipalTest()
+        {
+            // Arrange
+            Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
+            AccountSecurityOptions securityOptions = new AccountSecurityOptions();
+            mockOptions.Setup(o => o.Value).Returns(securityOptions);
+
+            ClaimsPrincipalServices<TestAccount> claimsPrincipalFactory = new ClaimsPrincipalServices<TestAccount>(null, null, mockOptions.Object);
+
+            // Act
+            ClaimsPrincipal claimsPrincipal = claimsPrincipalFactory.CreateClaimsPrincipal(0, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
 
             // Assert
             ClaimsIdentity claimsIdentity = claimsPrincipal.Identities.First();
