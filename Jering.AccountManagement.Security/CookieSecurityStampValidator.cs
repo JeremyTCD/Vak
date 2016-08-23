@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Jering.AccountManagement.Security
@@ -10,63 +11,46 @@ namespace Jering.AccountManagement.Security
     /// <summary>
     /// 
     /// </summary>
-    public class CookieSecurityStampValidator<TAccount> where TAccount : IAccount
+    public class CookieSecurityStampValidator<TAccount> : ICookieSecurityStampValidator where TAccount : IAccount
     {
         private readonly AccountSecurityOptions _securityOptions;
         private readonly IAccountRepository<TAccount> _accountRepository;
-        private readonly AccountSecurityServices<TAccount> _accountSecurityServices;
-        private readonly ClaimsPrincipalFactory<TAccount> _claimsPrincipalFactory;
+        private readonly IAccountSecurityServices<TAccount> _accountSecurityServices;
+        private readonly ClaimsPrincipalServices<TAccount> _claimsPrincipalServices;
 
         /// <summary>
-        /// 
+        /// Constructs an instance of <see cref="CookieSecurityStampValidator{TAccount}"/> .
         /// </summary>
         /// <param name="securityOptionsAccessor"></param>
         /// <param name="accountRepository"></param>
         /// <param name="accountSecurityServices"></param>
-        /// <param name="claimsPrincipalFactory"></param>
+        /// <param name="claimsPrincipalServices"></param>
         public CookieSecurityStampValidator(IOptions<AccountSecurityOptions> securityOptionsAccessor,
                         IAccountRepository<TAccount> accountRepository,
-                        AccountSecurityServices<TAccount> accountSecurityServices,
-                        ClaimsPrincipalFactory<TAccount> claimsPrincipalFactory)
+                        IAccountSecurityServices<TAccount> accountSecurityServices,
+                        ClaimsPrincipalServices<TAccount> claimsPrincipalServices)
         {
             _accountRepository = accountRepository;
             _securityOptions = securityOptionsAccessor.Value;
             _accountSecurityServices = accountSecurityServices;
-            _claimsPrincipalFactory = claimsPrincipalFactory;
+            _claimsPrincipalServices = claimsPrincipalServices;
         }
 
         /// <summary>
-        /// 
+        /// Validates <see cref="ClaimsPrincipal"/> security stamp claim. Signs account out and rejects <see cref="ClaimsPrincipal"/>  if security stamp
+        /// is invalid.
         /// </summary>
         /// <param name="context"></param>
-        /// <returns></returns>
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
-            DateTimeOffset currentUtc = DateTimeOffset.UtcNow;
-            if (context.Options != null && context.Options.SystemClock != null)
-            {
-                currentUtc = context.Options.SystemClock.UtcNow;
-            }
+            TAccount claimsPrincipalAccount = _claimsPrincipalServices.CreateAccount(context.Principal, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+            TAccount account = await _accountRepository.GetAccountAsync(claimsPrincipalAccount.AccountId);
 
-            DateTimeOffset? issuedUtc = context.Properties.IssuedUtc;
-            TimeSpan timeElapsed = currentUtc.Subtract(issuedUtc.Value);
-
-            if (timeElapsed > _securityOptions.CookieOptions.CookieSecurityStampLifespan)
+            if (account.SecurityStamp != claimsPrincipalAccount.SecurityStamp)
             {
-                int accountId = Int32.Parse(context.Principal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType).Value);
-                string cookieSecurityStamp = context.Principal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType).Value;
-                TAccount account = await _accountRepository.GetAccountAsync(accountId);
-                if (account.SecurityStamp.ToString() != cookieSecurityStamp)
-                {
-                    context.RejectPrincipal();
-                    await _accountSecurityServices.SignOutAsync();
-                }
-                else
-                {
-                    context.ReplacePrincipal(await _claimsPrincipalFactory.CreateAccountClaimsPrincipalAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme));
-                    context.ShouldRenew = true;
-                }
-            }          
+                context.RejectPrincipal();
+                await _accountSecurityServices.SignOutAsync();
+            }     
         }
     }
 
@@ -85,13 +69,12 @@ namespace Jering.AccountManagement.Security
         /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
         public static Task ValidatePrincipalAsync(CookieValidatePrincipalContext context)
         {
-            // TODO this should never be null, confirm and remove
             if (context.HttpContext.RequestServices == null)
             {
                 throw new InvalidOperationException("RequestServices is null.");
             }
 
-            CookieSecurityStampValidator<IAccount> validator = context.HttpContext.RequestServices.GetRequiredService<CookieSecurityStampValidator<IAccount>>();
+            ICookieSecurityStampValidator validator = context.HttpContext.RequestServices.GetRequiredService<ICookieSecurityStampValidator>();
             return validator.ValidateAsync(context);
         }
     }
