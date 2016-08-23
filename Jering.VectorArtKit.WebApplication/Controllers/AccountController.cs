@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Authentication;
 using System.Data.SqlClient;
 using Jering.AccountManagement.Security;
 using Jering.VectorArtKit.WebApplication.BusinessModel;
+using Jering.VectorArtKit.WebApplication.Filters;
 
 namespace Jering.VectorArtKit.WebApplication.Controllers
 {
@@ -21,26 +22,14 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
     {
         private VakAccountRepository _vakAccountRepository;
         private IAccountSecurityServices<VakAccount> _accountSecurityServices;
-        //private readonly IEmailSender _emailSender;
 
         public AccountController(
             IAccountRepository<VakAccount> vakAccountRepository,
             IAccountSecurityServices<VakAccount> accountSecurityServices
             )
         {
-            if (vakAccountRepository == null)
-            {
-                throw new ArgumentNullException(nameof(vakAccountRepository));
-            }
-
-            if (accountSecurityServices == null)
-            {
-                throw new ArgumentNullException(nameof(accountSecurityServices));
-            }
-
             _vakAccountRepository = (VakAccountRepository)vakAccountRepository;
             _accountSecurityServices = accountSecurityServices;
-            //_emailSender = emailSender;
         }
 
         /// <summary>
@@ -52,6 +41,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
+        [ServiceFilter(typeof(SetSignedInAccountFilter))]
         public IActionResult Login(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -69,6 +59,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// Login view with error message if login credentials are invalid. 
         /// Home index view or return Url view with an application cookie if login is successful.
         /// Redirects to /Account/VerifyCode with a two factor cookie if two factor is required. 
+        /// Redirects to /Account/EmailConfirmation with an email confirmation cookie if email confirmation is required.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -78,32 +69,35 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                ApplicationSignInResult applicationSignInResult = await _accountSecurityServices.ApplicationPasswordSignInAsync(model.Email,
+                PasswordSignInResult passwordSignInResult = await _accountSecurityServices.PasswordSignInAsync(model.Email,
                     model.Password,
                     new AuthenticationProperties() { IsPersistent = model.RememberMe });
 
-                if (applicationSignInResult == ApplicationSignInResult.TwoFactorRequired)
+                if (passwordSignInResult == PasswordSignInResult.TwoFactorRequired)
                 {
                     return RedirectToAction(nameof(VerifyCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl});
                 }
-                else if (applicationSignInResult == ApplicationSignInResult.Succeeded)
+                else if (passwordSignInResult == PasswordSignInResult.Succeeded)
                 {
                     return RedirectToLocal(returnUrl);
                 }
-                else if(applicationSignInResult == ApplicationSignInResult.EmailConfirmationRequired)
+                else if(passwordSignInResult == PasswordSignInResult.EmailConfirmationRequired)
                 {
-                    // TODO: handle email confirmation required. Ideally return an emailconfirmation cookie and redirect to an email confirmation view.
+                    return RedirectToAction(nameof(EmailConfirmation));
                 }
 
                 ModelState.AddModelError(string.Empty, "Invalid email or password.");
             }
-
-            // Need to think about disposing of accountSecurityServices 
             return View(model);
         }
 
-
-        // GET: /Account/Register
+        /// <summary>
+        /// GET: /Account/Register
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        /// <returns>
+        /// Register view with anti-forgery token and cookie.
+        /// </returns>
         [HttpGet]
         [AllowAnonymous]
         public IActionResult Register(string returnUrl = null)
@@ -112,8 +106,17 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             return View();
         }
 
-        //
-        // POST: /Account/Register
+        /// <summary>
+        /// POST: /Account/Register
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="returnUrl"></param>
+        /// <returns>
+        /// Bad request if anti-forgery credentials are invalid.
+        /// Register view if model state is invalid. 
+        /// Register view with error message if email is invalid. 
+        /// Redirects to /Account/EmailConfirmation with an email confirmation cookie if registration succeeds.
+        /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -122,37 +125,27 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                VakAccount account;
-
-                try
+                CreateAccountResult createAccountResult = await _accountSecurityServices.CreateAccountAsync(model.Email, model.Password);
+             
+                if(createAccountResult == CreateAccountResult.Succeeded)
                 {
-                    account = await _vakAccountRepository.CreateAccountAsync(model.Email, model.Password);
-                }
-                catch (SqlException sqlException)
-                {
-                    // TODO: handle exceptions
-                    if (sqlException.Class == 0)
-                    {
-                        //AddErrors(result);
-                    }
-                    return View(model);
+                    return RedirectToAction(nameof(EmailConfirmation));
                 }
 
-                await _accountSecurityServices.SendConfirmationEmailAsync(account);
-                // TODO IsPersistent should be set to remember me
-                // TODO: don't immediately sign user in, redirect to email confirmation page
-                await _accountSecurityServices.ApplicationSignInAsync(account, new AuthenticationProperties { IsPersistent = true});
-                return RedirectToLocal(returnUrl);
+                ModelState.AddModelError(string.Empty, "An account with this email already exists.");
             }
-            else
-            {
-                // Model state not valid, return form
-                return View(model);
-            }
+
+            return View(model);
         }
 
-        //
-        // POST: /Account/LogOff
+        /// <summary>
+        /// POST: /Account/LogOff
+        /// </summary>
+        /// <returns>
+        /// Redirects to /Home/Index with set-cookie headers to remove all cookies.
+        /// Redirects to /Account/Login if authentication fails.
+        /// Bad request if anti-forgery credentials are invalid.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogOff()
@@ -161,16 +154,40 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
+        // GET: /Account/ConfirmEmailRequired
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> EmailConfirmation()
+        {
+            VakAccount vakAccount = await _accountSecurityServices.GetEmailConfirmationAccountAsync();
+            if (vakAccount == null)
+            {
+                return View("Error");
+            }
+
+            // TODO: must provide means to change email and resend token link
+            return View(new EmailConfirmationViewModel { Email = vakAccount.Email });
+        }
+
+        // TODO: resends confirmation email
+        // POST: /Account/ConfirmEmailRequired
+        //[HttpPost]
+        //[AllowAnonymous]
+        //public IActionResult EmailConfirmation(int accountId)
+        //{
+        //    return View("ConfirmEmail");
+        //}
+
         // GET: /Account/ConfirmEmail
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(int accountId, string token)
+        public async Task<IActionResult> ConfirmEmail(string token)
         {
-            // TODO: Instead of grabbing a bool here, we should get a result object so that information is available if things go wrong
-            // e.g token expired.
-            if (await _accountSecurityServices.ConfirmEmailAsync(accountId, token))
+            ConfirmEmailResult emailConfirmationResult = await _accountSecurityServices.ConfirmEmailAsync(token);
+
+            if (emailConfirmationResult == ConfirmEmailResult.Succeeded)
             {
-                return View("ConfirmEmail");
+                return View();
             }
 
             return View("Error");

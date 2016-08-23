@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApplication.ViewModels
 {
-    public class ExternalLoginConfirmationViewModel
+    public class EmailConfirmationViewModel
     {
         [Required]
         [EmailAddress]
