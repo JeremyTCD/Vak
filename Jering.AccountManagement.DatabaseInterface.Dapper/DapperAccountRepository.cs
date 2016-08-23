@@ -40,7 +40,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
-        /// <returns>Newly created account if account is created successfully, null otherwise.</returns>
+        /// <returns>Newly created account.</returns>
         public virtual async Task<TAccount> CreateAccountAsync(string email, string password)
         {
             return await _sqlConnection.QuerySingleAsync<TAccount>(@"[Website].[CreateAccount]",
