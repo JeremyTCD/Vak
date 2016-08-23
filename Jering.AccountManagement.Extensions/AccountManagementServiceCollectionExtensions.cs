@@ -25,7 +25,8 @@ namespace Jering.AccountManagement.Extensions
         public static AccountManagementBuilder AddAccountManagement<TAccount>(this IServiceCollection services, IConfigurationRoot configurationRoot) where TAccount : IAccount
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddScoped<ClaimsPrincipalFactory<TAccount>, ClaimsPrincipalFactory<TAccount>>();
+            services.AddScoped<ICookieSecurityStampValidator, CookieSecurityStampValidator<TAccount>>();
+            services.AddScoped<ClaimsPrincipalServices<TAccount>>();
             services.AddScoped<IAccountSecurityServices<TAccount>, AccountSecurityServices<TAccount>>();
             services.AddScoped<IRoleRepository, DapperRoleRepository>();
             services.AddScoped<IClaimRepository, DapperClaimRepository>();
