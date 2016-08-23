@@ -17,6 +17,7 @@ namespace Jering.AccountManagement.Security
         private static readonly string CookiePrefix = "Jering";
         private static readonly string DefaultApplicationScheme = CookiePrefix + ".Application";
         private static readonly string DefaultTwoFactorScheme = CookiePrefix + ".TwoFactor";
+        private static readonly string DefaultEmailConfirmationScheme = CookiePrefix + ".EmailConfirmation";
 
         /// <summary>
         /// The options for the application cookie.
@@ -24,6 +25,7 @@ namespace Jering.AccountManagement.Security
         public CookieAuthenticationOptions ApplicationCookieOptions { get; set; } = new CookieAuthenticationOptions
         {
             AuthenticationScheme = DefaultApplicationScheme,
+            CookieName = DefaultApplicationScheme,
             AutomaticAuthenticate = true,
             AutomaticChallenge = true,
             LoginPath = new PathString("/Account/Login"),
@@ -34,7 +36,7 @@ namespace Jering.AccountManagement.Security
         };
 
         /// <summary>
-        /// The options for the two factor user id cookie.
+        /// The options for the two factor cookie.
         /// </summary>
         public CookieAuthenticationOptions TwoFactorCookieOptions { get; set; } = new CookieAuthenticationOptions
         {
@@ -42,6 +44,16 @@ namespace Jering.AccountManagement.Security
             AuthenticationScheme = DefaultTwoFactorScheme,
             CookieName = DefaultTwoFactorScheme,
             ExpireTimeSpan = TimeSpan.FromMinutes(5)
+        };
+
+        /// <summary>
+        /// The options for the email confirmation cookie.
+        /// </summary>
+        public CookieAuthenticationOptions EmailConfirmationCookieOptions { get; set; } = new CookieAuthenticationOptions
+        {
+            AutomaticAuthenticate = false,
+            AuthenticationScheme = DefaultEmailConfirmationScheme,
+            CookieName = DefaultEmailConfirmationScheme
         };
 
         /// <summary>
