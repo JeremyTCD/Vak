@@ -14,7 +14,7 @@ using Jering.AccountManagement.DatabaseInterface;
 namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTests
 {
     [Collection("DapperDatabaseCollection")]
-    public class AccountRepositoryTests
+    public class DapperAccountRepositoryTests
     {
         private SqlConnection _sqlConnection { get; }
         private DapperRoleRepository _dapperRoleRepository { get; }
@@ -26,7 +26,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
 
         // TODO ensure that functions that should trigger security stamp renewal do so.
 
-        public AccountRepositoryTests(DapperDatabaseFixture databaseFixture)
+        public DapperAccountRepositoryTests(DapperDatabaseFixture databaseFixture)
         {
             _sqlConnection = databaseFixture.SqlConnection;
             _dapperRoleRepository = databaseFixture.DapperRoleRepository;
