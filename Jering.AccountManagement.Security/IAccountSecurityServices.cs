@@ -21,7 +21,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="account"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns></returns>
-        Task ApplicationSignInAsync(TAccount account, AuthenticationProperties authenticationProperties);
+        Task SignInAsync(TAccount account, AuthenticationProperties authenticationProperties);
 
         /// <summary>
         /// 
@@ -30,7 +30,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="password"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns></returns>
-        Task<ApplicationSignInResult> ApplicationPasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties);
+        Task<PasswordSignInResult> PasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties);
 
         /// <summary>
         /// 
@@ -41,10 +41,9 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="accountId"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        Task<bool> ConfirmEmailAsync(int accountId, string token);
+        Task<ConfirmEmailResult> ConfirmEmailAsync(string token);
 
         /// <summary>
         /// 
@@ -102,5 +101,32 @@ namespace Jering.AccountManagement.Security
         /// <param name="tokenServiceName"></param>
         /// <param name="tokenService"></param>
         void RegisterTokenProvider(string tokenServiceName, ITokenService<TAccount> tokenService);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="account"></param>
+        /// <returns></returns>
+        Task CreateConfirmEmailCookieAsync(TAccount account);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        Task<TAccount> GetEmailConfirmationAccountAsync();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        Task<CreateAccountResult> CreateAccountAsync(string email, string password);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        TAccount GetSignedInAccount();
     }
 }

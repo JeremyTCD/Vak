@@ -8,7 +8,7 @@ namespace Jering.AccountManagement.Security
     /// <summary>
     /// 
     /// </summary>
-    public enum ApplicationSignInResult
+    public enum PasswordSignInResult
     {
         /// <summary>
         /// 
