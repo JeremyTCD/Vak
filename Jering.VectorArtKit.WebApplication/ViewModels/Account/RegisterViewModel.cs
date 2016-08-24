@@ -1,23 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
+using System.ComponentModel.DataAnnotations;
 
 namespace Jering.VectorArtKit.WebApplication.ViewModels
 {
     public class RegisterViewModel
     {
         [Required]
-        [EmailAddress]
-        [Display(Name = "Email")]
+        [ValidateAsEmailAddress]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
         [Required]
-        [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
+        [ValidateAsPassword]
         [DataType(DataType.Password)]
-        [Display(Name = "Password")]
         public string Password { get; set; }
 
-        [DataType(DataType.Password)]
         [Display(Name = "Confirm password")]
-        [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
+        [ValidateAsConfirmPassword(nameof(Password))]
+        [DataType(DataType.Password)]
         public string ConfirmPassword { get; set; }
     }
 }

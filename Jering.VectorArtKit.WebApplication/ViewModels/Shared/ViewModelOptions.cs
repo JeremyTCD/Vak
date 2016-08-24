@@ -14,6 +14,12 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
         public string Password_UppercaseRequired { get; set; } = "Password must have at least 1 uppercase character.";
         public string Password_Invalid { get; set; } = "Password is invalid.";
 
+        public string ConfirmPassword_DoesNotMatchPassword { get; set; } = "Confirmation password does not match password.";
+
         public string Email_Invalid { get; set; } = "Email address is invalid.";
+
+        public string Login_Failed { get; set; } = "Invalid email or password.";
+
+        public string Register_AccountWithEmailExists { get; set; } = "An account with this email already exists.";
     }
 }
