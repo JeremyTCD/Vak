@@ -29,7 +29,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.ViewModels.UnitTests
             mockServiceProvider.Setup(s => s.GetService(typeof(IPasswordValidationService))).Returns(mockPasswordValidationService.Object);
             mockServiceProvider.Setup(s => s.GetService(typeof(IOptions<ViewModelOptions>))).Returns(mockViewModelOptions.Object);
 
-            ValidationContext validationContext = new ValidationContext(dummyPassword, mockServiceProvider.Object, null);
+            ValidationContext validationContext = new ValidationContext(new { }, mockServiceProvider.Object, null);
 
             ValidateAsPasswordAttribute validateAsPasswordAttribute = new ValidateAsPasswordAttribute();
 
@@ -38,7 +38,14 @@ namespace Jering.VectorArtKit.WebApplication.Tests.ViewModels.UnitTests
             ValidationResult validationResult = validateAsPasswordAttribute.GetValidationResult(dummyPassword, validationContext);
 
             // Assert
-            Assert.Equal(outputString, validationResult.ErrorMessage);
+            if(validatePasswordResult == ValidatePasswordResult.Valid)
+            {
+                Assert.Null(validationResult);
+            }
+            else
+            {
+                Assert.Equal(outputString, validationResult.ErrorMessage);
+            }          
         }
 
         public static IEnumerable<object[]> IsValidData ()
@@ -50,35 +57,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.ViewModels.UnitTests
             yield return new object[] { "", ValidatePasswordResult.DigitRequired, viewModelOptions.Password_DigitRequired };
             yield return new object[] { "", ValidatePasswordResult.NonAlphanumericRequired, viewModelOptions.Password_NonAlphaNumericRequired };
             yield return new object[] { "", ValidatePasswordResult.UppercaseRequired, viewModelOptions.Password_UppercaseRequired };
+            yield return new object[] { "", ValidatePasswordResult.Valid, null };
             yield return new object[] { 0, null, viewModelOptions.Password_Invalid };
-        }
-
-        [Fact]
-        public void IsValid_GetValidationResult_ReturnsNullIfPasswordIsValid()
-        {
-            // Arrange
-            ViewModelOptions viewModelOptions = new ViewModelOptions();
-
-            Mock<IOptions<ViewModelOptions>> mockViewModelOptions = new Mock<IOptions<ViewModelOptions>>();
-            mockViewModelOptions.Setup(o => o.Value).Returns(viewModelOptions);
-
-            Mock<IPasswordValidationService> mockPasswordValidationService = new Mock<IPasswordValidationService>();
-            mockPasswordValidationService.Setup(p => p.ValidatePassword("")).Returns(ValidatePasswordResult.Valid);
-
-            Mock<IServiceProvider> mockServiceProvider = new Mock<IServiceProvider>();
-            mockServiceProvider.Setup(s => s.GetService(typeof(IPasswordValidationService))).Returns(mockPasswordValidationService.Object);
-            mockServiceProvider.Setup(s => s.GetService(typeof(IOptions<ViewModelOptions>))).Returns(mockViewModelOptions.Object);
-
-            ValidationContext validationContext = new ValidationContext("", mockServiceProvider.Object, null);
-
-            ValidateAsPasswordAttribute validateAsPasswordAttribute = new ValidateAsPasswordAttribute();
-
-            // Act
-            // IsValid is a protected function, the public function GetValidationResult calls it.
-            ValidationResult validationResult = validateAsPasswordAttribute.GetValidationResult("", validationContext);
-
-            // Assert
-            Assert.Null(validationResult);
         }
     }
 }
