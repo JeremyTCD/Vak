@@ -1,19 +1,17 @@
 ﻿using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApplication.ViewModels
 {
     public class LoginViewModel 
     {
         [Required]
-        [EmailAddress]
+        [ValidateAsEmailAddress]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
         [Required]
+        [ValidateAsPassword]
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
