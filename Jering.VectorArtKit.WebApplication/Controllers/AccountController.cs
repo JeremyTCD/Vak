@@ -41,7 +41,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        [ServiceFilter(typeof(SetSignedInAccountFilter))]
+        [SetSignedInAccount]
         public IActionResult Login(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
@@ -55,7 +55,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// <param name="returnUrl"></param>
         /// <returns>
         /// Bad request if anti-forgery credentials are invalid.
-        /// Login view if model state is invalid. 
+        /// Login view with error messages if model state is invalid. 
         /// Login view with error message if login credentials are invalid. 
         /// Home index view or return Url view with an application cookie if login is successful.
         /// Redirects to /Account/VerifyCode with a two factor cookie if two factor is required. 

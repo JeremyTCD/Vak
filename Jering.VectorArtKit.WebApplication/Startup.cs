@@ -41,9 +41,6 @@ namespace Jering.VectorArtKit.WebApplication
             services.AddAccountManagement<VakAccount>(_configurationRoot).
                 AddAccountRepository<VakAccountRepository>().
                 AddDefaultTokenServices();
-
-            // Application
-            services.AddScoped<SetSignedInAccountFilter>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
