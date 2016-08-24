@@ -28,6 +28,7 @@ namespace Jering.AccountManagement.Extensions
             services.AddScoped<ICookieSecurityStampValidator, CookieSecurityStampValidator<TAccount>>();
             services.AddScoped<ClaimsPrincipalServices<TAccount>>();
             services.AddScoped<IAccountSecurityServices<TAccount>, AccountSecurityServices<TAccount>>();
+            services.AddScoped<IPasswordValidationService, PasswordValidationService>();
             services.AddScoped<IRoleRepository, DapperRoleRepository>();
             services.AddScoped<IClaimRepository, DapperClaimRepository>();
 
