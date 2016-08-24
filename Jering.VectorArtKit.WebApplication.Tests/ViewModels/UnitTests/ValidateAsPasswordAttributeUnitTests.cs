@@ -16,7 +16,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.ViewModels.UnitTests
     {
         [Theory]
         [MemberData(nameof(IsValidData))]
-        public void IsValid_GetValidationResult_ReturnsCorrectValidationResultsIfPasswordIsInvalid(object dummyPassword, ValidatePasswordResult validatePasswordResult, string outputString)
+        public void IsValid_GetValidationResult_ReturnsCorrectValidationResultsWhenPasswordIsInvalid(object dummyPassword, ValidatePasswordResult validatePasswordResult, string outputString)
         {
             // Arrange
             Mock<IOptions<ViewModelOptions>> mockViewModelOptions = new Mock<IOptions<ViewModelOptions>>();
@@ -50,11 +50,11 @@ namespace Jering.VectorArtKit.WebApplication.Tests.ViewModels.UnitTests
             yield return new object[] { "", ValidatePasswordResult.DigitRequired, viewModelOptions.Password_DigitRequired };
             yield return new object[] { "", ValidatePasswordResult.NonAlphanumericRequired, viewModelOptions.Password_NonAlphaNumericRequired };
             yield return new object[] { "", ValidatePasswordResult.UppercaseRequired, viewModelOptions.Password_UppercaseRequired };
-            yield return new object[] { 0, null, viewModelOptions.Password_Error };
+            yield return new object[] { 0, null, viewModelOptions.Password_Invalid };
         }
 
         [Fact]
-        public void IsValid_GetValidationResult_ReturnsNullIfValidationIsPasswordIsValid()
+        public void IsValid_GetValidationResult_ReturnsNullIfPasswordIsValid()
         {
             // Arrange
             ViewModelOptions viewModelOptions = new ViewModelOptions();

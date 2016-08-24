@@ -12,7 +12,7 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
         public string Password_DigitRequired { get; set; } = "Password must have at least 1 digit.";
         public string Password_LowercaseRequired { get; set; } = "Password must have at least 1 lowercase character.";
         public string Password_UppercaseRequired { get; set; } = "Password must have at least 1 uppercase character.";
-        public string Password_Error { get; set; } = "Password is invalid.";
+        public string Password_Invalid { get; set; } = "Password is invalid.";
 
         public string Email_Invalid { get; set; } = "Email address is invalid.";
     }

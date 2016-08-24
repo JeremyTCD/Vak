@@ -18,7 +18,7 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
         /// <param name="value"></param>
         /// <param name="validationContext"></param>
         /// <returns>
-        /// <see cref="ValidationResult"/> with error message <see cref="ViewModelOptions.Password_Error"/> if <paramref name="value"/> is null.
+        /// <see cref="ValidationResult"/> with error message <see cref="ViewModelOptions.Password_Invalid"/> if <paramref name="value"/> cannot be converted into a string.
         /// <see cref="ValidationResult"/> with error message <see cref="ViewModelOptions.Password_TooShort"/> if password is too short.
         /// <see cref="ValidationResult"/> with error message <see cref="ViewModelOptions.Password_NonAlphaNumericRequired"/> if password has no non-alphanumeric characters.
         /// <see cref="ValidationResult"/> with error message <see cref="ViewModelOptions.Password_DigitRequired"/> if password has no digits.
@@ -33,7 +33,7 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
             string valueAsString = value as string;
             if (valueAsString == null)
             {
-                return new ValidationResult(viewModelOptions.Password_Error);
+                return new ValidationResult(viewModelOptions.Password_Invalid);
             }
 
             IPasswordValidationService passwordValidationService = (IPasswordValidationService)validationContext.GetService(typeof(IPasswordValidationService));
