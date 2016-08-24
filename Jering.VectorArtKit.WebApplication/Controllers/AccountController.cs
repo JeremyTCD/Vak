@@ -14,6 +14,8 @@ using System.Data.SqlClient;
 using Jering.AccountManagement.Security;
 using Jering.VectorArtKit.WebApplication.BusinessModel;
 using Jering.VectorArtKit.WebApplication.Filters;
+using Microsoft.Extensions.Options;
+using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
 
 namespace Jering.VectorArtKit.WebApplication.Controllers
 {
@@ -22,14 +24,17 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
     {
         private VakAccountRepository _vakAccountRepository;
         private IAccountSecurityServices<VakAccount> _accountSecurityServices;
+        private ViewModelOptions _viewModelOptions;
 
         public AccountController(
             IAccountRepository<VakAccount> vakAccountRepository,
-            IAccountSecurityServices<VakAccount> accountSecurityServices
+            IAccountSecurityServices<VakAccount> accountSecurityServices,
+            IOptions<ViewModelOptions> viewModelOptionsAccessor
             )
         {
             _vakAccountRepository = (VakAccountRepository)vakAccountRepository;
             _accountSecurityServices = accountSecurityServices;
+            _viewModelOptions = viewModelOptionsAccessor?.Value;
         }
 
         /// <summary>
@@ -55,8 +60,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// <param name="returnUrl"></param>
         /// <returns>
         /// Bad request if anti-forgery credentials are invalid.
-        /// Login view with error messages if model state is invalid. 
-        /// Login view with error message if login credentials are invalid. 
+        /// Login view with error message if model state or login credentials are invalid. 
         /// Home index view or return Url view with an application cookie if login is successful.
         /// Redirects to /Account/VerifyCode with a two factor cookie if two factor is required. 
         /// Redirects to /Account/EmailConfirmation with an email confirmation cookie if email confirmation is required.
@@ -85,9 +89,9 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 {
                     return RedirectToAction(nameof(EmailConfirmation));
                 }
-
-                ModelState.AddModelError(string.Empty, "Invalid email or password.");
             }
+
+            ModelState.AddModelError(string.Empty, _viewModelOptions.Login_Failed);
             return View(model);
         }
 
@@ -113,8 +117,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// <param name="returnUrl"></param>
         /// <returns>
         /// Bad request if anti-forgery credentials are invalid.
-        /// Register view if model state is invalid. 
-        /// Register view with error message if email is invalid. 
+        /// Register view with error messages if model state is invalid. 
         /// Redirects to /Account/EmailConfirmation with an email confirmation cookie if registration succeeds.
         /// </returns>
         [HttpPost]
@@ -132,7 +135,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                     return RedirectToAction(nameof(EmailConfirmation));
                 }
 
-                ModelState.AddModelError(string.Empty, "An account with this email already exists.");
+                ModelState.AddModelError(string.Empty, _viewModelOptions.Register_AccountWithEmailExists);
             }
 
             return View(model);
