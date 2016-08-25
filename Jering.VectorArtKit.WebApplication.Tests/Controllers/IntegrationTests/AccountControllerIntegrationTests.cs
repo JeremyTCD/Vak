@@ -1,4 +1,5 @@
 ﻿using Jering.VectorArtKit.WebApplication.BusinessModel;
+using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using System;
@@ -38,6 +39,45 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.True(html.Contains("<title>Log in - "));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
+        }
+
+        [Theory]
+        [MemberData(nameof(LoginPostData))]
+        public async Task LoginPost_ReturnsLoginViewWithErrorMessageIfModelStateOrLoginCredentialsAreInvalid(string email, string password)
+        {
+            // Arrange
+            await _resetAccountsTable();
+            await vakAccountRepository.CreateAccountAsync("Email1@test.com", "Password1@");
+            await vakAccountRepository.UpdateAccountEmailConfirmedAsync(1);
+
+            HttpResponseMessage loginResponse = await _httpClient.GetAsync("Account/Login");
+            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(loginResponse);
+
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                { "Email", email},
+                { "Password", password},
+                { "RememberMe", "true" },
+                { "__RequestVerificationToken", antiForgeryToken }
+            };
+
+            HttpRequestMessage httpRequestMessage = RequestHelper.CreateWithCookiesFromResponse("Account/Login", HttpMethod.Post, formPostBodyData, loginResponse);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+
+            // Assert
+            string html = await httpResponseMessage.Content.ReadAsStringAsync();
+            ViewModelOptions viewModelOptions = new ViewModelOptions();
+            Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
+            Assert.True(html.Contains("<title>Log in - "));
+            Assert.True(html.Contains(viewModelOptions.Login_Failed));
+        }
+
+        public static IEnumerable<object[]> LoginPostData()
+        {
+            yield return new object[] { "invalidModelState", "invalidModelState" };
+            yield return new object[] { "invalid@Credentials", "@InvalidCredentials0"};
         }
 
         [Fact]
@@ -170,6 +210,55 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
 
+        [Theory]
+        [MemberData(nameof(RegisterPostData))]
+        public async Task RegisterPost_ReturnsRegisterViewWithErrorMessagesIfModelStateIsInvalidOrEmailIsInUse(string email, string password, string confirmPassword)
+        {
+            // Arrange
+            await _resetAccountsTable();
+            if (email == "Email1@test.com") {
+                await vakAccountRepository.CreateAccountAsync(email, password);
+            }
+
+            HttpResponseMessage registerResponse = await _httpClient.GetAsync("Account/Register");
+            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(registerResponse);
+
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                { "Email", email},
+                { "Password", password},
+                { "ConfirmPassword",  confirmPassword},
+                { "__RequestVerificationToken", antiForgeryToken }
+            };
+
+            HttpRequestMessage httpRequestMessage = RequestHelper.CreateWithCookiesFromResponse("Account/Register", HttpMethod.Post, formPostBodyData, registerResponse);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+
+            // Assert
+            string html = await httpResponseMessage.Content.ReadAsStringAsync();
+            ViewModelOptions viewModelOptions = new ViewModelOptions();
+            Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
+            Assert.True(html.Contains("<title>Register - "));
+            if (email == "Email1@test.com")
+            {
+                Assert.True(html.Contains(viewModelOptions.Register_AccountWithEmailExists));
+            }
+            else
+            {
+                Assert.True(html.Contains(viewModelOptions.Email_Invalid));
+                Assert.True(html.Contains(viewModelOptions.Password_NonAlphaNumericRequired));
+                Assert.True(html.Contains(viewModelOptions.ConfirmPassword_DoesNotMatchPassword));
+            }
+        }
+  
+        public static IEnumerable<object[]> RegisterPostData()
+        {
+            yield return new object[] { "invalidModelState", "invalidModelState1", "invalidModelState2" };
+            yield return new object[] { "Email1@test.com", "Password1@", "Password1@" };
+        }
+
         [Fact]
         public async Task RegisterPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         {
@@ -220,7 +309,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LogOffPost_RedirectsToHomeIndexViewAndSendsHeaderToRemoveAllCookies()
+        public async Task LogOffPost_RedirectsToHomeIndexViewAndSendsHeaderToRemoveAllCookiesIfSuccessful()
         {
             //Arrange
             await _resetAccountsTable();

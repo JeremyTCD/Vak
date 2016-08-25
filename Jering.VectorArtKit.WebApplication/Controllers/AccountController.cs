@@ -118,6 +118,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// <returns>
         /// Bad request if anti-forgery credentials are invalid.
         /// Register view with error messages if model state is invalid. 
+        /// Register view with error message if create account fails. 
         /// Redirects to /Account/EmailConfirmation with an email confirmation cookie if registration succeeds.
         /// </returns>
         [HttpPost]
