@@ -42,14 +42,7 @@ namespace Jering.VectorArtKit.WebApplication
                 AddAccountRepository<VakAccountRepository>().
                 AddDefaultTokenServices();
 
-            if (_hostingEnvironment.IsDevelopment())
-            {
-                services.AddScoped<IEmailSender, DevelopmentEmailSender>();
-            }
-            else
-            {
-                services.AddScoped<IEmailSender, EmailSender>();
-            }          
+            services.AddEmailSender(_hostingEnvironment);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

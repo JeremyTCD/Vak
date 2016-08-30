@@ -14,14 +14,17 @@ namespace Jering.AccountManagement.Security
     public class EmailSender : IEmailSender
     {
         private EmailOptions _emailOptions { get; }
+        private SmtpClient _smtpClient { get; }
 
         /// <summary>
         /// Constructs and instance of <see cref="EmailSender"/>. 
         /// </summary>
         /// <param name="emailOptionsAccessor"></param>
-        public EmailSender(IOptions<EmailOptions> emailOptionsAccessor)
+        /// <param name="smtpClient"></param>
+        public EmailSender(IOptions<EmailOptions> emailOptionsAccessor, SmtpClient smtpClient)
         {
             _emailOptions = emailOptionsAccessor.Value;
+            _smtpClient = smtpClient;
         }
         /// <summary>
         /// Writes an email with message <paramref name="message"/> and subject <paramref name="subject"/> to <paramref name="emailAddress"/>.
@@ -39,20 +42,17 @@ namespace Jering.AccountManagement.Security
 
             mimeMessage.Body = new TextPart("plain"){Text = message};
 
-            using (var client = new SmtpClient())
-            {
-                await client.ConnectAsync(_emailOptions.Host, _emailOptions.Port, false);
+            await _smtpClient.ConnectAsync(_emailOptions.Host, _emailOptions.Port, false);
 
-                // Note: since we don't have an OAuth2 token, disable
-                // the XOAUTH2 authentication mechanism.
-                client.AuthenticationMechanisms.Remove("XOAUTH2");
+            // Note: since we don't have an OAuth2 token, disable
+            // the XOAUTH2 authentication mechanism.
+            _smtpClient.AuthenticationMechanisms.Remove("XOAUTH2");
 
-                // Note: only needed if the SMTP server requires authentication
-                await client.AuthenticateAsync(_emailOptions.Username, _emailOptions.Password);
+            // Note: only needed if the SMTP server requires authentication
+            await _smtpClient.AuthenticateAsync(_emailOptions.Username, _emailOptions.Password);
 
-                await client.SendAsync(mimeMessage);
-                client.Disconnect(true);
-            }
+            await _smtpClient.SendAsync(mimeMessage);
+            _smtpClient.Disconnect(true);
         }
     }
 }
