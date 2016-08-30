@@ -4,11 +4,6 @@ using Jering.AccountManagement.Security;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Jering.AccountManagement.Extensions
 {
@@ -22,7 +17,7 @@ namespace Jering.AccountManagement.Extensions
         /// </summary>
         /// <typeparam name="TAccount"></typeparam>
         /// <param name="services"></param>
-        public static AccountManagementBuilder AddAccountManagement<TAccount>(this IServiceCollection services, IConfigurationRoot configurationRoot) where TAccount : IAccount
+        public static AccountManagementBuilder AddAccountManagementSecurity<TAccount>(this IServiceCollection services, IConfigurationRoot configurationRoot) where TAccount : IAccount
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<ICookieSecurityStampValidator, CookieSecurityStampValidator<TAccount>>();
