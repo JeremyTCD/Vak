@@ -5,12 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Jering.AccountManagement.Security;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Http;
 using System.Data.SqlClient;
 using Jering.VectorArtKit.WebApplication.BusinessModel;
-using Jering.AccountManagement.DatabaseInterface;
 using Jering.AccountManagement.Extensions;
-using Jering.VectorArtKit.WebApplication.Filters;
 
 namespace Jering.VectorArtKit.WebApplication
 {
@@ -65,9 +62,12 @@ namespace Jering.VectorArtKit.WebApplication
             app.UseStatusCodePages("text/plain", "Response, status code: {0}");
 
             AccountSecurityOptions securityOptions = app.ApplicationServices.GetRequiredService<IOptions<AccountSecurityOptions>>().Value;
-            app.UseCookieAuthentication(securityOptions.CookieOptions.ApplicationCookieOptions);
+            // CookieAuthenticationMiddleware for TwoFactorCookie must be registered first. Otherwise if ApplicationCookie's middleware runs
+            // first and SecurityStamp is invalid, the middleware will call AccountSecurityServices.SignOutAsync before a handler is created
+            // for TwoFactorCookies.
             app.UseCookieAuthentication(securityOptions.CookieOptions.TwoFactorCookieOptions);
-            app.UseCookieAuthentication(securityOptions.CookieOptions.EmailConfirmationCookieOptions);
+            app.UseCookieAuthentication(securityOptions.CookieOptions.ApplicationCookieOptions);
+
 
             app.UseMvc(routes =>
             {

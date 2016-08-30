@@ -24,17 +24,65 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
     {
         private VakAccountRepository _vakAccountRepository;
         private IAccountSecurityServices<VakAccount> _accountSecurityServices;
-        private ViewModelOptions _viewModelOptions;
+        private StringOptions _stringOptions;
 
         public AccountController(
             IAccountRepository<VakAccount> vakAccountRepository,
             IAccountSecurityServices<VakAccount> accountSecurityServices,
-            IOptions<ViewModelOptions> viewModelOptionsAccessor
+            IOptions<StringOptions> viewModelOptionsAccessor
             )
         {
             _vakAccountRepository = (VakAccountRepository)vakAccountRepository;
             _accountSecurityServices = accountSecurityServices;
-            _viewModelOptions = viewModelOptionsAccessor?.Value;
+            _stringOptions = viewModelOptionsAccessor?.Value;
+        }
+
+        /// <summary>
+        /// GET: /Account/SignUp
+        /// </summary>
+        /// <param name="returnUrl"></param>
+        /// <returns>
+        /// SignUp view with anti-forgery token and cookie.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult SignUp(string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            return View();
+        }
+
+        /// <summary>
+        /// POST: /Account/SignUp
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="returnUrl"></param>
+        /// <returns>
+        /// Bad request if anti-forgery credentials are invalid.
+        /// SignUp view with error messages if model state is invalid. 
+        /// SignUp view with error message if create account fails. 
+        /// Redirects to /Home/Index with an application cookie if account is created successfully.
+        /// </returns>
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignUp(SignUpViewModel model, string returnUrl = null)
+        {
+            ViewData["ReturnUrl"] = returnUrl;
+            if (ModelState.IsValid)
+            {
+                CreateAccountResult createAccountResult = await _accountSecurityServices.CreateAccountAsync(model.Email, model.Password);
+
+                if (createAccountResult == CreateAccountResult.Succeeded)
+                {
+                    // TODO: this should eventually redirect to account vakkits page
+                    return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace("Controller", ""));
+                }
+
+                ModelState.AddModelError(nameof(SignUpViewModel.Email), _stringOptions.SignUp_AccountWithEmailExists);
+            }
+
+            return View(model);
         }
 
         /// <summary>
@@ -63,7 +111,6 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// Login view with error message if model state or login credentials are invalid. 
         /// Home index view or return Url view with an application cookie if login is successful.
         /// Redirects to /Account/VerifyCode with a two factor cookie if two factor is required. 
-        /// Redirects to /Account/EmailConfirmation with an email confirmation cookie if email confirmation is required.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -79,66 +126,55 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 if (passwordSignInResult == PasswordSignInResult.TwoFactorRequired)
                 {
-                    return RedirectToAction(nameof(VerifyCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl});
+                    return RedirectToAction(nameof(VerifyTwoFactorCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl });
                 }
-                else if (passwordSignInResult == PasswordSignInResult.Succeeded)
+                if (passwordSignInResult == PasswordSignInResult.Succeeded)
                 {
                     return RedirectToLocal(returnUrl);
                 }
-                else if(passwordSignInResult == PasswordSignInResult.EmailConfirmationRequired)
-                {
-                    return RedirectToAction(nameof(EmailConfirmation));
-                }
             }
 
-            ModelState.AddModelError(string.Empty, _viewModelOptions.Login_Failed);
+            ModelState.AddModelError(string.Empty, _stringOptions.Login_Failed);
             return View(model);
         }
 
-        /// <summary>
-        /// GET: /Account/Register
-        /// </summary>
-        /// <param name="returnUrl"></param>
-        /// <returns>
-        /// Register view with anti-forgery token and cookie.
-        /// </returns>
+        //
+        // GET: /Account/VerifyTwoFactorCode
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult Register(string returnUrl = null)
-        {
+        public async Task<IActionResult> VerifyTwoFactorCode(bool rememberMe, string returnUrl = null)
+        {            
+            VakAccount vakAccount = await _accountSecurityServices.GetTwoFactorAccountAsync();
+            if (vakAccount == null)
+            {
+                return View("Error");
+            }
+
             ViewData["ReturnUrl"] = returnUrl;
-            return View();
+
+            return View(new VerifyCodeViewModel { IsPersistent = rememberMe});
         }
 
-        /// <summary>
-        /// POST: /Account/Register
-        /// </summary>
-        /// <param name="model"></param>
-        /// <param name="returnUrl"></param>
-        /// <returns>
-        /// Bad request if anti-forgery credentials are invalid.
-        /// Register view with error messages if model state is invalid. 
-        /// Register view with error message if create account fails. 
-        /// Redirects to /Account/EmailConfirmation with an email confirmation cookie if registration succeeds.
-        /// </returns>
+        //
+        // POST: /Account/VerifyTwoFactorCode
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(RegisterViewModel model, string returnUrl = null)
+        public async Task<IActionResult> VerifyTwoFactorCode(VerifyCodeViewModel model, string returnUrl = null)
         {
-            ViewData["ReturnUrl"] = returnUrl;
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                CreateAccountResult createAccountResult = await _accountSecurityServices.CreateAccountAsync(model.Email, model.Password);
-             
-                if(createAccountResult == CreateAccountResult.Succeeded)
-                {
-                    return RedirectToAction(nameof(EmailConfirmation));
-                }
-
-                ModelState.AddModelError(string.Empty, _viewModelOptions.Register_AccountWithEmailExists);
+                return View(model);
             }
 
+            TwoFactorSignInResult twoFactorSignInResult = await _accountSecurityServices.TwoFactorSignInAsync(model.Code, model.IsPersistent);
+
+            if (twoFactorSignInResult == TwoFactorSignInResult.Succeeded)
+            {
+                return RedirectToLocal(returnUrl);
+            }
+
+            ModelState.AddModelError(nameof(VerifyCodeViewModel.Code), _stringOptions.VerifyTwoFactorCode_InvalidCode);
             return View(model);
         }
 
@@ -158,29 +194,19 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
-        // GET: /Account/ConfirmEmailRequired
-        [HttpGet]
+        /// <summary>
+        /// POST: /Account/ResendConfirmationEmail
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <returns></returns>
+        [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> EmailConfirmation()
+        public IActionResult ResendConfirmationEmail(int accountId)
         {
-            VakAccount vakAccount = await _accountSecurityServices.GetEmailConfirmationAccountAsync();
-            if (vakAccount == null)
-            {
-                return View("Error");
-            }
+            //TODO: resend confirmation email and return okay response
 
-            // TODO: must provide means to change email and resend token link
-            return View(new EmailConfirmationViewModel { Email = vakAccount.Email });
+            return Ok();
         }
-
-        // TODO: resends confirmation email
-        // POST: /Account/ConfirmEmailRequired
-        //[HttpPost]
-        //[AllowAnonymous]
-        //public IActionResult EmailConfirmation(int accountId)
-        //{
-        //    return View("ConfirmEmail");
-        //}
 
         // GET: /Account/ConfirmEmail
         [HttpGet]
@@ -191,14 +217,17 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
             if (emailConfirmationResult == ConfirmEmailResult.Succeeded)
             {
+                //TODO: redirect to home/index?
                 return View();
             }
 
             return View("Error");
         }
 
-        //
-        // GET: /Account/ForgotPassword
+        /// <summary>
+        /// GET: /Account/ForgotPassword
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
         [AllowAnonymous]
         public IActionResult ForgotPassword()
@@ -216,18 +245,13 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             if (ModelState.IsValid)
             {
                 VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
-                if (account == null || !account.EmailConfirmed)
-                {
-                    // Don't reveal that the user does not exist or is not confirmed
-                    return View("ForgotPasswordConfirmation");
-                }
-
-                await _accountSecurityServices.SendConfirmationEmailAsync(account);
-                return View("ForgotPasswordConfirmation");
+                if (account != null)
+                {                
+                    await _accountSecurityServices.SendConfirmationEmailAsync(account);
+                }                
             }
 
-            // If we got this far, something failed, redisplay form
-            return View(model);
+            return View(nameof(ForgotPasswordConfirmation));
         }
 
         //
@@ -279,43 +303,6 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         public IActionResult ResetPasswordConfirmation()
         {
             return View();
-        }
-
-        //
-        // GET: /Account/VerifyCode
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> VerifyCode(bool rememberMe, string returnUrl = null)
-        {
-            VakAccount vakAccount = await _accountSecurityServices.GetTwoFactorAccountAsync();
-            if (vakAccount == null)
-            {
-                return View("Error");
-            }
-            return View(new VerifyCodeViewModel {IsPersistent = rememberMe, ReturnUrl = returnUrl});
-        }
-
-        //
-        // POST: /Account/VerifyCode
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            TwoFactorSignInResult twoFactorSignInResult = await _accountSecurityServices.TwoFactorSignInAsync(model.Token, model.IsPersistent);
-
-            if (twoFactorSignInResult == TwoFactorSignInResult.Succeeded)
-            {
-                return RedirectToLocal(model.ReturnUrl);
-            }
-
-            ModelState.AddModelError(string.Empty, "Invalid code.");
-            return View(model);
         }
 
         #region Helpers

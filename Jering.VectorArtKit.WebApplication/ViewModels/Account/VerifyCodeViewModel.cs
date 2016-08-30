@@ -8,10 +8,9 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels
 {
     public class VerifyCodeViewModel
     {
+        //TODO: validate as two factor code
         [Required]
-        public string Token { get; set; }
-
-        public string ReturnUrl { get; set; }
+        public string Code { get; set; }
 
         [Display(Name = "Remember me?")]
         public bool IsPersistent { get; set; }

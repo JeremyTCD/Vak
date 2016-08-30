@@ -4,13 +4,16 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;
 using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApplication.Filters
 {
     public class SetSignedInAccountAttribute : ActionFilterAttribute
     {
-        public override void OnActionExecuted(ActionExecutedContext context)
+        public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
+            await next();
+
             IAccountSecurityServices<VakAccount> accountSecurityServices = (IAccountSecurityServices<VakAccount>) context.
                 HttpContext.
                 RequestServices.
@@ -18,7 +21,7 @@ namespace Jering.VectorArtKit.WebApplication.Filters
 
             (context.Controller as Controller).ViewData.Add(
                 nameof(VakAccount),
-                accountSecurityServices.GetSignedInAccount());
+                await accountSecurityServices.GetSignedInAccount());
         }
     }
 }

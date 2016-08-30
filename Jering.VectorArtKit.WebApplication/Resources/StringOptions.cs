@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
 {
-    public class ViewModelOptions
+    public class StringOptions
     {
         public string Password_TooShort { get; set; } = "Password must be at least 8 characters.";
         public string Password_NonAlphaNumericRequired { get; set; } = "Password must have at least 1 non-alphanumeric character.";
@@ -20,6 +21,8 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
 
         public string Login_Failed { get; set; } = "Invalid email or password.";
 
-        public string Register_AccountWithEmailExists { get; set; } = "An account with this email already exists.";
+        public string SignUp_AccountWithEmailExists { get; set; } = "An account with this email already exists.";
+
+        public string VerifyTwoFactorCode_InvalidCode { get; set; } = "Invalid code.";
     }
 }

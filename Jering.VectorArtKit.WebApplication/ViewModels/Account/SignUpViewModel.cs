@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Jering.VectorArtKit.WebApplication.ViewModels
 {
-    public class LoginViewModel 
+    public class SignUpViewModel
     {
         [Required]
         [ValidateEmailAddress(nameof(StringOptions.Email_Invalid), typeof(StringOptions))]
@@ -16,8 +16,10 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
-
-        [Display(Name = "Remember me?")]
-        public bool RememberMe { get; set; }
+        [Required]
+        [ValidateMatches(nameof(Password), nameof(StringOptions.ConfirmPassword_DoesNotMatchPassword), typeof(StringOptions))]
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm password")]
+        public string ConfirmPassword { get; set; }
     }
 }

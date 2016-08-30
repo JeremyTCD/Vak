@@ -58,7 +58,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task IndexGet_ReturnsHomeIndexViewWithLoginAndRegisterButtonsWhenAccountIsNotLoggedIn()
+        public async Task IndexGet_ReturnsHomeIndexViewWithLoginAndSignUpButtonsWhenAccountIsNotLoggedIn()
         {
             // Act
             HttpResponseMessage indexGetResponse = await _httpClient.GetAsync("Home/Index");
@@ -68,7 +68,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await indexGetResponse.Content.ReadAsStringAsync();
 
             Assert.Equal("OK", indexGetResponse.StatusCode.ToString());
-            Assert.Contains("Register", html);
+            Assert.Contains("SignUp", html);
             Assert.Contains("Login", html);
         }
     }

@@ -1,4 +1,5 @@
 ﻿using Jering.VectorArtKit.WebApplication.BusinessModel;
+using Jering.VectorArtKit.WebApplication.Controllers;
 using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -68,7 +69,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 
             // Assert
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
-            ViewModelOptions viewModelOptions = new ViewModelOptions();
+            StringOptions viewModelOptions = new StringOptions();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
             Assert.True(html.Contains("<title>Log in - "));
             Assert.True(html.Contains(viewModelOptions.Login_Failed));
@@ -140,37 +141,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
             Assert.Equal("Jering.TwoFactor", cookies.Keys.First());
             Assert.Equal("Redirect", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal("/Account/VerifyCode?IsPersistent=True", httpResponseMessage.Headers.Location.ToString());
-        }
-
-        [Fact]
-        public async Task LoginPost_RedirectsToEmailConfirmationViewAndSendsEmailConfirmationCookieIfEmailConfirmationIsRequired()
-        {
-            // Arrange
-            await _resetAccountsTable();
-            await vakAccountRepository.CreateAccountAsync("Email1@test.com", "Password1@");
-
-            HttpResponseMessage loginResponse = await _httpClient.GetAsync("Account/Login");
-            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(loginResponse);
-
-            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
-            {
-                { "Email", "Email1@test.com"},
-                { "Password", "Password1@"},
-                { "RememberMe", "true" },
-                { "__RequestVerificationToken", antiForgeryToken }
-            };
-
-            HttpRequestMessage httpRequestMessage = RequestHelper.CreateWithCookiesFromResponse("Account/Login", HttpMethod.Post, formPostBodyData, loginResponse);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
-
-            // Assert
-            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
-            Assert.Equal("Jering.EmailConfirmation", cookies.Keys.First());
-            Assert.Equal("Redirect", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal("/Account/EmailConfirmation", httpResponseMessage.Headers.Location.ToString());
+            Assert.Equal($"/Account/{nameof(AccountController.VerifyTwoFactorCode)}?IsPersistent=True", httpResponseMessage.Headers.Location.ToString());
         }
 
         [Fact]
@@ -194,10 +165,10 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task RegisterGet_ReturnsRegisterViewWithAntiForgeryTokenAndCookie()
+        public async Task SignUpGet_ReturnsSignUpViewWithAntiForgeryTokenAndCookie()
         {
             // Act
-            HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("Account/Register");
+            HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("Account/SignUp");
 
             // Assert
             string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(httpResponseMessage);
@@ -205,14 +176,14 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
 
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Register - "));
+            Assert.True(html.Contains("<title>Sign up - "));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
 
         [Theory]
-        [MemberData(nameof(RegisterPostData))]
-        public async Task RegisterPost_ReturnsRegisterViewWithErrorMessagesIfModelStateIsInvalidOrEmailIsInUse(string email, string password, string confirmPassword)
+        [MemberData(nameof(SignUpPostData))]
+        public async Task SignUpPost_ReturnsSignUpViewWithErrorMessagesIfModelStateIsInvalidOrEmailIsInUse(string email, string password, string confirmPassword)
         {
             // Arrange
             await _resetAccountsTable();
@@ -220,8 +191,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
                 await vakAccountRepository.CreateAccountAsync(email, password);
             }
 
-            HttpResponseMessage registerResponse = await _httpClient.GetAsync("Account/Register");
-            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(registerResponse);
+            HttpResponseMessage signUpResponse = await _httpClient.GetAsync("Account/SignUp");
+            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(signUpResponse);
 
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
@@ -231,36 +202,36 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
                 { "__RequestVerificationToken", antiForgeryToken }
             };
 
-            HttpRequestMessage httpRequestMessage = RequestHelper.CreateWithCookiesFromResponse("Account/Register", HttpMethod.Post, formPostBodyData, registerResponse);
+            HttpRequestMessage httpRequestMessage = RequestHelper.CreateWithCookiesFromResponse("Account/SignUp", HttpMethod.Post, formPostBodyData, signUpResponse);
 
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
             // Assert
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
-            ViewModelOptions viewModelOptions = new ViewModelOptions();
+            StringOptions stringOptions = new StringOptions();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Register - "));
+            Assert.True(html.Contains("<title>Sign up - "));
             if (email == "Email1@test.com")
             {
-                Assert.True(html.Contains(viewModelOptions.Register_AccountWithEmailExists));
+                Assert.True(html.Contains(stringOptions.SignUp_AccountWithEmailExists));
             }
             else
             {
-                Assert.True(html.Contains(viewModelOptions.Email_Invalid));
-                Assert.True(html.Contains(viewModelOptions.Password_NonAlphaNumericRequired));
-                Assert.True(html.Contains(viewModelOptions.ConfirmPassword_DoesNotMatchPassword));
+                Assert.True(html.Contains(stringOptions.Email_Invalid));
+                Assert.True(html.Contains(stringOptions.Password_TooShort));
+                Assert.True(html.Contains(stringOptions.ConfirmPassword_DoesNotMatchPassword));
             }
         }
   
-        public static IEnumerable<object[]> RegisterPostData()
+        public static IEnumerable<object[]> SignUpPostData()
         {
-            yield return new object[] { "invalidModelState", "invalidModelState1", "invalidModelState2" };
+            yield return new object[] { "invalidModelState", "x", "y" };
             yield return new object[] { "Email1@test.com", "Password1@", "Password1@" };
         }
 
         [Fact]
-        public async Task RegisterPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        public async Task SignUpPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
@@ -270,7 +241,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
                 { "ConfirmPassword", "Password1@" }
             };
 
-            HttpRequestMessage httpRequestMessage = RequestHelper.Create("Account/Register", HttpMethod.Post, formPostBodyData);
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create("Account/SignUp", HttpMethod.Post, formPostBodyData);
 
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
@@ -280,13 +251,13 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task RegisterPost_RedirectsToEmailConfirmationViewAndSendsEmailConfirmationCookieIfRegistrationIsSuccessful()
+        public async Task SignUpPost_RedirectsToHomeIndexViewAndSendsApplicationCookieIfRegistrationIsSuccessful()
         {
             // Arrange
             await _resetAccountsTable();
 
-            HttpResponseMessage registerResponse = await _httpClient.GetAsync("Account/Register");
-            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(registerResponse);
+            HttpResponseMessage signUpResponse = await _httpClient.GetAsync("Account/SignUp");
+            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(signUpResponse);
 
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
@@ -296,16 +267,16 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
                 { "__RequestVerificationToken", antiForgeryToken }
             };
 
-            HttpRequestMessage httpRequestMessage = RequestHelper.CreateWithCookiesFromResponse("Account/Register", HttpMethod.Post, formPostBodyData, registerResponse);
+            HttpRequestMessage httpRequestMessage = RequestHelper.CreateWithCookiesFromResponse("Account/SignUp", HttpMethod.Post, formPostBodyData, signUpResponse);
 
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
             // Assert
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
-            Assert.Equal("Jering.EmailConfirmation", cookies.Keys.First());
+            Assert.Equal("Jering.Application", cookies.Keys.First());
             Assert.Equal("Redirect", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal("/Account/EmailConfirmation", httpResponseMessage.Headers.Location.ToString());
+            Assert.Equal("/", httpResponseMessage.Headers.Location.ToString());
         }
 
         [Fact]
@@ -343,11 +314,9 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 
             // Assert
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(logOffPostResponse);
-            Assert.Equal(3, cookies.Count);
+            Assert.Equal(2, cookies.Count);
             Assert.Contains("Jering.Application", cookies.Keys);
             Assert.Equal("", cookies["Jering.Application"]);
-            Assert.Contains("Jering.EmailConfirmation", cookies.Keys);
-            Assert.Equal("", cookies["Jering.EmailConfirmation"]);
             Assert.Contains("Jering.TwoFactor", cookies.Keys);
             Assert.Equal("", cookies["Jering.TwoFactor"]);
             Assert.Equal("Redirect", logOffPostResponse.StatusCode.ToString());

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Jering.DataAnnotations;
+using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -9,7 +11,7 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels
     public class ForgotPasswordViewModel
     {
         [Required]
-        [EmailAddress]
+        [ValidateEmailAddress(nameof(StringOptions.Email_Invalid), typeof(StringOptions))]
         public string Email { get; set; }
     }
 }
