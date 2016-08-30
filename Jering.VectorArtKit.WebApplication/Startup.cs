@@ -13,6 +13,9 @@ namespace Jering.VectorArtKit.WebApplication
 {
     public class Startup
     {
+        private IConfigurationRoot _configurationRoot { get; }
+        private IHostingEnvironment _hostingEnvironment { get; }
+
         public Startup(IHostingEnvironment env)
         {
             var builder = new ConfigurationBuilder()
@@ -21,9 +24,9 @@ namespace Jering.VectorArtKit.WebApplication
                 .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
                 .AddEnvironmentVariables();
             _configurationRoot = builder.Build();
-        }
 
-        private IConfigurationRoot _configurationRoot { get; }
+            _hostingEnvironment = env;
+        }
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -35,9 +38,18 @@ namespace Jering.VectorArtKit.WebApplication
             services.AddScoped(_ => new SqlConnection(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
 
             // Account Management
-            services.AddAccountManagement<VakAccount>(_configurationRoot).
+            services.AddAccountManagementSecurity<VakAccount>(_configurationRoot).
                 AddAccountRepository<VakAccountRepository>().
                 AddDefaultTokenServices();
+
+            if (_hostingEnvironment.IsDevelopment())
+            {
+                services.AddScoped<IEmailSender, DevelopmentEmailSender>();
+            }
+            else
+            {
+                services.AddScoped<IEmailSender, EmailSender>();
+            }          
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

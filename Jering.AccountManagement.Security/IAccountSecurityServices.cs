@@ -50,14 +50,14 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="accountId"></param>
         /// <returns></returns>
-        Task<bool> SendConfirmationEmailAsync(int accountId);
+        Task SendConfirmationEmailAsync(int accountId);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="account"></param>
         /// <returns></returns>
-        Task<bool> SendConfirmationEmailAsync(TAccount account);
+        Task SendConfirmationEmailAsync(TAccount account);
 
         /// <summary>
         /// 
@@ -71,8 +71,9 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="account"></param>
         /// <returns></returns>
-        Task SendTwoFactorTokenByEmailAsync(TAccount account);
+        Task SendTwoFactorTokenEmailAsync(TAccount account);
 
         /// <summary>
         /// 

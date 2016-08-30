@@ -21,6 +21,8 @@ namespace Jering.AccountManagement.Security
         private HttpContext _httpContext { get; }
         private AccountSecurityOptions _securityOptions { get; }
         private Dictionary<string, ITokenService<TAccount>> _tokenServices { get; } = new Dictionary<string, ITokenService<TAccount>>();
+        private IEmailSender _emailSender { get; }
+
         /// <summary>
         /// The data protection purpose used for email confirmation related methods.
         /// </summary>
@@ -38,18 +40,19 @@ namespace Jering.AccountManagement.Security
         /// <param name="securityOptionsAccessor"></param>
         /// <param name="accountRepository"></param>
         /// <param name="serviceProvider"></param>
+        /// <param name="emailSender"></param>
         public AccountSecurityServices(ClaimsPrincipalServices<TAccount> claimsPrincipalServices,
             IHttpContextAccessor httpContextAccessor,
             IOptions<AccountSecurityOptions> securityOptionsAccessor,
             IAccountRepository<TAccount> accountRepository,
-            IServiceProvider serviceProvider//,
-                                            //IEmailSender emailSender
-            )
+            IServiceProvider serviceProvider,
+            IEmailSender emailSender)
         {
             _claimsPrincipalServices = claimsPrincipalServices;
             _httpContext = httpContextAccessor?.HttpContext;
             _securityOptions = securityOptionsAccessor?.Value;
             _accountRepository = accountRepository;
+            _emailSender = emailSender;
 
             if (serviceProvider != null)
             {
@@ -112,7 +115,7 @@ namespace Jering.AccountManagement.Security
                 if (account.TwoFactorEnabled)
                 {
                     await CreateTwoFactorCookieAsync(account);
-                    await SendTwoFactorTokenByEmailAsync(account);
+                    await SendTwoFactorTokenEmailAsync(account);
                     return PasswordSignInResult.TwoFactorRequired;
                 }
 
@@ -203,10 +206,10 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="accountId"></param>
         /// <returns>A <see cref="Task"/> that returns true if confirmation email is sent successfully.</returns>
-        public virtual async Task<bool> SendConfirmationEmailAsync(int accountId)
+        public virtual async Task SendConfirmationEmailAsync(int accountId)
         {
             TAccount account = await _accountRepository.GetAccountAsync(accountId);
-            return await SendConfirmationEmailAsync(account);
+            await SendConfirmationEmailAsync(account);
         }
 
         /// <summary>
@@ -214,15 +217,11 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="account"></param>
         /// <returns>A <see cref="Task"/> that returns true if confirmation email is sent successfully.</returns>
-        public virtual async Task<bool> SendConfirmationEmailAsync(TAccount account)
+        public virtual async Task SendConfirmationEmailAsync(TAccount account)
         {
             string token = await _tokenServices[TokenServiceOptions.DataProtectionTokenService].GenerateTokenAsync(_confirmEmailTokenPurpose, account);
 
-            //var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-            //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-            //           "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");
-
-            return await Task.FromResult(false);
+            await _emailSender.SendEmailAsync("your link:" + token, account.Email, "confirmation email");           
         }
 
         /// <summary>
@@ -242,13 +241,14 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// Generates and sends a two factor token to the email address associated with <paramref name="account"/>.
         /// </summary>
+        /// <param name="account"></param>
         /// <returns></returns>
-        public virtual async Task SendTwoFactorTokenByEmailAsync(TAccount account)
+        public virtual async Task SendTwoFactorTokenEmailAsync(TAccount account)
         {
             
             string token = await _tokenServices[TokenServiceOptions.TotpTokenService].GenerateTokenAsync(_twoFactorTokenPurpose, account);
 
-            //await _emailSender.SendEmailAsync(await _userManager.GetEmailAsync(account), "Security Code", "Your security code is: " + token);
+            await _emailSender.SendEmailAsync("Your security code is: " + token, account.Email, "security code");
         }
 
         /// <summary>
