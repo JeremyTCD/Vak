@@ -105,19 +105,6 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="account"></param>
-        /// <returns></returns>
-        Task CreateConfirmEmailCookieAsync(TAccount account);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        Task<TAccount> GetEmailConfirmationAccountAsync();
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <returns></returns>
@@ -127,6 +114,13 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <returns></returns>
-        TAccount GetSignedInAccount();
+        Task<TAccount> GetSignedInAccount();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="claimsPrincipal"></param>
+        /// <returns></returns>
+        Task<TAccount> GetSignedInAccount(ClaimsPrincipal claimsPrincipal);
     }
 }

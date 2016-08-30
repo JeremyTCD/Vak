@@ -73,24 +73,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         }
 
         [Fact]
-        public async Task ApplicationPasswordSignInAsync_ReturnsApplicationSignInResultEmailConfirmationRequiredIfEmailConfirmationIsRequired()
-        {
-            // Arrange
-            Account account = new Account() { EmailConfirmed = false };
-            Mock<IAccountRepository<IAccount>> mockAccountRepository = new Mock<IAccountRepository<IAccount>>();
-            mockAccountRepository.Setup(a => a.GetAccountByEmailAndPasswordAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(account);
-            Mock<AccountSecurityServices<IAccount>> mockAccountSecurityServices = new Mock<AccountSecurityServices<IAccount>>(null, null, null, mockAccountRepository.Object, null);
-            mockAccountSecurityServices.Setup(a => a.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), null)).CallBase();
-
-            // Act
-            PasswordSignInResult applicationSignInResult = await mockAccountSecurityServices.Object.PasswordSignInAsync("", "", null);
-
-            // Assert
-            Assert.Equal(PasswordSignInResult.EmailConfirmationRequired, applicationSignInResult);
-            mockAccountRepository.VerifyAll();
-        }
-
-        [Fact]
         public async Task GetTwoFactorAccountAsync_ReturnsNullIfTwoFactorCookieDoesNotExist()
         {
             // Arrange
@@ -288,118 +270,11 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         }
 
         [Fact]
-        public async Task GetEmailConfirmationAccountAsync_ReturnsNullIfEmailConfirmationCookieIsInvalid()
-        {
-            // Arrange           
-            AccountSecurityOptions _securityOptions = new AccountSecurityOptions();
-
-            Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
-            mockOptions.Setup(o => o.Value).Returns(_securityOptions);
-
-            Mock<AuthenticationManager> mockAuthenticationManager = new Mock<AuthenticationManager>();
-            mockAuthenticationManager.Setup(a => a.AuthenticateAsync(_securityOptions.CookieOptions.EmailConfirmationCookieOptions.AuthenticationScheme)).ReturnsAsync(null);
-
-            Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(a => a.Authentication).Returns(mockAuthenticationManager.Object);
-
-            Mock<IHttpContextAccessor> mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-            mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(mockHttpContext.Object);
-
-            AccountSecurityServices<Account> accountSecurityServices = new AccountSecurityServices<Account>(null, mockHttpContextAccessor.Object, mockOptions.Object, null, null);
-
-            // Act
-            Account account = await accountSecurityServices.GetEmailConfirmationAccountAsync();
-
-            // Assert
-            Assert.Null(account);
-            mockHttpContextAccessor.VerifyAll();
-            mockHttpContext.VerifyAll();
-            mockAuthenticationManager.VerifyAll();
-            mockOptions.VerifyAll();
-        }
-
-        [Fact]
-        public async Task GetEmailConfirmationAccountAsync_ReturnsNullIfEmailConfirmationCookieHasNoAccountIdValue()
-        {
-            // Arrange           
-            AccountSecurityOptions securityOptions = new AccountSecurityOptions();
-
-            Mock<ClaimsPrincipal> mockClaimsPrincipal = new Mock<ClaimsPrincipal>();
-            mockClaimsPrincipal.Setup(c => c.FindFirst(securityOptions.ClaimsOptions.AccountIdClaimType)).Returns(default(System.Security.Claims.Claim));
-
-            Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
-            mockOptions.Setup(o => o.Value).Returns(securityOptions);
-
-            Mock<AuthenticationManager> mockAuthenticationManager = new Mock<AuthenticationManager>();
-            mockAuthenticationManager.Setup(a => a.AuthenticateAsync(securityOptions.CookieOptions.EmailConfirmationCookieOptions.AuthenticationScheme)).ReturnsAsync(mockClaimsPrincipal.Object);
-
-            Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(a => a.Authentication).Returns(mockAuthenticationManager.Object);
-
-            Mock<IHttpContextAccessor> mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-            mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(mockHttpContext.Object);
-
-            AccountSecurityServices<Account> accountSecurityServices = new AccountSecurityServices<Account>(null, mockHttpContextAccessor.Object, mockOptions.Object, null, null);
-
-            // Act
-            Account account = await accountSecurityServices.GetEmailConfirmationAccountAsync();
-
-            // Assert
-            Assert.Null(account);
-            mockHttpContextAccessor.VerifyAll();
-            mockHttpContext.VerifyAll();
-            mockAuthenticationManager.VerifyAll();
-            mockOptions.VerifyAll();
-            mockClaimsPrincipal.VerifyAll();
-        }
-
-        [Fact]
-        public async Task GetEmailConfirmationAccountAsync_ReturnsAccountIfEmailConfirmationCookieIsValidAndHasAccountIdValue()
-        {
-            // Arrange           
-            AccountSecurityOptions securityOptions = new AccountSecurityOptions();
-
-            System.Security.Claims.Claim claim = new System.Security.Claims.Claim(securityOptions.ClaimsOptions.AccountIdClaimType, "0");
-
-            Mock<ClaimsPrincipal> mockClaimsPrincipal = new Mock<ClaimsPrincipal>();
-            mockClaimsPrincipal.Setup(c => c.FindFirst(securityOptions.ClaimsOptions.AccountIdClaimType)).Returns(claim);
-
-            Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
-            mockOptions.Setup(o => o.Value).Returns(securityOptions);
-
-            Mock<AuthenticationManager> mockAuthenticationManager = new Mock<AuthenticationManager>();
-            mockAuthenticationManager.Setup(a => a.AuthenticateAsync(securityOptions.CookieOptions.EmailConfirmationCookieOptions.AuthenticationScheme)).ReturnsAsync(mockClaimsPrincipal.Object);
-
-            Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(a => a.Authentication).Returns(mockAuthenticationManager.Object);
-
-            Mock<IHttpContextAccessor> mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-            mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(mockHttpContext.Object);
-
-            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
-            mockAccountRepository.Setup(a => a.GetAccountAsync(0)).ReturnsAsync(new Account());
-
-            AccountSecurityServices<Account> accountSecurityServices = new AccountSecurityServices<Account>(null, mockHttpContextAccessor.Object, mockOptions.Object, mockAccountRepository.Object, null);
-
-            // Act
-            Account account = await accountSecurityServices.GetEmailConfirmationAccountAsync();
-
-            // Assert
-            Assert.NotNull(account);
-            mockHttpContextAccessor.VerifyAll();
-            mockHttpContext.VerifyAll();
-            mockAuthenticationManager.VerifyAll();
-            mockOptions.VerifyAll();
-            mockClaimsPrincipal.VerifyAll();
-            mockAccountRepository.VerifyAll();
-        }
-
-        [Fact]
         public async Task ConfirmEmailAsync_ReturnsConfirmEmailResultFailedIfUnableToRetrieveEmailConfirmationAccount()
         {
             // Arrange
             Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null, null, null, null, null);
-            mockAccountSecurityService.Setup(a => a.GetEmailConfirmationAccountAsync()).ReturnsAsync(null);
+            mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(null);
             mockAccountSecurityService.CallBase = true;
 
             // Act
@@ -418,7 +293,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockTokenService.Setup(t => t.ValidateTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Account>())).ReturnsAsync(false);
 
             Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null, null, null, null, null);
-            mockAccountSecurityService.Setup(a => a.GetEmailConfirmationAccountAsync()).ReturnsAsync(new Account());
+            mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.DataProtectionTokenService, mockTokenService.Object);
 
@@ -441,23 +316,15 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
             mockOptions.Setup(o => o.Value).Returns(new AccountSecurityOptions());
 
-            Mock<AuthenticationManager> mockAuthenticationManager = new Mock<AuthenticationManager>();
-
-            Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(a => a.Authentication).Returns(mockAuthenticationManager.Object);
-
-            Mock<IHttpContextAccessor> mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-            mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(mockHttpContext.Object);
-
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.Setup(a => a.UpdateAccountEmailConfirmedAsync(It.IsAny<int>())).ReturnsAsync(false);
 
             Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null, 
-                mockHttpContextAccessor.Object, 
+                null, 
                 mockOptions.Object, 
                 mockAccountRepository.Object, 
                 null);
-            mockAccountSecurityService.Setup(a => a.GetEmailConfirmationAccountAsync()).ReturnsAsync(new Account());
+            mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.DataProtectionTokenService, mockTokenService.Object);
 
@@ -468,9 +335,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             Assert.Equal(ConfirmEmailResult.Failed, emailConfirmationResult);
             mockTokenService.VerifyAll();
             mockOptions.VerifyAll();
-            mockAuthenticationManager.VerifyAll();
-            mockHttpContext.VerifyAll();
-            mockHttpContextAccessor.VerifyAll();
             mockAccountRepository.VerifyAll();
             mockAccountSecurityService.VerifyAll();
         }
@@ -485,23 +349,15 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
             mockOptions.Setup(o => o.Value).Returns(new AccountSecurityOptions());
 
-            Mock<AuthenticationManager> mockAuthenticationManager = new Mock<AuthenticationManager>();
-
-            Mock<HttpContext> mockHttpContext = new Mock<HttpContext>();
-            mockHttpContext.Setup(a => a.Authentication).Returns(mockAuthenticationManager.Object);
-
-            Mock<IHttpContextAccessor> mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
-            mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(mockHttpContext.Object);
-
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.Setup(a => a.UpdateAccountEmailConfirmedAsync(It.IsAny<int>())).ReturnsAsync(true);
 
             Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
-                mockHttpContextAccessor.Object,
+                null,
                 mockOptions.Object,
                 mockAccountRepository.Object,
                 null);
-            mockAccountSecurityService.Setup(a => a.GetEmailConfirmationAccountAsync()).ReturnsAsync(new Account());
+            mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.DataProtectionTokenService, mockTokenService.Object);
 
@@ -512,9 +368,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             Assert.Equal(ConfirmEmailResult.Succeeded, emailConfirmationResult);
             mockTokenService.VerifyAll();
             mockOptions.VerifyAll();
-            mockAuthenticationManager.VerifyAll();
-            mockHttpContext.VerifyAll();
-            mockHttpContextAccessor.VerifyAll();
             mockAccountRepository.VerifyAll();
             mockAccountSecurityService.VerifyAll();
         }

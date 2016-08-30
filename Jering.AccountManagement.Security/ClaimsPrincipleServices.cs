@@ -61,37 +61,6 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Creates an account from a <paramref name="claimsPrincipal"/> instance.
-        /// </summary>
-        /// <param name="claimsPrincipal"></param>
-        /// <param name="authenticationScheme"></param>
-        /// <returns>
-        /// Account if <paramref name="claimsPrincipal"/> is valid.
-        /// Null if <paramref name="claimsPrincipal"/> is invalid.
-        /// </returns>
-        public virtual TAccount CreateAccount(ClaimsPrincipal claimsPrincipal, string authenticationScheme)
-        {
-            System.Security.Claims.Claim emailClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType);
-            System.Security.Claims.Claim accountIdClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
-            System.Security.Claims.Claim securityStampClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType);
-
-            if (claimsPrincipal.Identity.AuthenticationType == authenticationScheme &&
-                emailClaim != null &&
-                accountIdClaim != null &&
-                securityStampClaim != null)
-            {
-                TAccount account = (TAccount)Activator.CreateInstance(typeof(TAccount));
-
-                account.Email = emailClaim.Value;
-                account.AccountId = Convert.ToInt32(accountIdClaim.Value);
-                account.SecurityStamp = Guid.Parse(securityStampClaim.Value);
-
-                return account;
-            }
-            return default(TAccount);
-        }
-
-        /// <summary>
         /// 
         /// </summary>
         /// <param name="accountId"></param>

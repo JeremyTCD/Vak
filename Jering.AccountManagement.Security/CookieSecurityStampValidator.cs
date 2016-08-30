@@ -43,14 +43,14 @@ namespace Jering.AccountManagement.Security
         /// <param name="context"></param>
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
-            TAccount claimsPrincipalAccount = _claimsPrincipalServices.CreateAccount(context.Principal, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
-            TAccount account = await _accountRepository.GetAccountAsync(claimsPrincipalAccount.AccountId);
+            if (context.Principal != null) {
+                TAccount account = await _accountSecurityServices.GetSignedInAccount(context.Principal);
 
-            if (account.SecurityStamp != claimsPrincipalAccount.SecurityStamp)
-            {
-                context.RejectPrincipal();
-                await _accountSecurityServices.SignOutAsync();
-            }     
+                if (account == null || account.SecurityStamp.ToString() != context.Principal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType).? Value) {
+                    context.RejectPrincipal();
+                    await _accountSecurityServices.SignOutAsync();
+                }
+            }
         }
     }
 

@@ -2,10 +2,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 
 namespace Jering.AccountManagement.Security
 {
@@ -44,16 +40,6 @@ namespace Jering.AccountManagement.Security
             AuthenticationScheme = DefaultTwoFactorScheme,
             CookieName = DefaultTwoFactorScheme,
             ExpireTimeSpan = TimeSpan.FromMinutes(5)
-        };
-
-        /// <summary>
-        /// The options for the email confirmation cookie.
-        /// </summary>
-        public CookieAuthenticationOptions EmailConfirmationCookieOptions { get; set; } = new CookieAuthenticationOptions
-        {
-            AutomaticAuthenticate = false,
-            AuthenticationScheme = DefaultEmailConfirmationScheme,
-            CookieName = DefaultEmailConfirmationScheme
         };
     }
 }

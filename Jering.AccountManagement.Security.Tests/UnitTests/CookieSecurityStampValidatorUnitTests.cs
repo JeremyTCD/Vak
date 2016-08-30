@@ -21,7 +21,7 @@ namespace Jering.AccountManagement.Security.UnitTests.UnitTests
         //    mockOptions.Setup(o => o.Value).Returns(new AccountSecurityOptions());
 
         //    Mock<ClaimsPrincipalServices<Account>> mockClaimsPrincipalServices = new Mock<ClaimsPrincipalServices<Account>>(null, null, null);
-        //    mockClaimsPrincipalServices.Setup(c => c.CreateAccount(It.IsAny<ClaimsPrincipal>(), It.IsAny<string>())).Returns(new Account() { SecurityStamp = Guid.NewGuid() });
+        //    mockClaimsPrincipalServices.Setup(c => c.GetAccount(It.IsAny<ClaimsPrincipal>(), It.IsAny<string>())).Returns(new Account() { SecurityStamp = Guid.NewGuid() });
 
         //    Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
         //    mockAccountRepository.Setup(a => a.GetAccountAsync(It.IsAny<int>())).ReturnsAsync(new Account() { SecurityStamp = Guid.NewGuid() });

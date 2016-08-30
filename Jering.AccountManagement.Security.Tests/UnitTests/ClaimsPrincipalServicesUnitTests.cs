@@ -61,59 +61,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         }
 
         [Fact]
-        public void CreateAccount_ReturnsAccountIfClaimsPrincipalIsValid()
-        {
-            // Arrange
-            Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
-            AccountSecurityOptions securityOptions = new AccountSecurityOptions();
-            mockOptions.Setup(o => o.Value).Returns(securityOptions);
-
-            string email = "email@test.com";
-            int accountId = 1;
-            Guid securityStamp = Guid.NewGuid();
-
-            System.Security.Claims.Claim emailClaim = new System.Security.Claims.Claim(securityOptions.ClaimsOptions.UsernameClaimType, email);
-            System.Security.Claims.Claim accountIdClaim = new System.Security.Claims.Claim(securityOptions.ClaimsOptions.AccountIdClaimType, accountId.ToString());
-            System.Security.Claims.Claim securityStampClaim = new System.Security.Claims.Claim(securityOptions.ClaimsOptions.SecurityStampClaimType, securityStamp.ToString());
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
-            claimsIdentity.AddClaim(emailClaim);
-            claimsIdentity.AddClaim(accountIdClaim);
-            claimsIdentity.AddClaim(securityStampClaim);
-            ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-
-            ClaimsPrincipalServices<Account> claimsPrincipalServices = new ClaimsPrincipalServices<Account>(null, null, mockOptions.Object);
-
-            // Act
-            Account account = claimsPrincipalServices.CreateAccount(claimsPrincipal, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
-
-            // Assert
-            Assert.NotNull(account);
-            Assert.Equal(email, account.Email);
-            Assert.Equal(accountId, account.AccountId);
-            Assert.Equal(securityStamp, account.SecurityStamp);
-        }
-
-        [Fact]
-        public void CreateAccount_ReturnsNullIfClaimsPrincipalIsInvalid()
-        {
-            // Arrange
-            Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
-            AccountSecurityOptions securityOptions = new AccountSecurityOptions();
-            mockOptions.Setup(o => o.Value).Returns(securityOptions);
-
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
-            ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
-
-            ClaimsPrincipalServices<Account> claimsPrincipalServices = new ClaimsPrincipalServices<Account>(null, null, mockOptions.Object);
-
-            // Act
-            Account account = claimsPrincipalServices.CreateAccount(claimsPrincipal, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
-
-            // Assert
-            Assert.Null(account);
-        }
-
-        [Fact]
         public void CreateAccountIdClaimsPrincipal_CreatesClaimsPrincipalTest()
         {
             // Arrange

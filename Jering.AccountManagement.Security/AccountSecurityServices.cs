@@ -103,19 +103,12 @@ namespace Jering.AccountManagement.Security
         /// <see cref="PasswordSignInResult.Failed"/> if credentials are invalid. 
         /// <see cref="PasswordSignInResult.TwoFactorRequired"/> if two factor is required. 
         /// <see cref="PasswordSignInResult.Succeeded"/> if application sign in is complete. 
-        /// <see cref="PasswordSignInResult.EmailConfirmationRequired"/> if email confirmation is required.
         /// </returns>
         public virtual async Task<PasswordSignInResult> PasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties)
         {
             TAccount account = await _accountRepository.GetAccountByEmailAndPasswordAsync(email, password);
             if (account != null)
             {
-                if (!account.EmailConfirmed)
-                {
-                    await CreateConfirmEmailCookieAsync(account);
-                    return PasswordSignInResult.EmailConfirmationRequired;
-                }
-
                 if (account.TwoFactorEnabled)
                 {
                     await CreateTwoFactorCookieAsync(account);
@@ -138,64 +131,39 @@ namespace Jering.AccountManagement.Security
         {
             await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
             await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
-            await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.EmailConfirmationCookieOptions.AuthenticationScheme);
         }
 
         /// <summary>
-        /// Gets signed in account.
+        /// Gets signed in account for <see cref="HttpContext.User"/>.
         /// </summary>
         /// <returns>
         /// An account if there is a signed in account.
         /// Null otherwise.
         /// </returns>
-        public virtual TAccount GetSignedInAccount()
+        public virtual async Task<TAccount> GetSignedInAccount()
         {
-            return _claimsPrincipalServices.CreateAccount(_httpContext.User, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+            return await GetSignedInAccount(_httpContext.User);
         }
 
         /// <summary>
-        /// Instructs cookie authentication middleware to add email confirmation cookie to <see cref="HttpResponse"/> .
-        /// </summary>
-        public virtual async Task CreateConfirmEmailCookieAsync(TAccount account)
-        {
-            ClaimsPrincipal claimsPrincipal = _claimsPrincipalServices.CreateClaimsPrincipal(
-                account.AccountId, 
-                _securityOptions.CookieOptions.EmailConfirmationCookieOptions.AuthenticationScheme);
-
-            await _httpContext.Authentication.SignInAsync(
-                _securityOptions.CookieOptions.EmailConfirmationCookieOptions.AuthenticationScheme,
-                claimsPrincipal);
-        }
-
-        /// <summary>
-        /// Gets account using two factor cookie's account Id value. 
+        /// Gets signed in account for <param name="claimsPrincipal"></param>. This overload must be used if <see cref="HttpContext.User"/> 
+        /// has not been set, for example before authentication is complete.
         /// </summary>
         /// <returns>
-        /// Null if two factor cookie is invalid.
-        /// Null if two factor cookie does not have an account Id value.
-        /// An account if two factor cookie's account Id value exists.
+        /// An account if there is a signed in account.
+        /// Null otherwise.
         /// </returns>
-        public virtual async Task<TAccount> GetEmailConfirmationAccountAsync()
+        public virtual async Task<TAccount> GetSignedInAccount(ClaimsPrincipal claimsPrincipal)
         {
-            ClaimsPrincipal claimsPrincipal = await _httpContext.Authentication.AuthenticateAsync(
-                    _securityOptions.CookieOptions.EmailConfirmationCookieOptions.AuthenticationScheme
-                );
-
-            if (claimsPrincipal == null)
+            if (claimsPrincipal.Identity.AuthenticationType == _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme)
             {
-                return default(TAccount);
+                System.Security.Claims.Claim accountIdClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
+                if (accountIdClaim != null)
+                {
+                    return await _accountRepository.GetAccountAsync(Convert.ToInt32(accountIdClaim.Value));
+                }
             }
-
-            System.Security.Claims.Claim accountIdClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
-
-            if (accountIdClaim == null)
-            {
-                return default(TAccount);
-            }
-
-            int accountId = Convert.ToInt32(accountIdClaim.Value);
-
-            return await _accountRepository.GetAccountAsync(accountId);
+            return default(TAccount);
         }
 
         /// <summary>
@@ -203,14 +171,14 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="token"></param>
         /// <returns>
-        /// <see cref="ConfirmEmailResult.Failed"/> if unable to retrieve email confirmation account.  
+        /// <see cref="ConfirmEmailResult.Failed"/> if there is no signed in account.
         /// <see cref="ConfirmEmailResult.InvalidToken"/> if token is invalid.
         /// <see cref="ConfirmEmailResult.Failed"/> if unable to update account email confirmed. 
         /// <see cref="ConfirmEmailResult.Succeeded"/> if <paramref name="token"/> is valid and EmailConfirmed updates successfully.
         /// </returns>
         public virtual async Task<ConfirmEmailResult> ConfirmEmailAsync(string token)
         {
-            TAccount account = await GetEmailConfirmationAccountAsync();
+            TAccount account = await GetSignedInAccount();
 
             if(account == null)
             {
@@ -221,8 +189,6 @@ namespace Jering.AccountManagement.Security
             {
                 return ConfirmEmailResult.InvalidToken;
             }
-
-            await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.EmailConfirmationCookieOptions.AuthenticationScheme);
 
             if (!await _accountRepository.UpdateAccountEmailConfirmedAsync(account.AccountId))
             {
@@ -358,7 +324,8 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Creates an account with the specified <paramref name="email"/> and <paramref name="password"/>. 
+        /// Creates an account with the specified <paramref name="email"/> and <paramref name="password"/>. If successful, signs in account and sends
+        /// confirmation email.
         /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
@@ -371,8 +338,15 @@ namespace Jering.AccountManagement.Security
             {
                 TAccount account = await _accountRepository.CreateAccountAsync(email, password);
 
-                await CreateConfirmEmailCookieAsync(account);
+                if (account == null)
+                {
+                    throw new NullReferenceException(nameof(account));
+                }
+
                 await SendConfirmationEmailAsync(account);
+
+                await SignInAsync(account, new AuthenticationProperties { IsPersistent = false });
+
                 return CreateAccountResult.Succeeded;
             }
             catch (SqlException sqlException)
