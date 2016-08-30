@@ -5,32 +5,39 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
+namespace Jering.DataAnnotations
 {
     /// <summary>
     /// Validates an email address's format.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ValidateAsEmailAddressAttribute : ValidationAttribute
+    public class ValidateEmailAddressAttribute : OptionsValidationAttribute
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="errorMessageProperty"></param>
+        /// <param name="optionsType"></param>
+        public ValidateEmailAddressAttribute(string errorMessageProperty, Type optionsType) : base(errorMessageProperty, optionsType)
+        {
+        }
+
         /// <summary>
         /// Validates <paramref name="value"/>. 
         /// </summary>
         /// <param name="value"></param>
         /// <param name="validationContext"></param>
         /// <returns>
-        /// <see cref="ValidationResult"/> with error message <see cref="ViewModelOptions.Email_Invalid"/> if <paramref name="value"/> cannot be converted into a string.
-        /// <see cref="ValidationResult"/> with error message <see cref="ViewModelOptions.Email_Invalid"/> if <paramref name="value"/> isn't formatted as an email.
+        /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> cannot be converted into a string.
+        /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> isn't formatted as an email.
         /// <see cref="ValidationResult.Success"/> if email address is properly formatted.
         /// </returns>
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            ViewModelOptions viewModelOptions = ((IOptions<ViewModelOptions>)validationContext.GetService(typeof(IOptions<ViewModelOptions>))).Value;
-
             string valueAsString = value as string;
             if (valueAsString == null)
             {
-                return new ValidationResult(viewModelOptions.Email_Invalid);
+                return new ValidationResult(GetErrorMessage(validationContext));
             }
 
             // only return true if there is only 1 '@' character
@@ -42,13 +49,13 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
                 {
                     if (found || i == 0 || i == valueAsString.Length - 1)
                     {
-                        return new ValidationResult(viewModelOptions.Email_Invalid);
+                        return new ValidationResult(GetErrorMessage(validationContext));
                     }
                     found = true;
                 }
             }
 
-            return found ? ValidationResult.Success : new ValidationResult(viewModelOptions.Email_Invalid);
+            return found ? ValidationResult.Success : new ValidationResult(GetErrorMessage(validationContext));
         }
     }
 }
