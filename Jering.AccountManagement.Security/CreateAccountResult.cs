@@ -3,7 +3,7 @@
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// 
+    /// Results for <see cref="IAccountSecurityServices{TAccount}.CreateAccountAsync"/>.
     /// </summary>
     public class CreateAccountResult<TAccount> where TAccount : IAccount
     {
