@@ -9,8 +9,9 @@
 
 <form asp-controller="@nameof(AccountController).Replace("Controller","")" asp-action="@nameof(AccountController.SignUp)" 
       asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" role="form">
-    <h4>Sign up.</h4>
-    <hr />
+    <div>
+        logo
+    </div>
     <div>
         <label asp-for="Email"></label>
         <div>
