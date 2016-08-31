@@ -5,6 +5,7 @@ using Microsoft.Net.Http.Headers;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
@@ -183,7 +184,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 
         [Theory]
         [MemberData(nameof(SignUpPostData))]
-        public async Task SignUpPost_ReturnsSignUpViewWithErrorMessagesIfModelStateIsInvalidOrEmailIsInUse(string email, string password, string confirmPassword)
+        public async Task SignUpPost_ReturnsSignUpViewWithErrorMessagesIfModelStateIsInvalidOrCreateAccountFails(string email, string password, string confirmPassword)
         {
             // Arrange
             await _resetAccountsTable();
@@ -251,13 +252,15 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_RedirectsToHomeIndexViewAndSendsApplicationCookieIfRegistrationIsSuccessful()
+        public async Task SignUpPost_RedirectsToHomeIndexViewAndSendsApplicationCookieAndConfirmEmailEmailIfRegistrationIsSuccessful()
         {
             // Arrange
             await _resetAccountsTable();
 
-            HttpResponseMessage signUpResponse = await _httpClient.GetAsync("Account/SignUp");
-            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(signUpResponse);
+            Regex pattern = new Regex("<a href=\"(.*?)\">");
+
+            HttpResponseMessage signUpGetResponse = await _httpClient.GetAsync("Account/SignUp");
+            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(signUpGetResponse);
 
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
@@ -267,16 +270,22 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
                 { "__RequestVerificationToken", antiForgeryToken }
             };
 
-            HttpRequestMessage httpRequestMessage = RequestHelper.CreateWithCookiesFromResponse("Account/SignUp", HttpMethod.Post, formPostBodyData, signUpResponse);
+            HttpRequestMessage signUpPostRequest = RequestHelper.CreateWithCookiesFromResponse("Account/SignUp", HttpMethod.Post, formPostBodyData, signUpGetResponse);
 
             // Act
-            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+            HttpResponseMessage signUpPostResponse = await _httpClient.SendAsync(signUpPostRequest);
 
             // Assert
-            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
+            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(signUpPostResponse);
             Assert.Equal("Jering.Application", cookies.Keys.First());
-            Assert.Equal("Redirect", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal("/", httpResponseMessage.Headers.Location.ToString());
+            Assert.Equal("Redirect", signUpPostResponse.StatusCode.ToString());
+            Assert.Equal("/", signUpPostResponse.Headers.Location.ToString());
+
+            System.Text.RegularExpressions.Match match = pattern.Match(File.ReadAllText(@"Temp\SmtpTest.txt"));
+            string confirmEmailLink = match.Groups[1].Value;
+            HttpRequestMessage confirmEmailRequest = RequestHelper.CreateWithCookiesFromResponse(confirmEmailLink, HttpMethod.Get, null, signUpPostResponse);
+            HttpResponseMessage confirmEmailResponse = await _httpClient.SendAsync(confirmEmailRequest);
+            // TODO: ensure that email confirmation link worked
         }
 
         [Fact]

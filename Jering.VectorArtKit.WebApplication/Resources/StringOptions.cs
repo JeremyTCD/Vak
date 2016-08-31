@@ -24,5 +24,8 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
         public string SignUp_AccountWithEmailExists { get; set; } = "An account with this email already exists.";
 
         public string VerifyTwoFactorCode_InvalidCode { get; set; } = "Invalid code.";
+
+        public string ConfirmEmail_Subject { get; set; } = "Confirm email";
+        public string ConfirmEmail_Message { get; set; } = "Please confirm your email by clicking this link: <a href=\"{0}\">link</a>";
     }
 }

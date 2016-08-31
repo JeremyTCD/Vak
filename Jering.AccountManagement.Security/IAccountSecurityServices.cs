@@ -48,20 +48,6 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="accountId"></param>
-        /// <returns></returns>
-        Task SendConfirmationEmailAsync(int accountId);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="account"></param>
-        /// <returns></returns>
-        Task SendConfirmationEmailAsync(TAccount account);
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="account"></param>
         /// <param name="password"></param>
         /// <param name="token"></param>
@@ -71,9 +57,20 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="tokenService"></param>
+        /// <param name="purpose"></param>
         /// <param name="account"></param>
         /// <returns></returns>
-        Task SendTwoFactorTokenEmailAsync(TAccount account);
+        Task<string> GetTokenAsync(string tokenService, string purpose, TAccount account);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="subject"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        Task SendEmailAsync(string email, string subject, string message);
 
         /// <summary>
         /// 
@@ -109,7 +106,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <returns></returns>
-        Task<CreateAccountResult> CreateAccountAsync(string email, string password);
+        Task<CreateAccountResult<TAccount>> CreateAccountAsync(string email, string password);
 
         /// <summary>
         /// 

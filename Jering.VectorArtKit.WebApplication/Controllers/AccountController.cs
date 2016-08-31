@@ -1,21 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Logging;
 using Jering.VectorArtKit.WebApplication.ViewModels;
 using Jering.AccountManagement.DatabaseInterface;
 using Microsoft.AspNetCore.Http.Authentication;
-using System.Data.SqlClient;
 using Jering.AccountManagement.Security;
 using Jering.VectorArtKit.WebApplication.BusinessModel;
 using Jering.VectorArtKit.WebApplication.Filters;
 using Microsoft.Extensions.Options;
 using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
+using Jering.VectorArtKit.WebApplication.ViewModels.Account;
 
 namespace Jering.VectorArtKit.WebApplication.Controllers
 {
@@ -25,6 +19,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         private VakAccountRepository _vakAccountRepository;
         private IAccountSecurityServices<VakAccount> _accountSecurityServices;
         private StringOptions _stringOptions;
+        private string _confirmEmailPurpose = "ConfirmEmail";
+        private string _twoFactorPurpose = "TwoFactor";
 
         public AccountController(
             IAccountRepository<VakAccount> vakAccountRepository,
@@ -61,7 +57,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// Bad request if anti-forgery credentials are invalid.
         /// SignUp view with error messages if model state is invalid. 
         /// SignUp view with error message if create account fails. 
-        /// Redirects to /Home/Index with an application cookie if account is created successfully.
+        /// Redirects to /Home/Index with an application cookie and sends confirm email email if account is created successfully.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -71,10 +67,19 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                CreateAccountResult createAccountResult = await _accountSecurityServices.CreateAccountAsync(model.Email, model.Password);
+                CreateAccountResult<VakAccount> createAccountResult = await _accountSecurityServices.CreateAccountAsync(model.Email, model.Password);
 
-                if (createAccountResult == CreateAccountResult.Succeeded)
+                if (createAccountResult.Succeeded)
                 {
+                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, createAccountResult.Account);
+                    string callbackUrl = Url.Action(
+                        nameof(AccountController.ConfirmEmail), 
+                        nameof(AccountController).Replace("Controller", ""), 
+                        new ConfirmEmailViewModel{ Token = token }, 
+                        protocol: HttpContext.Request.Scheme);
+
+                    await _accountSecurityServices.SendEmailAsync(model.Email, _stringOptions.ConfirmEmail_Subject, string.Format(_stringOptions.ConfirmEmail_Message, callbackUrl));
+
                     // TODO: this should eventually redirect to account vakkits page
                     return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace("Controller", ""));
                 }
@@ -211,14 +216,21 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         // GET: /Account/ConfirmEmail
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string token)
+        public async Task<IActionResult> ConfirmEmail(ConfirmEmailViewModel model)
         {
-            ConfirmEmailResult emailConfirmationResult = await _accountSecurityServices.ConfirmEmailAsync(token);
+            ConfirmEmailResult emailConfirmationResult = await _accountSecurityServices.ConfirmEmailAsync(model.Token);
 
             if (emailConfirmationResult == ConfirmEmailResult.Succeeded)
             {
-                //TODO: redirect to home/index?
                 return View();
+            }
+            if(emailConfirmationResult == ConfirmEmailResult.InvalidToken)
+            {
+
+            }
+            if(emailConfirmationResult == ConfirmEmailResult.NotLoggedIn)
+            {
+
             }
 
             return View("Error");
@@ -247,7 +259,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
                 if (account != null)
                 {                
-                    await _accountSecurityServices.SendConfirmationEmailAsync(account);
+                    // TODO: generate email and use sendEmailAsync to send it
+                    //await _accountSecurityServices.SendConfirmationEmailAsync(account);
                 }                
             }
 

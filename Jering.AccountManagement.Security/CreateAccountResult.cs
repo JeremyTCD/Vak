@@ -1,26 +1,46 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Jering.AccountManagement.DatabaseInterface;
 
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
     /// 
     /// </summary>
-    public enum CreateAccountResult
+    public class CreateAccountResult<TAccount> where TAccount : IAccount
     {
         /// <summary>
         /// 
         /// </summary>
-        Succeeded,
+        public bool Succeeded { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        InvalidEmail,
+        public bool InvalidEmail { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        Failed
+        public bool Failed { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public TAccount Account { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="account"></param>
+        /// <returns></returns>
+        public static CreateAccountResult<TAccount> GetSucceededResult(TAccount account)
+        {
+            return new CreateAccountResult<TAccount>() { Succeeded = true, Account = account };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static CreateAccountResult<TAccount> GetInvalidEmailResult()
+        {
+            return new CreateAccountResult<TAccount>() { InvalidEmail = true };
+        }
     }
 }

@@ -60,7 +60,7 @@ namespace Jering.AccountManagement.Security
                 {
                     ITokenService<TAccount> tokenService = (ITokenService<TAccount>)serviceProvider.
                         GetRequiredService(_securityOptions.TokenServiceOptions.TokenServiceMap[tokenServiceName]);
-                    RegisterTokenProvider(tokenServiceName, tokenService);                    
+                    RegisterTokenProvider(tokenServiceName, tokenService);
                 }
             }
         }
@@ -72,7 +72,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="tokenService"></param>
         public virtual void RegisterTokenProvider(string tokenServiceName, ITokenService<TAccount> tokenService)
         {
-            if(tokenService == null)
+            if (tokenService == null)
             {
                 throw new ArgumentNullException(nameof(tokenService));
             }
@@ -115,7 +115,6 @@ namespace Jering.AccountManagement.Security
                 if (account.TwoFactorEnabled)
                 {
                     await CreateTwoFactorCookieAsync(account);
-                    await SendTwoFactorTokenEmailAsync(account);
                     return PasswordSignInResult.TwoFactorRequired;
                 }
 
@@ -183,12 +182,12 @@ namespace Jering.AccountManagement.Security
         {
             TAccount account = await GetSignedInAccount();
 
-            if(account == null)
+            if (account == null)
             {
                 return ConfirmEmailResult.Failed;
             }
 
-            if(!await _tokenServices[TokenServiceOptions.DataProtectionTokenService].ValidateTokenAsync(_confirmEmailTokenPurpose, token, account))
+            if (!await _tokenServices[TokenServiceOptions.DataProtectionTokenService].ValidateTokenAsync(_confirmEmailTokenPurpose, token, account))
             {
                 return ConfirmEmailResult.InvalidToken;
             }
@@ -202,26 +201,15 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Sends confirmation email to account with specified <paramref name="accountId"/>.
+        /// 
         /// </summary>
-        /// <param name="accountId"></param>
-        /// <returns>A <see cref="Task"/> that returns true if confirmation email is sent successfully.</returns>
-        public virtual async Task SendConfirmationEmailAsync(int accountId)
-        {
-            TAccount account = await _accountRepository.GetAccountAsync(accountId);
-            await SendConfirmationEmailAsync(account);
-        }
-
-        /// <summary>
-        /// Sends confirmation email to specified <paramref name="account"/>.
-        /// </summary>
+        /// <param name="tokenService"></param>
+        /// <param name="purpose"></param>
         /// <param name="account"></param>
-        /// <returns>A <see cref="Task"/> that returns true if confirmation email is sent successfully.</returns>
-        public virtual async Task SendConfirmationEmailAsync(TAccount account)
+        /// <returns></returns>
+        public virtual async Task<string> GetTokenAsync(string tokenService, string purpose, TAccount account)
         {
-            string token = await _tokenServices[TokenServiceOptions.DataProtectionTokenService].GenerateTokenAsync(_confirmEmailTokenPurpose, account);
-
-            await _emailSender.SendEmailAsync("your link:" + token, account.Email, "confirmation email");           
+            return await _tokenServices[tokenService].GenerateTokenAsync(purpose, account);
         }
 
         /// <summary>
@@ -239,16 +227,15 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Generates and sends a two factor token to the email address associated with <paramref name="account"/>.
+        /// 
         /// </summary>
-        /// <param name="account"></param>
+        /// <param name="email"></param>
+        /// <param name="subject"></param>
+        /// <param name="message"></param>
         /// <returns></returns>
-        public virtual async Task SendTwoFactorTokenEmailAsync(TAccount account)
+        public virtual async Task SendEmailAsync(string email, string subject, string message)
         {
-            
-            string token = await _tokenServices[TokenServiceOptions.TotpTokenService].GenerateTokenAsync(_twoFactorTokenPurpose, account);
-
-            await _emailSender.SendEmailAsync("Your security code is: " + token, account.Email, "security code");
+            await _emailSender.SendEmailAsync(message, email, subject);
         }
 
         /// <summary>
@@ -263,14 +250,14 @@ namespace Jering.AccountManagement.Security
         {
             ClaimsPrincipal claimsPrincipal = await _httpContext.Authentication.AuthenticateAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
 
-            if(claimsPrincipal == null)
+            if (claimsPrincipal == null)
             {
                 return default(TAccount);
             }
 
             System.Security.Claims.Claim accountIdClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
 
-            if(accountIdClaim == null)  
+            if (accountIdClaim == null)
             {
                 return default(TAccount);
             }
@@ -330,9 +317,9 @@ namespace Jering.AccountManagement.Security
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <returns>
-        /// <see cref="CreateAccountResult"/>. 
+        /// <see cref="CreateAccountResult{TAccount}"/>. 
         /// </returns>
-        public virtual async Task<CreateAccountResult> CreateAccountAsync(string email, string password)
+        public virtual async Task<CreateAccountResult<TAccount>> CreateAccountAsync(string email, string password)
         {
             try
             {
@@ -343,17 +330,15 @@ namespace Jering.AccountManagement.Security
                     throw new NullReferenceException(nameof(account));
                 }
 
-                await SendConfirmationEmailAsync(account);
-
                 await SignInAsync(account, new AuthenticationProperties { IsPersistent = false });
 
-                return CreateAccountResult.Succeeded;
+                return CreateAccountResult<TAccount>.GetSucceededResult(account);
             }
             catch (SqlException sqlException)
             {
                 if (sqlException.Number == 51000)
                 {
-                    return CreateAccountResult.Failed;
+                    return CreateAccountResult<TAccount>.GetInvalidEmailResult();
                 }
                 else
                 {

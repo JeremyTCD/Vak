@@ -21,6 +21,10 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
+        NotLoggedIn,
+        /// <summary>
+        /// 
+        /// </summary>
         Failed
     }
 }
