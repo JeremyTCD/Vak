@@ -27,5 +27,8 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
 
         public string ConfirmEmail_Subject { get; set; } = "Confirm email";
         public string ConfirmEmail_Message { get; set; } = "Please confirm your email by clicking this link: <a href=\"{0}\">link</a>";
+
+        public string TwoFactorEmail_Subject { get; set; } = "Two factor code";
+        public string TwoFactorEmail_Message { get; set; } = "Your code is: {0}";
     }
 }

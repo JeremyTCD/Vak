@@ -114,20 +114,24 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LoginPost_RedirectsToVerifyCodeViewAndSendsTwoFactorCookieIfTwoFactorIsRequired()
+        public async Task LoginPost_RedirectsToVerifyCodeViewAndSendsTwoFactorCookieAndSendsTwoFactorEmailIfTwoFactorIsRequired()
         {
             // Arrange
+            string email = "Email1@test.com";
+
             await _resetAccountsTable();
-            await vakAccountRepository.CreateAccountAsync("Email1@test.com", "Password1@");
+            await vakAccountRepository.CreateAccountAsync(email, "Password1@");
             await vakAccountRepository.UpdateAccountTwoFactorEnabledAsync(1, true);
             await vakAccountRepository.UpdateAccountEmailConfirmedAsync(1);
+
+            File.WriteAllText(@"Temp\SmtpTest.txt", "");
 
             HttpResponseMessage loginResponse = await _httpClient.GetAsync("Account/Login");
             string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(loginResponse);
 
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { "Email", "Email1@test.com"},
+                { "Email", email},
                 { "Password", "Password1@"},
                 { "RememberMe", "true" },
                 { "__RequestVerificationToken", antiForgeryToken }
@@ -143,6 +147,11 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.Equal("Jering.TwoFactor", cookies.Keys.First());
             Assert.Equal("Redirect", httpResponseMessage.StatusCode.ToString());
             Assert.Equal($"/Account/{nameof(AccountController.VerifyTwoFactorCode)}?IsPersistent=True", httpResponseMessage.Headers.Location.ToString());
+            StringOptions stringOptions = new StringOptions();
+            string twoFactorEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
+            Assert.Contains(stringOptions.TwoFactorEmail_Subject, twoFactorEmail);
+            Assert.Contains(email, twoFactorEmail);
+            Assert.Matches(stringOptions.TwoFactorEmail_Message.Replace("{0}", @"\d{6,6}"), twoFactorEmail);
         }
 
         [Fact]
@@ -257,7 +266,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             // Arrange
             await _resetAccountsTable();
 
-            Regex pattern = new Regex("<a href=\"(.*?)\">");
+            File.WriteAllText(@"Temp\SmtpTest.txt", "");
 
             HttpResponseMessage signUpGetResponse = await _httpClient.GetAsync("Account/SignUp");
             string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(signUpGetResponse);
@@ -280,12 +289,11 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.Equal("Jering.Application", cookies.Keys.First());
             Assert.Equal("Redirect", signUpPostResponse.StatusCode.ToString());
             Assert.Equal("/", signUpPostResponse.Headers.Location.ToString());
-
-            System.Text.RegularExpressions.Match match = pattern.Match(File.ReadAllText(@"Temp\SmtpTest.txt"));
-            string confirmEmailLink = match.Groups[1].Value;
-            HttpRequestMessage confirmEmailRequest = RequestHelper.CreateWithCookiesFromResponse(confirmEmailLink, HttpMethod.Get, null, signUpPostResponse);
-            HttpResponseMessage confirmEmailResponse = await _httpClient.SendAsync(confirmEmailRequest);
-            // TODO: ensure that email confirmation link worked
+            StringOptions stringOptions = new StringOptions();
+            string confirmEmailEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
+            Assert.Contains(stringOptions.ConfirmEmail_Subject, confirmEmailEmail);
+            Assert.Contains("Email1@test.com", confirmEmailEmail);
+            Assert.Matches(stringOptions.ConfirmEmail_Message.Replace("{0}", $"http://localhost/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.ConfirmEmail)}.*?"), confirmEmailEmail);
         }
 
         [Fact]

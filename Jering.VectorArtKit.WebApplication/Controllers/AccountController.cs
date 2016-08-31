@@ -91,7 +91,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         }
 
         /// <summary>
-        /// GET: /Account/Login
+        /// GET: /Account/LogIn
         /// </summary>
         /// <param name="returnUrl"></param>
         /// <returns>
@@ -100,14 +100,14 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpGet]
         [AllowAnonymous]
         [SetSignedInAccount]
-        public IActionResult Login(string returnUrl = null)
+        public IActionResult LogIn(string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
         /// <summary>
-        /// Post: /Account/Login
+        /// Post: /Account/LogIn
         /// </summary>
         /// <param name="model"></param>
         /// <param name="returnUrl"></param>
@@ -115,25 +115,29 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// Bad request if anti-forgery credentials are invalid.
         /// Login view with error message if model state or login credentials are invalid. 
         /// Home index view or return Url view with an application cookie if login is successful.
-        /// Redirects to /Account/VerifyCode with a two factor cookie if two factor is required. 
+        /// Redirects to /Account/VerifyCode with a two factor cookie and sends two factor email if two factor is required. 
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> LogIn(LoginViewModel model, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
             {
-                PasswordSignInResult passwordSignInResult = await _accountSecurityServices.PasswordSignInAsync(model.Email,
+                PasswordSignInResult<VakAccount> passwordSignInResult = await _accountSecurityServices.PasswordSignInAsync(model.Email,
                     model.Password,
                     new AuthenticationProperties() { IsPersistent = model.RememberMe });
 
-                if (passwordSignInResult == PasswordSignInResult.TwoFactorRequired)
+                if (passwordSignInResult.TwoFactorRequired)
                 {
+                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, passwordSignInResult.Account);
+
+                    await _accountSecurityServices.SendEmailAsync(model.Email, _stringOptions.TwoFactorEmail_Subject, string.Format(_stringOptions.TwoFactorEmail_Message, token));
+
                     return RedirectToAction(nameof(VerifyTwoFactorCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl });
                 }
-                if (passwordSignInResult == PasswordSignInResult.Succeeded)
+                if (passwordSignInResult.Succeeded)
                 {
                     return RedirectToLocal(returnUrl);
                 }
