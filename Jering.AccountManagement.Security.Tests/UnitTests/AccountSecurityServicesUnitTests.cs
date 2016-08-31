@@ -29,10 +29,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityServices<IAccount> accountSecurityServices = new AccountSecurityServices<IAccount>(null, null, null, mockAccountRepository.Object, null, null);
 
             // Act
-            PasswordSignInResult applicationSignInResult = await accountSecurityServices.PasswordSignInAsync("", "", null);
+            PasswordSignInResult<IAccount> applicationSignInResult = await accountSecurityServices.PasswordSignInAsync("", "", null);
 
             // Assert
-            Assert.Equal(PasswordSignInResult.Failed, applicationSignInResult);
+            Assert.True(applicationSignInResult.Failed);
             mockAccountRepository.VerifyAll();
         }
 
@@ -47,10 +47,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockAccountSecurityServices.Setup(a => a.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), null)).CallBase();
 
             // Act
-            PasswordSignInResult applicationSignInResult = await mockAccountSecurityServices.Object.PasswordSignInAsync("", "", null);
+            PasswordSignInResult<IAccount> applicationSignInResult = await mockAccountSecurityServices.Object.PasswordSignInAsync("", "", null);
 
             // Assert
-            Assert.Equal(PasswordSignInResult.Succeeded, applicationSignInResult);
+            Assert.True(applicationSignInResult.Succeeded);
             mockAccountRepository.VerifyAll();
         }
 
@@ -65,10 +65,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockAccountSecurityServices.Setup(a => a.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), null)).CallBase();
 
             // Act
-            PasswordSignInResult applicationSignInResult = await mockAccountSecurityServices.Object.PasswordSignInAsync("", "", null);
+            PasswordSignInResult<IAccount> applicationSignInResult = await mockAccountSecurityServices.Object.PasswordSignInAsync("", "", null);
 
             // Assert
-            Assert.Equal(PasswordSignInResult.TwoFactorRequired, applicationSignInResult);
+            Assert.True(applicationSignInResult.TwoFactorRequired);
             mockAccountRepository.VerifyAll();
         }
 

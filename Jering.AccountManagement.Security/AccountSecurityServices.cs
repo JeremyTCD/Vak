@@ -107,7 +107,7 @@ namespace Jering.AccountManagement.Security
         /// <see cref="PasswordSignInResult.TwoFactorRequired"/> if two factor is required. 
         /// <see cref="PasswordSignInResult.Succeeded"/> if application sign in is complete. 
         /// </returns>
-        public virtual async Task<PasswordSignInResult> PasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties)
+        public virtual async Task<PasswordSignInResult<TAccount>> PasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties)
         {
             TAccount account = await _accountRepository.GetAccountByEmailAndPasswordAsync(email, password);
             if (account != null)
@@ -115,14 +115,14 @@ namespace Jering.AccountManagement.Security
                 if (account.TwoFactorEnabled)
                 {
                     await CreateTwoFactorCookieAsync(account);
-                    return PasswordSignInResult.TwoFactorRequired;
+                    return PasswordSignInResult<TAccount>.GetTwoFactorRequiredResult(account);
                 }
 
                 await SignInAsync(account, authenticationProperties);
-                return PasswordSignInResult.Succeeded;
+                return PasswordSignInResult<TAccount>.GetSucceededResult();
             }
 
-            return PasswordSignInResult.Failed;
+            return PasswordSignInResult<TAccount>.GetFailedResult() ;
         }
 
         /// <summary>

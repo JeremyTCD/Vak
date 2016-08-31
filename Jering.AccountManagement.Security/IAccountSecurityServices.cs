@@ -30,7 +30,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="password"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns></returns>
-        Task<PasswordSignInResult> PasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties);
+        Task<PasswordSignInResult<TAccount>> PasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties);
 
         /// <summary>
         /// 
