@@ -8,12 +8,7 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
 {
     public class StringOptions
     {
-        public string Password_TooShort { get; set; } = "Password must be at least 8 characters.";
-        public string Password_NonAlphaNumericRequired { get; set; } = "Password must have at least 1 non-alphanumeric character.";
-        public string Password_DigitRequired { get; set; } = "Password must have at least 1 digit.";
-        public string Password_LowercaseRequired { get; set; } = "Password must have at least 1 lowercase character.";
-        public string Password_UppercaseRequired { get; set; } = "Password must have at least 1 uppercase character.";
-        public string Password_Invalid { get; set; } = "Password is invalid.";
+        public string Password_Invalid { get; set; } = "Password must be at least 8 characters long. Password must include both upper and lower case characters.";
 
         public string ConfirmPassword_DoesNotMatchPassword { get; set; } = "Confirmation password does not match password.";
 
