@@ -200,7 +200,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             TwoFactorSignInResult twoFactorSignInResult = await mockAccountSecurityServices.Object.TwoFactorSignInAsync(null, false);
 
             // Assert
-            Assert.Equal(TwoFactorSignInResult.Failed, twoFactorSignInResult);
+            Assert.True(twoFactorSignInResult.Failed);
             mockAccountSecurityServices.VerifyAll();
         }
 
@@ -238,7 +238,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             TwoFactorSignInResult twoFactorSignInResult = await mockAccountSecurityServices.Object.TwoFactorSignInAsync("", false);
 
             // Assert
-            Assert.Equal(TwoFactorSignInResult.Succeeded, twoFactorSignInResult);
+            Assert.True(twoFactorSignInResult.Succeeded);
             mockAccountSecurityServices.VerifyAll();
             mockHttpContextAccessor.VerifyAll();
             mockHttpContext.VerifyAll();
@@ -269,7 +269,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             TwoFactorSignInResult twoFactorSignInResult = await mockAccountSecurityServices.Object.TwoFactorSignInAsync("", false);
 
             // Assert
-            Assert.Equal(TwoFactorSignInResult.Failed, twoFactorSignInResult);
+            Assert.True(twoFactorSignInResult.Failed);
             mockAccountSecurityServices.VerifyAll();
             mockTotpTokenService.VerifyAll();
         }

@@ -103,9 +103,9 @@ namespace Jering.AccountManagement.Security
         /// <param name="password"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns>
-        /// <see cref="PasswordSignInResult.Failed"/> if credentials are invalid. 
-        /// <see cref="PasswordSignInResult.TwoFactorRequired"/> if two factor is required. 
-        /// <see cref="PasswordSignInResult.Succeeded"/> if application sign in is complete. 
+        /// <see cref="PasswordSignInResult{TAccount}"/> with <see cref="PasswordSignInResult{TAccount}.Failed"/> set to true if credentials are invalid. 
+        /// <see cref="PasswordSignInResult{TAccount}"/> with <see cref="PasswordSignInResult{TAccount}.TwoFactorRequired"/> set to true if two factor is required. 
+        /// <see cref="PasswordSignInResult{TAccount}"/> with <see cref="PasswordSignInResult{TAccount}.Succeeded"/> set to true if application sign in is complete. 
         /// </returns>
         public virtual async Task<PasswordSignInResult<TAccount>> PasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties)
         {
@@ -114,7 +114,6 @@ namespace Jering.AccountManagement.Security
             {
                 if (account.TwoFactorEnabled)
                 {
-                    await CreateTwoFactorCookieAsync(account);
                     return PasswordSignInResult<TAccount>.GetTwoFactorRequiredResult(account);
                 }
 
@@ -286,28 +285,26 @@ namespace Jering.AccountManagement.Security
         /// <param name="token"></param>
         /// <param name="isPersistent"></param>
         /// <returns>
-        /// <see cref="TwoFactorSignInResult.Failed"/> if unable to retrieve two factor account.
-        /// <see cref="TwoFactorSignInResult.Succeeded"/> if <paramref name="token"/> is valid. 
-        /// <see cref="TwoFactorSignInResult.Failed"/> if <paramref name="token"/> is invalid. 
+        /// <see cref="TwoFactorSignInResult"/> with <see cref="TwoFactorSignInResult.Failed"/> set to true if unable to retrieve two factor account 
+        /// or <paramref name="token"/> is invalid.
+        /// <see cref="TwoFactorSignInResult"/> with <see cref="TwoFactorSignInResult.Succeeded"/> set to true if <paramref name="token"/> is valid. 
         /// </returns>
         public virtual async Task<TwoFactorSignInResult> TwoFactorSignInAsync(string token, bool isPersistent)
         {
             TAccount account = await GetTwoFactorAccountAsync();
-            if (account == null)
+            if (account != null)
             {
-                return TwoFactorSignInResult.Failed;
+                if (await _tokenServices[TokenServiceOptions.TotpTokenService].ValidateTokenAsync(_twoFactorTokenPurpose, token, account))
+                {
+                    // Cleanup two factor cookie
+                    await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
+                    await SignInAsync(account, new AuthenticationProperties() { IsPersistent = isPersistent });
+
+                    return TwoFactorSignInResult.GetSucceededResult();
+                }
             }
 
-            if (await _tokenServices[TokenServiceOptions.TotpTokenService].ValidateTokenAsync(_twoFactorTokenPurpose, token, account))
-            {
-                // Cleanup two factor cookie
-                await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
-                await SignInAsync(account, new AuthenticationProperties() { IsPersistent = isPersistent });
-
-                return TwoFactorSignInResult.Succeeded;
-            }
-
-            return TwoFactorSignInResult.Failed;
+            return TwoFactorSignInResult.GetFailedResult();
         }
 
         /// <summary>

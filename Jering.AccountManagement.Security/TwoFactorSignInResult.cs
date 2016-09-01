@@ -6,17 +6,35 @@ using System.Threading.Tasks;
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// 
+    /// Results for <see cref="IAccountSecurityServices{TAccount}.TwoFactorSignInAsync"/>.
     /// </summary>
-    public enum TwoFactorSignInResult
+    public class TwoFactorSignInResult
     {
         /// <summary>
         /// 
         /// </summary>
-        Succeeded,
+        public bool Succeeded { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        Failed
+        public bool Failed { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static TwoFactorSignInResult GetSucceededResult()
+        {
+            return new TwoFactorSignInResult() { Succeeded = true };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static TwoFactorSignInResult GetFailedResult()
+        {
+            return new TwoFactorSignInResult() { Failed = true };
+        }
     }
 }
