@@ -6,12 +6,12 @@
 }
 
 <h2>@ViewData["Title"].</h2>
-
+<div>
+    Two factor explanation.
+</div>
 <form asp-controller="@nameof(AccountController).Replace("Controller","")" asp-action="@nameof(AccountController.VerifyTwoFactorCode)" 
       asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" role="form">
-    <div>
-        Two factor explanation.
-    </div>
+
     <div>
         <label asp-for="Code"></label>
         <div>

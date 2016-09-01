@@ -6,12 +6,12 @@
 }
 
 <h2>@ViewData["Title"].</h2>
-
+<div>
+    logo
+</div>
 <form asp-controller="@nameof(AccountController).Replace("Controller","")" asp-action="@nameof(AccountController.SignUp)" 
       asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" role="form">
-    <div>
-        logo
-    </div>
+
     <div>
         <label asp-for="Email"></label>
         <div>
