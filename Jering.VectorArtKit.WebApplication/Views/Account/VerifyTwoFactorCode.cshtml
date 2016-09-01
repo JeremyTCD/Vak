@@ -23,14 +23,9 @@
         <input asp-for="IsPersistent" type="hidden"/>
     </div>
     <div>
-        <div>
-            <a asp-controller="@nameof(AccountController).Replace("Controller","")" asp-action=@nameof(AccountController.SendTwoFactorCode)>Resend code</a>
-        </div>
-        <div>
-            Resend code result
-        </div>
+        <button type="submit">Submit</button>
     </div>
     <div>
-        <button type="submit">Submit</button>
+        Did not receive email
     </div>
 </form>

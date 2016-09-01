@@ -137,7 +137,9 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 if (passwordSignInResult.TwoFactorRequired)
                 {
                     await _accountSecurityServices.CreateTwoFactorCookieAsync(passwordSignInResult.Account);
-                    await SendTwoFactorCodeEmail(passwordSignInResult.Account, passwordSignInResult.Account.Email);
+                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, passwordSignInResult.Account);
+                    await _accountSecurityServices.SendEmailAsync(passwordSignInResult.Account.Email, _stringOptions.TwoFactorEmail_Subject, string.Format(_stringOptions.TwoFactorEmail_Message, token));
+
                     return RedirectToAction(nameof(VerifyTwoFactorCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl });
                 }
                 if (passwordSignInResult.Succeeded)
@@ -201,33 +203,6 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             }
            
             return View(model);
-        }
-
-        /// <summary>
-        /// GET: /Account/SendTwoFactorCode
-        /// </summary>
-        /// <returns>
-        /// Email sent message if two factor cookie is valid.
-        /// Log in again if two factor cookie is invalid.
-        /// </returns>
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> SendTwoFactorCode()
-        {
-            VakAccount account = await _accountSecurityServices.GetTwoFactorAccountAsync();
-            if (account != null)
-            {
-                await SendTwoFactorCodeEmail(account, account.Email);
-                // TODO: handle after client side ajax system is sorted out
-                // - after x requests, signal that captcha is required
-                return Ok(string.Format(_stringOptions.SendTwoFactorCode_EmailSent, account.Email));
-            }
-            else
-            {
-                // TODO: handle after client side ajax system is sorted out
-                // - ask user to login again
-                return Ok(_stringOptions.SendTwoFactorCode_Relog);
-            }
         }
 
         /// <summary>
@@ -367,11 +342,6 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
         #region Helpers
 
-        private async Task SendTwoFactorCodeEmail(VakAccount account, string email)
-        {
-            string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, account);
-            await _accountSecurityServices.SendEmailAsync(email, _stringOptions.TwoFactorEmail_Subject, string.Format(_stringOptions.TwoFactorEmail_Message, token));
-        }
         private IActionResult RedirectToLocal(string returnUrl)
         {
             // This prevents open redirection attacks - http://www.asp.net/mvc/overview/security/preventing-open-redirection-attacks

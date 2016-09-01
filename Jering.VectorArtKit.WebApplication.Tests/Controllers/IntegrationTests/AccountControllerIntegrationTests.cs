@@ -413,44 +413,6 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             yield return new object[] { "123456" };
         }
 
-        [Theory]
-        [MemberData(nameof(SendTwoFactorCodeGetData))]
-        public async Task SendTwoFactorCodeGet_ReturnsCorrectMessage(bool includeTwoFactorCookie)
-        {
-            // Arrange
-            string email = "Email1@test.com", password = "Password1@";
-            await _resetAccountsTable();
-            await CreateAccount(email, password, true);
-            HttpResponseMessage loginPostResponse = await LogIn(email, password);
-
-            HttpRequestMessage SendTwoFactorCodeGetRequest = RequestHelper.Create("/Account/SendTwoFactorCode", HttpMethod.Get, null);
-            if (includeTwoFactorCookie)
-            {
-                CookiesHelper.CopyCookiesFromResponse(SendTwoFactorCodeGetRequest, loginPostResponse);
-            }
-
-            // Act
-            HttpResponseMessage SendTwoFactorCodeGetResponse = await _httpClient.SendAsync(SendTwoFactorCodeGetRequest);
-
-            // Assert
-            StringOptions stringOptions = new StringOptions();
-            string message = await SendTwoFactorCodeGetResponse.Content.ReadAsStringAsync();
-            if (includeTwoFactorCookie)
-            {
-                Assert.Equal(String.Format(stringOptions.SendTwoFactorCode_EmailSent, email), message);
-            }
-            else
-            {
-                Assert.Equal(stringOptions.SendTwoFactorCode_Relog, message);
-            }
-        }
-
-        public static IEnumerable<object[]> SendTwoFactorCodeGetData()
-        {
-            yield return new object[] { true };
-            yield return new object[] { false };
-        }
-
         #region Helpers
         public async Task<HttpResponseMessage> VerifyTwoFactorCode(IDictionary<string, string> twoFactorCookie, string code)
         {
