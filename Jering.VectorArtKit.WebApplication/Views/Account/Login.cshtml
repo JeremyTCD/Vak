@@ -1,6 +1,4 @@
-﻿@using System.Collections.Generic
-@using Microsoft.AspNetCore.Http
-@using Microsoft.AspNetCore.Http.Authentication
+﻿@using Jering.VectorArtKit.WebApplication.Controllers
 @model LoginViewModel
 
 @{
@@ -9,7 +7,8 @@
 
 <h2>@ViewData["Title"].</h2>
 
-<form asp-controller="Account" asp-action="Login" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" role="form">
+<form asp-controller="@nameof(AccountController).Replace("Controller","")" asp-action="@nameof(AccountController.LogIn)" 
+      asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" role="form">
     <div>logo</div>
     <div asp-validation-summary="ModelOnly"></div>
     <div>
@@ -34,5 +33,6 @@
     </div>
 </form>
 <div>
-    <a asp-action="SignUp" asp-route-returnurl="@ViewData["ReturnUrl"]">Sign up as a new user?</a>
+    <a asp-controller="@nameof(AccountController).Replace("Controller","")" asp-action="@nameof(AccountController.SignUp)" 
+       asp-route-returnurl="@ViewData["ReturnUrl"]">Sign up as a new user?</a>
 </div>
