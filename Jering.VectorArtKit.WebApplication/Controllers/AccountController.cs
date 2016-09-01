@@ -73,9 +73,9 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 {
                     string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, createAccountResult.Account);
                     string callbackUrl = Url.Action(
-                        nameof(AccountController.ConfirmEmail), 
-                        nameof(AccountController).Replace("Controller", ""), 
-                        new ConfirmEmailViewModel{ Token = token }, 
+                        nameof(AccountController.ConfirmEmail),
+                        nameof(AccountController).Replace("Controller", ""),
+                        new ConfirmEmailViewModel { Token = token },
                         protocol: HttpContext.Request.Scheme);
 
                     await _accountSecurityServices.SendEmailAsync(model.Email, _stringOptions.ConfirmEmail_Subject, string.Format(_stringOptions.ConfirmEmail_Message, callbackUrl));
@@ -85,6 +85,11 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 }
 
                 ModelState.AddModelError(nameof(SignUpViewModel.Email), _stringOptions.SignUp_AccountWithEmailExists);
+            }
+            else if (ModelState.ContainsKey(nameof(SignUpViewModel.Password)))
+            {
+                ModelState.Remove(nameof(SignUpViewModel.Password));
+                ModelState.AddModelError(nameof(SignUpViewModel.Password), _stringOptions.Password_Invalid);
             }
 
             return View(model);
@@ -131,10 +136,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 if (passwordSignInResult.TwoFactorRequired)
                 {
-                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, passwordSignInResult.Account);
-
-                    await _accountSecurityServices.SendEmailAsync(model.Email, _stringOptions.TwoFactorEmail_Subject, string.Format(_stringOptions.TwoFactorEmail_Message, token));
-
+                    await _accountSecurityServices.CreateTwoFactorCookieAsync(passwordSignInResult.Account);
+                    await SendTwoFactorCodeEmail(passwordSignInResult.Account, passwordSignInResult.Account.Email);
                     return RedirectToAction(nameof(VerifyTwoFactorCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl });
                 }
                 if (passwordSignInResult.Succeeded)
@@ -147,12 +150,19 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             return View(model);
         }
 
-        //
-        // GET: /Account/VerifyTwoFactorCode
+        /// <summary>
+        /// GET: /Account/VerifyTwoFactorCode
+        /// </summary>
+        /// <param name="isPersistent"></param>
+        /// <param name="returnUrl"></param>
+        /// <returns>
+        /// Error view if two factor cookie does not exist or is invalid.
+        /// VerifyTwoFactorCode view with anti-forgery token and cookie if two factor cookie is valid.
+        /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> VerifyTwoFactorCode(bool rememberMe, string returnUrl = null)
-        {            
+        public async Task<IActionResult> VerifyTwoFactorCode(bool isPersistent, string returnUrl = null)
+        {
             VakAccount vakAccount = await _accountSecurityServices.GetTwoFactorAccountAsync();
             if (vakAccount == null)
             {
@@ -161,30 +171,63 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
             ViewData["ReturnUrl"] = returnUrl;
 
-            return View(new VerifyCodeViewModel { IsPersistent = rememberMe});
+            return View(new VerifyTwoFactorCodeViewModel { IsPersistent = isPersistent });
         }
 
-        //
-        // POST: /Account/VerifyTwoFactorCode
+        /// <summary>
+        /// POST: /Account/VerifyTwoFactorCode
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="returnUrl"></param>
+        /// <returns>
+        /// VerifyTwoFactorCode view with error message if model state or code is invalid. 
+        /// Home index view or return Url view with an application cookie if code is valid.
+        /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> VerifyTwoFactorCode(VerifyCodeViewModel model, string returnUrl = null)
+        public async Task<IActionResult> VerifyTwoFactorCode(VerifyTwoFactorCodeViewModel model, string returnUrl = null)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                return View(model);
+                TwoFactorSignInResult twoFactorSignInResult = await _accountSecurityServices.TwoFactorSignInAsync(model.Code, model.IsPersistent);
+
+                if (twoFactorSignInResult.Succeeded)
+                {
+                    return RedirectToLocal(returnUrl);
+                }
+
+                ModelState.AddModelError(nameof(VerifyTwoFactorCodeViewModel.Code), _stringOptions.VerifyTwoFactorCode_InvalidCode);
             }
-
-            TwoFactorSignInResult twoFactorSignInResult = await _accountSecurityServices.TwoFactorSignInAsync(model.Code, model.IsPersistent);
-
-            if (twoFactorSignInResult == TwoFactorSignInResult.Succeeded)
-            {
-                return RedirectToLocal(returnUrl);
-            }
-
-            ModelState.AddModelError(nameof(VerifyCodeViewModel.Code), _stringOptions.VerifyTwoFactorCode_InvalidCode);
+           
             return View(model);
+        }
+
+        /// <summary>
+        /// GET: /Account/SendTwoFactorCode
+        /// </summary>
+        /// <returns>
+        /// Email sent message if two factor cookie is valid.
+        /// Log in again if two factor cookie is invalid.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> SendTwoFactorCode()
+        {
+            VakAccount account = await _accountSecurityServices.GetTwoFactorAccountAsync();
+            if (account != null)
+            {
+                await SendTwoFactorCodeEmail(account, account.Email);
+                // TODO: handle after client side ajax system is sorted out
+                // - after x requests, signal that captcha is required
+                return Ok(string.Format(_stringOptions.SendTwoFactorCode_EmailSent, account.Email));
+            }
+            else
+            {
+                // TODO: handle after client side ajax system is sorted out
+                // - ask user to login again
+                return Ok(_stringOptions.SendTwoFactorCode_Relog);
+            }
         }
 
         /// <summary>
@@ -228,11 +271,11 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             {
                 return View();
             }
-            if(emailConfirmationResult == ConfirmEmailResult.InvalidToken)
+            if (emailConfirmationResult == ConfirmEmailResult.InvalidToken)
             {
 
             }
-            if(emailConfirmationResult == ConfirmEmailResult.NotLoggedIn)
+            if (emailConfirmationResult == ConfirmEmailResult.NotLoggedIn)
             {
 
             }
@@ -262,10 +305,10 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             {
                 VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
                 if (account != null)
-                {                
+                {
                     // TODO: generate email and use sendEmailAsync to send it
                     //await _accountSecurityServices.SendConfirmationEmailAsync(account);
-                }                
+                }
             }
 
             return View(nameof(ForgotPasswordConfirmation));
@@ -324,14 +367,11 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
         #region Helpers
 
-        //private void AddErrors(IdentityResult result)
-        //{
-        //    foreach (var error in result.Errors)
-        //    {
-        //        ModelState.AddModelError(string.Empty, error.Description);
-        //    }
-        //}
-
+        private async Task SendTwoFactorCodeEmail(VakAccount account, string email)
+        {
+            string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, account);
+            await _accountSecurityServices.SendEmailAsync(email, _stringOptions.TwoFactorEmail_Subject, string.Format(_stringOptions.TwoFactorEmail_Message, token));
+        }
         private IActionResult RedirectToLocal(string returnUrl)
         {
             // This prevents open redirection attacks - http://www.asp.net/mvc/overview/security/preventing-open-redirection-attacks

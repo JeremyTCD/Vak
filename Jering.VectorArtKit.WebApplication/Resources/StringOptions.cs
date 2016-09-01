@@ -25,5 +25,8 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Shared
 
         public string TwoFactorEmail_Subject { get; set; } = "Two factor code";
         public string TwoFactorEmail_Message { get; set; } = "Your code is: {0}";
+
+        public string SendTwoFactorCode_Relog { get; set; } = "An error occurred. Please log in again.";
+        public string SendTwoFactorCode_EmailSent { get; set; } = "An email has been sent to {0}.";
     }
 }
