@@ -1,33 +1,28 @@
 ﻿using Microsoft.Extensions.Options;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
 
 namespace Jering.DataAnnotations
 {
     /// <summary>
-    /// Validates property length.
+    /// Validates that string has at least one uppercase character.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ValidateMinLengthAttribute : OptionsValidationAttribute
+    public class ValidateHasUppercaseAttribute : OptionsValidationAttribute
     {
-        private int _minLength { get; set; }
         /// <summary>
         /// 
         /// </summary>
-        public ValidateMinLengthAttribute(int minLength) : base(null, null)
-        {
-            _minLength = minLength;
-        }
+        public ValidateHasUppercaseAttribute() : base(null, null) { }
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="minLength"></param>
         /// <param name="errorMessageProperty"></param>
         /// <param name="optionsType"></param>
-        public ValidateMinLengthAttribute(int minLength, string errorMessageProperty, Type optionsType) : base(errorMessageProperty, optionsType)
+        public ValidateHasUppercaseAttribute(string errorMessageProperty, Type optionsType) : base(errorMessageProperty, optionsType)
         {
-            _minLength = minLength;
         }
 
         /// <summary>
@@ -36,19 +31,23 @@ namespace Jering.DataAnnotations
         /// <param name="value"></param>
         /// <param name="validationContext"></param>
         /// <returns>
-        /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> is not a string.
-        /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> is too short.
-        /// <see cref="ValidationResult.Success"/> if <paramref name="value"/> is long enough.
+        /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> is not a string or has no uppercase characters.
+        /// <see cref="ValidationResult.Success"/> if <paramref name="value"/> has at least one uppercase character.
         /// </returns>
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             string valueAsString = value as string;
-            if (valueAsString == null || valueAsString.Length < _minLength)
+            if (valueAsString == null || !valueAsString.Any(IsUpper) )
             {
                 return new ValidationResult(GetErrorMessage(validationContext));
             }
 
             return ValidationResult.Success;
+        }
+
+        private bool IsUpper(char c)
+        {
+            return c >= 'A' && c <= 'Z';
         }
     }
 }

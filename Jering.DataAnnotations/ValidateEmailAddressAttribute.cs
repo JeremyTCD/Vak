@@ -16,6 +16,13 @@ namespace Jering.DataAnnotations
         /// <summary>
         /// 
         /// </summary>
+        public ValidateEmailAddressAttribute() : base(null, null)
+        {
+
+        }
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="errorMessageProperty"></param>
         /// <param name="optionsType"></param>
         public ValidateEmailAddressAttribute(string errorMessageProperty, Type optionsType) : base(errorMessageProperty, optionsType)

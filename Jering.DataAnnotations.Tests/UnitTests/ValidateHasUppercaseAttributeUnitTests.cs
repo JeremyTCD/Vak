@@ -8,7 +8,7 @@ using Xunit.Abstractions;
 
 namespace Jering.DataAnnotations.Tests.UnitTests
 {
-    public class ValidateMinLengthAttributeUnitTests
+    public class ValidateHasUppercaseAttributeUnitTests
     {
         [Theory]
         [MemberData(nameof(IsValidData))]
@@ -25,14 +25,14 @@ namespace Jering.DataAnnotations.Tests.UnitTests
 
             ValidationContext validationContext = new ValidationContext(new { }, mockServiceProvider.Object, null);
 
-            ValidateMinLengthAttribute validateMinLengthAttribute = new ValidateMinLengthAttribute(8, nameof(dummyOptions.dummyString), typeof(DummyOptions));
+            ValidateHasUppercaseAttribute validateHasUppercaseAttribute = new ValidateHasUppercaseAttribute(nameof(dummyOptions.dummyString), typeof(DummyOptions));
 
             // Act
             // IsValid is a protected function, the public function GetValidationResult calls it.
-            ValidationResult validationResult = validateMinLengthAttribute.GetValidationResult(testObject, validationContext);
+            ValidationResult validationResult = validateHasUppercaseAttribute.GetValidationResult(testObject, validationContext);
 
             // Assert
-            if (testObject as string == "longEnough")
+            if (testObject as string == "aaaaaA")
             {
                 Assert.Null(validationResult);
             }
@@ -45,8 +45,8 @@ namespace Jering.DataAnnotations.Tests.UnitTests
         public static IEnumerable<object[]> IsValidData()
         {
             yield return new object[] { 0 };
-            yield return new object[] { "short" };
-            yield return new object[] { "longEnough" };
+            yield return new object[] { "aaaaaa" };
+            yield return new object[] { "aaaaaA" };
         }
     }
 }

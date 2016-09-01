@@ -7,15 +7,16 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels
     public class LoginViewModel 
     {
         [Required]
-        [ValidateEmailAddress(nameof(StringOptions.Email_Invalid), typeof(StringOptions))]
+        [ValidateEmailAddress]
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 
         [Required]
-        [ValidateMinLength(8, nameof(StringOptions.Password_TooShort), typeof(StringOptions))]
+        [ValidateMinLength(8)]
+        [ValidateHasLowercase]
+        [ValidateHasUppercase]
         [DataType(DataType.Password)]
         public string Password { get; set; }
-
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }

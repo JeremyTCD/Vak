@@ -12,7 +12,9 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels
         public string Email { get; set; }
 
         [Required]
-        [ValidateMinLength(8, nameof(StringOptions.Password_TooShort), typeof(StringOptions))]
+        [ValidateMinLength(8)]
+        [ValidateHasLowercase]
+        [ValidateHasUppercase]
         [DataType(DataType.Password)]
         public string Password { get; set; }
 

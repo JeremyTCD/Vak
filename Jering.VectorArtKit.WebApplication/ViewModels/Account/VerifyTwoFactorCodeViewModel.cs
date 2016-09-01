@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Jering.DataAnnotations;
+using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -6,13 +8,12 @@ using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApplication.ViewModels
 {
-    public class VerifyCodeViewModel
+    public class VerifyTwoFactorCodeViewModel
     {
-        //TODO: validate as two factor code
+        [ValidateLength(6, nameof(StringOptions.VerifyTwoFactorCode_InvalidCode), typeof(StringOptions))]
         [Required]
         public string Code { get; set; }
 
-        [Display(Name = "Remember me?")]
         public bool IsPersistent { get; set; }
     }
 }

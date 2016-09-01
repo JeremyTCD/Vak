@@ -31,6 +31,11 @@ namespace Jering.DataAnnotations
         /// <returns></returns>
         protected string GetErrorMessage(ValidationContext validationContext)
         {
+            if(_errorMessagePropertyName == null || _optionsType == null)
+            {
+                return "";
+            }
+
             object options = ((IOptions<object>)validationContext.
                 GetService(typeof(IOptions<>).MakeGenericType(_optionsType))).
                 Value;
