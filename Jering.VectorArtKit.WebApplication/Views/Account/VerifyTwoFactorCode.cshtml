@@ -1,7 +1,5 @@
-﻿@using System.Collections.Generic
-@using Microsoft.AspNetCore.Http
-@using Microsoft.AspNetCore.Http.Authentication
-@model VerifyCodeViewModel
+﻿@using Jering.VectorArtKit.WebApplication.Controllers
+@model VerifyTwoFactorCodeViewModel
 
 @{
     ViewData["Title"] = "Verify two factor code";
@@ -9,23 +7,28 @@
 
 <h2>@ViewData["Title"].</h2>
 
-<form asp-controller="Account" asp-action="VerifyTwoFactorCode" asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" role="form">
-    <h4>Verfiy two factor code.</h4>
-    <hr />
+<form asp-controller="@nameof(AccountController).Replace("Controller","")" asp-action="@nameof(AccountController.VerifyTwoFactorCode)" 
+      asp-route-returnurl="@ViewData["ReturnUrl"]" method="post" role="form">
     <div>
+        Two factor explanation.
+    </div>
+    <div>
+        <label asp-for="Code"></label>
         <div>
-            Two factor explanation.
-        </div>
-        <div>
-            <label asp-for="Code"></label>
-            <div>
-                <input asp-for="Code" />
-                <span asp-validation-for="Code"></span>
-            </div>
+            <input asp-for="Code" />
+            <span asp-validation-for="Code"></span>
         </div>
     </div>
     <div>
-        <a asp-action="SendTwoFactorCode">Resend code</a>
+        <input asp-for="IsPersistent" type="hidden"/>
+    </div>
+    <div>
+        <div>
+            <a asp-controller="@nameof(AccountController).Replace("Controller","")" asp-action=@nameof(AccountController.SendTwoFactorCode)>Resend code</a>
+        </div>
+        <div>
+            Resend code result
+        </div>
     </div>
     <div>
         <button type="submit">Submit</button>
