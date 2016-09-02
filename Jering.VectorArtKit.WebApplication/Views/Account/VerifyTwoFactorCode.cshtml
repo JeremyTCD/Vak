@@ -1,11 +1,10 @@
-﻿@using Jering.VectorArtKit.WebApplication.Controllers
-@model VerifyTwoFactorCodeViewModel
+﻿@model VerifyTwoFactorCodeViewModel
 
-@{
-    ViewData["Title"] = "Verify two factor code";
+@{ 
+    ViewData["Title"] = StringOptionsAccessor.Value.VerifyTwoFactorCodeView_Title;
 }
 
-<h2>@ViewData["Title"].</h2>
+<h2>@StringOptionsAccessor.Value.VerifyTwoFactorCodeView_Title.</h2>
 <div>
     Two factor explanation.
 </div>

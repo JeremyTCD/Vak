@@ -1,6 +1,6 @@
 ﻿using Jering.VectorArtKit.WebApplication.BusinessModel;
 using Jering.VectorArtKit.WebApplication.Controllers;
-using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
+using Jering.VectorArtKit.WebApplication.Resources;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using System;
@@ -39,7 +39,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
 
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Sign up - "));
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.SignUpView_Title));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
@@ -61,7 +62,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
             StringOptions stringOptions = new StringOptions();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Sign up - "));
+            Assert.True(html.Contains(stringOptions.SignUpView_Title));
             if (email == "Email1@test.com")
             {
                 Assert.True(html.Contains(stringOptions.SignUp_AccountWithEmailExists));
@@ -128,7 +129,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Log in - "));
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.LogInView_Title));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
@@ -146,10 +148,10 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 
             // Assert
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
-            StringOptions viewModelOptions = new StringOptions();
+            StringOptions stringOptions = new StringOptions();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Log in - "));
-            Assert.True(html.Contains(viewModelOptions.Login_Failed));
+            Assert.True(html.Contains(stringOptions.LogInView_Title));
+            Assert.True(html.Contains(stringOptions.LogIn_Failed));
         }
 
         public static IEnumerable<object[]> LoginPostData()
@@ -330,7 +332,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(VerifyTwoFactorCodeGetResponse);
             string html = await VerifyTwoFactorCodeGetResponse.Content.ReadAsStringAsync();
             Assert.Equal("OK", VerifyTwoFactorCodeGetResponse.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Verify two factor code - "));
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.VerifyTwoFactorCodeView_Title));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
@@ -344,7 +347,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             // Assert
             string html = await VerifyTwoFactorCodeGetResponse.Content.ReadAsStringAsync();
             Assert.Equal("OK", VerifyTwoFactorCodeGetResponse.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Error - "));
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.ErrorView_Title));
         }
 
         [Fact]
@@ -398,7 +402,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.Equal("OK", VerifyTwoFactorCodePostResponse.StatusCode.ToString());
             string html = await VerifyTwoFactorCodePostResponse.Content.ReadAsStringAsync();
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains("<title>Verify two factor code - "));
+            Assert.True(html.Contains(stringOptions.VerifyTwoFactorCodeView_Title));
             Assert.True(html.Contains(stringOptions.VerifyTwoFactorCode_InvalidCode));
         }
 
@@ -420,7 +424,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
 
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Forgot your password? - "));
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.ForgotPasswordView_Title));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
@@ -446,7 +451,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await forgotPasswordPostResponse.Content.ReadAsStringAsync();
             StringOptions stringOptions = new StringOptions();
             Assert.Equal("OK", forgotPasswordPostResponse.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Forgot your password? - "));
+            Assert.True(html.Contains(stringOptions.ForgotPasswordView_Title));
             Assert.True(html.Contains(stringOptions.Email_Invalid));
         }
 
@@ -504,7 +509,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             // Assert
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(html.Contains("<title>Forgot password confirmation - "));
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.ForgotPasswordConfirmationView_Title));
         }
 
         #region Helpers
