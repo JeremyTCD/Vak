@@ -12,6 +12,7 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels
     {
         [Required]
         [ValidateEmailAddress(nameof(StringOptions.Email_Invalid), typeof(StringOptions))]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
     }
 }

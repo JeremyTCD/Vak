@@ -10,6 +10,7 @@ using Jering.VectorArtKit.WebApplication.Filters;
 using Microsoft.Extensions.Options;
 using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
 using Jering.VectorArtKit.WebApplication.ViewModels.Account;
+using System;
 
 namespace Jering.VectorArtKit.WebApplication.Controllers
 {
@@ -20,6 +21,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         private IAccountSecurityServices<VakAccount> _accountSecurityServices;
         private StringOptions _stringOptions;
         private string _confirmEmailPurpose = "ConfirmEmail";
+        private string _resetPasswordPurpose = "ResetPassword";
         private string _twoFactorPurpose = "TwoFactor";
 
         public AccountController(
@@ -71,11 +73,11 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 if (createAccountResult.Succeeded)
                 {
-                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, createAccountResult.Account);
+                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _confirmEmailPurpose, createAccountResult.Account);
                     string callbackUrl = Url.Action(
                         nameof(AccountController.ConfirmEmail),
                         nameof(AccountController).Replace("Controller", ""),
-                        new ConfirmEmailViewModel { Token = token },
+                        new { Token = token + createAccountResult.Account.AccountId },
                         protocol: HttpContext.Request.Scheme);
 
                     await _accountSecurityServices.SendEmailAsync(model.Email, _stringOptions.ConfirmEmail_Subject, string.Format(_stringOptions.ConfirmEmail_Message, callbackUrl));
@@ -222,6 +224,91 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         }
 
         /// <summary>
+        /// GET: /Account/ForgotPassword
+        /// </summary>
+        /// <returns>
+        /// ForgotPassword view with anti-forgery token and cookie.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        /// <summary>
+        /// POST: /Account/ForgotPassword
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// ForgotPassword view with error message if model state is invalid.
+        /// Redirects to ForgotPasswordConfirmation view and sends reset password email if email is valid.
+        /// Redirects to ForgotPasswordConfirmation view but does not send reset password email if email is invalid.
+        /// </returns>
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
+                if (account != null)
+                {
+                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _resetPasswordPurpose, account);
+                    string callbackUrl = Url.Action(
+                        nameof(AccountController.ResetPassword),
+                        nameof(AccountController).Replace("Controller", ""),
+                        new { Token = token + account.AccountId },
+                        protocol: HttpContext.Request.Scheme);
+
+                    await _accountSecurityServices.SendEmailAsync(account.Email, _stringOptions.ResetPasswordEmail_Subject, string.Format(_stringOptions.ResetPasswordEmail_Message, callbackUrl));
+                }
+
+                return RedirectToAction(nameof(ForgotPasswordConfirmation));
+            }
+
+            return View(model);
+        }
+
+        /// <summary>
+        /// GET: /Account/ForgotPasswordConfirmation
+        /// </summary>
+        /// <returns>
+        /// ForgotPasswordConfirmation view.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ForgotPasswordConfirmation()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ResetPassword(string token)
+        {
+            int accountId = Convert.ToInt32(token.Substring(6, token.Length - 6));
+            VakAccount account = await _vakAccountRepository.GetAccountAsync(accountId);
+
+            return View(new ResetPasswordViewModel { Token = token, Email = account.Email });
+        }
+
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // verify that token is valid
+                // if valid change password
+            }
+
+            return View(model);
+        }
+
+        /// <summary>
         /// POST: /Account/ResendConfirmationEmail
         /// </summary>
         /// <param name="accountId"></param>
@@ -256,88 +343,6 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             }
 
             return View("Error");
-        }
-
-        /// <summary>
-        /// GET: /Account/ForgotPassword
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ForgotPassword()
-        {
-            return View();
-        }
-
-        //
-        // POST: /Account/ForgotPassword
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
-                if (account != null)
-                {
-                    // TODO: generate email and use sendEmailAsync to send it
-                    //await _accountSecurityServices.SendConfirmationEmailAsync(account);
-                }
-            }
-
-            return View(nameof(ForgotPasswordConfirmation));
-        }
-
-        //
-        // GET: /Account/ForgotPasswordConfirmation
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ForgotPasswordConfirmation()
-        {
-            return View();
-        }
-
-        //
-        // GET: /Account/ResetPassword
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPassword(string code = null)
-        {
-            return code == null ? View("Error") : View();
-        }
-
-        // POST: /Account/ResetPassword
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-            VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
-            if (account == null)
-            {
-                // Don't reveal that the user does not exist
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
-            }
-            // accountManager should take care of this, code needs to be checked first
-            if (await _accountSecurityServices.UpdatePasswordAsync(account, model.Password, model.Code))
-            {
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
-            }
-            //AddErrors(result);
-            return View();
-        }
-
-        // GET: /Account/ResetPasswordConfirmation
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPasswordConfirmation()
-        {
-            return View();
         }
 
         #region Helpers
