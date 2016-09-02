@@ -8,7 +8,7 @@ using Jering.AccountManagement.Security;
 using Jering.VectorArtKit.WebApplication.BusinessModel;
 using Jering.VectorArtKit.WebApplication.Filters;
 using Microsoft.Extensions.Options;
-using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
+using Jering.VectorArtKit.WebApplication.Resources;
 using Jering.VectorArtKit.WebApplication.ViewModels.Account;
 using System;
 
@@ -141,7 +141,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 }
             }
 
-            ModelState.AddModelError(string.Empty, _stringOptions.Login_Failed);
+            ModelState.AddModelError(string.Empty, _stringOptions.LogIn_Failed);
             return View(model);
         }
 
@@ -281,7 +281,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         {
             int accountId = Convert.ToInt32(token.Substring(6, token.Length - 6));
             VakAccount account = await _vakAccountRepository.GetAccountAsync(accountId);
-
+            // Some how in the identity example the values get passwed in automatically
             return View(new ResetPasswordViewModel { Token = token, Email = account.Email });
         }
 

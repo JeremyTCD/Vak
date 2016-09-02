@@ -1,5 +1,5 @@
 ﻿using Jering.DataAnnotations;
-using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
+using Jering.VectorArtKit.WebApplication.Resources;
 using System.ComponentModel.DataAnnotations;
 
 namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
