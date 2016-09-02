@@ -101,7 +101,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_RedirectsToHomeIndexViewAndSendsApplicationCookieAndConfirmEmailEmailIfRegistrationIsSuccessful()
+        public async Task SignUpPost_RedirectsToHomeIndexViewAndSendsApplicationCookieIfRegistrationIsSuccessful()
         {
             // Arrange
             await _resetAccountsTable();
@@ -115,11 +115,6 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.Equal("Jering.Application", cookies.Keys.First());
             Assert.Equal("Redirect", signUpPostResponse.StatusCode.ToString());
             Assert.Equal("/", signUpPostResponse.Headers.Location.ToString());
-            StringOptions stringOptions = new StringOptions();
-            string confirmEmailEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
-            Assert.Contains(stringOptions.ConfirmEmail_Subject, confirmEmailEmail);
-            Assert.Contains("Email1@test.com", confirmEmailEmail);
-            Assert.Matches(stringOptions.ConfirmEmail_Message.Replace("{0}", $"http://localhost/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.ConfirmEmail)}.*?"), confirmEmailEmail);
         }
 
         [Fact]
