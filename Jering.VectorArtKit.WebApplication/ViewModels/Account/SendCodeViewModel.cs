@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace Jering.VectorArtKit.WebApplication.ViewModels
+namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
 {
     public class SendCodeViewModel
     {

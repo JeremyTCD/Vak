@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.VectorArtKit.WebApplication.ViewModels
+namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
 {
     public class VerifyTwoFactorCodeViewModel
     {

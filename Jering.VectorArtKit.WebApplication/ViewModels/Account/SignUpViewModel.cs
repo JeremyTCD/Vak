@@ -2,7 +2,7 @@
 using Jering.VectorArtKit.WebApplication.ViewModels.Shared;
 using System.ComponentModel.DataAnnotations;
 
-namespace Jering.VectorArtKit.WebApplication.ViewModels
+namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
 {
     public class SignUpViewModel
     {
