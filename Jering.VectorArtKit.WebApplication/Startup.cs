@@ -8,6 +8,8 @@ using Microsoft.Extensions.Options;
 using System.Data.SqlClient;
 using Jering.VectorArtKit.WebApplication.BusinessModel;
 using Jering.AccountManagement.Extensions;
+using Jering.VectorArtKit.WebApplication.Test;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 
 namespace Jering.VectorArtKit.WebApplication
 {
@@ -32,6 +34,10 @@ namespace Jering.VectorArtKit.WebApplication
         {
             // MVC
             services.AddMvc();
+            if (_hostingEnvironment.IsDevelopment())
+            {
+                services.AddSingleton<ICompilationService, CustomCompilationService>();
+            }
 
             // Data
             // TODO different connection string for release
@@ -49,7 +55,7 @@ namespace Jering.VectorArtKit.WebApplication
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole(_configurationRoot.GetSection("Logging"));
-            
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
