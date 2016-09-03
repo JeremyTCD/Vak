@@ -61,7 +61,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// Bad request if anti-forgery credentials are invalid.
         /// SignUp view with error messages if model state is invalid. 
         /// SignUp view with error message if create account fails. 
-        /// Redirects to /Home/Index with an application cookie if account is created successfully.
+        /// Redirects to /Home/Index with an application cookie and sends confirm email email if account is created successfully.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -75,6 +75,15 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 if (createAccountResult.Succeeded)
                 {
+                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _confirmEmailPurpose, createAccountResult.Account);
+                    string callbackUrl = Url.Action(
+                        nameof(AccountController.ConfirmEmail),
+                        nameof(AccountController).Replace("Controller", ""),
+                        new { Token = token + createAccountResult.Account.AccountId },
+                        protocol: HttpContext.Request.Scheme);
+
+                    await _accountSecurityServices.SendEmailAsync(model.Email, _stringOptions.ConfirmEmail_Subject, string.Format(_stringOptions.ConfirmEmail_Message, callbackUrl));
+
                     // TODO: this should eventually redirect to account vakkits page
                     return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace("Controller", ""));
                 }
