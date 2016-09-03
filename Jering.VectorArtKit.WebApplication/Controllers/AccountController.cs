@@ -13,28 +13,30 @@ using Jering.VectorArtKit.WebApplication.ViewModels.Account;
 using System;
 using System.Text;
 using Jering.VectorArtKit.WebApplication.Utility;
+using Jering.Mail;
+using MimeKit;
 
 namespace Jering.VectorArtKit.WebApplication.Controllers
 {
     [Authorize]
     public class AccountController : Controller
     {
-        private VakAccountRepository _vakAccountRepository;
         private IAccountSecurityServices<VakAccount> _accountSecurityServices;
+        private IEmailServices _emailServices;
         private StringOptions _stringOptions;
         private string _confirmEmailPurpose = "ConfirmEmail";
         private string _resetPasswordPurpose = "ResetPassword";
         private string _twoFactorPurpose = "TwoFactor";
 
         public AccountController(
-            IAccountRepository<VakAccount> vakAccountRepository,
             IAccountSecurityServices<VakAccount> accountSecurityServices,
-            IOptions<StringOptions> viewModelOptionsAccessor
+            IEmailServices emailServices,
+            IOptions<StringOptions> stringOptionsAccessor
             )
         {
-            _vakAccountRepository = (VakAccountRepository)vakAccountRepository;
             _accountSecurityServices = accountSecurityServices;
-            _stringOptions = viewModelOptionsAccessor?.Value;
+            _emailServices = emailServices;
+            _stringOptions = stringOptionsAccessor?.Value;
         }
 
         /// <summary>
@@ -75,14 +77,15 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 if (createAccountResult.Succeeded)
                 {
-                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _confirmEmailPurpose, createAccountResult.Account);
+                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, createAccountResult.Account);
                     string callbackUrl = Url.Action(
                         nameof(AccountController.ConfirmEmail),
                         nameof(AccountController).Replace("Controller", ""),
-                        new { Token = token + createAccountResult.Account.AccountId },
+                        new { Token = token, Email = model.Email },
                         protocol: HttpContext.Request.Scheme);
 
-                    await _accountSecurityServices.SendEmailAsync(model.Email, _stringOptions.ConfirmEmail_Subject, string.Format(_stringOptions.ConfirmEmail_Message, callbackUrl));
+                    MimeMessage mimeMessage = _emailServices.CreateMimeMessage(model.Email, _stringOptions.ConfirmEmail_Subject, string.Format(_stringOptions.ConfirmEmail_Message, callbackUrl));
+                    await _emailServices.SendEmailAsync(mimeMessage);
 
                     // TODO: this should eventually redirect to account vakkits page
                     return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace("Controller", ""));
@@ -142,7 +145,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 {
                     await _accountSecurityServices.CreateTwoFactorCookieAsync(passwordSignInResult.Account);
                     string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, passwordSignInResult.Account);
-                    await _accountSecurityServices.SendEmailAsync(passwordSignInResult.Account.Email, _stringOptions.TwoFactorEmail_Subject, string.Format(_stringOptions.TwoFactorEmail_Message, token));
+                    MimeMessage mimeMessage = _emailServices.CreateMimeMessage(passwordSignInResult.Account.Email, _stringOptions.TwoFactorEmail_Subject, string.Format(_stringOptions.TwoFactorEmail_Message, token));
+                    await _emailServices.SendEmailAsync(mimeMessage);
 
                     return RedirectToAction(nameof(VerifyTwoFactorCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl });
                 }
@@ -256,7 +260,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
+                VakAccount account = await _accountSecurityServices.GetAccountByEmailAsync(model.Email);
                 if (account != null)
                 {
                     string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account);
@@ -266,10 +270,11 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                         new { Token = token, Email = account.Email },
                         protocol: HttpContext.Request.Scheme);
 
-                    await _accountSecurityServices.SendEmailAsync(account.Email, _stringOptions.ResetPasswordEmail_Subject, string.Format(_stringOptions.ResetPasswordEmail_Message, callbackUrl));
+                    MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.Email, _stringOptions.ResetPasswordEmail_Subject, string.Format(_stringOptions.ResetPasswordEmail_Message, callbackUrl));
+                    await _emailServices.SendEmailAsync(mimeMessage);
                 }
 
-                return RedirectToAction(nameof(ForgotPasswordConfirmation), new { Email = account.Email });
+                return RedirectToAction(nameof(ForgotPasswordConfirmation), new { Email = model.Email });
             }
 
             return View(model);
@@ -323,14 +328,13 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = model.Email == null ? null : await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
+                VakAccount account = model.Email == null ? null : await _accountSecurityServices.GetAccountByEmailAsync(model.Email);
                 if (account == null || model.Token == null ||
-                    !await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account, model.Token))
+                    !await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account, model.Token) ||
+                    !await _accountSecurityServices.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword))
                 {
                     return View("Error");
                 }
-
-                await _accountSecurityServices.UpdatePasswordAsync(account, model.NewPassword);
 
                 return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), new { Email = account.Email });
             }
@@ -357,37 +361,24 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         }
 
         /// <summary>
-        /// POST: /Account/ResendConfirmationEmail
+        /// GET: /Account/ConfirmEmail
         /// </summary>
-        /// <param name="accountId"></param>
+        /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
-        [AllowAnonymous]
-        public IActionResult ResendConfirmationEmail(int accountId)
-        {
-            //TODO: resend confirmation email and return okay response
-
-            return Ok();
-        }
-
-        // GET: /Account/ConfirmEmail
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(ConfirmEmailViewModel model)
         {
-            ConfirmEmailResult emailConfirmationResult = await _accountSecurityServices.ConfirmEmailAsync(model.Token);
-
-            if (emailConfirmationResult == ConfirmEmailResult.Succeeded)
+            if (!ModelState.IsValid)
             {
-                return View();
-            }
-            if (emailConfirmationResult == ConfirmEmailResult.InvalidToken)
-            {
+                VakAccount account = await _accountSecurityServices.GetAccountByEmailAsync(model.Email);
 
-            }
-            if (emailConfirmationResult == ConfirmEmailResult.NotLoggedIn)
-            {
-
+                if(account != null &&
+                    await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account, model.Token) &&
+                    await _accountSecurityServices.UpdateAccountEmailConfirmedAsync(account.AccountId))
+                {
+                    return View();
+                }
             }
 
             return View("Error");
@@ -407,8 +398,6 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
         }
-
-
 
         #endregion
     }

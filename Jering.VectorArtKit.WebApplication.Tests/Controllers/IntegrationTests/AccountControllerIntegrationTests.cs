@@ -457,20 +457,23 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             File.WriteAllText(@"Temp\SmtpTest.txt", "");
             await _resetAccountsTable();
             await CreateAccount(email, "Password1@", true);
+            email = email == "invalid@email" ? "random@email" : email;
 
             // Act
-            HttpResponseMessage forgotPasswordPostResponse = await ForgotPassword(email == "invalid@email" ? "random@email" : email);
+            HttpResponseMessage forgotPasswordPostResponse = await ForgotPassword(email);
 
             // Assert
             Assert.Equal("Redirect", forgotPasswordPostResponse.StatusCode.ToString());
-            Assert.Equal($"/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.ForgotPasswordConfirmation)}", forgotPasswordPostResponse.Headers.Location.ToString());
+            Assert.Equal($"/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.ForgotPasswordConfirmation)}?Email={email}", 
+                forgotPasswordPostResponse.Headers.Location.ToString());
             StringOptions stringOptions = new StringOptions();
             string resetPasswordEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
             if (email == "valid@email")
             {
                 Assert.Contains(stringOptions.ResetPasswordEmail_Subject, resetPasswordEmail);
                 Assert.Contains(email, resetPasswordEmail);
-                Assert.Matches(string.Format(stringOptions.ResetPasswordEmail_Message, $"http://localhost/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.ResetPassword)}.*?"), resetPasswordEmail);
+                Assert.Matches(string.Format(stringOptions.ResetPasswordEmail_Message, 
+                    $"http://localhost/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.ResetPassword)}.*?"), resetPasswordEmail);
             }
             else
             {
