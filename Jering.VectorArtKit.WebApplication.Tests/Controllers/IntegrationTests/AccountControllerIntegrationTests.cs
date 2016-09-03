@@ -1,8 +1,6 @@
 ﻿using Jering.VectorArtKit.WebApplication.BusinessModel;
 using Jering.VectorArtKit.WebApplication.Controllers;
 using Jering.VectorArtKit.WebApplication.Resources;
-using Microsoft.Net.Http.Headers;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.IO;

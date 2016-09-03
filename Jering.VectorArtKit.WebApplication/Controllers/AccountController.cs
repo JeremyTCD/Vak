@@ -1,20 +1,16 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using Jering.VectorArtKit.WebApplication.ViewModels;
-using Jering.AccountManagement.DatabaseInterface;
-using Microsoft.AspNetCore.Http.Authentication;
+﻿using Jering.AccountManagement.DatabaseInterface;
 using Jering.AccountManagement.Security;
+using Jering.Mail;
 using Jering.VectorArtKit.WebApplication.BusinessModel;
 using Jering.VectorArtKit.WebApplication.Filters;
-using Microsoft.Extensions.Options;
 using Jering.VectorArtKit.WebApplication.Resources;
 using Jering.VectorArtKit.WebApplication.ViewModels.Account;
-using System;
-using System.Text;
-using Jering.VectorArtKit.WebApplication.Utility;
-using Jering.Mail;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Authentication;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using MimeKit;
+using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApplication.Controllers
 {
