@@ -11,6 +11,8 @@ using Microsoft.Extensions.Options;
 using Jering.VectorArtKit.WebApplication.Resources;
 using Jering.VectorArtKit.WebApplication.ViewModels.Account;
 using System;
+using System.Text;
+using Jering.VectorArtKit.WebApplication.Utility;
 
 namespace Jering.VectorArtKit.WebApplication.Controllers
 {
@@ -166,7 +168,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
             ViewData["ReturnUrl"] = returnUrl;
 
-            return View(new VerifyTwoFactorCodeViewModel { IsPersistent = isPersistent });
+            return View();
         }
 
         /// <summary>
@@ -177,6 +179,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// <returns>
         /// VerifyTwoFactorCode view with error message if model state or code is invalid. 
         /// Home index view or return Url view with an application cookie if code is valid.
+        /// BadRequest if anti-forgery credentials are invalid.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -194,7 +197,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 ModelState.AddModelError(nameof(VerifyTwoFactorCodeViewModel.Code), _stringOptions.VerifyTwoFactorCode_InvalidCode);
             }
-           
+
             return View(model);
         }
 
@@ -235,6 +238,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// ForgotPassword view with error message if model state is invalid.
         /// Redirects to ForgotPasswordConfirmation view and sends reset password email if email is valid.
         /// Redirects to ForgotPasswordConfirmation view but does not send reset password email if email is invalid.
+        /// BadRequest if anti-forgery credentials are invalid.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -246,17 +250,17 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
                 if (account != null)
                 {
-                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _resetPasswordPurpose, account);
+                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account);
                     string callbackUrl = Url.Action(
                         nameof(AccountController.ResetPassword),
                         nameof(AccountController).Replace("Controller", ""),
-                        new { Token = token + account.AccountId },
+                        new { Token = token, Email = account.Email },
                         protocol: HttpContext.Request.Scheme);
 
                     await _accountSecurityServices.SendEmailAsync(account.Email, _stringOptions.ResetPasswordEmail_Subject, string.Format(_stringOptions.ResetPasswordEmail_Message, callbackUrl));
                 }
 
-                return RedirectToAction(nameof(ForgotPasswordConfirmation));
+                return RedirectToAction(nameof(ForgotPasswordConfirmation), new { Email = account.Email });
             }
 
             return View(model);
@@ -270,21 +274,39 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult ForgotPasswordConfirmation()
+        public IActionResult ForgotPasswordConfirmation(string email)
         {
-            return View();
+            return View(model: email);
         }
 
+        /// <summary>
+        /// GET: /Account/ResetPassword
+        /// </summary>
+        /// <returns>
+        /// ResetPassword view with anti-forgery token and cookie.
+        /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword(string token)
+        public IActionResult ResetPassword(string token, string email)
         {
-            int accountId = Convert.ToInt32(token.Substring(6, token.Length - 6));
-            VakAccount account = await _vakAccountRepository.GetAccountAsync(accountId);
-            // Some how in the identity example the values get passwed in automatically
-            return View(new ResetPasswordViewModel { Token = token, Email = account.Email });
+            if (token == null || email == null)
+            {
+                return View("Error");
+            }
+
+            return View(new ResetPasswordViewModel { Email = email });
         }
 
+        /// <summary>
+        /// POST: /Account/ResetPassword
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// ResetPassword view with error message if model state is invalid.
+        /// Resets password and redirects to ResetPasswordConfirmation view if email or token is valid.
+        /// Error view if token is invalid.
+        /// BadRequest if anti-forgery credentials are invalid.
+        /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -292,11 +314,37 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         {
             if (ModelState.IsValid)
             {
-                // verify that token is valid
-                // if valid change password
+                VakAccount account = model.Email == null ? null : await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
+                if (account == null || model.Token == null ||
+                    !await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account, model.Token))
+                {
+                    return View("Error");
+                }
+
+                await _accountSecurityServices.UpdatePasswordAsync(account, model.NewPassword);
+
+                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), new { Email = account.Email });
+            }
+            else if (ModelState.ContainsKey(nameof(ResetPasswordViewModel.NewPassword)))
+            {
+                ModelState.Remove(nameof(ResetPasswordViewModel.NewPassword));
+                ModelState.AddModelError(nameof(ResetPasswordViewModel.NewPassword), _stringOptions.Password_Invalid);
             }
 
             return View(model);
+        }
+
+        /// <summary>
+        /// GET: /Account/ResetPasswordConfirmation
+        /// </summary>
+        /// <returns>
+        /// ResetPasswordConfirmation view.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        public IActionResult ResetPasswordConfirmation(string email)
+        {
+            return View(model: email);
         }
 
         /// <summary>
@@ -350,6 +398,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 return RedirectToAction(nameof(HomeController.Index), "Home");
             }
         }
+
+
 
         #endregion
     }

@@ -40,6 +40,8 @@ namespace Jering.VectorArtKit.WebApplication.Resources
         public string ResetPasswordEmail_Subject { get; set; } = "Reset password";
         public string ResetPasswordEmail_Message { get; set; } = "Please reset your email at this link: <a href=\"{0}\">link</a>";
 
+        public string ResetPasswordConfirmationView_Title { get; set; } = "Reset password confirmation";
+
         public string ErrorView_Title { get; set; } = "Error";
     }
 }

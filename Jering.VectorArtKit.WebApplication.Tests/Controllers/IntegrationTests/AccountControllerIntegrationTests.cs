@@ -18,12 +18,12 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
     public class AccountControllerIntegrationTests
     {
         private HttpClient _httpClient { get; }
-        private VakAccountRepository vakAccountRepository { get; }
+        private VakAccountRepository _vakAccountRepository { get; }
         private Func<Task> _resetAccountsTable { get; }
         public AccountControllerIntegrationTests(ControllersFixture controllersFixture)
         {
             _httpClient = controllersFixture.HttpClient;
-            vakAccountRepository = controllersFixture.VakAccountRepository;
+            _vakAccountRepository = controllersFixture.VakAccountRepository;
             _resetAccountsTable = controllersFixture.ResetAccountsTable;
         }
 
@@ -52,7 +52,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             // Arrange
             await _resetAccountsTable();
             if (email == "Email1@test.com") {
-                await vakAccountRepository.CreateAccountAsync(email, password);
+                await _vakAccountRepository.CreateAccountAsync(email, password);
             }
 
             // Act
@@ -168,7 +168,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string password = "Password1@";
 
             await _resetAccountsTable();
-            await vakAccountRepository.CreateAccountAsync(email, password);
+            await _vakAccountRepository.CreateAccountAsync(email, password);
 
             // Act
             HttpResponseMessage httpResponseMessage = await LogIn(email, password);
@@ -267,8 +267,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string email = "Email1@test.com", password = "Password1@";
 
             await _resetAccountsTable();
-            await vakAccountRepository.CreateAccountAsync(email, password);
-            await vakAccountRepository.UpdateAccountEmailConfirmedAsync(1);
+            await _vakAccountRepository.CreateAccountAsync(email, password);
+            await _vakAccountRepository.UpdateAccountEmailConfirmedAsync(1);
 
             HttpResponseMessage loginPostResponse = await LogIn(email, password);
 
@@ -291,8 +291,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string email = "Email1@test.com", password = "Password1@";
 
             await _resetAccountsTable();
-            await vakAccountRepository.CreateAccountAsync(email, password);
-            await vakAccountRepository.UpdateAccountEmailConfirmedAsync(1);
+            await _vakAccountRepository.CreateAccountAsync(email, password);
+            await _vakAccountRepository.UpdateAccountEmailConfirmedAsync(1);
 
             HttpResponseMessage loginPostResponse = await LogIn(email, password);
             HttpRequestMessage indexGetRequest = RequestHelper.CreateWithCookiesFromResponse("Home/Index", HttpMethod.Get, null, loginPostResponse);
@@ -433,19 +433,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         [Fact]
         public async Task ForgotPasswordPost_ReturnsForgotPasswordViewIfModelStateIsInvalid()
         {
-            // Arrange
-            HttpResponseMessage forgotPasswordGetRequest = await _httpClient.GetAsync("Account/ForgotPassword");
-            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(forgotPasswordGetRequest);
-            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
-            {
-                { "Email", "invalidEmail" },
-                { "__RequestVerificationToken", antiForgeryToken }
-            };
-
-            HttpRequestMessage forgotPasswordPostRequest = RequestHelper.CreateWithCookiesFromResponse("Account/ForgotPassword", HttpMethod.Post, formPostBodyData, forgotPasswordGetRequest);
-
             // Act
-            HttpResponseMessage forgotPasswordPostResponse = await _httpClient.SendAsync(forgotPasswordPostRequest);
+            HttpResponseMessage forgotPasswordPostResponse = await ForgotPassword("invalidEmail");
 
             // Assert
             string html = await forgotPasswordPostResponse.Content.ReadAsStringAsync();
@@ -463,18 +452,9 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             File.WriteAllText(@"Temp\SmtpTest.txt", "");
             await _resetAccountsTable();
             await CreateAccount(email, "Password1@", true);
-            HttpResponseMessage forgotPasswordGetRequest = await _httpClient.GetAsync("Account/ForgotPassword");
-            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(forgotPasswordGetRequest);
-            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
-            {
-                { "Email", email == "invalid@email" ? "random@email" : email },
-                { "__RequestVerificationToken", antiForgeryToken }
-            };
-
-            HttpRequestMessage forgotPasswordPostRequest = RequestHelper.CreateWithCookiesFromResponse("Account/ForgotPassword", HttpMethod.Post, formPostBodyData, forgotPasswordGetRequest);
 
             // Act
-            HttpResponseMessage forgotPasswordPostResponse = await _httpClient.SendAsync(forgotPasswordPostRequest);
+            HttpResponseMessage forgotPasswordPostResponse = await ForgotPassword(email == "invalid@email" ? "random@email" : email);
 
             // Assert
             Assert.Equal("Redirect", forgotPasswordPostResponse.StatusCode.ToString());
@@ -501,7 +481,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task ForgotPasswordConfirmationGet_ReturnsForgotPasswordViewWithAntiForgeryTokenAndCookie()
+        public async Task ForgotPasswordConfirmationGet_ReturnsForgotPasswordView()
         {
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("Account/ForgotPasswordConfirmation");
@@ -513,7 +493,145 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.True(html.Contains(stringOptions.ForgotPasswordConfirmationView_Title));
         }
 
+        [Fact]
+        public async Task ResetPasswordGet_ReturnsResetPasswordViewWithAntiForgeryTokenAndCookie()
+        {
+            // Act
+            HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("Account/ResetPassword?Token=token&Email=email");
+
+            // Assert
+            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(httpResponseMessage);
+            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
+            string html = await httpResponseMessage.Content.ReadAsStringAsync();
+
+            Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.ResetPasswordView_Title));
+            Assert.NotNull(antiForgeryToken);
+            Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
+        }
+
+        [Fact]
+        public async Task ResetPasswordPost_ReturnsResetPasswordViewWithErrorMessagesIfModelStateIsInvalid()
+        {
+            // Act
+            HttpResponseMessage resetPasswordPostResponse = await ResetPassword("token", "email", "invalid", "invalid2");
+
+            // Assert
+            string html = await resetPasswordPostResponse.Content.ReadAsStringAsync();
+            StringOptions stringOptions = new StringOptions();
+            Assert.Equal("OK", resetPasswordPostResponse.StatusCode.ToString());
+            Assert.True(html.Contains(stringOptions.Password_Invalid));
+            Assert.True(html.Contains(stringOptions.ConfirmPassword_DoesNotMatchPassword));
+        }
+
+        [Fact]
+        public async Task ResetPasswordPost_RedirectsToResetPasswordConfirmationViewIfEmailTokenAndModelStateAreValid()
+        {
+            // Arrange
+            string email = "Email1@test.com";
+
+            File.WriteAllText(@"Temp\SmtpTest.txt", "");
+            await _resetAccountsTable();
+            await CreateAccount(email, "Password1@");
+
+            await ForgotPassword(email);
+            string resetPasswordEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
+            Regex tokenRegex = new Regex(@"Token=(.*?)&");
+            string token = Uri.UnescapeDataString(tokenRegex.Match(resetPasswordEmail).Groups[1].Value);
+
+            // Act
+            HttpResponseMessage resetPasswordPostResponse = await ResetPassword(token, email, "Password", "Password");
+
+            // Assert
+            Assert.Equal("Redirect", resetPasswordPostResponse.StatusCode.ToString());
+            Assert.Equal($"/{nameof(AccountController).Replace("Controller","")}/{nameof(AccountController.ResetPasswordConfirmation)}?Email={email}", 
+                resetPasswordPostResponse.Headers.Location.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(ResetPasswordPostData))]
+        public async Task ResetPasswordPost_ReturnsErrorViewIfEmailOrTokenIsInvalid(bool useValidToken, bool useValidEmail)
+        {
+            // Arrange
+            string email = "Email1@test.com", token = "invalid";
+            File.WriteAllText(@"Temp\SmtpTest.txt", "");
+            await _resetAccountsTable();
+            await CreateAccount(email, "Password1@");
+
+            await ForgotPassword(email);
+
+            if (useValidToken)
+            {
+                string resetPasswordEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
+                Regex tokenRegex = new Regex(@"Token=(.*?)&");
+                token = Uri.UnescapeDataString(tokenRegex.Match(resetPasswordEmail).Groups[1].Value);
+            }
+            if (!useValidEmail)
+            {
+                email = "invalid";
+            }
+
+            // Act
+            HttpResponseMessage resetPasswordPostResponse = await ResetPassword(token, email, "Password", "Password");
+
+            // Assert
+            Assert.Equal("OK", resetPasswordPostResponse.StatusCode.ToString());
+            string html = await resetPasswordPostResponse.Content.ReadAsStringAsync();
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.ErrorView_Title));
+        }
+
+        [Fact]
+        public async Task ResetPasswordConfirmationGet_ReturnsResetPasswordView()
+        {
+            // Act
+            HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("Account/ResetPasswordConfirmation?Email=test@test.com");
+
+            // Assert
+            string html = await httpResponseMessage.Content.ReadAsStringAsync();
+            Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.ResetPasswordConfirmationView_Title));
+        }
+
+        public static IEnumerable<object[]> ResetPasswordPostData()
+        {
+            yield return new object[] { false, true };
+            yield return new object[] { true , false };
+            yield return new object[] { false, false };
+        }
+
         #region Helpers
+        public async Task<HttpResponseMessage> ForgotPassword(string email)
+        {
+            HttpResponseMessage forgotPasswordGetRequest = await _httpClient.GetAsync("Account/ForgotPassword");
+            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(forgotPasswordGetRequest);
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                { "Email", email },
+                { "__RequestVerificationToken", antiForgeryToken }
+            };
+
+            return await _httpClient.SendAsync(RequestHelper.CreateWithCookiesFromResponse("Account/ForgotPassword", HttpMethod.Post, formPostBodyData, forgotPasswordGetRequest));
+        }
+
+        public async Task<HttpResponseMessage> ResetPassword(string token, string email, string newPassword, string confirmNewPassword)
+        {
+            HttpResponseMessage resetPasswordGetResponse = await _httpClient.GetAsync($"Account/ResetPassword?Token={token}&Email={email}");
+            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(resetPasswordGetResponse);
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                { "Email", email },
+                { "Token", token },
+                { "NewPassword", newPassword },
+                { "ConfirmNewPassword", confirmNewPassword },
+                { "__RequestVerificationToken", antiForgeryToken }
+            };
+
+            return await _httpClient.SendAsync(RequestHelper.CreateWithCookiesFromResponse("Account/ResetPassword", HttpMethod.Post, formPostBodyData, resetPasswordGetResponse));
+        }
+
         public async Task<HttpResponseMessage> VerifyTwoFactorCode(IDictionary<string, string> twoFactorCookie, string code)
         {
             HttpRequestMessage VerifyTwoFactorCodeGetRequest = RequestHelper.Create("/Account/VerifyTwoFactorCode?IsPersistent=true", HttpMethod.Get, null);
@@ -577,14 +695,14 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 
         public async Task CreateAccount(string email, string password, bool twoFactorEnabled = false, bool emailConfirmed = false)
         {
-            VakAccount account = await vakAccountRepository.CreateAccountAsync(email, password);
+            VakAccount account = await _vakAccountRepository.CreateAccountAsync(email, password);
             if (twoFactorEnabled)
             {
-                await vakAccountRepository.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true);
+                await _vakAccountRepository.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true);
             }
             if(emailConfirmed)
             {
-                await vakAccountRepository.UpdateAccountEmailConfirmedAsync(account.AccountId);
+                await _vakAccountRepository.UpdateAccountEmailConfirmedAsync(account.AccountId);
             }
         }
 

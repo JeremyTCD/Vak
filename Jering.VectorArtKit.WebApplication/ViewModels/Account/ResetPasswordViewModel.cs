@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Jering.DataAnnotations;
+using Jering.VectorArtKit.WebApplication.Resources;
+using System.ComponentModel.DataAnnotations;
 
 namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
 {
@@ -14,14 +13,18 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
 
         public string Token { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public string Password { get; set; }
+        [Required]
+        [ValidateMinLength(8)]
+        [ValidateHasLowercase]
+        [ValidateHasUppercase]
+        [DataType(DataType.Password)]
+        [Display(Name = "New password")]
+        public string NewPassword { get; set; }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public string ConfirmPassword { get; set; }
+        [Required]
+        [ValidateMatches(nameof(NewPassword), nameof(StringOptions.ConfirmPassword_DoesNotMatchPassword), typeof(StringOptions))]
+        [DataType(DataType.Password)]
+        [Display(Name = "Confirm new password")]
+        public string ConfirmNewPassword { get; set; }
     }
 }
