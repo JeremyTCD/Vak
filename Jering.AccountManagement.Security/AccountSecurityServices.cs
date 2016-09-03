@@ -329,36 +329,5 @@ namespace Jering.AccountManagement.Security
                 }
             }
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="email"></param>
-        /// <returns></returns>
-        public virtual async Task<TAccount> GetAccountByEmailAsync(string email)
-        {
-            return await _accountRepository.GetAccountByEmailAsync(email);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        public virtual async Task<bool> UpdateAccountPasswordHashAsync(int accountId, string password)
-        {
-            return await _accountRepository.UpdateAccountPasswordHashAsync(accountId, password);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <returns></returns>
-        public async Task<bool> UpdateAccountEmailConfirmedAsync(int accountId)
-        {
-            return await _accountRepository.UpdateAccountEmailConfirmedAsync(accountId);
-        }
     }
 }

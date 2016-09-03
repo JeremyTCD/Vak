@@ -112,27 +112,5 @@ namespace Jering.AccountManagement.Security
         /// <param name="token"></param>
         /// <returns></returns>
         Task<bool> ValidateTokenAsync(string tokenService, string purpose, TAccount account, string token);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="email"></param>
-        /// <returns></returns>
-        Task<TAccount> GetAccountByEmailAsync(string email);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        Task<bool> UpdateAccountPasswordHashAsync(int accountId, string password);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <returns></returns>
-        Task<bool> UpdateAccountEmailConfirmedAsync(int accountId);
     }
 }
