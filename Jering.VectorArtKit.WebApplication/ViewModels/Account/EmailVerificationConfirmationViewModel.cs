@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
 {
-    public class ConfirmEmailViewModel
+    public class EmailVerificationConfirmationViewModel
     {
         [Required]
         public string Token { get; set; }
 
         [Required]
-        [ValidateEmailAddress]
-        public string Email { get; set; }
+        public int AccountId { get; set; }
     }
 }

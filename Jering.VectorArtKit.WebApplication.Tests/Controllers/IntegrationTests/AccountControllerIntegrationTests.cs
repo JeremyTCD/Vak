@@ -120,7 +120,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string confirmEmailEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
             Assert.Contains(stringOptions.ConfirmEmail_Subject, confirmEmailEmail);
             Assert.Contains("Email1@test.com", confirmEmailEmail);
-            Assert.Matches(stringOptions.ConfirmEmail_Message.Replace("{0}", $"http://localhost/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.ConfirmEmail)}.*?"), confirmEmailEmail);
+            Assert.Matches(stringOptions.ConfirmEmail_Message.Replace("{0}", $"http://localhost/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.EmailVerificationConfirmation)}.*?"), confirmEmailEmail);
         }
 
         [Fact]
@@ -537,7 +537,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         public async Task ResetPasswordPost_RedirectsToResetPasswordConfirmationViewIfEmailTokenAndModelStateAreValid()
         {
             // Arrange
-            string email = "Email1@test.com";
+            string email = "Email1@test.com", newPassword = "Password";
 
             File.WriteAllText(@"Temp\SmtpTest.txt", "");
             await _resetAccountsTable();
@@ -549,9 +549,10 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string token = Uri.UnescapeDataString(tokenRegex.Match(resetPasswordEmail).Groups[1].Value);
 
             // Act
-            HttpResponseMessage resetPasswordPostResponse = await ResetPassword(token, email, "Password", "Password");
+            HttpResponseMessage resetPasswordPostResponse = await ResetPassword(token, email, newPassword, newPassword);
 
             // Assert
+            Assert.NotNull(_vakAccountRepository.GetAccountByEmailAndPasswordAsync(email, newPassword));
             Assert.Equal("Redirect", resetPasswordPostResponse.StatusCode.ToString());
             Assert.Equal($"/{nameof(AccountController).Replace("Controller","")}/{nameof(AccountController.ResetPasswordConfirmation)}?Email={email}", 
                 resetPasswordPostResponse.Headers.Location.ToString());
@@ -590,8 +591,15 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.True(html.Contains(stringOptions.ErrorView_Title));
         }
 
+        public static IEnumerable<object[]> ResetPasswordPostData()
+        {
+            yield return new object[] { false, true };
+            yield return new object[] { true, false };
+            yield return new object[] { false, false };
+        }
+
         [Fact]
-        public async Task ResetPasswordConfirmationGet_ReturnsResetPasswordView()
+        public async Task ResetPasswordConfirmationGet_ReturnsResetPasswordConfirmationView()
         {
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("Account/ResetPasswordConfirmation?Email=test@test.com");
@@ -603,11 +611,57 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.True(html.Contains(stringOptions.ResetPasswordConfirmationView_Title));
         }
 
-        public static IEnumerable<object[]> ResetPasswordPostData()
+        [Theory]
+        [MemberData(nameof(EmailVerificationConfirmationGetData))]
+        public async Task EmailVerificationConfirmationGet_ReturnsErrorViewIfAccountIdTokenOrModelStateIsInvalid(string accountId, string token)
         {
-            yield return new object[] { false, true };
-            yield return new object[] { true , false };
-            yield return new object[] { false, false };
+            // Arrange
+            if (accountId == "1")
+            {
+                await _resetAccountsTable();
+                await CreateAccount("test@test.com", "Password");
+            }
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync($"Account/EmailVerificationConfirmation?Email={accountId}&Token={token}");
+
+            // Assert
+            string html = await httpResponseMessage.Content.ReadAsStringAsync();
+            Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.ErrorView_Title));
+        }
+
+        public static IEnumerable<object[]> EmailVerificationConfirmationGetData()
+        {
+            yield return new object[] { "", "" };
+            yield return new object[] { "1", "invalidtoken" };
+        }
+
+        [Fact]
+        public async Task EmailVerificationConfirmationGet_ReturnsEmailVerificationConfirmationViewIfEmailTokenAndModelStateAreValid()
+        {
+            // Arrange
+            string email = "Email1@test.com", password = "Password";
+            int accountId = 1;
+
+            File.WriteAllText(@"Temp\SmtpTest.txt", "");
+            await _resetAccountsTable();
+            await SignUp(email, password, password);
+
+            string emailVerificationEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
+            Regex tokenRegex = new Regex(@"Token=(.*?)&");
+            string token = tokenRegex.Match(emailVerificationEmail).Groups[1].Value;
+
+            // Act
+            HttpResponseMessage emailVerificationConfirmationGetResponse = await _httpClient.GetAsync($"Account/EmailVerificationConfirmation?AccountId={accountId}&Token={token}");
+
+            // Assert
+            Assert.True((await _vakAccountRepository.GetAccountAsync(accountId)).EmailConfirmed);
+            Assert.Equal("OK", emailVerificationConfirmationGetResponse.StatusCode.ToString());
+            string html = await emailVerificationConfirmationGetResponse.Content.ReadAsStringAsync();
+            StringOptions stringOptions = new StringOptions();
+            Assert.True(html.Contains(stringOptions.EmailVerificationConfirmationView_Title));
         }
 
         #region Helpers
@@ -701,7 +755,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             return await _httpClient.SendAsync(loginPostRequest);
         }
 
-        public async Task CreateAccount(string email, string password, bool twoFactorEnabled = false, bool emailConfirmed = false)
+        public async Task<VakAccount> CreateAccount(string email, string password, bool twoFactorEnabled = false, bool emailConfirmed = false)
         {
             VakAccount account = await _vakAccountRepository.CreateAccountAsync(email, password);
             if (twoFactorEnabled)
@@ -712,6 +766,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             {
                 await _vakAccountRepository.UpdateAccountEmailConfirmedAsync(account.AccountId);
             }
+
+            return account;
         }
 
         #endregion

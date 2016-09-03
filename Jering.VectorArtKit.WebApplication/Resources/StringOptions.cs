@@ -42,6 +42,8 @@ namespace Jering.VectorArtKit.WebApplication.Resources
 
         public string ResetPasswordConfirmationView_Title { get; set; } = "Reset password confirmation";
 
+        public string EmailVerificationConfirmationView_Title { get; set; } = "Email verification confirmation";
+
         public string ErrorView_Title { get; set; } = "Error";
     }
 }

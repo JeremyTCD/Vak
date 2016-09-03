@@ -22,6 +22,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
     public class AccountController : Controller
     {
         private IAccountSecurityServices<VakAccount> _accountSecurityServices;
+        private IAccountRepository<VakAccount> _vakAccountRepository;
         private IEmailServices _emailServices;
         private StringOptions _stringOptions;
         private string _confirmEmailPurpose = "ConfirmEmail";
@@ -29,11 +30,13 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         private string _twoFactorPurpose = "TwoFactor";
 
         public AccountController(
+            IAccountRepository<VakAccount> vakAccountRepository,
             IAccountSecurityServices<VakAccount> accountSecurityServices,
             IEmailServices emailServices,
             IOptions<StringOptions> stringOptionsAccessor
             )
         {
+            _vakAccountRepository = vakAccountRepository;
             _accountSecurityServices = accountSecurityServices;
             _emailServices = emailServices;
             _stringOptions = stringOptionsAccessor?.Value;
@@ -79,9 +82,9 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 {
                     string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, createAccountResult.Account);
                     string callbackUrl = Url.Action(
-                        nameof(AccountController.ConfirmEmail),
+                        nameof(AccountController.EmailVerificationConfirmation),
                         nameof(AccountController).Replace("Controller", ""),
-                        new { Token = token, Email = model.Email },
+                        new { Token = token, AccountId = createAccountResult.Account.AccountId },
                         protocol: HttpContext.Request.Scheme);
 
                     MimeMessage mimeMessage = _emailServices.CreateMimeMessage(model.Email, _stringOptions.ConfirmEmail_Subject, string.Format(_stringOptions.ConfirmEmail_Message, callbackUrl));
@@ -260,7 +263,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _accountSecurityServices.GetAccountByEmailAsync(model.Email);
+                VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
                 if (account != null)
                 {
                     string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account);
@@ -317,8 +320,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// <param name="model"></param>
         /// <returns>
         /// ResetPassword view with error message if model state is invalid.
-        /// Resets password and redirects to ResetPasswordConfirmation view if email or token is valid.
-        /// Error view if token is invalid.
+        /// Redirects to ResetPasswordConfirmation view and updates password if email, token and model state are valid.
+        /// Error view if token or email is invalid.
         /// BadRequest if anti-forgery credentials are invalid.
         /// </returns>
         [HttpPost]
@@ -328,10 +331,10 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = model.Email == null ? null : await _accountSecurityServices.GetAccountByEmailAsync(model.Email);
+                VakAccount account = model.Email == null ? null : await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
                 if (account == null || model.Token == null ||
                     !await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account, model.Token) ||
-                    !await _accountSecurityServices.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword))
+                    !await _vakAccountRepository.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword))
                 {
                     return View("Error");
                 }
@@ -361,23 +364,26 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         }
 
         /// <summary>
-        /// GET: /Account/ConfirmEmail
+        /// GET: /Account/EmailConfirmation
         /// </summary>
         /// <param name="model"></param>
-        /// <returns></returns>
+        /// <returns>
+        /// EmailVerificationConfirmation view and sets account's email confirmed to true if token, email and model state are valid.
+        /// Error view if token or email or model state are invalid.
+        /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(ConfirmEmailViewModel model)
+        public async Task<IActionResult> EmailVerificationConfirmation(EmailVerificationConfirmationViewModel model)
         {
-            if (!ModelState.IsValid)
+            if (ModelState.IsValid)
             {
-                VakAccount account = await _accountSecurityServices.GetAccountByEmailAsync(model.Email);
+                VakAccount account = await _vakAccountRepository.GetAccountAsync(model.AccountId);
 
                 if(account != null &&
                     await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account, model.Token) &&
-                    await _accountSecurityServices.UpdateAccountEmailConfirmedAsync(account.AccountId))
+                    await _vakAccountRepository.UpdateAccountEmailConfirmedAsync(account.AccountId))
                 {
-                    return View();
+                    return View(model: account.Email);
                 }
             }
 
