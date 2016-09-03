@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Jering.AccountManagement.Security
+﻿namespace Jering.Mail
 {
     /// <summary>
-    /// Specifies options for implementations of <see cref="IEmailSender"/> .
+    /// Specifies options for implementations of <see cref="IEmailServices"/> .
     /// </summary>
     public class EmailOptions
     {

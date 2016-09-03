@@ -1,47 +1,55 @@
 ﻿using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Mail
 {
     /// <summary>
     /// Provides an API for handling emails.
     /// </summary>
-    public class EmailSender : IEmailSender
+    public class EmailServices : IEmailServices
     {
-        private EmailOptions _emailOptions { get; }
-        private SmtpClient _smtpClient { get; }
+        protected EmailOptions _emailOptions { get; }
+        protected SmtpClient _smtpClient { get; }
 
         /// <summary>
-        /// Constructs and instance of <see cref="EmailSender"/>. 
+        /// Constructs and instance of <see cref="EmailServices"/>. 
         /// </summary>
         /// <param name="emailOptionsAccessor"></param>
         /// <param name="smtpClient"></param>
-        public EmailSender(IOptions<EmailOptions> emailOptionsAccessor, SmtpClient smtpClient)
+        public EmailServices(IOptions<EmailOptions> emailOptionsAccessor, SmtpClient smtpClient)
         {
             _emailOptions = emailOptionsAccessor.Value;
             _smtpClient = smtpClient;
         }
+
         /// <summary>
-        /// Writes an email with message <paramref name="message"/> and subject <paramref name="subject"/> to <paramref name="emailAddress"/>.
+        /// Constructs a new <see cref="MimeMessage"/> instance from <paramref name="emailAddress"/>, <paramref name="subject"/> and <paramref name="message"/>.
         /// </summary>
-        /// <param name="message"></param>
         /// <param name="emailAddress"></param>
         /// <param name="subject"></param>
-        /// <returns></returns>
-        public async Task SendEmailAsync(string message, string emailAddress, string subject)
+        /// <param name="message"></param>
+        /// <returns><see cref="MimeMessage"/> </returns>
+        public virtual MimeMessage CreateMimeMessage(string emailAddress, string subject, string message)
         {
             MimeMessage mimeMessage = new MimeMessage();
             mimeMessage.From.Add(new MailboxAddress(_emailOptions.Name, _emailOptions.EmailAddress));
             mimeMessage.To.Add(new MailboxAddress(emailAddress, emailAddress));
             mimeMessage.Subject = subject;
 
-            mimeMessage.Body = new TextPart("plain"){Text = message};
+            mimeMessage.Body = new TextPart("plain") { Text = message };
 
+            return mimeMessage;
+        }
+
+        /// <summary>
+        /// Sends an email with message <paramref name="mimeMessage"/>.
+        /// </summary>
+        /// <param name="mimeMessage"></param>
+        /// <returns></returns>
+        public virtual async Task SendEmailAsync(MimeMessage mimeMessage)
+        {
             await _smtpClient.ConnectAsync(_emailOptions.Host, _emailOptions.Port, false);
 
             // Note: since we don't have an OAuth2 token, disable

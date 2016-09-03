@@ -1,6 +1,7 @@
 ﻿using Jering.AccountManagement.DatabaseInterface;
 using Jering.AccountManagement.DatabaseInterface.Dapper;
 using Jering.AccountManagement.Security;
+using Jering.Mail;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -40,13 +41,13 @@ namespace Jering.AccountManagement.Extensions
         {
             if (hostingEnvironment.IsDevelopment())
             {
-                services.AddScoped<IEmailSender, DevelopmentEmailSender>();
+                services.AddScoped<IEmailServices, DevelopmentEmailServices>();
             }
             else
             {
-                services.AddScoped<IEmailSender, EmailSender>();
+                services.AddScoped<IEmailServices, EmailServices>();
+                services.AddScoped<SmtpClient>();
             }
-            services.AddScoped<SmtpClient>();
         }
     }
 }
