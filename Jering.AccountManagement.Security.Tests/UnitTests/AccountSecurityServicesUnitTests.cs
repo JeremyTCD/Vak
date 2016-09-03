@@ -43,7 +43,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             Account account = new Account() { EmailConfirmed = true, TwoFactorEnabled = false };
             Mock<IAccountRepository<IAccount>> mockAccountRepository = new Mock<IAccountRepository<IAccount>>();
             mockAccountRepository.Setup(a => a.GetAccountByEmailAndPasswordAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(account);
-            Mock<AccountSecurityServices<IAccount>> mockAccountSecurityServices = new Mock<AccountSecurityServices<IAccount>>(null, null, null, mockAccountRepository.Object, null, null);
+            Mock<AccountSecurityServices<IAccount>> mockAccountSecurityServices = new Mock<AccountSecurityServices<IAccount>>(null, null, null, mockAccountRepository.Object, null);
             mockAccountSecurityServices.Setup(a => a.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), null)).CallBase();
 
             // Act
@@ -61,7 +61,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             Account account = new Account() { EmailConfirmed = true, TwoFactorEnabled = true };
             Mock<IAccountRepository<IAccount>> mockAccountRepository = new Mock<IAccountRepository<IAccount>>();
             mockAccountRepository.Setup(a => a.GetAccountByEmailAndPasswordAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(account);
-            Mock<AccountSecurityServices<IAccount>> mockAccountSecurityServices = new Mock<AccountSecurityServices<IAccount>>(null, null, null, mockAccountRepository.Object, null, null);
+            Mock<AccountSecurityServices<IAccount>> mockAccountSecurityServices = new Mock<AccountSecurityServices<IAccount>>(null, null, null, mockAccountRepository.Object, null);
             mockAccountSecurityServices.Setup(a => a.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), null)).CallBase();
 
             // Act
@@ -189,7 +189,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         public async Task TwoFactorSignInAsync_ReturnsTwoFactorSignInResultFailedIfUnableToRetrieveTwoFactorAccount()
         {
             // Arrange
-            Mock<AccountSecurityServices<Account>> mockAccountSecurityServices = new Mock<AccountSecurityServices<Account>>(null, null, null, null, null, null);
+            Mock<AccountSecurityServices<Account>> mockAccountSecurityServices = new Mock<AccountSecurityServices<Account>>(null, null, null, null, null);
             mockAccountSecurityServices.Setup(a => a.GetTwoFactorAccountAsync()).ReturnsAsync(null);
             mockAccountSecurityServices.CallBase = true;
 
@@ -224,7 +224,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 mockHttpContextAccessor.Object, 
                 mockOptions.Object, 
                 null, 
-                null, 
                 null);
             mockAccountSecurityServices.CallBase = true;
             mockAccountSecurityServices.Setup(a => a.GetTwoFactorAccountAsync()).ReturnsAsync(new Account());
@@ -256,7 +255,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 null,
                 null,
                 null,
-                null, 
                 null);
             mockAccountSecurityServices.CallBase = true;
             mockAccountSecurityServices.Setup(a => a.GetTwoFactorAccountAsync()).ReturnsAsync(new Account());
@@ -275,7 +273,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         public async Task ConfirmEmailAsync_ReturnsConfirmEmailResultFailedIfUnableToRetrieveEmailConfirmationAccount()
         {
             // Arrange
-            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null, null, null, null, null, null);
+            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null, null, null, null, null);
             mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(null);
             mockAccountSecurityService.CallBase = true;
 
@@ -294,7 +292,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             Mock<ITokenService<Account>> mockTokenService = new Mock<ITokenService<Account>>();
             mockTokenService.Setup(t => t.ValidateTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Account>())).ReturnsAsync(false);
 
-            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null, null, null, null, null, null);
+            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null, null, null, null, null);
             mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.DataProtectionTokenService, mockTokenService.Object);
@@ -325,7 +323,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 null, 
                 mockOptions.Object, 
                 mockAccountRepository.Object, 
-                null, 
                 null);
             mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
@@ -359,7 +356,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 null,
                 mockOptions.Object,
                 mockAccountRepository.Object,
-                null,
                 null);
             mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
