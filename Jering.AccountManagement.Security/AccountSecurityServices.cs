@@ -212,17 +212,30 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Validates <paramref name="token"/>. If valid, updates PasswordHash for account.
+        /// Validates <paramref name="token"/> created by <paramref name="tokenService"/>.
+        /// 
+        /// </summary>
+        /// <param name="tokenService"></param>
+        /// <param name="purpose"></param>
+        /// <param name="account"></param>
+        /// <param name="token"></param>
+        /// <returns>
+        /// True if token is valid, false otherwise.
+        /// </returns>
+        public virtual async Task<bool> ValidateTokenAsync(string tokenService, string purpose, TAccount account, string token)
+        {
+            return await _tokenServices[tokenService].ValidateTokenAsync(purpose, token, account);
+        }
+
+        /// <summary>
+        /// Updates password hash for <paramref name="account"/>.
         /// </summary>
         /// <param name="account"></param>
         /// <param name="password"></param>
-        /// <param name="token"></param>
-        /// <returns>A <see cref="Task"/> that returns true if <paramref name="token"/> is valid and PasswordHash 
-        /// updates successfully, false otherwise.</returns>
-        public virtual async Task<bool> UpdatePasswordAsync(TAccount account, string password, string token)
+        /// <returns>True if password hash updates successfully, false otherwise.</returns>
+        public virtual async Task<bool> UpdatePasswordAsync(TAccount account, string password)
         {
-            return await _tokenServices[TokenServiceOptions.DataProtectionTokenService].ValidateTokenAsync(_confirmEmailTokenPurpose, token, account) &&
-                await _accountRepository.UpdateAccountPasswordHashAsync(account.AccountId, password);
+            return await _accountRepository.UpdateAccountPasswordHashAsync(account.AccountId, password);
         }
 
         /// <summary>

@@ -50,9 +50,8 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="account"></param>
         /// <param name="password"></param>
-        /// <param name="token"></param>
         /// <returns></returns>
-        Task<bool> UpdatePasswordAsync(TAccount account, string password, string token);
+        Task<bool> UpdatePasswordAsync(TAccount account, string password);
 
         /// <summary>
         /// 
@@ -120,5 +119,15 @@ namespace Jering.AccountManagement.Security
         /// <param name="claimsPrincipal"></param>
         /// <returns></returns>
         Task<TAccount> GetSignedInAccount(ClaimsPrincipal claimsPrincipal);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="tokenService"></param>
+        /// <param name="purpose"></param>
+        /// <param name="account"></param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        Task<bool> ValidateTokenAsync(string tokenService, string purpose, TAccount account, string token);
     }
 }
