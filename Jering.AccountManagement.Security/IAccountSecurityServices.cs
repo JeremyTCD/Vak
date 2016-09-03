@@ -48,28 +48,11 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="account"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        Task<bool> UpdatePasswordAsync(TAccount account, string password);
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="tokenService"></param>
         /// <param name="purpose"></param>
         /// <param name="account"></param>
         /// <returns></returns>
         Task<string> GetTokenAsync(string tokenService, string purpose, TAccount account);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="email"></param>
-        /// <param name="subject"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        Task SendEmailAsync(string email, string subject, string message);
 
         /// <summary>
         /// 
@@ -129,5 +112,27 @@ namespace Jering.AccountManagement.Security
         /// <param name="token"></param>
         /// <returns></returns>
         Task<bool> ValidateTokenAsync(string tokenService, string purpose, TAccount account, string token);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        Task<TAccount> GetAccountByEmailAsync(string email);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        Task<bool> UpdateAccountPasswordHashAsync(int accountId, string password);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <returns></returns>
+        Task<bool> UpdateAccountEmailConfirmedAsync(int accountId);
     }
 }

@@ -21,7 +21,6 @@ namespace Jering.AccountManagement.Security
         private HttpContext _httpContext { get; }
         private AccountSecurityOptions _securityOptions { get; }
         private Dictionary<string, ITokenService<TAccount>> _tokenServices { get; } = new Dictionary<string, ITokenService<TAccount>>();
-        private IEmailSender _emailSender { get; }
 
         /// <summary>
         /// The data protection purpose used for email confirmation related methods.
@@ -40,19 +39,16 @@ namespace Jering.AccountManagement.Security
         /// <param name="securityOptionsAccessor"></param>
         /// <param name="accountRepository"></param>
         /// <param name="serviceProvider"></param>
-        /// <param name="emailSender"></param>
         public AccountSecurityServices(ClaimsPrincipalServices<TAccount> claimsPrincipalServices,
             IHttpContextAccessor httpContextAccessor,
             IOptions<AccountSecurityOptions> securityOptionsAccessor,
             IAccountRepository<TAccount> accountRepository,
-            IServiceProvider serviceProvider,
-            IEmailSender emailSender)
+            IServiceProvider serviceProvider)
         {
             _claimsPrincipalServices = claimsPrincipalServices;
             _httpContext = httpContextAccessor?.HttpContext;
             _securityOptions = securityOptionsAccessor?.Value;
             _accountRepository = accountRepository;
-            _emailSender = emailSender;
 
             if (serviceProvider != null)
             {
@@ -228,29 +224,6 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Updates password hash for <paramref name="account"/>.
-        /// </summary>
-        /// <param name="account"></param>
-        /// <param name="password"></param>
-        /// <returns>True if password hash updates successfully, false otherwise.</returns>
-        public virtual async Task<bool> UpdatePasswordAsync(TAccount account, string password)
-        {
-            return await _accountRepository.UpdateAccountPasswordHashAsync(account.AccountId, password);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="email"></param>
-        /// <param name="subject"></param>
-        /// <param name="message"></param>
-        /// <returns></returns>
-        public virtual async Task SendEmailAsync(string email, string subject, string message)
-        {
-            await _emailSender.SendEmailAsync(message, email, subject);
-        }
-
-        /// <summary>
         /// Gets account using two factor cookie's account Id value. 
         /// </summary>
         /// <returns>
@@ -355,6 +328,37 @@ namespace Jering.AccountManagement.Security
                     throw;
                 }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        public virtual async Task<TAccount> GetAccountByEmailAsync(string email)
+        {
+            return await _accountRepository.GetAccountByEmailAsync(email);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="password"></param>
+        /// <returns></returns>
+        public virtual async Task<bool> UpdateAccountPasswordHashAsync(int accountId, string password)
+        {
+            return await _accountRepository.UpdateAccountPasswordHashAsync(accountId, password);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <returns></returns>
+        public async Task<bool> UpdateAccountEmailConfirmedAsync(int accountId)
+        {
+            return await _accountRepository.UpdateAccountEmailConfirmedAsync(accountId);
         }
     }
 }
