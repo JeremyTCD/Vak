@@ -26,7 +26,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             // Arrange
             Mock<IAccountRepository<IAccount>> mockAccountRepository = new Mock<IAccountRepository<IAccount>>();
             mockAccountRepository.Setup(a => a.GetAccountByEmailAndPasswordAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(null);
-            AccountSecurityServices<IAccount> accountSecurityServices = new AccountSecurityServices<IAccount>(null, null, null, mockAccountRepository.Object, null, null);
+            AccountSecurityServices<IAccount> accountSecurityServices = new AccountSecurityServices<IAccount>(null, null, null, mockAccountRepository.Object, null);
 
             // Act
             PasswordSignInResult<IAccount> applicationSignInResult = await accountSecurityServices.PasswordSignInAsync("", "", null);
@@ -93,7 +93,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 mockHttpContextAccessor.Object, 
                 mockOptions.Object, 
                 null, 
-                null,
                 null);
 
             // Act
@@ -129,7 +128,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 null,
                 mockHttpContextAccessor.Object,
                 mockOptions.Object,
-                null,
                 null,
                 null);
 
@@ -173,7 +171,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 mockHttpContextAccessor.Object,
                 mockOptions.Object,
                 mockAccountRepository.Object,
-                null,
                 null);
 
             // Act
