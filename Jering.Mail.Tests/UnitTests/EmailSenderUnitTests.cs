@@ -29,7 +29,7 @@ namespace Jering.AccountManagement.Security.UnitTests.UnitTests
             EmailServices emailSender = new EmailServices(mockOptions.Object, null);
 
             // Act
-            MimeMessage mimeMessage = emailSender.CreateMimeMessage(message, emailAddress, subject);
+            MimeMessage mimeMessage = emailSender.CreateMimeMessage(emailAddress, subject, message);
 
             // Assert
             mockOptions.VerifyAll();
