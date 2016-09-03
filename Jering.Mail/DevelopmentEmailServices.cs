@@ -22,6 +22,7 @@ namespace Jering.Mail
         {
         }
 
+#pragma warning disable 1998
         /// <summary>
         /// Writes <paramref name="mimeMessage"/> to a file.
         /// </summary>
@@ -31,5 +32,6 @@ namespace Jering.Mail
         {
             mimeMessage.WriteTo(_emailOptions.DevelopmentFile);
         }
+#pragma warning restore 1998
     }
 }
