@@ -1,5 +1,7 @@
 ﻿@{
     VakAccount vakAccount = ViewData[nameof(VakAccount)] as VakAccount;
+    string accountControllerName = nameof(AccountController).Replace("Controller", "");
+    string homeControllerName = nameof(HomeController).Replace("Controller", "");
 }
 
 <!DOCTYPE html>
@@ -10,29 +12,29 @@
     <title>@ViewData["Title"] - Identity Sample</title>
 </head>
 <body>
-    <a asp-controller="Home" asp-action="Index" class="navbar-brand">Logo</a><br />
+    <a asp-controller="@homeControllerName" asp-action="Index" class="navbar-brand">Logo</a><br />
 
     @if (vakAccount != null)
     {
-        <a asp-controller="Manage" asp-action="Index" title="Manage">My VakKits</a><br />
-        <a asp-controller="Manage" asp-action="Index" title="Manage">My VakUnits</a><br />
+        <a asp-controller="@homeControllerName" asp-action="Index" title="Manage">My VakKits</a><br />
+        <a asp-controller="@homeControllerName" asp-action="Index" title="Manage">My VakUnits</a><br />
     }
     else
     {
-        <a asp-controller="Account" asp-action="SignUp">Sign up</a><br />
-        <a asp-controller="Account" asp-action="Login">Log in</a><br />
+        <a asp-controller="@accountControllerName" asp-action="SignUp">Sign up</a><br />
+        <a asp-controller="@accountControllerName" asp-action="Login">Log in</a><br />
     }
 
-    <a asp-controller="Home" asp-action="Index" class="navbar-brand">Overview</a><br />
-    <a asp-controller="Home" asp-action="Index" class="navbar-brand">VakUnit gallery</a><br />
-    <a asp-controller="Home" asp-action="Index" class="navbar-brand">Learn</a><br />
-    <a asp-controller="Home" asp-action="Index" class="navbar-brand">Help</a><br />
+    <a asp-controller="@homeControllerName" asp-action="Index" class="navbar-brand">Overview</a><br />
+    <a asp-controller="@homeControllerName" asp-action="Index" class="navbar-brand">VakUnit gallery</a><br />
+    <a asp-controller="@homeControllerName" asp-action="Index" class="navbar-brand">Learn</a><br />
+    <a asp-controller="@homeControllerName" asp-action="Index" class="navbar-brand">Help</a><br />
 
     @if (vakAccount != null)
     {
-        <form asp-controller="Account" asp-action="LogOff" method="post" id="logoutForm">
-            <a asp-controller="Manage" asp-action="Index" title="Manage">Account: @vakAccount.Email</a><br />
-            <a asp-controller="Manage" asp-action="Index" title="Manage">Manage account</a><br />
+        <form asp-controller="@accountControllerName" asp-action="@nameof(AccountController.LogOff)" method="post">
+            <a asp-controller="@accountControllerName" asp-action="@nameof(AccountController.ManageAccount)">Account: @vakAccount.Email</a><br />
+            <a asp-controller="@accountControllerName" asp-action="@nameof(AccountController.ManageAccount)">Manage account</a><br />
             <button type="submit">Log off</button>
         </form>
     }
