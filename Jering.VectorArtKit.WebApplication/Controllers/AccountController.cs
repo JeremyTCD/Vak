@@ -196,6 +196,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
+        [SetSignedInAccount]
         public async Task<IActionResult> VerifyTwoFactorCode(VerifyTwoFactorCodeViewModel model, string returnUrl = null)
         {
             if (ModelState.IsValid)
@@ -369,6 +370,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
+        [SetSignedInAccount]
         public async Task<IActionResult> EmailVerificationConfirmation(EmailVerificationConfirmationViewModel model)
         {
             if (ModelState.IsValid)
@@ -384,6 +386,104 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             }
 
             return View("Error");
+        }
+
+        /// <summary>
+        /// Get: /Account/ManageAccount
+        /// </summary>
+        /// <returns>
+        /// ManageAccount view if authentication succeeds.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
+        [HttpGet]
+        [SetSignedInAccount]
+        public IActionResult ManageAccount()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        [SetSignedInAccount]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ChangePassword(ChangePasswordViewModel model)
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ChangeEmail()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ChangeEmail(ChangeEmailViewModel model)
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ChangeAlternativeEmail()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ChangeAlternativeEmail(ChangeAlternativeEmailViewModel model)
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult ChangeDisplayName()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ChangeDisplayName(ChangeDisplayNameViewModel model)
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult SendEmailVerificationConfirmation()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult DisableTwoFactorConfirmation()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult EnableTwoFactor()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult EnableTwoFactor(EnableTwoFactorViewModel model)
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult EnableTwoFactorConfirmation()
+        {
+            return View();
         }
 
         #region Helpers

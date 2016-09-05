@@ -18,6 +18,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         private HttpClient _httpClient { get; }
         private VakAccountRepository _vakAccountRepository { get; }
         private Func<Task> _resetAccountsTable { get; }
+        private string _accountControllerName = nameof(AccountController).Replace("Controller", "");
         public AccountControllerIntegrationTests(ControllersFixture controllersFixture)
         {
             _httpClient = controllersFixture.HttpClient;
@@ -38,7 +39,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.SignUpView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_SignUp));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
@@ -49,7 +50,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         {
             // Arrange
             await _resetAccountsTable();
-            if (email == "Email1@test.com") {
+            if (email == "Email1@test.com")
+            {
                 await _vakAccountRepository.CreateAccountAsync(email, password);
             }
 
@@ -60,7 +62,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
             StringOptions stringOptions = new StringOptions();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(html.Contains(stringOptions.SignUpView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_SignUp));
             if (email == "Email1@test.com")
             {
                 Assert.True(html.Contains(stringOptions.SignUp_AccountWithEmailExists));
@@ -72,7 +74,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
                 Assert.True(html.Contains(stringOptions.ConfirmPassword_DoesNotMatchPassword));
             }
         }
-  
+
         public static IEnumerable<object[]> SignUpPostData()
         {
             yield return new object[] { "invalidModelState", "x", "y" };
@@ -118,7 +120,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string confirmEmailEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
             Assert.Contains(stringOptions.ConfirmEmail_Subject, confirmEmailEmail);
             Assert.Contains("Email1@test.com", confirmEmailEmail);
-            Assert.Matches(stringOptions.ConfirmEmail_Message.Replace("{0}", $"http://localhost/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.EmailVerificationConfirmation)}.*?"), confirmEmailEmail);
+            Assert.Matches(stringOptions.ConfirmEmail_Message.Replace("{0}", $"http://localhost/{_accountControllerName}/{nameof(AccountController.EmailVerificationConfirmation)}.*?"), confirmEmailEmail);
         }
 
         [Fact]
@@ -133,7 +135,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.LogInView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_LogIn));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
@@ -153,7 +155,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
             StringOptions stringOptions = new StringOptions();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(html.Contains(stringOptions.LogInView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_LogIn));
             Assert.True(html.Contains(stringOptions.LogIn_Failed));
         }
 
@@ -312,7 +314,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 
             // Assert
             Assert.Equal("Redirect", logOffPostResponse.StatusCode.ToString());
-            Assert.Equal("/Account/Login", logOffPostResponse.Headers.Location.AbsolutePath);
+            Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.LogIn)}", logOffPostResponse.Headers.Location.AbsolutePath);
         }
 
         [Fact]
@@ -336,7 +338,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await VerifyTwoFactorCodeGetResponse.Content.ReadAsStringAsync();
             Assert.Equal("OK", VerifyTwoFactorCodeGetResponse.StatusCode.ToString());
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.VerifyTwoFactorCodeView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_VerifyTwoFactorCode));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
@@ -351,7 +353,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await VerifyTwoFactorCodeGetResponse.Content.ReadAsStringAsync();
             Assert.Equal("OK", VerifyTwoFactorCodeGetResponse.StatusCode.ToString());
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.ErrorView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_Error));
         }
 
         [Fact]
@@ -405,7 +407,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.Equal("OK", VerifyTwoFactorCodePostResponse.StatusCode.ToString());
             string html = await VerifyTwoFactorCodePostResponse.Content.ReadAsStringAsync();
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.VerifyTwoFactorCodeView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_VerifyTwoFactorCode));
             Assert.True(html.Contains(stringOptions.VerifyTwoFactorCode_InvalidCode));
         }
 
@@ -428,7 +430,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.ForgotPasswordView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_ForgotPassword));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
@@ -443,7 +445,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await forgotPasswordPostResponse.Content.ReadAsStringAsync();
             StringOptions stringOptions = new StringOptions();
             Assert.Equal("OK", forgotPasswordPostResponse.StatusCode.ToString());
-            Assert.True(html.Contains(stringOptions.ForgotPasswordView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_ForgotPassword));
             Assert.True(html.Contains(stringOptions.Email_Invalid));
         }
 
@@ -462,7 +464,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 
             // Assert
             Assert.Equal("Redirect", forgotPasswordPostResponse.StatusCode.ToString());
-            Assert.Equal($"/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.ForgotPasswordConfirmation)}?Email={email}", 
+            Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.ForgotPasswordConfirmation)}?Email={email}",
                 forgotPasswordPostResponse.Headers.Location.ToString());
             StringOptions stringOptions = new StringOptions();
             string resetPasswordEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
@@ -470,8 +472,8 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             {
                 Assert.Contains(stringOptions.ResetPasswordEmail_Subject, resetPasswordEmail);
                 Assert.Contains(email, resetPasswordEmail);
-                Assert.Matches(string.Format(stringOptions.ResetPasswordEmail_Message, 
-                    $"http://localhost/{nameof(AccountController).Replace("Controller", "")}/{nameof(AccountController.ResetPassword)}.*?"), resetPasswordEmail);
+                Assert.Matches(string.Format(stringOptions.ResetPasswordEmail_Message,
+                    $"http://localhost/{_accountControllerName}/{nameof(AccountController.ResetPassword)}.*?"), resetPasswordEmail);
             }
             else
             {
@@ -496,7 +498,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.ForgotPasswordConfirmationView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_ForgotPasswordConfirmation));
         }
 
         [Fact]
@@ -512,7 +514,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.ResetPasswordView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_ResetPassword));
             Assert.NotNull(antiForgeryToken);
             Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
         }
@@ -552,7 +554,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             // Assert
             Assert.NotNull(_vakAccountRepository.GetAccountByEmailAndPasswordAsync(email, newPassword));
             Assert.Equal("Redirect", resetPasswordPostResponse.StatusCode.ToString());
-            Assert.Equal($"/{nameof(AccountController).Replace("Controller","")}/{nameof(AccountController.ResetPasswordConfirmation)}?Email={email}", 
+            Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.ResetPasswordConfirmation)}?Email={email}",
                 resetPasswordPostResponse.Headers.Location.ToString());
         }
 
@@ -586,7 +588,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.Equal("OK", resetPasswordPostResponse.StatusCode.ToString());
             string html = await resetPasswordPostResponse.Content.ReadAsStringAsync();
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.ErrorView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_Error));
         }
 
         public static IEnumerable<object[]> ResetPasswordPostData()
@@ -606,7 +608,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.ResetPasswordConfirmationView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_ResetPasswordConfirmation));
         }
 
         [Theory]
@@ -627,7 +629,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             string html = await httpResponseMessage.Content.ReadAsStringAsync();
             Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.ErrorView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_Error));
         }
 
         public static IEnumerable<object[]> EmailVerificationConfirmationGetData()
@@ -655,11 +657,47 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             HttpResponseMessage emailVerificationConfirmationGetResponse = await _httpClient.GetAsync($"Account/EmailVerificationConfirmation?AccountId={accountId}&Token={token}");
 
             // Assert
-            Assert.True((await _vakAccountRepository.GetAccountAsync(accountId)).EmailConfirmed);
+            Assert.True((await _vakAccountRepository.GetAccountAsync(accountId)).EmailVerified);
             Assert.Equal("OK", emailVerificationConfirmationGetResponse.StatusCode.ToString());
             string html = await emailVerificationConfirmationGetResponse.Content.ReadAsStringAsync();
             StringOptions stringOptions = new StringOptions();
-            Assert.True(html.Contains(stringOptions.EmailVerificationConfirmationView_Title));
+            Assert.True(html.Contains(stringOptions.ViewTitle_EmailVerificationConfirmation));
+        }
+
+        [Fact]
+        public async Task ManageAccountGet_ReturnsManageAccountViewIfAuthenticationIsSuccessful()
+        {
+            // Arrange
+            string email = "email@email.com", password = "Password";
+
+            await _resetAccountsTable();
+            await CreateAccount(email, password);
+
+            HttpResponseMessage logInPostResponse = await LogIn(email, password);
+            HttpRequestMessage manageAccountGetRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.ManageAccount)}",
+                HttpMethod.Get,
+                null,
+                logInPostResponse);
+
+            // Act
+            HttpResponseMessage manageAccountGetResponse = await _httpClient.SendAsync(manageAccountGetRequest);
+
+            // Assert
+            Assert.Equal("OK", manageAccountGetResponse.StatusCode.ToString());
+            StringOptions stringOptions = new StringOptions();
+            string html = await manageAccountGetResponse.Content.ReadAsStringAsync();
+            Assert.Contains(stringOptions.ViewTitle_ManageAccount, html);
+        }
+
+        [Fact]
+        public async Task ManageAccountGet_RedirectsToLoginViewIfAuthenticationFails()
+        {
+            // Act
+            HttpResponseMessage manageAccountGetResponse = await _httpClient.GetAsync($"{_accountControllerName}/{nameof(AccountController.ManageAccount)}");
+
+            // Assert
+            Assert.Equal("Redirect", manageAccountGetResponse.StatusCode.ToString());
+            Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.LogIn)}", manageAccountGetResponse.Headers.Location.AbsolutePath);
         }
 
         #region Helpers
@@ -760,7 +798,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             {
                 await _vakAccountRepository.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true);
             }
-            if(emailConfirmed)
+            if (emailConfirmed)
             {
                 await _vakAccountRepository.UpdateAccountEmailConfirmedAsync(account.AccountId);
             }
@@ -773,4 +811,3 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
 }
 
 
-  
