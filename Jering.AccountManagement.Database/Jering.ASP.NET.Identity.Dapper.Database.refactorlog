@@ -56,4 +56,32 @@
     <Property Name="ParentElementType" Value="SqlSchema" />
     <Property Name="NewName" Value="[GetAccountUsername]" />
   </Operation>
+  <Operation Name="Rename Refactor" Key="15648bd0-4429-4eff-a4fc-8166b0ad41f1" ChangeDateTime="09/05/2016 07:35:02">
+    <Property Name="ElementName" Value="[dbo].[Accounts].[Username]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Accounts]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="DisplayName" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="32126839-7b84-4e6a-814a-a1bb206c43f9" ChangeDateTime="09/05/2016 07:35:38">
+    <Property Name="ElementName" Value="[dbo].[Accounts].[EmailConfirmed]" />
+    <Property Name="ElementType" Value="SqlSimpleColumn" />
+    <Property Name="ParentElementName" Value="[dbo].[Accounts]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="[EmailVerified]" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="e84f030d-93d8-41f9-af4b-23e1a82c8e8a" ChangeDateTime="09/05/2016 07:37:12">
+    <Property Name="ElementName" Value="[dbo].[DF_dbo_Accounts_Username]" />
+    <Property Name="ElementType" Value="SqlDefaultConstraint" />
+    <Property Name="ParentElementName" Value="[dbo].[Accounts]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="[DF_dbo_Accounts_DisplayName]" />
+  </Operation>
+  <Operation Name="Rename Refactor" Key="ed686ffa-1a11-4bd1-9b65-eb1bc5167198" ChangeDateTime="09/05/2016 07:37:20">
+    <Property Name="ElementName" Value="[dbo].[DF_dbo_Accounts_EmailConfirmed]" />
+    <Property Name="ElementType" Value="SqlDefaultConstraint" />
+    <Property Name="ParentElementName" Value="[dbo].[Accounts]" />
+    <Property Name="ParentElementType" Value="SqlTable" />
+    <Property Name="NewName" Value="[DF_dbo_Accounts_EmailVerified]" />
+  </Operation>
 </Operations>
