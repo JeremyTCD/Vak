@@ -13,9 +13,9 @@ namespace Jering.AccountManagement.DatabaseInterface
         public int AccountId { get; set; }
 
         /// <summary>
-        /// Account's username.
+        /// Account's display name.
         /// </summary>
-        public string Username { get; set; }
+        public string DisplayName { get; set; }
 
         /// <summary>
         /// A random value that changes whenever an account's security data changes.
@@ -33,9 +33,19 @@ namespace Jering.AccountManagement.DatabaseInterface
         public string Email { get; set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        public string AlternativeEmail { get; set; }
+
+        /// <summary>
         /// True if the email is confirmed, false otherwise.
         /// </summary>
-        public bool EmailConfirmed { get; set; }
+        public bool EmailVerified { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool AlternativeEmailVerified { get; set; }
 
         /// <summary>
         /// True if two factor is enabled, false otherwise.

@@ -1,8 +1,5 @@
 ﻿using Jering.AccountManagement.DatabaseInterface;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
@@ -16,7 +13,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         /// <summary>
         /// Account's username.
         /// </summary>
-        public virtual string Username { get; set; }
+        public virtual string DisplayName { get; set; }
 
         /// <summary>
         /// A random value that changes whenever an account's security data changes.
@@ -36,11 +33,21 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         /// <summary>
         /// True if the email is confirmed, false otherwise.
         /// </summary>
-        public virtual bool EmailConfirmed { get; set; }
+        public virtual bool EmailVerified { get; set; }
 
         /// <summary>
         /// True if two factor is enabled, false otherwise.
         /// </summary>
         public virtual bool TwoFactorEnabled { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual string AlternativeEmail { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual bool AlternativeEmailVerified { get; set; }
     }
 }

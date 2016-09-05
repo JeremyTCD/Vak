@@ -51,9 +51,9 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             byte[] hash = sha256.ComputeHash(Encoding.Unicode.GetBytes("$PassworD" + "Email@Jering.com"));
             Assert.Equal(1, account.AccountId);
             Assert.Equal("Email@Jering.com", account.Email);
-            Assert.Equal(null, account.Username);
+            Assert.Equal(null, account.DisplayName);
             Assert.NotEqual(Guid.Empty, account.SecurityStamp);
-            Assert.Equal(false, account.EmailConfirmed);
+            Assert.Equal(false, account.EmailVerified);
             Assert.Equal(false, account.TwoFactorEnabled);
             Assert.Equal(hash, account.PasswordHash);
         }
@@ -102,9 +102,9 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             Assert.NotEqual(null, retrievedAccount);
             Assert.Equal(1, retrievedAccount.AccountId);
             Assert.Equal("Email@Jering.com", retrievedAccount.Email);
-            Assert.Equal(null, retrievedAccount.Username);
+            Assert.Equal(null, retrievedAccount.DisplayName);
             Assert.NotEqual(Guid.Empty, retrievedAccount.SecurityStamp);
-            Assert.Equal(false, retrievedAccount.EmailConfirmed);
+            Assert.Equal(false, retrievedAccount.EmailVerified);
             Assert.Equal(false, retrievedAccount.TwoFactorEnabled);
         }
 
@@ -136,9 +136,9 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             byte[] hash = sha256.ComputeHash(Encoding.Unicode.GetBytes("$PassworD" + "Email@Jering.com"));
             Assert.Equal(1, account.AccountId);
             Assert.Equal("Email@Jering.com", account.Email);
-            Assert.Equal(null, account.Username);
+            Assert.Equal(null, account.DisplayName);
             Assert.NotEqual(Guid.Empty, account.SecurityStamp);
-            Assert.Equal(false, account.EmailConfirmed);
+            Assert.Equal(false, account.EmailVerified);
             Assert.Equal(false, account.TwoFactorEnabled);
             Assert.Equal(hash, account.PasswordHash);
         }
@@ -174,9 +174,9 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             byte[] hash = sha256.ComputeHash(Encoding.Unicode.GetBytes("$PassworD" + "Email@Jering.com"));
             Assert.Equal(1, account.AccountId);
             Assert.Equal("Email@Jering.com", account.Email);
-            Assert.Equal(null, account.Username);
+            Assert.Equal(null, account.DisplayName);
             Assert.NotEqual(Guid.Empty, account.SecurityStamp);
-            Assert.Equal(false, account.EmailConfirmed);
+            Assert.Equal(false, account.EmailVerified);
             Assert.Equal(false, account.TwoFactorEnabled);
             Assert.Equal(hash, account.PasswordHash);
         }
@@ -684,8 +684,8 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
 
             // Assert
             IAccount retrievedAccount = await _dapperAccountRepository.GetAccountAsync(account.AccountId);
-            Assert.False(account.EmailConfirmed);
-            Assert.True(retrievedAccount.EmailConfirmed);
+            Assert.False(account.EmailVerified);
+            Assert.True(retrievedAccount.EmailVerified);
         }
 
         [Fact]

@@ -40,7 +40,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         public async Task ApplicationPasswordSignInAsync_ReturnsApplicationSignInResultSucceededIfSignInSucceeds()
         {
             // Arrange
-            Account account = new Account() { EmailConfirmed = true, TwoFactorEnabled = false };
+            Account account = new Account() { EmailVerified = true, TwoFactorEnabled = false };
             Mock<IAccountRepository<IAccount>> mockAccountRepository = new Mock<IAccountRepository<IAccount>>();
             mockAccountRepository.Setup(a => a.GetAccountByEmailAndPasswordAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(account);
             Mock<AccountSecurityServices<IAccount>> mockAccountSecurityServices = new Mock<AccountSecurityServices<IAccount>>(null, null, null, mockAccountRepository.Object, null);
@@ -58,7 +58,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         public async Task ApplicationPasswordSignInAsync_ReturnsApplicationSignInResultTwoFactorRequiredIfTwoFactorIsRequired()
         {
             // Arrange
-            Account account = new Account() { EmailConfirmed = true, TwoFactorEnabled = true };
+            Account account = new Account() { EmailVerified = true, TwoFactorEnabled = true };
             Mock<IAccountRepository<IAccount>> mockAccountRepository = new Mock<IAccountRepository<IAccount>>();
             mockAccountRepository.Setup(a => a.GetAccountByEmailAndPasswordAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(account);
             Mock<AccountSecurityServices<IAccount>> mockAccountSecurityServices = new Mock<AccountSecurityServices<IAccount>>(null, null, null, mockAccountRepository.Object, null);
