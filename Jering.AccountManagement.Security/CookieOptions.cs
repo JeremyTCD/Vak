@@ -24,7 +24,7 @@ namespace Jering.AccountManagement.Security
             CookieName = DefaultApplicationScheme,
             AutomaticAuthenticate = true,
             AutomaticChallenge = true,
-            LoginPath = new PathString("/Account/Login"),
+            LoginPath = new PathString("/Account/LogIn"),
             Events = new CookieAuthenticationEvents
             {
                 OnValidatePrincipal = CookieSecurityStampValidator.ValidatePrincipalAsync
