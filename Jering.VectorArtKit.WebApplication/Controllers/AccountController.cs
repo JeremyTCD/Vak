@@ -446,7 +446,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 }
                 else
                 {
-                    account.SecurityStamp = await _vakAccountRepository.GetAccountSecurityStampAsync(account.AccountId);
+                    account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
                     await _accountSecurityServices.RefreshSignInAsync(account);
 
                     return RedirectToAction(nameof(AccountController.ManageAccount));
