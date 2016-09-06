@@ -84,6 +84,7 @@ namespace Jering.AccountManagement.Security
         public virtual async Task SignInAsync(TAccount account, AuthenticationProperties authenticationProperties)
         {
             ClaimsPrincipal claimsPrincipal = await _claimsPrincipalServices.CreateClaimsPrincipalAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme, authenticationProperties);
+            authenticationProperties.AllowRefresh = true;
 
             await _httpContext.Authentication.SignInAsync(
                     _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme,
@@ -105,7 +106,7 @@ namespace Jering.AccountManagement.Security
             await _httpContext.Authentication.SignInAsync(
                     _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme,
                     _httpContext.User,
-                    new AuthenticationProperties {IsPersistent = isPersistent});
+                    new AuthenticationProperties {IsPersistent = isPersistent, AllowRefresh = true});
         }
 
         /// <summary>
