@@ -16,6 +16,14 @@ namespace Jering.DataAnnotations
         /// 
         /// </summary>
         /// <param name="otherProperty"></param>
+        public ValidateMatchesAttribute(string otherProperty):this(otherProperty, null, null)
+        {
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="otherProperty"></param>
         /// <param name="errorMessageProperty"></param>
         /// <param name="optionsType"></param>
         public ValidateMatchesAttribute(string otherProperty, string errorMessageProperty, Type optionsType):base(errorMessageProperty, optionsType)
