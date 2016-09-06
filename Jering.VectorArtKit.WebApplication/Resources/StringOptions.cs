@@ -13,6 +13,14 @@
         public string ViewTitle_EmailVerificationConfirmation { get; set; } = "Email verification confirmation";
         public string ViewTitle_Error { get; set; } = "Error";
         public string ViewTitle_ManageAccount { get; set; } = "Manage account";
+        public string ViewTitle_ChangePassword { get; set; } = "Change password";
+        public string ViewTitle_ChangeAlternativeEmail { get; set; } = "Change alternative email";
+        public string ViewTitle_ChangeDisplayName { get; set; } = "Change display name";
+        public string ViewTitle_ChangeEmail { get; set; } = "Change email";
+        public string ViewTitle_EnableTwoFactor { get; set; } = "Enable two factor";
+        public string ViewTitle_EnableTwoFactorConfirmation { get; set; } = "Enable two factor confirmation";
+        public string ViewTitle_DisableTwoFactorConfirmation { get; set; } = "Disable two factor confirmation";
+        public string ViewTitle_SendEmailVerificationConfirmation { get; set; } = "Send email verification confirmation";
         #endregion
 
         #region Email
@@ -32,6 +40,7 @@
         public string SignUp_AccountWithEmailExists { get; set; } = "An account with this email already exists.";
         public string VerifyTwoFactorCode_InvalidCode { get; set; } = "Invalid code.";
         public string ConfirmEmail_Message { get; set; } = "Please confirm your email by clicking this link: <a href=\"{0}\">link</a>";
+        public string ErrorMessage_InvalidCurrentPassword { get; set; } = "Invalid current password";
         #endregion
 
         #region Display names
