@@ -13,6 +13,9 @@
         @StringOptionsAccessor.Value.DisplayName_Password
     </div>
     <div>
+        Last changed: <span duration-start="@vakAccount.PasswordLastChanged"></span>
+    </div>
+    <div>
         <a asp-controller="@nameof(AccountController).Replace("Controller", "")" asp-action="@nameof(AccountController.ChangePassword)">Change password</a>
     </div>
 </div>
