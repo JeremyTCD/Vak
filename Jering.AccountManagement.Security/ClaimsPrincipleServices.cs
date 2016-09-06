@@ -5,6 +5,7 @@ using Jering.AccountManagement.DatabaseInterface;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Microsoft.AspNetCore.Http.Authentication;
 
 namespace Jering.AccountManagement.Security
 {
@@ -31,12 +32,13 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// 
+        /// Creates a <see cref="ClaimsPrincipal"/> from <paramref name="account"/> and <paramref name="authenticationProperties"/>.
         /// </summary>
         /// <param name="account"></param>
         /// <param name="authenticationScheme"></param>
+        /// <param name="authenticationProperties"></param>
         /// <returns></returns>
-        public virtual async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(TAccount account, string authenticationScheme)
+        public virtual async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(TAccount account, string authenticationScheme, AuthenticationProperties authenticationProperties)
         {
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
                 authenticationScheme,
@@ -46,8 +48,8 @@ namespace Jering.AccountManagement.Security
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.AccountIdClaimType, account.AccountId.ToString()));
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.UsernameClaimType, account.Email));
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.SecurityStampClaimType, account.SecurityStamp.ToString()));
+            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.IsPersistenClaimType, authenticationProperties.IsPersistent.ToString()));
 
-            // TODO: flag to make addition of roles and extra claims optional. some cookies do not need all this info
             IEnumerable<Role> roles = await _accountRepository.GetAccountRolesAsync(account.AccountId);
             foreach (Role role in roles)
             {
@@ -61,7 +63,39 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// 
+        /// Updates a <see cref="ClaimsPrincipal"/> with values from <paramref name="account" />. Does not perform update if
+        /// account id does not correspond to id of account that <paramref name="claimsPrincipal"/> represents.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="claimsPrincipal"></param>
+        public virtual void UpdateClaimsPrincipal(TAccount account, ClaimsPrincipal claimsPrincipal)
+        {
+            ClaimsIdentity claimsIdentity = claimsPrincipal.Identity as ClaimsIdentity;
+
+            System.Security.Claims.Claim accountIdClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
+            if(account.AccountId.ToString() != accountIdClaim.Value)
+            {
+                throw new ArgumentException(nameof(account));
+            }
+
+            System.Security.Claims.Claim usernameClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType);
+            System.Security.Claims.Claim securityStampClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType);
+
+            if(usernameClaim?.Value != account.Email)
+            {
+                claimsIdentity.RemoveClaim(usernameClaim);
+                claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.UsernameClaimType, account.Email));
+            }
+
+            if (securityStampClaim?.Value != account.SecurityStamp.ToString())
+            {
+                claimsIdentity.RemoveClaim(securityStampClaim);
+                claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.SecurityStampClaimType, account.SecurityStamp.ToString()));
+            }
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ClaimsPrincipal"/> with an account id claim.
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="authenticationScheme"></param>
