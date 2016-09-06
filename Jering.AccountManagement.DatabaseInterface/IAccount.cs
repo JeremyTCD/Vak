@@ -18,6 +18,11 @@ namespace Jering.AccountManagement.DatabaseInterface
         string DisplayName { get; set; }
 
         /// <summary>
+        /// 
+        /// </summary>
+        DateTime PasswordLastChanged { get; set; }
+
+        /// <summary>
         /// A random value that changes whenever an account's security data changes.
         /// </summary>
         Guid SecurityStamp { get; set; }

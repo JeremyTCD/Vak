@@ -49,5 +49,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         /// 
         /// </summary>
         public virtual bool AlternativeEmailVerified { get; set; }
+
+        public virtual DateTime PasswordLastChanged {get;set;}
     }
 }
