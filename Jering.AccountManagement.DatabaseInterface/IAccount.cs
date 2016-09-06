@@ -23,11 +23,6 @@ namespace Jering.AccountManagement.DatabaseInterface
         Guid SecurityStamp { get; set; }
 
         /// <summary>
-        /// Password hash.
-        /// </summary>
-        byte[] PasswordHash { get; set; }
-
-        /// <summary>
         /// Email.
         /// </summary>
         string Email { get; set; }

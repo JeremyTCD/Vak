@@ -5,7 +5,7 @@ BEGIN
 	SET NOCOUNT ON;
 	SET XACT_ABORT ON;
 
-	SELECT *
+	SELECT [AccountId], [DisplayName], [SecurityStamp], [Email], [EmailVerified], [AlternativeEmail], [AlternativeEmailVerified], [TwoFactorEnabled]
 	FROM [dbo].[Accounts]
 	WHERE [dbo].[Accounts].[Email] = @Email;
 END

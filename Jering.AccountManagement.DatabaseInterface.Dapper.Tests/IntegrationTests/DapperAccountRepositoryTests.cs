@@ -55,7 +55,6 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             Assert.NotEqual(Guid.Empty, account.SecurityStamp);
             Assert.Equal(false, account.EmailVerified);
             Assert.Equal(false, account.TwoFactorEnabled);
-            Assert.Equal(hash, account.PasswordHash);
         }
 
         [Fact]
@@ -140,7 +139,6 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             Assert.NotEqual(Guid.Empty, account.SecurityStamp);
             Assert.Equal(false, account.EmailVerified);
             Assert.Equal(false, account.TwoFactorEnabled);
-            Assert.Equal(hash, account.PasswordHash);
         }
 
         [Fact]
@@ -178,7 +176,6 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             Assert.NotEqual(Guid.Empty, account.SecurityStamp);
             Assert.Equal(false, account.EmailVerified);
             Assert.Equal(false, account.TwoFactorEnabled);
-            Assert.Equal(hash, account.PasswordHash);
         }
 
         [Fact]
@@ -770,8 +767,6 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
 
             // Assert
             IAccount updatedAccount = await _dapperAccountRepository.GetAccountAsync(account.AccountId);
-            Assert.NotEqual(null, account.PasswordHash);
-            Assert.NotEqual(null, updatedAccount.PasswordHash);
             Assert.NotEqual(account, updatedAccount);
         }
 
