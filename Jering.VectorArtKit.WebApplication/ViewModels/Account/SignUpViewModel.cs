@@ -19,7 +19,7 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
         public string Password { get; set; }
 
         [Required]
-        [ValidateMatches(nameof(Password), nameof(StringOptions.ConfirmPassword_DoesNotMatchPassword), typeof(StringOptions))]
+        [ValidateMatches(nameof(Password), nameof(StringOptions.ErrorMessage_ConfirmPassword_Differs), typeof(StringOptions))]
         [DataType(DataType.Password)]
         [Display(Name = "Confirm password")]
         public string ConfirmPassword { get; set; }

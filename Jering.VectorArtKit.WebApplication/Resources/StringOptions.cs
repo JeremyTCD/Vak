@@ -33,14 +33,15 @@
         #endregion
 
         #region Validation error messages
-        public string Password_Invalid { get; set; } = "Password must be at least 8 characters long. Password must include both upper and lower case characters.";
-        public string ConfirmPassword_DoesNotMatchPassword { get; set; } = "Confirmation password does not match password.";
+        public string ErrorMessage_Password_Invalid { get; set; } = "Password must be at least 8 characters long. Password must include both upper and lower case characters.";
+        public string ErrorMessage_ConfirmPassword_Differs { get; set; } = "Confirmation password does not match password.";
         public string Email_Invalid { get; set; } = "Email address is invalid.";
         public string LogIn_Failed { get; set; } = "Invalid email or password.";
         public string SignUp_AccountWithEmailExists { get; set; } = "An account with this email already exists.";
         public string VerifyTwoFactorCode_InvalidCode { get; set; } = "Invalid code.";
         public string ConfirmEmail_Message { get; set; } = "Please confirm your email by clicking this link: <a href=\"{0}\">link</a>";
-        public string ErrorMessage_InvalidCurrentPassword { get; set; } = "Invalid current password";
+        public string ErrorMessage_CurrentPassword_Invalid { get; set; } = "Invalid current password";
+        public string ErrorMessage_NewPassword_Invalid { get; set; } = "New password must be at least 8 characters long. New password must include both upper and lower case characters. New password cannot be the same as current password.";
         #endregion
 
         #region Display names

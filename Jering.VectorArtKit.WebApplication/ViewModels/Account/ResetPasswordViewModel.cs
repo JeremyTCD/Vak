@@ -22,7 +22,7 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
         public string NewPassword { get; set; }
 
         [Required]
-        [ValidateMatches(nameof(NewPassword), nameof(StringOptions.ConfirmPassword_DoesNotMatchPassword), typeof(StringOptions))]
+        [ValidateMatches(nameof(NewPassword), nameof(StringOptions.ErrorMessage_ConfirmPassword_Differs), typeof(StringOptions))]
         [DataType(DataType.Password)]
         [Display(Name = "Confirm new password")]
         public string ConfirmNewPassword { get; set; }
