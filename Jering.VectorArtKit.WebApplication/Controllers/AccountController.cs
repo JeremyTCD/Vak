@@ -95,7 +95,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             else if (ModelState.ContainsKey(nameof(SignUpViewModel.Password)))
             {
                 ModelState.Remove(nameof(SignUpViewModel.Password));
-                ModelState.AddModelError(nameof(SignUpViewModel.Password), _stringOptions.Password_Invalid);
+                ModelState.AddModelError(nameof(SignUpViewModel.Password), _stringOptions.ErrorMessage_Password_Invalid);
             }
 
             return View(model);
@@ -341,7 +341,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             else if (ModelState.ContainsKey(nameof(ResetPasswordViewModel.NewPassword)))
             {
                 ModelState.Remove(nameof(ResetPasswordViewModel.NewPassword));
-                ModelState.AddModelError(nameof(ResetPasswordViewModel.NewPassword), _stringOptions.Password_Invalid);
+                ModelState.AddModelError(nameof(ResetPasswordViewModel.NewPassword), _stringOptions.ErrorMessage_Password_Invalid);
             }
 
             return View(model);
@@ -402,6 +402,13 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Get: /Account/ChangePassword
+        /// </summary>
+        /// <returns>
+        /// ChangePassword view with anti-forgery token and cookie if authentication succeeds.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
         [HttpGet]
         [SetSignedInAccount]
         public IActionResult ChangePassword()
@@ -409,11 +416,49 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             return View();
         }
 
+        /// <summary>
+        /// Post: /Account/ChangePassword
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// Error view if unable to update database.
+        /// ChangePassword view with error messages if model state is invalid or current password is invalid.
+        /// Redirects to /Account/ManageAccount with a new application cookie and updates password hash if successful.
+        /// BadRequest if anti-forgery credentials are invalid.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ChangePassword(ChangePasswordViewModel model)
+        [SetSignedInAccount]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+                string email = _accountSecurityServices.GetSignedInAccountEmail();
+                VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(email, model.CurrentPassword);
+                if(account == null)
+                {
+                    ModelState.AddModelError(nameof(ChangePasswordViewModel.CurrentPassword), _stringOptions.ErrorMessage_CurrentPassword_Invalid);
+                }
+                else if (!await _vakAccountRepository.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword))
+                {
+                    return View("Error");
+                }
+                else
+                {
+                    account.SecurityStamp = await _vakAccountRepository.GetAccountSecurityStampAsync(account.AccountId);
+                    await _accountSecurityServices.RefreshSignInAsync(account);
+
+                    return RedirectToAction(nameof(AccountController.ManageAccount));
+                }
+            }
+            else if (ModelState.ContainsKey(nameof(ChangePasswordViewModel.NewPassword)))
+            {
+                ModelState.Remove(nameof(ChangePasswordViewModel.NewPassword));
+                ModelState.AddModelError(nameof(ChangePasswordViewModel.NewPassword), _stringOptions.ErrorMessage_NewPassword_Invalid);
+            }
+
+            return View(model);
         }
 
         [HttpGet]
