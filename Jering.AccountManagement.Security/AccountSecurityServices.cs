@@ -80,15 +80,32 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="account"></param>
         /// <param name="authenticationProperties"></param>
-        /// <returns>A <see cref="Task"/>.</returns>
+        /// <returns></returns>
         public virtual async Task SignInAsync(TAccount account, AuthenticationProperties authenticationProperties)
         {
-            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalServices.CreateClaimsPrincipalAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalServices.CreateClaimsPrincipalAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme, authenticationProperties);
 
             await _httpContext.Authentication.SignInAsync(
                     _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme,
                     claimsPrincipal,
                     authenticationProperties);
+        }
+
+        /// <summary>
+        /// Refreshes sign in for <paramref name="account"/>.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <returns></returns>
+        public virtual async Task RefreshSignInAsync(TAccount account)
+        {
+            _claimsPrincipalServices.UpdateClaimsPrincipal(account, _httpContext.User);
+
+            bool isPersistent = Convert.ToBoolean(_httpContext.User.FindFirst(_securityOptions.ClaimsOptions.IsPersistenClaimType).Value);
+
+            await _httpContext.Authentication.SignInAsync(
+                    _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme,
+                    _httpContext.User,
+                    new AuthenticationProperties {IsPersistent = isPersistent});
         }
 
         /// <summary>
@@ -117,7 +134,7 @@ namespace Jering.AccountManagement.Security
                 return PasswordSignInResult<TAccount>.GetSucceededResult();
             }
 
-            return PasswordSignInResult<TAccount>.GetFailedResult() ;
+            return PasswordSignInResult<TAccount>.GetFailedResult();
         }
 
         /// <summary>
@@ -131,13 +148,24 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
+        /// Gets email account of signed in account using <see cref="HttpContext.User"/> .
+        /// </summary>
+        /// <returns>
+        /// Email account if it exists, null otherwise.
+        /// </returns>
+        public virtual string GetSignedInAccountEmail()
+        {
+            return _httpContext.User.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType)?.Value;
+        }
+
+        /// <summary>
         /// Gets signed in account for <see cref="HttpContext.User"/>.
         /// </summary>
         /// <returns>
         /// An account if there is a signed in account.
         /// Null otherwise.
         /// </returns>
-        public virtual async Task<TAccount> GetSignedInAccount()
+        public virtual async Task<TAccount> GetSignedInAccountAsync()
         {
             return await GetSignedInAccount(_httpContext.User);
         }
@@ -175,7 +203,7 @@ namespace Jering.AccountManagement.Security
         /// </returns>
         public virtual async Task<ConfirmEmailResult> ConfirmEmailAsync(string token)
         {
-            TAccount account = await GetSignedInAccount();
+            TAccount account = await GetSignedInAccountAsync();
 
             if (account == null)
             {

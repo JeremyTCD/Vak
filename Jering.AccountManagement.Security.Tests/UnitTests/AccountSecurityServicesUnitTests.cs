@@ -274,7 +274,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         {
             // Arrange
             Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null, null, null, null, null);
-            mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(null);
+            mockAccountSecurityService.Setup(a => a.GetSignedInAccountAsync()).ReturnsAsync(null);
             mockAccountSecurityService.CallBase = true;
 
             // Act
@@ -293,7 +293,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockTokenService.Setup(t => t.ValidateTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Account>())).ReturnsAsync(false);
 
             Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null, null, null, null, null);
-            mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(new Account());
+            mockAccountSecurityService.Setup(a => a.GetSignedInAccountAsync()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.DataProtectionTokenService, mockTokenService.Object);
 
@@ -324,7 +324,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 mockOptions.Object, 
                 mockAccountRepository.Object, 
                 null);
-            mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(new Account());
+            mockAccountSecurityService.Setup(a => a.GetSignedInAccountAsync()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.DataProtectionTokenService, mockTokenService.Object);
 
@@ -357,7 +357,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 mockOptions.Object,
                 mockAccountRepository.Object,
                 null);
-            mockAccountSecurityService.Setup(a => a.GetSignedInAccount()).ReturnsAsync(new Account());
+            mockAccountSecurityService.Setup(a => a.GetSignedInAccountAsync()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.DataProtectionTokenService, mockTokenService.Object);
 

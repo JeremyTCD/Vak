@@ -26,6 +26,13 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
+        /// <param name="account"></param>
+        /// <returns></returns>
+        Task RefreshSignInAsync(TAccount account);
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <param name="authenticationProperties"></param>
@@ -94,7 +101,7 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <returns></returns>
-        Task<TAccount> GetSignedInAccount();
+        Task<TAccount> GetSignedInAccountAsync();
 
         /// <summary>
         /// 
@@ -112,5 +119,11 @@ namespace Jering.AccountManagement.Security
         /// <param name="token"></param>
         /// <returns></returns>
         Task<bool> ValidateTokenAsync(string tokenService, string purpose, TAccount account, string token);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        string GetSignedInAccountEmail();
     }
 }
