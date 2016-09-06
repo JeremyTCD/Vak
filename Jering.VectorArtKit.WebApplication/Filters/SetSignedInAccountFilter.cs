@@ -21,7 +21,7 @@ namespace Jering.VectorArtKit.WebApplication.Filters
 
             (context.Controller as Controller).ViewData.Add(
                 nameof(VakAccount),
-                await accountSecurityServices.GetSignedInAccount());
+                await accountSecurityServices.GetSignedInAccountAsync());
         }
     }
 }
