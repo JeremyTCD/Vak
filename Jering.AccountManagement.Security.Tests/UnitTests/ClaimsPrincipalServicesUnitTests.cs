@@ -65,7 +65,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         }
 
         [Fact]
-        public void UpdateClaimsPrincipal_UpdatedClaimsPrincipalTest()
+        public void UpdateClaimsPrincipal_UpdatesClaimsPrincipalTest()
         {
             // Arrange
             Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
@@ -73,11 +73,12 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockOptions.Setup(o => o.Value).Returns(securityOptions);
 
             ClaimsIdentity claimsIdentity = new ClaimsIdentity();
+            claimsIdentity.AddClaim(new System.Security.Claims.Claim(securityOptions.ClaimsOptions.AccountIdClaimType, "1"));
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(securityOptions.ClaimsOptions.UsernameClaimType, "initial@test.com"));
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(securityOptions.ClaimsOptions.SecurityStampClaimType, Guid.NewGuid().ToString()));
             ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-            TestAccount account = new TestAccount() { Email = "final@test.com", SecurityStamp = Guid.NewGuid() };
+            TestAccount account = new TestAccount() { AccountId = 1, Email = "final@test.com", SecurityStamp = Guid.NewGuid() };
 
             ClaimsPrincipalServices<TestAccount> claimsPrincipalServices = new ClaimsPrincipalServices<TestAccount>(null, null, mockOptions.Object);
 

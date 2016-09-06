@@ -45,6 +45,11 @@ namespace Jering.AccountManagement.Security
                 _securityOptions.ClaimsOptions.UsernameClaimType,
                 _securityOptions.ClaimsOptions.RoleClaimType);
 
+            if (account?.Email == null || account.SecurityStamp == default(Guid) || account.AccountId == default(int))
+            {
+                throw new ArgumentException(nameof(account));
+            }
+
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.AccountIdClaimType, account.AccountId.ToString()));
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.UsernameClaimType, account.Email));
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.SecurityStampClaimType, account.SecurityStamp.ToString()));
@@ -70,24 +75,30 @@ namespace Jering.AccountManagement.Security
         /// <param name="claimsPrincipal"></param>
         public virtual void UpdateClaimsPrincipal(TAccount account, ClaimsPrincipal claimsPrincipal)
         {
-            ClaimsIdentity claimsIdentity = claimsPrincipal.Identity as ClaimsIdentity;
+            ClaimsIdentity claimsIdentity = claimsPrincipal?.Identity as ClaimsIdentity;
 
-            System.Security.Claims.Claim accountIdClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
-            if(account.AccountId.ToString() != accountIdClaim.Value)
+            if(claimsIdentity == null)
             {
-                throw new ArgumentException(nameof(account));
+                throw new ArgumentException(nameof(claimsPrincipal));
             }
 
+            System.Security.Claims.Claim accountIdClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
             System.Security.Claims.Claim usernameClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType);
             System.Security.Claims.Claim securityStampClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType);
 
-            if(usernameClaim?.Value != account.Email)
+            if (accountIdClaim == null || usernameClaim == null || securityStampClaim == null ||
+                account.AccountId.ToString() != accountIdClaim.Value)
+            {
+                throw new ArgumentException();
+            }
+
+            if(usernameClaim.Value != account.Email)
             {
                 claimsIdentity.RemoveClaim(usernameClaim);
                 claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.UsernameClaimType, account.Email));
             }
 
-            if (securityStampClaim?.Value != account.SecurityStamp.ToString())
+            if (securityStampClaim.Value != account.SecurityStamp.ToString())
             {
                 claimsIdentity.RemoveClaim(securityStampClaim);
                 claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.SecurityStampClaimType, account.SecurityStamp.ToString()));
