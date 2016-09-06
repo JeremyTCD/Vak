@@ -23,7 +23,6 @@ BEGIN
     BEGIN CATCH
         IF XACT_STATE() <> 0 ROLLBACK;
 		DECLARE @errorNumber INT = ERROR_NUMBER();
-		DECLARE @errorMessage NVARCHAR(MAX);
 
 		IF @errorNumber = 2627 
 			THROW 51000, N'Account already has claim.', 1;
