@@ -3,6 +3,7 @@
     [DisplayName]		        NVARCHAR (256) CONSTRAINT [DF_dbo_Accounts_DisplayName] DEFAULT NULL NULL,
 	[SecurityStamp]             UNIQUEIDENTIFIER NOT NULL,
     [PasswordHash]		        BINARY(32) NOT NULL,
+	[PasswordLastChanged]		DateTime2(0) CONSTRAINT [DF_dbo_Accounts_PasswordLastChanged] DEFAULT GETUTCDATE() NOT NULL,
 	[Email]				        NVARCHAR (256)   NOT NULL,
 	[EmailVerified]	            BIT CONSTRAINT [DF_dbo_Accounts_EmailVerified] DEFAULT 0 NOT NULL,
 	[AlternativeEmail]			NVARCHAR (256)   CONSTRAINT [DF_dbo_Accounts_AlternativeEmail] DEFAULT NULL NULL,
