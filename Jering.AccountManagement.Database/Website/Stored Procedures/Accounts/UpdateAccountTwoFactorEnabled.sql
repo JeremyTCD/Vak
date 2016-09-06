@@ -7,7 +7,7 @@ BEGIN
 	SET XACT_ABORT ON;
 
 	UPDATE [dbo].[Accounts]
-	SET [SecurityStamp] = CASE WHEN [TwoFactorEnabled] = @TwoFactorEnabled THEN [SecurityStamp] ELSE NEWID() END, 
+	SET [SecurityStamp] = NEWID(), 
 		[TwoFactorEnabled] = @TwoFactorEnabled		
 	WHERE [AccountId] = @AccountId;
 
