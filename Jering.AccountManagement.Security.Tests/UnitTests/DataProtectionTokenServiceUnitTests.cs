@@ -1,14 +1,11 @@
-﻿using Jering.AccountManagement.Security;
-using Jering.AccountManagement.DatabaseInterface;
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Options;
+using Moq;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Microsoft.AspNetCore.DataProtection;
-using Moq;
-using Microsoft.Extensions.Options;
+using Jering.AccountManagement.DatabaseInterface;
 
 namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
@@ -25,13 +22,13 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             IDataProtectionProvider dataProtectionProvider = DataProtectionProvider.Create(
                 new DirectoryInfo(keyStoreFolder));
 
-            Mock<TestAccount> mockAccount = new Mock<TestAccount>();
+            Mock<Account> mockAccount = new Mock<Account>();
             mockAccount.SetupGet(a => a.AccountId).Returns(1);
             mockAccount.SetupGet(a => a.SecurityStamp).Returns(Guid.Empty);
 
             Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
 
-            DataProtectionTokenService<TestAccount> dataProtectionTokenService = new DataProtectionTokenService<TestAccount>(dataProtectionProvider, mockOptions.Object);
+            DataProtectionTokenService<Account> dataProtectionTokenService = new DataProtectionTokenService<Account>(dataProtectionProvider, mockOptions.Object);
 
             // Act
             string token = await dataProtectionTokenService.GenerateTokenAsync("", mockAccount.Object);
@@ -56,12 +53,12 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityOptions dataProtectionServiceOptions = new AccountSecurityOptions();
             mockOptions.Setup(o => o.Value).Returns(dataProtectionServiceOptions);
 
-            DataProtectionTokenService<TestAccount> dataProtectionTokenService = new DataProtectionTokenService<TestAccount>(dataProtectionProvider, mockOptions.Object);
+            DataProtectionTokenService<Account> dataProtectionTokenService = new DataProtectionTokenService<Account>(dataProtectionProvider, mockOptions.Object);
 
-            TestAccount account = new TestAccount() { AccountId = 1, SecurityStamp = Guid.Empty };
+            Account account = new Account() { AccountId = 1, SecurityStamp = Guid.Empty };
             string token = await dataProtectionTokenService.GenerateTokenAsync("", account);
 
-            Mock<TestAccount> mockAccount = new Mock<TestAccount>();
+            Mock<Account> mockAccount = new Mock<Account>();
             mockAccount.SetupGet(a => a.AccountId).Returns(account.AccountId);
             mockAccount.SetupGet(a => a.SecurityStamp).Returns(account.SecurityStamp);
 
@@ -88,10 +85,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityOptions dataProtectionServiceOptions = new AccountSecurityOptions();
             mockOptions.Setup(o => o.Value).Returns(dataProtectionServiceOptions);
 
-            DataProtectionTokenService<TestAccount> dataProtectionTokenService = new DataProtectionTokenService<TestAccount>(dataProtectionProvider, mockOptions.Object);
+            DataProtectionTokenService<Account> dataProtectionTokenService = new DataProtectionTokenService<Account>(dataProtectionProvider, mockOptions.Object);
 
-            TestAccount account = new TestAccount() { AccountId = 1, SecurityStamp = Guid.Empty };
-            Mock<TestAccount> mockAccount = new Mock<TestAccount>();
+            Account account = new Account() { AccountId = 1, SecurityStamp = Guid.Empty };
+            Mock<Account> mockAccount = new Mock<Account>();
             mockAccount.SetupGet(a => a.AccountId).Returns(account.AccountId);
             mockAccount.SetupGet(a => a.SecurityStamp).Returns(Guid.NewGuid());
 

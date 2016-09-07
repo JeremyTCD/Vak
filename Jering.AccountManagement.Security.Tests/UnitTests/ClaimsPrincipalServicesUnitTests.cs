@@ -18,8 +18,8 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         public async Task CreateClaimsPrincipalAsync_CreatesClaimsPrincipalTest()
         {
             // Arrange
-            Mock<TestAccountRepository<TestAccount>> mockAccountRepository = new Mock<TestAccountRepository<TestAccount>>(null);
-            TestAccount account = new TestAccount() {AccountId = 1, Email = "Email@Jering.com", SecurityStamp = Guid.NewGuid() };
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            Account account = new Account() {AccountId = 1, Email = "Email@Jering.com", SecurityStamp = Guid.NewGuid() };
             Role role = new Role() { RoleId = 1, Name = "Name1" };
             List<Role> accountRoles = new List<Role>() { role };
             DatabaseInterface.Claim accountClaim = new DatabaseInterface.Claim() { ClaimId = 1, Type = "Type1", Value = "Value1" };
@@ -36,7 +36,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityOptions securityOptions = new AccountSecurityOptions();
             mockOptions.Setup(o => o.Value).Returns(securityOptions);
 
-            ClaimsPrincipalServices<TestAccount> claimsPrincipalServices = new ClaimsPrincipalServices<TestAccount>(mockAccountRepository.Object, mockRoleRepository.Object, mockOptions.Object);
+            ClaimsPrincipalServices<Account> claimsPrincipalServices = new ClaimsPrincipalServices<Account>(mockAccountRepository.Object, mockRoleRepository.Object, mockOptions.Object);
 
             AuthenticationProperties authenticationProperties = new AuthenticationProperties { IsPersistent = true };
 
@@ -78,9 +78,9 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(securityOptions.ClaimsOptions.SecurityStampClaimType, Guid.NewGuid().ToString()));
             ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-            TestAccount account = new TestAccount() { AccountId = 1, Email = "final@test.com", SecurityStamp = Guid.NewGuid() };
+            Account account = new Account() { AccountId = 1, Email = "final@test.com", SecurityStamp = Guid.NewGuid() };
 
-            ClaimsPrincipalServices<TestAccount> claimsPrincipalServices = new ClaimsPrincipalServices<TestAccount>(null, null, mockOptions.Object);
+            ClaimsPrincipalServices<Account> claimsPrincipalServices = new ClaimsPrincipalServices<Account>(null, null, mockOptions.Object);
 
             // Act
             claimsPrincipalServices.UpdateClaimsPrincipal(account, claimsPrincipal);
@@ -104,9 +104,9 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(securityOptions.ClaimsOptions.SecurityStampClaimType, Guid.NewGuid().ToString()));
             ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-            TestAccount account = new TestAccount() { AccountId = 2, Email = "final@test.com", SecurityStamp = Guid.NewGuid() };
+            Account account = new Account() { AccountId = 2, Email = "final@test.com", SecurityStamp = Guid.NewGuid() };
 
-            ClaimsPrincipalServices<TestAccount> claimsPrincipalServices = new ClaimsPrincipalServices<TestAccount>(null, null, mockOptions.Object);
+            ClaimsPrincipalServices<Account> claimsPrincipalServices = new ClaimsPrincipalServices<Account>(null, null, mockOptions.Object);
 
             // Act and Assert
             Assert.Throws<ArgumentException>(() => claimsPrincipalServices.UpdateClaimsPrincipal(account, claimsPrincipal));
@@ -120,7 +120,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityOptions securityOptions = new AccountSecurityOptions();
             mockOptions.Setup(o => o.Value).Returns(securityOptions);
 
-            ClaimsPrincipalServices<TestAccount> claimsPrincipalFactory = new ClaimsPrincipalServices<TestAccount>(null, null, mockOptions.Object);
+            ClaimsPrincipalServices<Account> claimsPrincipalFactory = new ClaimsPrincipalServices<Account>(null, null, mockOptions.Object);
 
             // Act
             ClaimsPrincipal claimsPrincipal = claimsPrincipalFactory.CreateClaimsPrincipal(0, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
