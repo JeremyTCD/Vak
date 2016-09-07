@@ -7,7 +7,7 @@ namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
     public class SignUpViewModel
     {
         [Required]
-        [ValidateEmailAddress(nameof(StringOptions.Email_Invalid), typeof(StringOptions))]
+        [ValidateEmailAddress(nameof(StringOptions.ErrorMessage_Email_Invalid), typeof(StringOptions))]
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
 

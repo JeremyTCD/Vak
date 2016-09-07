@@ -33,15 +33,17 @@
         #endregion
 
         #region Validation error messages
-        public string ErrorMessage_Password_Invalid { get; set; } = "Password must be at least 8 characters long. Password must include both upper and lower case characters.";
+        public string ErrorMessage_Password_Invalid { get; set; } = "Invalid password";
+        public string ErrorMessage_Password_FormatInvalid { get; set; } = "Password must be at least 8 characters long. Password must include both upper and lower case characters.";
         public string ErrorMessage_ConfirmPassword_Differs { get; set; } = "Confirmation password does not match password.";
-        public string Email_Invalid { get; set; } = "Email address is invalid.";
+        public string ErrorMessage_Email_Invalid { get; set; } = "Email address is invalid.";
         public string LogIn_Failed { get; set; } = "Invalid email or password.";
-        public string SignUp_AccountWithEmailExists { get; set; } = "An account with this email already exists.";
+        public string ErrorMessage_EmailInUse { get; set; } = "Email already in use by another account.";
         public string VerifyTwoFactorCode_InvalidCode { get; set; } = "Invalid code.";
         public string ConfirmEmail_Message { get; set; } = "Please confirm your email by clicking this link: <a href=\"{0}\">link</a>";
         public string ErrorMessage_CurrentPassword_Invalid { get; set; } = "Invalid current password";
-        public string ErrorMessage_NewPassword_Invalid { get; set; } = "New password must be at least 8 characters long. New password must include both upper and lower case characters. New password cannot be the same as current password.";
+        public string ErrorMessage_NewEmail_MustDiffer { get; set; } = "New email cannot be the same as current email.";
+        public string ErrorMessage_NewPassword_FormatInvalid { get; set; } = "New password must be at least 8 characters long. New password must include both upper and lower case characters. New password cannot be the same as current password.";
         #endregion
 
         #region Display names
