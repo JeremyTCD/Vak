@@ -10,46 +10,46 @@ namespace Jering.AccountManagement.DatabaseInterface
         /// <summary>
         /// Account Id.
         /// </summary>
-        public int AccountId { get; set; }
+        public virtual int AccountId { get; set; }
 
         /// <summary>
         /// Account's display name.
         /// </summary>
-        public string DisplayName { get; set; }
+        public virtual string DisplayName { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public DateTime PasswordLastChanged { get; set; }
+        public virtual DateTime PasswordLastChanged { get; set; }
 
         /// <summary>
         /// A random value that changes whenever an account's security data changes.
         /// </summary>
-        public Guid SecurityStamp { get; set; }
+        public virtual Guid SecurityStamp { get; set; }
 
         /// <summary>
         /// Email.
         /// </summary>
-        public string Email { get; set; }
+        public virtual string Email { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public string AlternativeEmail { get; set; }
+        public virtual string AlternativeEmail { get; set; }
 
         /// <summary>
         /// True if the email is confirmed, false otherwise.
         /// </summary>
-        public bool EmailVerified { get; set; }
+        public virtual bool EmailVerified { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        public bool AlternativeEmailVerified { get; set; }
+        public virtual bool AlternativeEmailVerified { get; set; }
 
         /// <summary>
         /// True if two factor is enabled, false otherwise.
         /// </summary>
-        public bool TwoFactorEnabled { get; set; }
+        public virtual bool TwoFactorEnabled { get; set; }
     }
 }
