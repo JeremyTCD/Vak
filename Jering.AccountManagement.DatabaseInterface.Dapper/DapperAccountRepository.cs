@@ -292,5 +292,23 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
                 },
                 commandType: CommandType.StoredProcedure) > 0;
         }
+
+        /// <summary>
+        /// Sets Email of account with specified <paramref name="accountId"/> to 
+        /// <paramref name="email"/>. 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="email"></param>
+        /// <returns>True if successful, false otherwise.</returns>
+        public virtual async Task<bool> UpdateAccountEmail(int accountId, string email)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountEmail]",
+                new
+                {
+                    AccountId = accountId,
+                    Email = email
+                },
+                commandType: CommandType.StoredProcedure) > 0;
+        }
     }
 }

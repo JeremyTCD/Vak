@@ -133,5 +133,13 @@ namespace Jering.AccountManagement.DatabaseInterface
         /// <param name="password"></param>
         /// <returns>True if successful, false otherwise.</returns>
         Task<bool> UpdateAccountPasswordHashAsync(int accountId, string password);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        Task<bool> UpdateAccountEmail(int accountId, string email);
     }
 }

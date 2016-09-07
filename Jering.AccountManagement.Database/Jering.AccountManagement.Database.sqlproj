@@ -94,6 +94,7 @@
     <Build Include="Website\Stored Procedures\Accounts\GetAccountByEmail.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountPasswordHash.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountTwoFactorEnabled.sql" />
+    <Build Include="Website\Stored Procedures\Accounts\UpdateAccountEmail.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\AccountClaims.sql" />

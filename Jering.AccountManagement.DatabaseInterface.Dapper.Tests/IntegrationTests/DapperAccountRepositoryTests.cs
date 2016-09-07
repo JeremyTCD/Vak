@@ -796,5 +796,50 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Assert
             Assert.False(result);
         }
+
+        [Fact]
+        public async Task UpdateAccountEmail_ThrowsExceptionIfDuplicateEmailTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+
+            // Act
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync("Email1@Jering.com", "$PassworD");
+            await _dapperAccountRepository.CreateAccountAsync("Email2@Jering.com", "$PassworD");
+            SqlException sqlException = await Assert.
+              ThrowsAsync<SqlException>(async () => await _dapperAccountRepository.UpdateAccountEmail(account.AccountId, "Email2@Jering.com"));
+
+            // Assert
+            Assert.Equal(51000, sqlException.Number);
+            Assert.Equal("An account with this email already exists.", sqlException.Message);
+        }
+
+        [Fact]
+        public async Task UpdateAccountEmail_ReturnsTrueIfSuccessfulTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync("Email@Jering.com", "$PassworD");
+
+            // Act
+            bool result = await _dapperAccountRepository.UpdateAccountEmail(account.AccountId, "Email2@Jering.com");
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task UpdateAccountEmail_ReturnsFalseIfUnsuccessfulTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync("Email@Jering.com", "$PassworD");
+
+            // Act
+            bool result = await _dapperAccountRepository.UpdateAccountEmail(0, "Email2@Jering.com");
+
+            // Assert
+            Assert.False(result);
+        }
     }
 }
