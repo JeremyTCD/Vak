@@ -8,6 +8,6 @@ BEGIN
 
 	SELECT [AccountId], [DisplayName], [PasswordLastChanged], [SecurityStamp], [Email], [EmailVerified], [AlternativeEmail], [AlternativeEmailVerified], [TwoFactorEnabled]
 	FROM [dbo].[Accounts]
-	WHERE [Email] = @Email AND [PasswordHash] = HASHBYTES(N'SHA2_256', @Password + @Email);
+	WHERE [Email] = @Email AND [PasswordHash] = HASHBYTES(N'SHA2_256', @Password + CONVERT(char(36), [Salt]));
 END
 

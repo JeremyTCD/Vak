@@ -8,8 +8,9 @@ BEGIN
 
 	UPDATE [dbo].[Accounts]
 	SET [SecurityStamp] = NEWID(), 
+		[Salt] = NEWID(),
 		[PasswordLastChanged] = GETUTCDATE(),  	
-		[PasswordHash] = HASHBYTES(N'SHA2_256', @Password + [Email])
+		[PasswordHash] = HASHBYTES(N'SHA2_256', @Password + CONVERT(char(36), [Salt]))
 	WHERE AccountId = @AccountId;
 
 	SELECT @@ROWCOUNT;

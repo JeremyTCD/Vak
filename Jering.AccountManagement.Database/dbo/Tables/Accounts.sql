@@ -1,8 +1,9 @@
 ﻿CREATE TABLE [dbo].[Accounts] (
     [AccountId]		  	        INT IDENTITY(1,1) NOT NULL,
     [DisplayName]		        NVARCHAR (256) CONSTRAINT [DF_dbo_Accounts_DisplayName] DEFAULT NULL NULL,
-	[SecurityStamp]             UNIQUEIDENTIFIER NOT NULL,
+	[SecurityStamp]             UNIQUEIDENTIFIER CONSTRAINT [DF_dbo_Accounts_SecurityStamp] DEFAULT NEWID() NOT NULL,
     [PasswordHash]		        BINARY(32) NOT NULL,
+	[Salt]					    UNIQUEIDENTIFIER NOT NULL,
 	[PasswordLastChanged]		DateTime2(0) CONSTRAINT [DF_dbo_Accounts_PasswordLastChanged] DEFAULT GETUTCDATE() NOT NULL,
 	[Email]				        NVARCHAR (256)   NOT NULL,
 	[EmailVerified]	            BIT CONSTRAINT [DF_dbo_Accounts_EmailVerified] DEFAULT 0 NOT NULL,

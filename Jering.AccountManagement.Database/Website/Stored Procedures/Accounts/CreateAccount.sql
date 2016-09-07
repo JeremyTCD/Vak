@@ -7,9 +7,11 @@ BEGIN
 	SET XACT_ABORT ON;
 
 	BEGIN TRY
-		INSERT INTO [dbo].[Accounts] ([PasswordHash], [Email], [SecurityStamp])
+		DECLARE @Salt UNIQUEIDENTIFIER = NEWID();
+
+		INSERT INTO [dbo].[Accounts] ([PasswordHash], [Salt], [Email])
 		OUTPUT INSERTED.*
-		VALUES (HASHBYTES(N'SHA2_256', @Password + @Email), @Email, NEWID())
+		VALUES (HASHBYTES(N'SHA2_256', @Password + CONVERT(char(36), @Salt)), @Salt, @Email)
 	END TRY
     BEGIN CATCH
         IF XACT_STATE() <> 0 ROLLBACK;
