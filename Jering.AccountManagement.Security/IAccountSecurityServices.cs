@@ -125,5 +125,21 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <returns></returns>
         string GetSignedInAccountEmail();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="newEmail"></param>
+        /// <returns></returns>
+        Task<UpdateAccountEmailResult> UpdateAccountEmailAsync(int accountId, string newEmail);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="newPassword"></param>
+        /// <returns></returns>
+        Task<UpdateAccountPasswordHashResult> UpdateAccountPasswordHashAsync(int accountId, string newPassword);
     }
 }

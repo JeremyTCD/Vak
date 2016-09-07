@@ -1,17 +1,11 @@
 ﻿using Jering.AccountManagement.DatabaseInterface;
-using Jering.AccountManagement.Security;
-using Jering.VectorArtKit.WebApplication.BusinessModel;
-using Jering.VectorArtKit.WebApplication.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Authentication;
-using Microsoft.AspNetCore.Http.Authentication.Internal;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Moq;
-using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Linq;
+using System.Reflection;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
@@ -89,10 +83,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockOptions.Setup(o => o.Value).Returns(new AccountSecurityOptions());
 
             AccountSecurityServices<Account> accountSecurityServices = new AccountSecurityServices<Account>(
-                null, 
-                mockHttpContextAccessor.Object, 
-                mockOptions.Object, 
-                null, 
+                null,
+                mockHttpContextAccessor.Object,
+                mockOptions.Object,
+                null,
                 null);
 
             // Act
@@ -220,10 +214,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockHttpContextAccessor.Setup(h => h.HttpContext).Returns(mockHttpContext.Object);
 
             Mock<AccountSecurityServices<Account>> mockAccountSecurityServices = new Mock<AccountSecurityServices<Account>>(
-                null, 
-                mockHttpContextAccessor.Object, 
-                mockOptions.Object, 
-                null, 
+                null,
+                mockHttpContextAccessor.Object,
+                mockOptions.Object,
+                null,
                 null);
             mockAccountSecurityServices.CallBase = true;
             mockAccountSecurityServices.Setup(a => a.GetTwoFactorAccountAsync()).ReturnsAsync(new Account());
@@ -319,10 +313,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.Setup(a => a.UpdateAccountEmailConfirmedAsync(It.IsAny<int>())).ReturnsAsync(false);
 
-            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null, 
-                null, 
-                mockOptions.Object, 
-                mockAccountRepository.Object, 
+            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
+                null,
+                mockOptions.Object,
+                mockAccountRepository.Object,
                 null);
             mockAccountSecurityService.Setup(a => a.GetSignedInAccountAsync()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
@@ -371,5 +365,109 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockAccountRepository.VerifyAll();
             mockAccountSecurityService.VerifyAll();
         }
+
+        [Theory]
+        [MemberData(nameof(UpdateAccountEmailAsyncData))]
+        public async Task UpdateAccountEmailAsync_ReturnsCorrectResults(bool updateSuccessful, bool updateThrowsException)
+        {
+            // Arrange
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            if (updateThrowsException)
+                mockAccountRepository.Setup(a => a.UpdateAccountEmail(It.IsAny<int>(), It.IsAny<string>())).Throws(GetSqlException(51000));
+            else
+                mockAccountRepository.Setup(a => a.UpdateAccountEmail(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(updateSuccessful);
+
+            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null);
+            if (updateSuccessful)
+                mockAccountSecurityService.Setup(a => a.RefreshSignInAsync(It.IsAny<Account>())).Returns(Task.CompletedTask);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            UpdateAccountEmailResult result = await mockAccountSecurityService.Object.UpdateAccountEmailAsync(0, "");
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+
+            if (updateThrowsException)
+                Assert.True(result.EmailInUse);
+            else if (updateSuccessful)
+                Assert.True(result.Succeeded);
+            else
+                Assert.True(result.Failed);
+        }
+
+        public static IEnumerable<object[]> UpdateAccountEmailAsyncData()
+        {
+            yield return new object[] { true, false };
+            yield return new object[] { false, false };
+            yield return new object[] { false, true };
+        }
+
+        [Theory]
+        [MemberData(nameof(UpdateAccountPasswordHashAsyncData))]
+        public async Task UpdateAccountPasswordHashAsync_ReturnsCorrectResults(bool updateSuccessful)
+        {
+            // Arrange
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.Setup(a => a.UpdateAccountPasswordHashAsync(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(updateSuccessful);
+
+            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null);
+            if (updateSuccessful)
+                mockAccountSecurityService.Setup(a => a.RefreshSignInAsync(It.IsAny<Account>())).Returns(Task.CompletedTask);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            UpdateAccountPasswordHashResult result = await mockAccountSecurityService.Object.UpdateAccountPasswordHashAsync(0, "");
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+
+            if (updateSuccessful)
+                Assert.True(result.Succeeded);
+            else
+                Assert.True(result.Failed);
+        }
+
+        public static IEnumerable<object[]> UpdateAccountPasswordHashAsyncData()
+        {
+            yield return new object[] { true };
+            yield return new object[] { false };
+        }
+
+        #region Helpers
+        //Modified code from http://blog.jonathanchannon.com/2014/01/02/unit-testing-with-sqlexception/
+        private SqlException GetSqlException(int number)
+        {
+            SqlErrorCollection collection = Construct<SqlErrorCollection>();
+            SqlError error = Construct<SqlError>(number, (byte)2, (byte)3, "server name", "error message", "proc", 100, (uint)1, null);
+
+            typeof(SqlErrorCollection)
+                .GetMethod("Add", BindingFlags.NonPublic | BindingFlags.Instance)
+                .Invoke(collection, new object[] { error });
+
+            MethodInfo createExceptionMethodInfo = typeof(SqlException).GetMethods(BindingFlags.NonPublic | BindingFlags.Static)[0];
+
+            SqlException sqlException = createExceptionMethodInfo.Invoke(null, new object[] { collection, "11.0.0" }) as SqlException;
+
+            return sqlException;
+        }
+
+        private T Construct<T>(params object[] parameters)
+        {
+            ConstructorInfo[] constructors = typeof(T).GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
+
+            return (T)constructors[0].Invoke(parameters);
+        }
+        #endregion
     }
 }

@@ -106,7 +106,7 @@ namespace Jering.AccountManagement.Security
             await _httpContext.Authentication.SignInAsync(
                     _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme,
                     _httpContext.User,
-                    new AuthenticationProperties {IsPersistent = isPersistent, AllowRefresh = true});
+                    new AuthenticationProperties { IsPersistent = isPersistent, AllowRefresh = true });
         }
 
         /// <summary>
@@ -356,6 +356,69 @@ namespace Jering.AccountManagement.Security
                 {
                     throw;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Sets email of account with id <paramref name="accountId"/> to <paramref name="newEmail"/>.
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="newEmail"></param>
+        /// <returns>
+        /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.Failed"/> set to true if update fails unexpectedly.
+        /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.Succeeded"/> if update succeeds.
+        /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.EmailInUse"/> if new email is already in use.
+        /// </returns>
+        public virtual async Task<UpdateAccountEmailResult> UpdateAccountEmailAsync(int accountId, string newEmail)
+        {
+            try
+            {
+                if (!await _accountRepository.UpdateAccountEmail(accountId, newEmail))
+                {
+                    return UpdateAccountEmailResult.GetFailedResult();
+                }
+                else
+                {
+                    TAccount account = await _accountRepository.GetAccountAsync(accountId);
+                    await RefreshSignInAsync(account);
+
+                    return UpdateAccountEmailResult.GetSucceededResult();
+                }
+            }
+            catch (SqlException sqlException)
+            {
+                if (sqlException.Number == 51000)
+                {
+                    return UpdateAccountEmailResult.GetEmailInUseResult();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets password hash of account with id <paramref name="accountId"/> using <paramref name="newPassword"/>.
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="newPassword"></param>
+        /// <returns>
+        /// <see cref="UpdateAccountPasswordHashResult"/> with <see cref="UpdateAccountPasswordHashResult.Failed"/> set to true if update fails unexpectedly.
+        /// <see cref="UpdateAccountPasswordHashResult"/> with <see cref="UpdateAccountPasswordHashResult.Succeeded"/> if update succeeds.
+        /// </returns>
+        public virtual async Task<UpdateAccountPasswordHashResult> UpdateAccountPasswordHashAsync(int accountId, string newPassword)
+        {
+            if (!await _accountRepository.UpdateAccountPasswordHashAsync(accountId, newPassword))
+            {
+                return UpdateAccountPasswordHashResult.GetFailedResult();
+            }
+            else
+            {
+                TAccount account = await _accountRepository.GetAccountAsync(accountId);
+                await RefreshSignInAsync(account);
+
+                return UpdateAccountPasswordHashResult.GetSucceededResult();
             }
         }
     }
