@@ -10,7 +10,7 @@ BEGIN
 		DECLARE @Salt UNIQUEIDENTIFIER = NEWID();
 
 		INSERT INTO [dbo].[Accounts] ([PasswordHash], [Salt], [Email])
-		OUTPUT INSERTED.*
+		OUTPUT INSERTED.[AccountId], INSERTED.[PasswordLastChanged], INSERTED.[SecurityStamp], INSERTED.[Email] 
 		VALUES (HASHBYTES(N'SHA2_256', @Password + CONVERT(char(36), @Salt)), @Salt, @Email)
 	END TRY
     BEGIN CATCH
