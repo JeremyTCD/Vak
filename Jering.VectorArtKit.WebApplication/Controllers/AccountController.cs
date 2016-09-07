@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApplication.Controllers
@@ -90,12 +91,12 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                     return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace("Controller", ""));
                 }
 
-                ModelState.AddModelError(nameof(SignUpViewModel.Email), _stringOptions.SignUp_AccountWithEmailExists);
+                ModelState.AddModelError(nameof(SignUpViewModel.Email), _stringOptions.ErrorMessage_EmailInUse);
             }
             else if (ModelState.ContainsKey(nameof(SignUpViewModel.Password)))
             {
                 ModelState.Remove(nameof(SignUpViewModel.Password));
-                ModelState.AddModelError(nameof(SignUpViewModel.Password), _stringOptions.ErrorMessage_Password_Invalid);
+                ModelState.AddModelError(nameof(SignUpViewModel.Password), _stringOptions.ErrorMessage_Password_FormatInvalid);
             }
 
             return View(model);
@@ -341,7 +342,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             else if (ModelState.ContainsKey(nameof(ResetPasswordViewModel.NewPassword)))
             {
                 ModelState.Remove(nameof(ResetPasswordViewModel.NewPassword));
-                ModelState.AddModelError(nameof(ResetPasswordViewModel.NewPassword), _stringOptions.ErrorMessage_Password_Invalid);
+                ModelState.AddModelError(nameof(ResetPasswordViewModel.NewPassword), _stringOptions.ErrorMessage_Password_FormatInvalid);
             }
 
             return View(model);
@@ -436,18 +437,18 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             {
                 string email = _accountSecurityServices.GetSignedInAccountEmail();
                 VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(email, model.CurrentPassword);
-                if(account == null)
+                if (account == null)
                 {
                     ModelState.AddModelError(nameof(ChangePasswordViewModel.CurrentPassword), _stringOptions.ErrorMessage_CurrentPassword_Invalid);
                 }
-                else if (!await _vakAccountRepository.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword))
-                {
-                    return View("Error");
-                }
                 else
                 {
-                    account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
-                    await _accountSecurityServices.RefreshSignInAsync(account);
+                    UpdateAccountPasswordHashResult result = await _accountSecurityServices.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword);
+
+                    if (result.Failed)
+                    {
+                        return View("Error");
+                    }
 
                     return RedirectToAction(nameof(AccountController.ManageAccount));
                 }
@@ -455,23 +456,76 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             else if (ModelState.ContainsKey(nameof(ChangePasswordViewModel.NewPassword)))
             {
                 ModelState.Remove(nameof(ChangePasswordViewModel.NewPassword));
-                ModelState.AddModelError(nameof(ChangePasswordViewModel.NewPassword), _stringOptions.ErrorMessage_NewPassword_Invalid);
+                ModelState.AddModelError(nameof(ChangePasswordViewModel.NewPassword), _stringOptions.ErrorMessage_NewPassword_FormatInvalid);
             }
 
             return View(model);
         }
 
+        /// <summary>
+        /// Get: /Account/ChangeEmail
+        /// </summary>
+        /// <returns>
+        /// ChangeEmail view with anti-forgery token and cookie if authentication succeeds.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
         [HttpGet]
+        [SetSignedInAccount]
         public IActionResult ChangeEmail()
         {
             return View();
         }
 
+        /// <summary>
+        /// Post: /Account/ChangeEmail
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// Error view if unable to update database or new email is identical to current email.
+        /// ChangeEmail view with error messages if model state is invalid, password is invalid, email is in use.
+        /// Redirects to /Account/ManageAccount with a new application cookie and updates email if successful.
+        /// BadRequest if anti-forgery credentials are invalid.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ChangeEmail(ChangeEmailViewModel model)
+        [SetSignedInAccount]
+        public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+                string currentEmail = _accountSecurityServices.GetSignedInAccountEmail();
+                if(currentEmail == model.NewEmail)
+                {
+                    // If we get here something has gone wrong since model validation should ensure that current email and new email differ
+                    return View("Error");
+                }
+                VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(currentEmail, model.Password);
+                if (account == null)
+                {
+                    ModelState.AddModelError(nameof(ChangeEmailViewModel.Password), _stringOptions.ErrorMessage_Password_Invalid);
+                }
+                else
+                {
+                    UpdateAccountEmailResult result = await _accountSecurityServices.UpdateAccountEmailAsync(account.AccountId, model.NewEmail);
+
+                    if (result.Failed)
+                    {
+                        return View("Error");
+                    }
+
+                    if(result.EmailInUse)
+                    {
+                        ModelState.AddModelError(nameof(ChangeEmailViewModel.NewEmail), _stringOptions.ErrorMessage_EmailInUse);
+                    }
+                    else
+                    {
+                        return RedirectToAction(nameof(AccountController.ManageAccount));
+                    }
+                }
+            }
+
+            return View(model);
         }
 
         [HttpGet]
