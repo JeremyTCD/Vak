@@ -140,6 +140,14 @@ namespace Jering.AccountManagement.DatabaseInterface
         /// <param name="accountId"></param>
         /// <param name="email"></param>
         /// <returns></returns>
-        Task<bool> UpdateAccountEmail(int accountId, string email);
+        Task<bool> UpdateAccountEmailAsync(int accountId, string email);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="alternativeEmail"></param>
+        /// <returns></returns>
+        Task<bool> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail);
     }
 }

@@ -300,13 +300,31 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         /// <param name="accountId"></param>
         /// <param name="email"></param>
         /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountEmail(int accountId, string email)
+        public virtual async Task<bool> UpdateAccountEmailAsync(int accountId, string email)
         {
             return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountEmail]",
                 new
                 {
                     AccountId = accountId,
                     Email = email
+                },
+                commandType: CommandType.StoredProcedure) > 0;
+        }
+
+        /// <summary>
+        /// Sets AlternativeEmail of account with specified <paramref name="accountId"/> to 
+        /// <paramref name="alternativeEmail"/>. 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="alternativeEmail"></param>
+        /// <returns>True if successful, false otherwise.</returns>
+        public virtual async Task<bool> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountAlternativeEmail]",
+                new
+                {
+                    AccountId = accountId,
+                    AlternativeEmail = alternativeEmail
                 },
                 commandType: CommandType.StoredProcedure) > 0;
         }
