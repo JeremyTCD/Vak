@@ -141,5 +141,13 @@ namespace Jering.AccountManagement.Security
         /// <param name="newPassword"></param>
         /// <returns></returns>
         Task<UpdateAccountPasswordHashResult> UpdateAccountPasswordHashAsync(int accountId, string newPassword);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="alternativeEmail"></param>
+        /// <returns></returns>
+        Task<UpdateAccountAlternativeEmailResult> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail);
     }
 }

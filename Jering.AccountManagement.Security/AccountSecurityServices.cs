@@ -373,15 +373,12 @@ namespace Jering.AccountManagement.Security
         {
             try
             {
-                if (!await _accountRepository.UpdateAccountEmail(accountId, newEmail))
+                if (!await _accountRepository.UpdateAccountEmailAsync(accountId, newEmail))
                 {
                     return UpdateAccountEmailResult.GetFailedResult();
                 }
                 else
                 {
-                    TAccount account = await _accountRepository.GetAccountAsync(accountId);
-                    await RefreshSignInAsync(account);
-
                     return UpdateAccountEmailResult.GetSucceededResult();
                 }
             }
@@ -415,10 +412,28 @@ namespace Jering.AccountManagement.Security
             }
             else
             {
-                TAccount account = await _accountRepository.GetAccountAsync(accountId);
-                await RefreshSignInAsync(account);
-
                 return UpdateAccountPasswordHashResult.GetSucceededResult();
+            }
+        }
+
+        /// <summary>
+        /// Sets AlternativeEmail of account with id <paramref name="accountId"/> using <paramref name="alternativeEmail"/>.
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="alternativeEmail"></param>
+        /// <returns>
+        /// <see cref="UpdateAccountAlternativeEmailResult"/> with <see cref="UpdateAccountAlternativeEmailResult.Failed"/> set to true if update fails unexpectedly.
+        /// <see cref="UpdateAccountAlternativeEmailResult"/> with <see cref="UpdateAccountAlternativeEmailResult.Succeeded"/> if update succeeds.
+        /// </returns>
+        public virtual async Task<UpdateAccountAlternativeEmailResult> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail)
+        {
+            if (!await _accountRepository.UpdateAccountAlternativeEmailAsync(accountId, alternativeEmail))
+            {
+                return UpdateAccountAlternativeEmailResult.GetFailedResult();
+            }
+            else
+            {
+                return UpdateAccountAlternativeEmailResult.GetSucceededResult();
             }
         }
     }

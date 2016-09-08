@@ -373,17 +373,15 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             // Arrange
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             if (updateThrowsException)
-                mockAccountRepository.Setup(a => a.UpdateAccountEmail(It.IsAny<int>(), It.IsAny<string>())).Throws(GetSqlException(51000));
+                mockAccountRepository.Setup(a => a.UpdateAccountEmailAsync(It.IsAny<int>(), It.IsAny<string>())).Throws(GetSqlException(51000));
             else
-                mockAccountRepository.Setup(a => a.UpdateAccountEmail(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(updateSuccessful);
+                mockAccountRepository.Setup(a => a.UpdateAccountEmailAsync(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(updateSuccessful);
 
             Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
                 null,
                 null,
                 mockAccountRepository.Object,
                 null);
-            if (updateSuccessful)
-                mockAccountSecurityService.Setup(a => a.RefreshSignInAsync(It.IsAny<Account>())).Returns(Task.CompletedTask);
             mockAccountSecurityService.CallBase = true;
 
             // Act
@@ -421,8 +419,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 null,
                 mockAccountRepository.Object,
                 null);
-            if (updateSuccessful)
-                mockAccountSecurityService.Setup(a => a.RefreshSignInAsync(It.IsAny<Account>())).Returns(Task.CompletedTask);
             mockAccountSecurityService.CallBase = true;
 
             // Act
@@ -439,6 +435,40 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         }
 
         public static IEnumerable<object[]> UpdateAccountPasswordHashAsyncData()
+        {
+            yield return new object[] { true };
+            yield return new object[] { false };
+        }
+
+        [Theory]
+        [MemberData(nameof(UpdateAccountAlternativeEmailAsyncData))]
+        public async Task UpdateAccountAlternativeEmailAsync_ReturnsCorrectResults(bool updateSuccessful)
+        {
+            // Arrange
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.Setup(a => a.UpdateAccountAlternativeEmailAsync(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(updateSuccessful);
+
+            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            UpdateAccountAlternativeEmailResult result = await mockAccountSecurityService.Object.UpdateAccountAlternativeEmailAsync(0, "");
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+
+            if (updateSuccessful)
+                Assert.True(result.Succeeded);
+            else
+                Assert.True(result.Failed);
+        }
+
+        public static IEnumerable<object[]> UpdateAccountAlternativeEmailAsyncData()
         {
             yield return new object[] { true };
             yield return new object[] { false };
