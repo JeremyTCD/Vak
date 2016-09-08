@@ -1,0 +1,36 @@
+﻿@model ChangeAlternativeEmailViewModel
+
+@{ 
+    ViewData["Title"] = StringOptionsAccessor.Value.ViewTitle_ChangeAlternativeEmail;
+    VakAccount vakAccount = ViewData[nameof(VakAccount)] as VakAccount;
+}
+
+<h2>@StringOptionsAccessor.Value.ViewTitle_ChangeAlternativeEmail.</h2>
+<div>logo</div>
+<form asp-controller="@nameof(AccountController).Replace("Controller","")" asp-action="@nameof(AccountController.ChangeAlternativeEmail)" method="post" role="form">
+    <div>
+        <input asp-for="CurrentAlternativeEmail" type="hidden" value="@vakAccount.AlternativeEmail" />
+    </div>
+    <div>
+        <label asp-for="Password"></label>
+        <div>
+            <input asp-for="Password" />
+            <span asp-validation-for="Password"></span>
+        </div>
+    </div>
+    <div>
+        <label asp-for="NewAlternativeEmail"></label>
+        <div>
+            <input asp-for="NewAlternativeEmail" />
+            <span asp-validation-for="NewAlternativeEmail"></span>
+        </div>
+    </div>
+    <div>
+        <div>
+            <button type="submit">Submit</button>
+        </div>
+    </div>
+</form>
+<div>
+    <a asp-controller="@nameof(AccountController).Replace("Controller","")" asp-action="@nameof(AccountController.ManageAccount)">Cancel</a>
+</div>

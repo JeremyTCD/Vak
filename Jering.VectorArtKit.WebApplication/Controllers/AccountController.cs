@@ -378,7 +378,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             {
                 VakAccount account = await _vakAccountRepository.GetAccountAsync(model.AccountId);
 
-                if(account != null &&
+                if (account != null &&
                     await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account, model.Token) &&
                     await _vakAccountRepository.UpdateAccountEmailConfirmedAsync(account.AccountId))
                 {
@@ -450,6 +450,9 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                         return View("Error");
                     }
 
+                    account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
+                    await _accountSecurityServices.RefreshSignInAsync(account);
+
                     return RedirectToAction(nameof(AccountController.ManageAccount));
                 }
             }
@@ -495,7 +498,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             if (ModelState.IsValid)
             {
                 string currentEmail = _accountSecurityServices.GetSignedInAccountEmail();
-                if(currentEmail == model.NewEmail)
+                if (currentEmail == model.NewEmail)
                 {
                     // If we get here something has gone wrong since model validation should ensure that current email and new email differ
                     return View("Error");
@@ -514,12 +517,15 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                         return View("Error");
                     }
 
-                    if(result.EmailInUse)
+                    if (result.EmailInUse)
                     {
                         ModelState.AddModelError(nameof(ChangeEmailViewModel.NewEmail), _stringOptions.ErrorMessage_EmailInUse);
                     }
                     else
                     {
+                        account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
+                        await _accountSecurityServices.RefreshSignInAsync(account);
+
                         return RedirectToAction(nameof(AccountController.ManageAccount));
                     }
                 }
@@ -528,17 +534,67 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Get: /Account/ChangeAlternativeEmail
+        /// </summary>
+        /// <returns>
+        /// ChangeAlternativeEmail view with anti-forgery token and cookie if authentication succeeds.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
         [HttpGet]
+        [SetSignedInAccount]
         public IActionResult ChangeAlternativeEmail()
         {
             return View();
         }
 
+        /// <summary>
+        /// Post: /Account/ChangeAlternativeEmail
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// Error view if unable to update database or new alternative email is identical to current alternative email.
+        /// ChangeAlternativeEmail view with error messages if model state is invalid or password is invalid.
+        /// Redirects to /Account/ManageAccount with a new application cookie and updates alternative email if successful.
+        /// BadRequest if anti-forgery credentials are invalid.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ChangeAlternativeEmail(ChangeAlternativeEmailViewModel model)
+        [SetSignedInAccount]
+        public async Task<IActionResult> ChangeAlternativeEmail(ChangeAlternativeEmailViewModel model)
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+                string currentEmail = _accountSecurityServices.GetSignedInAccountEmail();
+                VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(currentEmail, model.Password);
+
+                if (account == null)
+                {
+                    ModelState.AddModelError(nameof(ChangeAlternativeEmailViewModel.Password), _stringOptions.ErrorMessage_Password_Invalid);
+                }
+                else if (account.AlternativeEmail == model.NewAlternativeEmail)
+                {
+                    // If we get here something has gone wrong since model validation should ensure that current email and new email differ
+                    return View("Error");
+                }
+                else
+                {
+                    UpdateAccountAlternativeEmailResult result = await _accountSecurityServices.UpdateAccountAlternativeEmailAsync(account.AccountId, model.NewAlternativeEmail);
+
+                    if (result.Failed)
+                    {
+                        return View("Error");
+                    }
+
+                    account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
+                    await _accountSecurityServices.RefreshSignInAsync(account);
+
+                    return RedirectToAction(nameof(AccountController.ManageAccount));
+                }
+            }
+
+            return View(model);
         }
 
         [HttpGet]

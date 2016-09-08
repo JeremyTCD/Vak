@@ -913,7 +913,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task ChangeEmailPost_RedirectsToManageAccountWithANewApplicationCookieAndUpdatesEmailIfSuccessful()
+        public async Task ChangeEmailPost_RedirectsToManageAccountWithNewApplicationCookieAndUpdatesEmailIfSuccessful()
         {
             // Arrange
             string email = "email@email.com", password = "Password", newEmail = "new@email.com";
@@ -1000,6 +1000,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
                 {"Password", password },
+                {"CurrentEmail", email },
                 {"NewEmail", newEmail }
             };
             HttpRequestMessage changeEmailPostRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.ChangeEmail)}",
@@ -1035,6 +1036,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
                 {"Password", password },
+                {"CurrentEmail", email },
                 {"NewEmail", newEmail },
                 { "__RequestVerificationToken", antiForgeryToken }
             };
@@ -1072,7 +1074,189 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             Assert.True(html.Contains(_stringOptions.ViewTitle_Error));
         }
 
+        [Fact]
+        public async Task ChangeAlternativeEmailPost_RedirectsToManageAccountWithNewApplicationCookieAndUpdatesAlternativeEmailIfSuccessful()
+        {
+            // Arrange
+            string email = "email@email.com", password = "Password", newAlternativeEmail = "new@email.com";
+
+            await _resetAccountsTable();
+            await CreateAccount(email, password);
+
+            HttpResponseMessage logInPostResponse = await LogIn(email, password);
+            IDictionary<string, string> applicationCookie = CookiesHelper.ExtractCookiesFromResponse(logInPostResponse);
+
+            // Act
+            HttpResponseMessage changeAlternativeEmailPostResponse = await ChangeAlternativeEmail(password, null, newAlternativeEmail, applicationCookie);
+
+            // Assert
+            Assert.Equal("Redirect", changeAlternativeEmailPostResponse.StatusCode.ToString());
+            Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.ManageAccount)}", changeAlternativeEmailPostResponse.Headers.Location.ToString());
+            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(changeAlternativeEmailPostResponse);
+            Assert.Equal("Jering.Application", cookies.Keys.First());
+            VakAccount account = await _vakAccountRepository.GetAccountAsync(1);
+            Assert.Equal(newAlternativeEmail, account.AlternativeEmail);
+        }
+
+        [Theory]
+        [MemberData(nameof(ChangeAlternativeEmailPostData))]
+        public async Task ChangeAlternativeEmailPost_ChangeAlternativeEmailViewWithErrorMessagesIfModelStateOrPasswordIsInvalid(string testPassword, string newAlternativeEmail)
+        {
+            // Arrange
+            string email = "email@email.com", password = "Password";
+
+            await _resetAccountsTable();
+            await CreateAccount(email, password);
+
+            HttpResponseMessage logInPostResponse = await LogIn(email, password);
+            IDictionary<string, string> applicationCookie = CookiesHelper.ExtractCookiesFromResponse(logInPostResponse);
+
+            // Act
+            HttpResponseMessage changeAlternativeEmailPostResponse = await ChangeAlternativeEmail(testPassword, 
+                newAlternativeEmail == "matches@email.com" ? newAlternativeEmail : null, 
+                newAlternativeEmail, 
+                applicationCookie);
+
+            // Assert
+            Assert.Equal("OK", changeAlternativeEmailPostResponse.StatusCode.ToString());
+            string html = await changeAlternativeEmailPostResponse.Content.ReadAsStringAsync();
+            Assert.Contains(_stringOptions.ViewTitle_ChangeAlternativeEmail, html);
+            if (newAlternativeEmail == "invalidAlternativeEmail")
+            {
+                Assert.Contains(_stringOptions.ErrorMessage_Email_Invalid, html);
+            }
+            else if (testPassword == "invalidPassword")
+            {
+                Assert.Contains(_stringOptions.ErrorMessage_Password_Invalid, html);
+            }
+            else if (newAlternativeEmail == "matches@email.com")
+            {
+                Assert.Contains(_stringOptions.ErrorMessage_NewEmail_MustDiffer, html);
+            }
+        }
+
+        public static IEnumerable<object[]> ChangeAlternativeEmailPostData()
+        {
+            yield return new object[] { "", "invalidAlternativeEmail" };
+            yield return new object[] { "invalidPassword", "new@email.com" };
+            yield return new object[] { "Password", "matches@email.com" };
+        }
+
+        [Fact]
+        public async Task ChangeAlternativeEmailPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        {
+            // Arrange
+            string email = "email@email.com", password = "Password", newAlternativeEmail = "new@email.com";
+
+            await _resetAccountsTable();
+            await CreateAccount(email, password);
+
+            HttpResponseMessage logInPostResponse = await LogIn(email, password);
+
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                {"Password", password },
+                {"CurrentAlternativeEmail", null },
+                {"NewAlternativeEmail", newAlternativeEmail }
+            };
+            HttpRequestMessage changeAlternativeEmailPostRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.ChangeAlternativeEmail)}",
+                HttpMethod.Post,
+                formPostBodyData,
+                logInPostResponse);
+
+            // Act
+            HttpResponseMessage changeAlternativeEmailPostResponse = await _httpClient.SendAsync(changeAlternativeEmailPostRequest);
+
+            // Assert
+            Assert.Equal("BadRequest", changeAlternativeEmailPostResponse.StatusCode.ToString());
+        }
+
+        [Fact]
+        public async Task ChangeAlternativeEmailPost_RedirectsToLogInViewIfAuthenticationFails()
+        {
+            // Arrange
+            string email = "email@email.com", password = "Password", newAlternativeEmail = "new@email.com";
+
+            await _resetAccountsTable();
+            await CreateAccount(email, password);
+
+            HttpResponseMessage logInPostResponse = await LogIn(email, password);
+
+            HttpRequestMessage changeAlternativeEmailGetRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.ChangeAlternativeEmail)}",
+                HttpMethod.Get,
+                null,
+                logInPostResponse);
+            HttpResponseMessage changeAlternativeEmailGetResponse = await _httpClient.SendAsync(changeAlternativeEmailGetRequest);
+
+            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(changeAlternativeEmailGetResponse);
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                {"Password", password },
+                {"CurrentAlternativeEmail", null },
+                {"NewAlternativeEmail", newAlternativeEmail },
+                { "__RequestVerificationToken", antiForgeryToken }
+            };
+            HttpRequestMessage changeAlternativeEmailPostRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.ChangeAlternativeEmail)}",
+                HttpMethod.Post,
+                formPostBodyData,
+                changeAlternativeEmailGetResponse);
+
+            // Act
+            HttpResponseMessage changeAlternativeEmailPostResponse = await _httpClient.SendAsync(changeAlternativeEmailPostRequest);
+
+            // Assert
+            Assert.Equal("Redirect", changeAlternativeEmailPostResponse.StatusCode.ToString());
+            Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.LogIn)}", changeAlternativeEmailPostResponse.Headers.Location.AbsolutePath);
+        }
+
+        [Fact]
+        public async Task ChangeAlternativeEmailPost_ReturnsErrorViewIfNewAlternativeEmailDiffersFromCurrentAlternativeEmailInValidationButNotInAction()
+        {
+            // Arrange
+            string email = "email@email.com", password = "Password", newAlternativeEmail = "email@email.com";
+
+            await _resetAccountsTable();
+            await CreateAccount(email, password);
+            await _vakAccountRepository.UpdateAccountAlternativeEmailAsync(1, newAlternativeEmail);
+
+            HttpResponseMessage logInPostResponse = await LogIn(email, password);
+            IDictionary<string, string> applicationCookie = CookiesHelper.ExtractCookiesFromResponse(logInPostResponse);
+
+            // Act
+            HttpResponseMessage changeAlternativeEmailPostResponse = await ChangeAlternativeEmail(password, null, newAlternativeEmail, applicationCookie);
+
+            // Assert
+            string html = await changeAlternativeEmailPostResponse.Content.ReadAsStringAsync();
+            Assert.Equal("OK", changeAlternativeEmailPostResponse.StatusCode.ToString());
+            Assert.True(html.Contains(_stringOptions.ViewTitle_Error));
+        }
+
         #region Helpers
+        public async Task<HttpResponseMessage> ChangeAlternativeEmail(string password, string currentAlternativeEmail, string newAlternativeEmail, IDictionary<string, string> applicationCookie)
+        {
+            HttpRequestMessage changeAlternativeEmailGetRequest = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.ChangeAlternativeEmail)}",
+                HttpMethod.Get,
+                null);
+            CookiesHelper.PutCookiesOnRequest(changeAlternativeEmailGetRequest, applicationCookie);
+            HttpResponseMessage changeAlternativeEmailGetResponse = await _httpClient.SendAsync(changeAlternativeEmailGetRequest);
+
+            string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(changeAlternativeEmailGetResponse);
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                {"CurrentAlternativeEmail", currentAlternativeEmail },
+                {"Password", password },
+                {"NewAlternativeEmail", newAlternativeEmail },
+                { "__RequestVerificationToken", antiForgeryToken }
+            };
+            HttpRequestMessage changeAlternativeEmailPostRequest = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.ChangeAlternativeEmail)}",
+                HttpMethod.Post,
+                formPostBodyData);
+            CookiesHelper.PutCookiesOnRequest(changeAlternativeEmailPostRequest, applicationCookie);
+            CookiesHelper.CopyCookiesFromResponse(changeAlternativeEmailPostRequest, changeAlternativeEmailGetResponse);
+
+            return await _httpClient.SendAsync(changeAlternativeEmailPostRequest);
+        }
+
         public async Task<HttpResponseMessage> ChangeEmail(string password, string currentEmail, string newEmail, IDictionary<string, string> applicationCookie)
         {
             HttpRequestMessage changeEmailGetRequest = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.ChangeEmail)}",
