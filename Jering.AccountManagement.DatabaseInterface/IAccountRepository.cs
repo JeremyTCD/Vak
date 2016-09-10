@@ -53,6 +53,13 @@ namespace Jering.AccountManagement.DatabaseInterface
         Task<TAccount> GetAccountByEmailAsync(string email);
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        Task<TAccount> GetAccountByEmailOrAlternativeEmailAsync(string email);
+
+        /// <summary>
         /// Adds <see cref="Role"/> with specified <paramref name="roleId"/> to <see cref="IAccount"/> with 
         /// specified <paramref name="accountId"/>.
         /// </summary>
@@ -119,11 +126,12 @@ namespace Jering.AccountManagement.DatabaseInterface
         Task<Guid> GetAccountSecurityStampAsync(int accountId);
 
         /// <summary>
-        /// Sets EmailConfirmed of <see cref="IAccount"/> with specified <paramref name="accountId"/> to true. 
+        /// Sets EmailVerified of <see cref="IAccount"/> with specified <paramref name="accountId"/> to true. 
         /// </summary>
         /// <param name="accountId"></param>
+        /// <param name="emailVerified"></param>
         /// <returns>True if successful, false otherwise.</returns>
-        Task<bool> UpdateAccountEmailConfirmedAsync(int accountId);
+        Task<bool> UpdateAccountEmailVerifiedAsync(int accountId, bool emailVerified);
 
         /// <summary>
         /// Sets PasswordHash of <see cref="IAccount"/> with specified <paramref name="accountId"/> to 
@@ -149,5 +157,29 @@ namespace Jering.AccountManagement.DatabaseInterface
         /// <param name="alternativeEmail"></param>
         /// <returns></returns>
         Task<bool> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="displayName"></param>
+        /// <returns></returns>
+        Task<bool> UpdateAccountDisplayNameAsync(int accountId, string displayName);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="twoFactorEnabled"></param>
+        /// <returns></returns>
+        Task<bool> UpdateAccountTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="alternativeEmailVerified"></param>
+        /// <returns></returns>
+        Task<bool> UpdateAccountAlternativeEmailVerifiedAsync(int accountId, bool alternativeEmailVerified);
     }
 }

@@ -39,7 +39,11 @@
             Email address unverified
         </div>
         <div>
-            <a asp-controller="@nameof(AccountController).Replace("Controller", "")" asp-action="@nameof(AccountController.SendEmailVerificationConfirmation)">Send verification email</a>
+            <form asp-controller="@nameof(AccountController).Replace("Controller", "")" asp-action="@nameof(AccountController.SendEmailVerificationEmail)" method="post" role="form">
+                <div>
+                    <button type="submit">Send verification email</button>
+                </div>
+            </form>
         </div>
     }
     <div>
@@ -73,9 +77,11 @@
             <div>
                 Alternative email unverified
             </div>
-            <div>
-                <a asp-controller="@nameof(AccountController).Replace("Controller", "")" asp-action="@nameof(AccountController.SendEmailVerificationConfirmation)">Send verification email</a>
-            </div>
+            <form asp-controller="@nameof(AccountController).Replace("Controller", "")" asp-action="@nameof(AccountController.SendAlternativeEmailVerificationEmail)" method="post" role="form">
+                <div>
+                    <button type="submit">Send verification email</button>
+                </div>
+            </form>
         }
     }
     <div>
@@ -113,18 +119,22 @@
         <div>
             Two factor enabled
         </div>
-        <div>
-            <a asp-controller="@nameof(AccountController).Replace("Controller", "")" asp-action="@nameof(AccountController.DisableTwoFactorConfirmation)">Disable two factor authentication</a>
-        </div>
+        <form asp-controller="@nameof(AccountController).Replace("Controller", "")" asp-action="@nameof(AccountController.DisableTwoFactor)" method="post" role="form">
+            <div>
+                <button type="submit">Disable two factor authentication</button>
+            </div>
+        </form>
     }
     else
     {
         <div>
             Two factor disabled
         </div>
-        <div>
-            <a asp-controller="@nameof(AccountController).Replace("Controller", "")" asp-action="@nameof(AccountController.EnableTwoFactor)">Enable two factor authentication</a>
-        </div>
+        <form asp-controller="@nameof(AccountController).Replace("Controller", "")" asp-action="@nameof(AccountController.EnableTwoFactor)" method="post" role="form">
+            <div>
+                <button type="submit">Enable two factor authentication</button>
+            </div>
+        </form>
     }
 </div>
 

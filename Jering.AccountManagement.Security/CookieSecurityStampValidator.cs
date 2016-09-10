@@ -44,7 +44,7 @@ namespace Jering.AccountManagement.Security
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
             if (context.Principal != null) {
-                TAccount account = await _accountSecurityServices.GetSignedInAccount(context.Principal);
+                TAccount account = await _accountSecurityServices.GetSignedInAccountAsync(context.Principal);
 
                 if (account == null || account.SecurityStamp.ToString() != context.Principal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType)?.Value) {
                     context.RejectPrincipal();

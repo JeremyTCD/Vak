@@ -3,9 +3,9 @@
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityServices{TAccount}.UpdateAccountAlternativeEmailAsync"/>.
+    /// Results for <see cref="IAccountSecurityServices{TAccount}.UpdateAccountDisplayNameAsync"/>.
     /// </summary>
-    public class UpdateAccountAlternativeEmailResult
+    public class UpdateAccountDisplayNameResult
     {
         /// <summary>
         /// 
@@ -14,7 +14,7 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
-        public bool AlternativeEmailInUse { get; set; }
+        public bool DisplayNameInUse { get; set; }
         /// <summary>
         /// 
         /// </summary>
@@ -24,27 +24,27 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <returns></returns>
-        public static UpdateAccountAlternativeEmailResult GetSucceededResult()
+        public static UpdateAccountDisplayNameResult GetSucceededResult()
         {
-            return new UpdateAccountAlternativeEmailResult() { Succeeded = true};
+            return new UpdateAccountDisplayNameResult() { Succeeded = true};
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static UpdateAccountAlternativeEmailResult GetAlternativeEmailInUseResult()
+        public static UpdateAccountDisplayNameResult GetDisplayNameInUseResult()
         {
-            return new UpdateAccountAlternativeEmailResult() { AlternativeEmailInUse = true };
+            return new UpdateAccountDisplayNameResult() { DisplayNameInUse = true };
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static UpdateAccountAlternativeEmailResult GetFailedResult()
+        public static UpdateAccountDisplayNameResult GetFailedResult()
         {
-            return new UpdateAccountAlternativeEmailResult() { Failed = true };
+            return new UpdateAccountDisplayNameResult() { Failed = true };
         }
     }
 }

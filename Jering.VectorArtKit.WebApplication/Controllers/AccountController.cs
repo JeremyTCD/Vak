@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using System;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
@@ -23,6 +24,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         private IEmailServices _emailServices;
         private StringOptions _stringOptions;
         private string _confirmEmailPurpose = "ConfirmEmail";
+        private string _confirmAlternativeEmailPurpose = "ConfirmAlternativeEmail";
         private string _resetPasswordPurpose = "ResetPassword";
         private string _twoFactorPurpose = "TwoFactor";
 
@@ -77,15 +79,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 if (createAccountResult.Succeeded)
                 {
-                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, createAccountResult.Account);
-                    string callbackUrl = Url.Action(
-                        nameof(AccountController.EmailVerificationConfirmation),
-                        nameof(AccountController).Replace("Controller", ""),
-                        new { Token = token, AccountId = createAccountResult.Account.AccountId },
-                        protocol: HttpContext.Request.Scheme);
-
-                    MimeMessage mimeMessage = _emailServices.CreateMimeMessage(model.Email, _stringOptions.ConfirmEmail_Subject, string.Format(_stringOptions.ConfirmEmail_Message, callbackUrl));
-                    await _emailServices.SendEmailAsync(mimeMessage);
+                    await SendEmailVerificationEmail(createAccountResult.Account);
 
                     // TODO: this should eventually redirect to account vakkits page
                     return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace("Controller", ""));
@@ -144,9 +138,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 if (passwordSignInResult.TwoFactorRequired)
                 {
                     await _accountSecurityServices.CreateTwoFactorCookieAsync(passwordSignInResult.Account);
-                    string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, passwordSignInResult.Account);
-                    MimeMessage mimeMessage = _emailServices.CreateMimeMessage(passwordSignInResult.Account.Email, _stringOptions.TwoFactorEmail_Subject, string.Format(_stringOptions.TwoFactorEmail_Message, token));
-                    await _emailServices.SendEmailAsync(mimeMessage);
+                    await SendTwoFactorEmail(passwordSignInResult.Account);
 
                     return RedirectToAction(nameof(VerifyTwoFactorCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl });
                 }
@@ -209,7 +201,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                     return RedirectToLocal(returnUrl);
                 }
 
-                ModelState.AddModelError(nameof(VerifyTwoFactorCodeViewModel.Code), _stringOptions.VerifyTwoFactorCode_InvalidCode);
+                ModelState.AddModelError(nameof(VerifyTwoFactorCodeViewModel.Code), _stringOptions.ErrorMessage_TwoFactorCode_Invalid);
             }
 
             return View(model);
@@ -261,17 +253,17 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
+                VakAccount account = await _vakAccountRepository.GetAccountByEmailOrAlternativeEmailAsync(model.Email);
                 if (account != null)
                 {
                     string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account);
                     string callbackUrl = Url.Action(
                         nameof(AccountController.ResetPassword),
                         nameof(AccountController).Replace("Controller", ""),
-                        new { Token = token, Email = account.Email },
+                        new { Token = token, Email = model.Email },
                         protocol: HttpContext.Request.Scheme);
 
-                    MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.Email, _stringOptions.ResetPasswordEmail_Subject, string.Format(_stringOptions.ResetPasswordEmail_Message, callbackUrl));
+                    MimeMessage mimeMessage = _emailServices.CreateMimeMessage(model.Email, _stringOptions.ResetPasswordEmail_Subject, string.Format(_stringOptions.ResetPasswordEmail_Message, callbackUrl));
                     await _emailServices.SendEmailAsync(mimeMessage);
                 }
 
@@ -329,7 +321,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = model.Email == null ? null : await _vakAccountRepository.GetAccountByEmailAsync(model.Email);
+                VakAccount account = model.Email == null ? null : await _vakAccountRepository.GetAccountByEmailOrAlternativeEmailAsync(model.Email);
                 if (account == null || model.Token == null ||
                     !await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account, model.Token) ||
                     !await _vakAccountRepository.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword))
@@ -359,34 +351,6 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         public IActionResult ResetPasswordConfirmation(string email)
         {
             return View(model: email);
-        }
-
-        /// <summary>
-        /// GET: /Account/EmailConfirmation
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns>
-        /// EmailVerificationConfirmation view and sets account's email confirmed to true if token, email and model state are valid.
-        /// Error view if token or email or model state are invalid.
-        /// </returns>
-        [HttpGet]
-        [AllowAnonymous]
-        [SetSignedInAccount]
-        public async Task<IActionResult> EmailVerificationConfirmation(EmailVerificationConfirmationViewModel model)
-        {
-            if (ModelState.IsValid)
-            {
-                VakAccount account = await _vakAccountRepository.GetAccountAsync(model.AccountId);
-
-                if (account != null &&
-                    await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account, model.Token) &&
-                    await _vakAccountRepository.UpdateAccountEmailConfirmedAsync(account.AccountId))
-                {
-                    return View(model: account.Email);
-                }
-            }
-
-            return View("Error");
         }
 
         /// <summary>
@@ -554,8 +518,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// <param name="model"></param>
         /// <returns>
         /// Error view if unable to update database or new alternative email is identical to current alternative email.
-        /// ChangeAlternativeEmail view with error messages if model state is invalid or password is invalid.
-        /// Redirects to /Account/ManageAccount with a new application cookie and updates alternative email if successful.
+        /// ChangeAlternativeEmail view with error messages if model state is invalid, password is invalid or alternative email is in use.
+        /// Redirects to /Account/ManageAccount and updates alternative email if successful.
         /// BadRequest if anti-forgery credentials are invalid.
         /// Redirects to /Account/Login if authentication fails.
         /// </returns>
@@ -575,7 +539,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 }
                 else if (account.AlternativeEmail == model.NewAlternativeEmail)
                 {
-                    // If we get here something has gone wrong since model validation should ensure that current email and new email differ
+                    // If we get here something has gone wrong since model validation should ensure that current and new alternative emails differ
                     return View("Error");
                 }
                 else
@@ -587,62 +551,394 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                         return View("Error");
                     }
 
-                    account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
-                    await _accountSecurityServices.RefreshSignInAsync(account);
-
-                    return RedirectToAction(nameof(AccountController.ManageAccount));
+                    if (result.AlternativeEmailInUse)
+                    {
+                        ModelState.AddModelError(nameof(ChangeAlternativeEmailViewModel.NewAlternativeEmail), _stringOptions.ErrorMessage_EmailInUse);
+                    }
+                    else
+                    {
+                        return RedirectToAction(nameof(AccountController.ManageAccount));
+                    }
                 }
             }
 
             return View(model);
         }
 
+        /// <summary>
+        /// Get: /Account/ChangeDisplayName
+        /// </summary>
+        /// <returns>
+        /// ChangeDisplayName view with anti-forgery token and cookie if authentication succeeds.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
         [HttpGet]
+        [SetSignedInAccount]
         public IActionResult ChangeDisplayName()
         {
             return View();
         }
 
+        /// <summary>
+        /// Post: /Account/ChangeDisplayName
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// Error view if unable to update database or new display name is identical to current display name.
+        /// ChangeDisplayName view with error messages if model state is invalid, password is invalid or display name is in use.
+        /// Redirects to /Account/ManageAccount and updates display name if successful.
+        /// BadRequest if anti-forgery credentials are invalid.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult ChangeDisplayName(ChangeDisplayNameViewModel model)
+        [SetSignedInAccount]
+        public async Task<IActionResult> ChangeDisplayName(ChangeDisplayNameViewModel model)
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+                string currentEmail = _accountSecurityServices.GetSignedInAccountEmail();
+                VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(currentEmail, model.Password);
+
+                if (account == null)
+                {
+                    ModelState.AddModelError(nameof(ChangeAlternativeEmailViewModel.Password), _stringOptions.ErrorMessage_Password_Invalid);
+                }
+                else if (account.DisplayName == model.NewDisplayName)
+                {
+                    // If we get here something has gone wrong since model validation should ensure that current and new display names differ
+                    return View("Error");
+                }
+                else
+                {
+                    UpdateAccountDisplayNameResult result = await _accountSecurityServices.UpdateAccountDisplayNameAsync(account.AccountId, model.NewDisplayName);
+
+                    if (result.Failed)
+                    {
+                        return View("Error");
+                    }
+
+                    if (result.DisplayNameInUse)
+                    {
+                        ModelState.AddModelError(nameof(ChangeDisplayNameViewModel.NewDisplayName), _stringOptions.ErrorMessage_DisplayName_InUse);
+                    }
+                    else
+                    {
+                        return RedirectToAction(nameof(AccountController.ManageAccount));
+                    }
+                }
+            }
+
+            return View(model);
         }
 
-        [HttpGet]
-        public IActionResult SendEmailVerificationConfirmation()
-        {
-            return View();
-        }
-
-        [HttpGet]
-        public IActionResult DisableTwoFactorConfirmation()
-        {
-            return View();
-        }
-
-        [HttpGet]
-        public IActionResult EnableTwoFactor()
-        {
-            return View();
-        }
-
+        /// <summary>
+        /// Post: /Account/EnableTwoFactor
+        /// </summary>
+        /// <returns>
+        /// Redirects to /Account/ManageAccount view if two factor already enabled or is successfully enabled.
+        /// Redirects to /Account/TestTwoFactorCode view and sends two factor email if email is not verified.
+        /// Error view if unable to retrieve signed in account or unable to update two factor enabled.
+        /// Redirects to /Account/Login if authentication fails.
+        /// BadRequest if anti-forgery credentials are invalid.
+        /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult EnableTwoFactor(EnableTwoFactorViewModel model)
+        [SetSignedInAccount]
+        public async Task<IActionResult> EnableTwoFactor()
+        {
+            VakAccount account = await _accountSecurityServices.GetSignedInAccountAsync();
+
+            if (account == null)
+            {
+                return View("Error");
+            }
+
+            if (account.TwoFactorEnabled)
+            {
+                return RedirectToAction(nameof(ManageAccount));
+            }
+
+            if (account.EmailVerified)
+            {
+                if((await _accountSecurityServices.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true)).Failed){
+                    return View("Error");
+                }
+
+                return RedirectToAction(nameof(ManageAccount));
+            }
+
+            await SendTwoFactorEmail(account);
+
+            return RedirectToAction(nameof(TestTwoFactor));
+        }
+
+        /// <summary>
+        /// Post: /Account/EnableTwoFactor
+        /// </summary>
+        /// <returns>
+        /// Redirects to /Account/ManageAccount view if two factor already disable or is successfully disabled.
+        /// Error view if unable to retrieve signed in account or unable to update two factor enabled.
+        /// Redirects to /Account/Login if authentication fails.
+        /// BadRequest if anti-forgery credentials are invalid.
+        /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SetSignedInAccount]
+        public async Task<IActionResult> DisableTwoFactor()
+        {
+            VakAccount account = await _accountSecurityServices.GetSignedInAccountAsync();
+
+            if (account == null)
+            {
+                return View("Error");
+            }
+
+            if (!account.TwoFactorEnabled)
+            {
+                return RedirectToAction(nameof(ManageAccount));
+            }
+
+            if ((await _accountSecurityServices.UpdateAccountTwoFactorEnabledAsync(account.AccountId, false)).Failed)
+            {
+                return View("Error");
+            }
+
+            return RedirectToAction(nameof(ManageAccount));
+        }
+
+        /// <summary>
+        /// Get: /Account/TestTwoFactor
+        /// </summary>
+        /// <returns>
+        /// TestTwoFactor view with anti-forgery credentials if authentication succeeds.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
+        [HttpGet]
+        [SetSignedInAccount]
+        public IActionResult TestTwoFactor()
         {
             return View();
         }
 
+        /// <summary>
+        /// Post: /Account/TestTwoFactor
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// TestTwoFactor view with error messages if model state is invalid.
+        /// TestTwoFactor view with error message if token is invalid.
+        /// Error view if unable to retrieve signed in account, unable to update two factor enabled or unable to update email verified.
+        /// Redirects to /Account/ManageAccount, updates two factor enabled and updates email verified if successful.
+        /// BadRequest if anti-forgery credentials are invalid.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SetSignedInAccount]
+        public async Task<IActionResult> TestTwoFactor(TestTwoFactorViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                VakAccount account = await _accountSecurityServices.GetSignedInAccountAsync();
+
+                if (account == null)
+                {
+                    return View("Error");
+                }
+
+                if (await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, account, model.Code))
+                {
+                    // wrap UpdateAccountEmailVerifiedAsync in ass for consistency? 
+                    if (!account.EmailVerified && !await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true) ||
+                        !account.TwoFactorEnabled && (await _accountSecurityServices.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true)).Failed)
+                    {
+                        return View("Error");
+                    }
+
+                    return RedirectToAction(nameof(AccountController.ManageAccount));
+                }
+                else
+                {
+                    ModelState.AddModelError(nameof(TestTwoFactorViewModel.Code), _stringOptions.ErrorMessage_TwoFactorCode_Invalid);
+                }
+            }
+
+            return View(model);
+        }
+
+        /// <summary>
+        /// Post: /Account/SendEmailVerificationEmail
+        /// </summary>
+        /// <returns>
+        /// Redirects to /Account/SendEmailVerificationEmailConfirmation and sends email verification email if successful.
+        /// Error view if unable to retrieve signed in account or email is already verified.
+        /// Redirects to /Account/Login if authentication fails.
+        /// BadRequest if anti-forgery credentials are invalid.
+        /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SetSignedInAccount]
+        public async Task<IActionResult> SendEmailVerificationEmail()
+        {
+            VakAccount account = await _accountSecurityServices.GetSignedInAccountAsync();
+
+            if (account == null || account.EmailVerified)
+            {
+                return View("Error");
+            }
+
+            await SendEmailVerificationEmail(account);
+
+            return RedirectToAction(nameof(SendEmailVerificationEmailConfirmation), new { Email = account.Email });
+        }
+
+        /// <summary>
+        /// Post: /Account/SendAlternativeEmailVerificationEmail
+        /// </summary>
+        /// <returns>
+        /// Redirects to /Account/SendAlternativeEmailVerificationEmailConfirmation and sends verification email if successful.
+        /// Error view if unable to retrieve signed in account or alternative email is already verified or alternative view is null.
+        /// Redirects to /Account/Login if authentication fails.
+        /// BadRequest if anti-forgery credentials are invalid.
+        /// </returns>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [SetSignedInAccount]
+        public async Task<IActionResult> SendAlternativeEmailVerificationEmail()
+        {
+            VakAccount account = await _accountSecurityServices.GetSignedInAccountAsync();
+
+            if (account == null || account.AlternativeEmail == null || account.AlternativeEmailVerified)
+            {
+                return View("Error");
+            }
+
+            await SendAlternativeEmailVerificationEmail(account);
+
+            return RedirectToAction(nameof(SendEmailVerificationEmailConfirmation));
+        }
+
+        /// <summary>
+        /// Get: /Account/SendEmailVerificationEmailConfirmation
+        /// </summary>
+        /// <returns>
+        /// SendEmailVerificationEmailConfirmation view if authentication succeeds.
+        /// Redirects to /Account/Login if authentication fails.
+        /// </returns>
         [HttpGet]
-        public IActionResult EnableTwoFactorConfirmation()
+        public IActionResult SendEmailVerificationEmailConfirmation(string email)
         {
             return View();
+        }
+
+        /// <summary>
+        /// GET: /Account/EmailVerificationConfirmation
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// EmailVerificationConfirmation view and sets account's email confirmed to true if token, email and model state are valid.
+        /// Error view if token or email or model state are invalid.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        [SetSignedInAccount]
+        public async Task<IActionResult> EmailVerificationConfirmation(EmailVerificationConfirmationViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                VakAccount account = await _vakAccountRepository.GetAccountAsync(model.AccountId);
+
+                if (account != null &&
+                    await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account, model.Token) &&
+                    await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true))
+                {
+                    return View(model: account.Email);
+                }
+            }
+
+            return View("Error");
+        }
+
+        /// <summary>
+        /// GET: /Account/AlternativeEmailVerificationConfirmation
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// AlternativeEmailVerificationConfirmation view and sets account's alternative email verified to true if token, email and model state are valid.
+        /// Error view if token or email or model state are invalid.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        [SetSignedInAccount]
+        public async Task<IActionResult> AlternativeEmailVerificationConfirmation(AlternativeEmailVerificationConfirmationViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                VakAccount account = await _vakAccountRepository.GetAccountAsync(model.AccountId);
+
+                if (account != null &&
+                    await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmAlternativeEmailPurpose, account, model.Token) &&
+                    await _vakAccountRepository.UpdateAccountAlternativeEmailVerifiedAsync(account.AccountId, true))
+                {
+                    return View(model: account.AlternativeEmail);
+                }
+            }
+
+            return View("Error");
         }
 
         #region Helpers
+        [NonAction]
+        private async Task SendEmailVerificationEmail(VakAccount account)
+        {
+            if(account.Email == null)
+            {
+                throw new ArgumentNullException();
+            }            
 
+            string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account);
+            string callbackUrl = Url.Action(
+                nameof(AccountController.EmailVerificationConfirmation),
+                nameof(AccountController).Replace("Controller", ""),
+                new { Token = token, AccountId = account.AccountId },
+                protocol: HttpContext.Request.Scheme);
+
+            MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.Email, 
+                _stringOptions.Email_EmailVerification_Subject, 
+                string.Format(_stringOptions.Email_EmailVerification_Message, 
+                callbackUrl));
+            await _emailServices.SendEmailAsync(mimeMessage);
+        }
+        [NonAction]
+        private async Task SendAlternativeEmailVerificationEmail(VakAccount account)
+        {
+            if (account.AlternativeEmail == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService,_confirmAlternativeEmailPurpose, account);
+            string callbackUrl = Url.Action(
+                nameof(AccountController.AlternativeEmailVerificationConfirmation),
+                nameof(AccountController).Replace("Controller", ""),
+                new { Token = token, AccountId = account.AccountId },
+                protocol: HttpContext.Request.Scheme);
+
+            MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.AlternativeEmail,
+                _stringOptions.Email_EmailVerification_Subject,
+                string.Format(_stringOptions.Email_EmailVerification_Message,
+                callbackUrl));
+            await _emailServices.SendEmailAsync(mimeMessage);
+        }
+        [NonAction]
+        private async Task SendTwoFactorEmail(VakAccount account)
+        {
+            string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, account);
+            MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.Email, _stringOptions.TwoFactorEmail_Subject, string.Format(_stringOptions.TwoFactorEmail_Message, token));
+            await _emailServices.SendEmailAsync(mimeMessage);
+        }
+        [NonAction]
         private IActionResult RedirectToLocal(string returnUrl)
         {
             // This prevents open redirection attacks - http://www.asp.net/mvc/overview/security/preventing-open-redirection-attacks

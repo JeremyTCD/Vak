@@ -108,7 +108,7 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="claimsPrincipal"></param>
         /// <returns></returns>
-        Task<TAccount> GetSignedInAccount(ClaimsPrincipal claimsPrincipal);
+        Task<TAccount> GetSignedInAccountAsync(ClaimsPrincipal claimsPrincipal);
 
         /// <summary>
         /// 
@@ -149,5 +149,21 @@ namespace Jering.AccountManagement.Security
         /// <param name="alternativeEmail"></param>
         /// <returns></returns>
         Task<UpdateAccountAlternativeEmailResult> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="displayName"></param>
+        /// <returns></returns>
+        Task<UpdateAccountDisplayNameResult> UpdateAccountDisplayNameAsync(int accountId, string displayName);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="twoFactorEnabled"></param>
+        /// <returns></returns>
+        Task<UpdateAccountTwoFactorEnabledResult> UpdateAccountTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled);
     }
 }

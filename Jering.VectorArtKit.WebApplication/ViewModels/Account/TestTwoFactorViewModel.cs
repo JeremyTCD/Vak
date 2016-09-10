@@ -8,12 +8,10 @@ using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApplication.ViewModels.Account
 {
-    public class VerifyTwoFactorCodeViewModel
+    public class TestTwoFactorViewModel
     {
         [ValidateLength(6, nameof(StringOptions.ErrorMessage_TwoFactorCode_Invalid), typeof(StringOptions))]
         [Required]
         public string Code { get; set; }
-
-        public bool IsPersistent { get; set; }
     }
 }

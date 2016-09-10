@@ -168,7 +168,7 @@ namespace Jering.AccountManagement.Security
         /// </returns>
         public virtual async Task<TAccount> GetSignedInAccountAsync()
         {
-            return await GetSignedInAccount(_httpContext.User);
+            return await GetSignedInAccountAsync(_httpContext.User);
         }
 
         /// <summary>
@@ -179,9 +179,9 @@ namespace Jering.AccountManagement.Security
         /// An account if there is a signed in account.
         /// Null otherwise.
         /// </returns>
-        public virtual async Task<TAccount> GetSignedInAccount(ClaimsPrincipal claimsPrincipal)
+        public virtual async Task<TAccount> GetSignedInAccountAsync(ClaimsPrincipal claimsPrincipal)
         {
-            if (claimsPrincipal.Identity.AuthenticationType == _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme)
+            if (claimsPrincipal?.Identity?.AuthenticationType == _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme)
             {
                 System.Security.Claims.Claim accountIdClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
                 if (accountIdClaim != null)
@@ -216,7 +216,7 @@ namespace Jering.AccountManagement.Security
                 return ConfirmEmailResult.InvalidToken;
             }
 
-            if (!await _accountRepository.UpdateAccountEmailConfirmedAsync(account.AccountId))
+            if (!await _accountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true))
             {
                 return ConfirmEmailResult.Failed;
             }
@@ -366,8 +366,8 @@ namespace Jering.AccountManagement.Security
         /// <param name="newEmail"></param>
         /// <returns>
         /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.Failed"/> set to true if update fails unexpectedly.
-        /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.Succeeded"/> if update succeeds.
-        /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.EmailInUse"/> if new email is already in use.
+        /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.Succeeded"/> set to true if update succeeds.
+        /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.EmailInUse"/> set to true if new email is already in use.
         /// </returns>
         public virtual async Task<UpdateAccountEmailResult> UpdateAccountEmailAsync(int accountId, string newEmail)
         {
@@ -402,7 +402,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="newPassword"></param>
         /// <returns>
         /// <see cref="UpdateAccountPasswordHashResult"/> with <see cref="UpdateAccountPasswordHashResult.Failed"/> set to true if update fails unexpectedly.
-        /// <see cref="UpdateAccountPasswordHashResult"/> with <see cref="UpdateAccountPasswordHashResult.Succeeded"/> if update succeeds.
+        /// <see cref="UpdateAccountPasswordHashResult"/> with <see cref="UpdateAccountPasswordHashResult.Succeeded"/> set to true if update succeeds.
         /// </returns>
         public virtual async Task<UpdateAccountPasswordHashResult> UpdateAccountPasswordHashAsync(int accountId, string newPassword)
         {
@@ -417,23 +417,95 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Sets AlternativeEmail of account with id <paramref name="accountId"/> using <paramref name="alternativeEmail"/>.
+        /// Sets AlternativeEmail of account with id <paramref name="accountId"/> to <paramref name="alternativeEmail"/>.
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="alternativeEmail"></param>
         /// <returns>
         /// <see cref="UpdateAccountAlternativeEmailResult"/> with <see cref="UpdateAccountAlternativeEmailResult.Failed"/> set to true if update fails unexpectedly.
-        /// <see cref="UpdateAccountAlternativeEmailResult"/> with <see cref="UpdateAccountAlternativeEmailResult.Succeeded"/> if update succeeds.
+        /// <see cref="UpdateAccountAlternativeEmailResult"/> with <see cref="UpdateAccountAlternativeEmailResult.Succeeded"/> set to true if update succeeds.
+        /// <see cref="UpdateAccountAlternativeEmailResult"/> with <see cref="UpdateAccountAlternativeEmailResult.AlternativeEmailInUse"/> set to true if alternative email is in use.
         /// </returns>
         public virtual async Task<UpdateAccountAlternativeEmailResult> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail)
         {
-            if (!await _accountRepository.UpdateAccountAlternativeEmailAsync(accountId, alternativeEmail))
+            try
             {
-                return UpdateAccountAlternativeEmailResult.GetFailedResult();
+                if (!await _accountRepository.UpdateAccountAlternativeEmailAsync(accountId, alternativeEmail))
+                {
+                    return UpdateAccountAlternativeEmailResult.GetFailedResult();
+                }
+                else
+                {
+                    return UpdateAccountAlternativeEmailResult.GetSucceededResult();
+                }
+            }
+            catch (SqlException sqlException)
+            {
+                if (sqlException.Number == 51000)
+                {
+                    return UpdateAccountAlternativeEmailResult.GetAlternativeEmailInUseResult();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets DisplayName of account with id <paramref name="accountId"/> to <paramref name="displayName"/>.
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="displayName"></param>
+        /// <returns>
+        /// <see cref="UpdateAccountDisplayNameResult"/> with <see cref="UpdateAccountDisplayNameResult.Failed"/> set to true if update fails unexpectedly.
+        /// <see cref="UpdateAccountDisplayNameResult"/> with <see cref="UpdateAccountDisplayNameResult.Succeeded"/> set to true if update succeeds.
+        /// <see cref="UpdateAccountDisplayNameResult"/> with <see cref="UpdateAccountDisplayNameResult.DisplayNameInUse"/> set to true if display name is in use.
+        /// </returns>
+        public virtual async Task<UpdateAccountDisplayNameResult> UpdateAccountDisplayNameAsync(int accountId, string displayName)
+        {
+            try
+            {
+                if (!await _accountRepository.UpdateAccountDisplayNameAsync(accountId, displayName))
+                {
+                    return UpdateAccountDisplayNameResult.GetFailedResult();
+                }
+                else
+                {
+                    return UpdateAccountDisplayNameResult.GetSucceededResult();
+                }
+            }
+            catch (SqlException sqlException)
+            {
+                if (sqlException.Number == 51000)
+                {
+                    return UpdateAccountDisplayNameResult.GetDisplayNameInUseResult();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets TwoFactorEnabled of account with id <paramref name="accountId"/> to <paramref name="twoFactorEnabled"/>.
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="twoFactorEnabled"></param>
+        /// <returns>
+        /// <see cref="UpdateAccountTwoFactorEnabledResult"/> with <see cref="UpdateAccountTwoFactorEnabledResult.Failed"/> set to true if update fails unexpectedly.
+        /// <see cref="UpdateAccountTwoFactorEnabledResult"/> with <see cref="UpdateAccountTwoFactorEnabledResult.Succeeded"/> set to true if update succeeds.
+        /// </returns>
+        public virtual async Task<UpdateAccountTwoFactorEnabledResult> UpdateAccountTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled)
+        {
+            if (!await _accountRepository.UpdateAccountTwoFactorEnabledAsync(accountId, twoFactorEnabled))
+            {
+                return UpdateAccountTwoFactorEnabledResult.GetFailedResult();
             }
             else
             {
-                return UpdateAccountAlternativeEmailResult.GetSucceededResult();
+                return UpdateAccountTwoFactorEnabledResult.GetSucceededResult();
             }
         }
     }

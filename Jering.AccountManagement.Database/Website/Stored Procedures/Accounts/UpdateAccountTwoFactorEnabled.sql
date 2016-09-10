@@ -7,8 +7,7 @@ BEGIN
 	SET XACT_ABORT ON;
 
 	UPDATE [dbo].[Accounts]
-	SET [SecurityStamp] = NEWID(), 
-		[TwoFactorEnabled] = @TwoFactorEnabled		
+	SET [TwoFactorEnabled] = @TwoFactorEnabled		
 	WHERE [AccountId] = @AccountId;
 
 	SELECT @@ROWCOUNT;

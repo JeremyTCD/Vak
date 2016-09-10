@@ -1,6 +1,7 @@
 ﻿using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using System;
 using System.Threading.Tasks;
 
 namespace Jering.Mail
@@ -33,6 +34,11 @@ namespace Jering.Mail
         /// <returns><see cref="MimeMessage"/> </returns>
         public virtual MimeMessage CreateMimeMessage(string emailAddress, string subject, string message)
         {
+            if(emailAddress == null || subject == null || message == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             MimeMessage mimeMessage = new MimeMessage();
             mimeMessage.From.Add(new MailboxAddress(_emailOptions.Name, _emailOptions.EmailAddress));
             mimeMessage.To.Add(new MailboxAddress(emailAddress, emailAddress));

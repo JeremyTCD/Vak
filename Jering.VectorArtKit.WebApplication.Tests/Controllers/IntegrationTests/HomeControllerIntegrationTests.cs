@@ -29,7 +29,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
             //Arrange
             await _resetAccountsTable();
             await vakAccountRepository.CreateAccountAsync("Email1@test.com", "Password1@");
-            await vakAccountRepository.UpdateAccountEmailConfirmedAsync(1);
+            await vakAccountRepository.UpdateAccountEmailVerifiedAsync(1, true);
 
             HttpResponseMessage loginGetResponse = await _httpClient.GetAsync("Account/Login");
 

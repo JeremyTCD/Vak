@@ -311,7 +311,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockOptions.Setup(o => o.Value).Returns(new AccountSecurityOptions());
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
-            mockAccountRepository.Setup(a => a.UpdateAccountEmailConfirmedAsync(It.IsAny<int>())).ReturnsAsync(false);
+            mockAccountRepository.Setup(a => a.UpdateAccountEmailVerifiedAsync(It.IsAny<int>(), It.IsAny<bool>())).ReturnsAsync(false);
 
             Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
                 null,
@@ -344,7 +344,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockOptions.Setup(o => o.Value).Returns(new AccountSecurityOptions());
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
-            mockAccountRepository.Setup(a => a.UpdateAccountEmailConfirmedAsync(It.IsAny<int>())).ReturnsAsync(true);
+            mockAccountRepository.Setup(a => a.UpdateAccountEmailVerifiedAsync(It.IsAny<int>(), It.IsAny<bool>())).ReturnsAsync(true);
 
             Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
                 null,
@@ -442,11 +442,14 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
 
         [Theory]
         [MemberData(nameof(UpdateAccountAlternativeEmailAsyncData))]
-        public async Task UpdateAccountAlternativeEmailAsync_ReturnsCorrectResults(bool updateSuccessful)
+        public async Task UpdateAccountAlternativeEmailAsync_ReturnsCorrectResults(bool updateSuccessful, bool updateThrowsException)
         {
             // Arrange
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
-            mockAccountRepository.Setup(a => a.UpdateAccountAlternativeEmailAsync(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(updateSuccessful);
+            if (updateThrowsException)
+                mockAccountRepository.Setup(a => a.UpdateAccountAlternativeEmailAsync(It.IsAny<int>(), It.IsAny<string>())).Throws(GetSqlException(51000));
+            else
+                mockAccountRepository.Setup(a => a.UpdateAccountAlternativeEmailAsync(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(updateSuccessful);
 
             Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
                 null,
@@ -462,13 +465,90 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockAccountRepository.VerifyAll();
             mockAccountSecurityService.VerifyAll();
 
-            if (updateSuccessful)
+            if (updateThrowsException)
+                Assert.True(result.AlternativeEmailInUse);
+            else if (updateSuccessful)
                 Assert.True(result.Succeeded);
             else
                 Assert.True(result.Failed);
         }
 
         public static IEnumerable<object[]> UpdateAccountAlternativeEmailAsyncData()
+        {
+            yield return new object[] { true, false };
+            yield return new object[] { false, false };
+            yield return new object[] { false, true };
+        }
+
+        [Theory]
+        [MemberData(nameof(UpdateAccountDisplayNameAsyncData))]
+        public async Task UpdateAccountDisplayNameAsync_ReturnsCorrectResults(bool updateSuccessful, bool updateThrowsException)
+        {
+            // Arrange
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            if (updateThrowsException)
+                mockAccountRepository.Setup(a => a.UpdateAccountDisplayNameAsync(It.IsAny<int>(), It.IsAny<string>())).Throws(GetSqlException(51000));
+            else
+                mockAccountRepository.Setup(a => a.UpdateAccountDisplayNameAsync(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(updateSuccessful);
+
+            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            UpdateAccountDisplayNameResult result = await mockAccountSecurityService.Object.UpdateAccountDisplayNameAsync(0, "");
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+
+            if (updateThrowsException)
+                Assert.True(result.DisplayNameInUse);
+            else if (updateSuccessful)
+                Assert.True(result.Succeeded);
+            else
+                Assert.True(result.Failed);
+        }
+
+        public static IEnumerable<object[]> UpdateAccountDisplayNameAsyncData()
+        {
+            yield return new object[] { true, false};
+            yield return new object[] { false, false };
+            yield return new object[] { false, true };
+        }
+
+        [Theory]
+        [MemberData(nameof(UpdateAccountTwoFactorEnabledAsyncData))]
+        public async Task UpdateAccountTwoFactorEnabledAsync_ReturnsCorrectResults(bool updateSuccessful)
+        {
+            // Arrange
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.Setup(a => a.UpdateAccountTwoFactorEnabledAsync(It.IsAny<int>(), It.IsAny<bool>())).ReturnsAsync(updateSuccessful);
+
+            Mock<AccountSecurityServices<Account>> mockAccountSecurityService = new Mock<AccountSecurityServices<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            UpdateAccountTwoFactorEnabledResult result = await mockAccountSecurityService.Object.UpdateAccountTwoFactorEnabledAsync(0, false);
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+
+            if (updateSuccessful)
+                Assert.True(result.Succeeded);
+            else
+                Assert.True(result.Failed);
+        }
+
+        public static IEnumerable<object[]> UpdateAccountTwoFactorEnabledAsyncData()
         {
             yield return new object[] { true };
             yield return new object[] { false };

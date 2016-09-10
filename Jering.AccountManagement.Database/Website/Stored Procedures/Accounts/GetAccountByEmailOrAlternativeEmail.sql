@@ -1,4 +1,4 @@
-﻿CREATE PROCEDURE [Website].[GetAccountByEmail]
+﻿CREATE PROCEDURE [Website].[GetAccountByEmailOrAlternativeEmail]
 	@Email NVARCHAR(256)
 AS
 BEGIN
@@ -7,6 +7,6 @@ BEGIN
 
 	SELECT [AccountId], [DisplayName], [PasswordLastChanged], [SecurityStamp], [Email], [EmailVerified], [AlternativeEmail], [AlternativeEmailVerified], [TwoFactorEnabled]
 	FROM [dbo].[Accounts]
-	WHERE [Email] = @Email;
+	WHERE [Email] = @Email OR [AlternativeEmail] = @Email;
 END
 

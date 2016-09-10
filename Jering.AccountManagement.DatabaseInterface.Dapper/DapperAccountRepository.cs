@@ -118,6 +118,22 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         }
 
         /// <summary>
+        /// Gets account with specified <paramref name="email"/>. 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns>account with specified <paramref name="email"/> if it exists, 
+        /// null otherwise.</returns>
+        public virtual async Task<TAccount> GetAccountByEmailOrAlternativeEmailAsync(string email)
+        {
+            return (await _sqlConnection.QueryAsync<TAccount>(@"[Website].[GetAccountByEmailOrAlternativeEmail]",
+                new
+                {
+                    Email = email
+                },
+                commandType: CommandType.StoredProcedure)).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Adds <see cref="Role"/> with specified <paramref name="roleId"/> to account with 
         /// specified <paramref name="accountId"/>.
         /// </summary>
@@ -244,16 +260,18 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         }
 
         /// <summary>
-        /// Sets EmailConfirmed of account with specified <paramref name="accountId"/> to true. 
+        /// Sets EmailVerified of account with specified <paramref name="accountId"/> to <paramref name="emailVerified"/>. 
         /// </summary>
         /// <param name="accountId"></param>
+        /// <param name="emailVerified"></param>
         /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountEmailConfirmedAsync(int accountId)
+        public virtual async Task<bool> UpdateAccountEmailVerifiedAsync(int accountId, bool emailVerified)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountEmailConfirmed]",
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountEmailVerified]",
                 new
                 {
-                    AccountId = accountId
+                    AccountId = accountId,
+                    EmailVerified = emailVerified
                 },
                 commandType: CommandType.StoredProcedure) > 0;
         }
@@ -325,6 +343,41 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
                 {
                     AccountId = accountId,
                     AlternativeEmail = alternativeEmail
+                },
+                commandType: CommandType.StoredProcedure) > 0;
+        }
+
+        /// <summary>
+        /// Sets DisplayName of account with specified <paramref name="accountId"/> to 
+        /// <paramref name="displayName"/>. 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="displayName"></param>
+        /// <returns>True if successful, false otherwise.</returns>
+        public virtual async Task<bool> UpdateAccountDisplayNameAsync(int accountId, string displayName)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountDisplayName]",
+                new
+                {
+                    AccountId = accountId,
+                    DisplayName = displayName
+                },
+                commandType: CommandType.StoredProcedure) > 0;
+        }
+
+        /// <summary>
+        /// Sets AlternativeEmailVerified of account with specified <paramref name="accountId"/> to <paramref name="alternativeEmailVerified"/>. 
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="alternativeEmailVerified"></param>
+        /// <returns>True if successful, false otherwise.</returns>
+        public virtual async Task<bool> UpdateAccountAlternativeEmailVerifiedAsync(int accountId, bool alternativeEmailVerified)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountAlternativeEmailVerified]",
+                new
+                {
+                    AccountId = accountId,
+                    AlternativeEmailVerified = alternativeEmailVerified
                 },
                 commandType: CommandType.StoredProcedure) > 0;
         }

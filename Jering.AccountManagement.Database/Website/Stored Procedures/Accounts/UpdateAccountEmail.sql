@@ -7,19 +7,30 @@ BEGIN
 	SET XACT_ABORT ON;
 
 	BEGIN TRY
-		UPDATE [dbo].[Accounts]
-		SET [SecurityStamp] = NEWID(), 
-			[Email] = @Email
-		WHERE AccountId = @AccountId;
+		BEGIN TRANSACTION
+			
+			IF EXISTS(SELECT * FROM [dbo].[Accounts] WHERE [AlternativeEmail] = @Email)
+				THROW 51000, 'EmailInUse', 1;
 
-		SELECT @@ROWCOUNT;
+			--Need to ensure that isolation level prevents email from being written to an alt email 
+			--between these statements
+
+			UPDATE [dbo].[Accounts]
+			SET [SecurityStamp] = NEWID(), 
+				[Email] = @Email,
+				[EmailVerified] = 0,
+				[TwoFactorEnabled] = 0
+			WHERE AccountId = @AccountId;
+
+			SELECT @@ROWCOUNT;
+		COMMIT
 	END TRY
     BEGIN CATCH
         IF XACT_STATE() <> 0 ROLLBACK;
 		DECLARE @errorNumber INT = ERROR_NUMBER();
 
 		IF @errorNumber = 2627 
-			THROW 51000, N'An account with this email already exists.', 1;
+			THROW 51000, N'EmailInUse', 1;
 		ELSE 
 			THROW
     END CATCH;

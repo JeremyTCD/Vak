@@ -13,3 +13,12 @@
     CONSTRAINT [PK_dbo_Accounts] PRIMARY KEY CLUSTERED ([AccountId] ASC),
 	CONSTRAINT [UQ_dbo_Accounts_Email] UNIQUE ([Email])
 );
+GO
+
+CREATE UNIQUE INDEX [UQ_dbo_Accounts_DisplayName] on [dbo].[Accounts] ( [DisplayName] )
+    WHERE [DisplayName] IS NOT NULL;
+GO
+
+CREATE UNIQUE INDEX [UQ_dbo_Accounts_AlternativeEmail] on [dbo].[Accounts] ( [AlternativeEmail] )
+    WHERE [AlternativeEmail] IS NOT NULL;
+GO

@@ -1,0 +1,19 @@
+﻿@model string
+
+@{
+    ViewData["Title"] = StringOptionsAccessor.Value.ViewTitle_SendEmailVerificationEmailConfirmation;
+}
+
+<h2>@StringOptionsAccessor.Value.ViewTitle_SendEmailVerificationEmailConfirmation.</h2>
+<div>
+    logo
+</div>
+<div>
+    An email verification link was sent to @Model.
+</div>
+<div>
+    <a asp-controller="@nameof(AccountController).Replace("Controller", "")" asp-action="@nameof(AccountController.ManageAccount)">Return to manage account</a>
+</div>
+<div>
+    Did not receive email.
+</div>

@@ -191,6 +191,44 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             Assert.Equal(null, nonExistantAccount);
         }
 
+        [Theory]
+        [MemberData(nameof(GetAccountByEmailOrAlternativeEmailAsyncData))]
+        public async Task GetAccountByEmailOrAlternativeEmailAsync_GetsAccountTest(bool useAlt)
+        {
+            // Arrange
+            await _resetAccountsTable();
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync("Email@Jering.com", "$PassworD");
+            if (useAlt)
+            {
+                await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(account.AccountId, "Email2@Jering.com");
+            }
+
+            // Act
+            account = await _dapperAccountRepository.GetAccountByEmailOrAlternativeEmailAsync(useAlt ? "Email2@Jering.com" : "Email@Jering.com");
+
+            // Assert
+            Assert.NotNull(account);
+        }
+
+        public static IEnumerable<object[]> GetAccountByEmailOrAlternativeEmailAsyncData()
+        {
+            yield return new object[] { false };
+            yield return new object[] { true };
+        }
+
+        [Fact]
+        public async Task GetAccountByEmailOrAlternativeEmailAsync_ReturnsNullIfAccountDoesNotExistTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+
+            // Act
+            IAccount nonExistantAccount = await _dapperAccountRepository.GetAccountByEmailOrAlternativeEmailAsync("Email@Jering.com");
+
+            // Assert
+            Assert.Equal(null, nonExistantAccount);
+        }
+
         [Fact]
         public async Task DeleteAccountAsync_DeletesAccountTest()
         {
@@ -670,14 +708,14 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         }
 
         [Fact]
-        public async Task UpdateAccountEmailConfirmedAsync_UpdatesEmailConfirmedAndReturnsTrueIfSuccessfulTest()
+        public async Task UpdateAccountEmailVerifiedAsync_UpdatesEmailVerifiedAndReturnsTrueIfSuccessfulTest()
         {
             // Arrange
             await _resetAccountsTable();
             IAccount account = await _dapperAccountRepository.CreateAccountAsync("Email@Jering.com", "$PassworD");
 
             // Act
-            bool result = await _dapperAccountRepository.UpdateAccountEmailConfirmedAsync(account.AccountId);
+            bool result = await _dapperAccountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true);
 
             // Assert
             IAccount retrievedAccount = await _dapperAccountRepository.GetAccountAsync(account.AccountId);
@@ -687,13 +725,13 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         }
 
         [Fact]
-        public async Task UpdateAccountEmailConfirmedAsync_ReturnsFalseIfUnsuccessfulTest()
+        public async Task UpdateAccountEmailVerifiedAsync_ReturnsFalseIfUnsuccessfulTest()
         {
             // Arrange
             await _resetAccountsTable();
 
             // Act
-            bool result = await _dapperAccountRepository.UpdateAccountEmailConfirmedAsync(0);
+            bool result = await _dapperAccountRepository.UpdateAccountEmailVerifiedAsync(0, true);
 
             // Assert
             Assert.False(result);
@@ -758,21 +796,38 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             Assert.False(result);
         }
 
-        [Fact]
-        public async Task UpdateAccountEmail_ThrowsExceptionIfDuplicateEmailTest()
+        [Theory]
+        [MemberData(nameof(UpdateAccountEmailData))]
+        public async Task UpdateAccountEmail_ThrowsExceptionIfDuplicateEmailTest(bool alt)
         {
             // Arrange
             await _resetAccountsTable();
 
             // Act
             IAccount account = await _dapperAccountRepository.CreateAccountAsync("Email1@Jering.com", "$PassworD");
-            await _dapperAccountRepository.CreateAccountAsync("Email2@Jering.com", "$PassworD");
+            if (alt)
+            {
+                await _dapperAccountRepository.CreateAccountAsync("Email3@Jering.com", "$PassworD");
+                await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(2, "Email2@Jering.com");
+            }
+            else
+            {
+                await _dapperAccountRepository.CreateAccountAsync("Email2@Jering.com", "$PassworD");
+            }
+
             SqlException sqlException = await Assert.
               ThrowsAsync<SqlException>(async () => await _dapperAccountRepository.UpdateAccountEmailAsync(account.AccountId, "Email2@Jering.com"));
+            // TODO if duplicate is an alt
 
             // Assert
             Assert.Equal(51000, sqlException.Number);
-            Assert.Equal("An account with this email already exists.", sqlException.Message);
+            Assert.Equal("EmailInUse", sqlException.Message);
+        }
+
+        public static IEnumerable<object[]> UpdateAccountEmailData()
+        {
+            yield return new object[] { true };
+            yield return new object[] { false };
         }
 
         [Fact]
@@ -804,6 +859,38 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             Assert.False(result);
         }
 
+        [Theory]
+        [MemberData(nameof(UpdateAccountAlternativeEmailData))]
+        public async Task UpdateAccountAlternativeEmail_ThrowsExceptionIfDuplicateAlternativeEmailTest(bool alt)
+        {
+            // Arrange
+            await _resetAccountsTable();
+
+            // Act
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync("Email1@Jering.com", "$PassworD");
+            if (alt)
+            {
+                await _dapperAccountRepository.CreateAccountAsync("Email2@Jering.com", "$PassworD");
+                await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(2, "alt@email.com");
+            }
+            else{
+                await _dapperAccountRepository.CreateAccountAsync("alt@email.com", "$PassworD");
+            }
+
+            SqlException sqlException = await Assert.
+              ThrowsAsync<SqlException>(async () => await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(account.AccountId, "alt@email.com"));
+
+            // Assert
+            Assert.Equal(51000, sqlException.Number);
+            Assert.Equal("EmailInUse", sqlException.Message);
+        }
+
+        public static IEnumerable<object[]> UpdateAccountAlternativeEmailData()
+        {
+            yield return new object[] { true };
+            yield return new object[] { false };
+        }
+
         [Fact]
         public async Task UpdateAccountAlternativeEmail_ReturnsTrueIfSuccessfulTest()
         {
@@ -828,6 +915,85 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
 
             // Act
             bool result = await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(0, "Email2@Jering.com");
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task UpdateAccountEmail_ThrowsExceptionIfDuplicateDisplayNameTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+
+            // Act
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync("Email1@Jering.com", "$PassworD");
+            await _dapperAccountRepository.CreateAccountAsync("Email2@Jering.com", "$PassworD");
+            await _dapperAccountRepository.UpdateAccountDisplayNameAsync(2, "testDisplayName");
+
+            SqlException sqlException = await Assert.
+              ThrowsAsync<SqlException>(async () => await _dapperAccountRepository.UpdateAccountDisplayNameAsync(account.AccountId, "testDisplayName"));
+
+            // Assert
+            Assert.Equal(51000, sqlException.Number);
+            Assert.Equal("DisplayNameInUse", sqlException.Message);
+        }
+
+        [Fact]
+        public async Task UpdateDisplayNameAsync_UpdatesDisplayNameAndReturnsTrueIfSuccessfulTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync("Email@Jering.com", "$PassworD");
+
+            // Act
+            bool result = await _dapperAccountRepository.UpdateAccountDisplayNameAsync(account.AccountId, "displayName");
+
+            // Assert
+            IAccount retrievedAccount = await _dapperAccountRepository.GetAccountAsync(account.AccountId);
+            Assert.Equal(null, account.DisplayName);
+            Assert.Equal("displayName", retrievedAccount.DisplayName);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task UpdateDisplayNameAsync_ReturnsFalseIfUnsuccessfulTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+
+            // Act
+            bool result = await _dapperAccountRepository.UpdateAccountDisplayNameAsync(0, "displayName");
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public async Task UpdateAccountAlternativeEmailVerifiedAsync_UpdatesAlternativeEmailVerifiedAndReturnsTrueIfSuccessfulTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync("Email@Jering.com", "$PassworD");
+
+            // Act
+            bool result = await _dapperAccountRepository.UpdateAccountAlternativeEmailVerifiedAsync(account.AccountId, true);
+
+            // Assert
+            IAccount retrievedAccount = await _dapperAccountRepository.GetAccountAsync(account.AccountId);
+            Assert.False(account.AlternativeEmailVerified);
+            Assert.True(retrievedAccount.AlternativeEmailVerified);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task UpdateAccountAlternativeEmailVerifiedAsync_ReturnsFalseIfUnsuccessfulTest()
+        {
+            // Arrange
+            await _resetAccountsTable();
+
+            // Act
+            bool result = await _dapperAccountRepository.UpdateAccountAlternativeEmailVerifiedAsync(0, true);
 
             // Assert
             Assert.False(result);
