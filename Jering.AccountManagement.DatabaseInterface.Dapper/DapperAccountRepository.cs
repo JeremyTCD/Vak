@@ -43,13 +43,13 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         /// <returns>Newly created account.</returns>
         public virtual async Task<TAccount> CreateAccountAsync(string email, string password)
         {
-            return await _sqlConnection.QuerySingleAsync<TAccount>(@"[Website].[CreateAccount]",
+            return (await _sqlConnection.QueryAsync<TAccount>(@"[Website].[CreateAccount]",
                 new
                 {
                     Password = password,
                     Email = email
                 },
-                commandType: CommandType.StoredProcedure);
+                commandType: CommandType.StoredProcedure)).FirstOrDefault();
         }
 
         /// <summary>

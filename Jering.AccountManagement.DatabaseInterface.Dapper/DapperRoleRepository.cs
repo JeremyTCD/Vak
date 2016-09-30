@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Jering.AccountManagement.DatabaseInterface.Dapper
@@ -28,12 +29,12 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         /// <param name="name"></param>
         public virtual async Task<Role> CreateRoleAsync(string name)
         {
-            return await _sqlConnection.QuerySingleAsync<Role>(@"[Website].[CreateRole]",
+            return (await _sqlConnection.QueryAsync<Role>(@"[Website].[CreateRole]",
                 new
                 {
                     Name = name
                 },
-                commandType: CommandType.StoredProcedure);
+                commandType: CommandType.StoredProcedure)).FirstOrDefault();
         }
 
         /// <summary>

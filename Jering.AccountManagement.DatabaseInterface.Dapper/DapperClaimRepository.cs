@@ -33,13 +33,13 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         /// <returns></returns>
         public async Task<Claim> CreateClaimAsync(string type, string value)
         {
-            return await _sqlConnection.QuerySingleAsync<Claim>(@"[Website].[CreateClaim]",
+            return (await _sqlConnection.QueryAsync<Claim>(@"[Website].[CreateClaim]",
                 new
                 {
                     Type = type,
                     Value = value
                 },
-                commandType: CommandType.StoredProcedure);
+                commandType: CommandType.StoredProcedure)).FirstOrDefault();
         }
 
         /// <summary>
