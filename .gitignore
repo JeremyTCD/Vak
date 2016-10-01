@@ -257,3 +257,8 @@ paket-files/
 # JetBrains Rider
 .idea/
 *.sln.iml
+
+# Angular
+**/Angular/Aot
+**/Angular/**/*.js.map
+**/Angular/**/*.js
