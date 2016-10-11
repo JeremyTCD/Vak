@@ -2,6 +2,7 @@
   "projects": [
     "src",
     "test",
-    "../../../../Desktop/LibrariesAndTools/Dapper/dapper-dot-net"
+    "../../../../Desktop/LibrariesAndTools/Dapper/dapper-dot-net",
+    "."
   ]
 }

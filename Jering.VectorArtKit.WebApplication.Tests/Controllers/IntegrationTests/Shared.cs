@@ -69,7 +69,7 @@ namespace Jering.VectorArtKit.WebApplication.Tests.Controllers.IntegrationTests
     #region Helpers
     public class RequestHelper
     {
-        public static HttpRequestMessage Create(string path, HttpMethod requestMethod, IDictionary<string, string> formPostBodyData)
+        public static HttpRequestMessage Create(string path, HttpMethod requestMethod, IDictionary<string, string> formPostBodyData = null)
         {
             if (formPostBodyData == null) {
                 formPostBodyData = new Dictionary<string, string>();

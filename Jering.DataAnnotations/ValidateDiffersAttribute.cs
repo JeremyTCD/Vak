@@ -8,27 +8,24 @@ namespace Jering.DataAnnotations
     /// Validates differing properties.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ValidateDiffersAttribute : OptionsValidationAttribute
+    public class ValidateDiffersAttribute : ValidationAttribute
     {
-        private string _otherProperty { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string OtherProperty { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="otherProperty"></param>
-        public ValidateDiffersAttribute(string otherProperty):this(otherProperty, null, null)
+        /// <param name="resourceName"></param>
+        /// <param name="resourceType"></param>
+        public ValidateDiffersAttribute(string otherProperty, string resourceName, Type resourceType)
         {
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="otherProperty"></param>
-        /// <param name="errorMessageProperty"></param>
-        /// <param name="optionsType"></param>
-        public ValidateDiffersAttribute(string otherProperty, string errorMessageProperty, Type optionsType):base(errorMessageProperty, optionsType)
-        {
-            _otherProperty = otherProperty;
+            ErrorMessageResourceName = resourceName;
+            ErrorMessageResourceType = resourceType;
+            OtherProperty = otherProperty;
         }
 
         /// <summary>
@@ -43,16 +40,16 @@ namespace Jering.DataAnnotations
         /// </returns>
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            PropertyInfo otherPropertyInfo = validationContext.ObjectType.GetRuntimeProperty(_otherProperty);
+            PropertyInfo otherPropertyInfo = validationContext.ObjectType.GetRuntimeProperty(OtherProperty);
             if (otherPropertyInfo == null)
             {
-                return new ValidationResult(GetErrorMessage(validationContext));
+                return new ValidationResult(ErrorMessageString);
             }
 
             object otherPropertyValue = otherPropertyInfo.GetValue(validationContext.ObjectInstance, null);
             if (Equals(value, otherPropertyValue))
             {
-                return new ValidationResult(GetErrorMessage(validationContext));
+                return new ValidationResult(ErrorMessageString);
             }
 
             return ValidationResult.Success;

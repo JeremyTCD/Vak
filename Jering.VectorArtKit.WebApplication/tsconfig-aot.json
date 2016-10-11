@@ -11,10 +11,11 @@
     "suppressImplicitAnyIndexErrors": true
   },
   "filesGlob": [
-    "Angular/**/*.ts"
+    "Angular/**/*.ts",
+    "typings/index.d.ts"
   ],
   "angularCompilerOptions": {
-    "genDir": "Angular/Aot",
+    "genDir": "Angular/Compiled",
     "skipMetadataEmit": true
   }
 }

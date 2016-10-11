@@ -4,7 +4,7 @@ using Jering.Mail;
 using Jering.VectorArtKit.WebApplication.BusinessModel;
 using Jering.VectorArtKit.WebApplication.Filters;
 using Jering.VectorArtKit.WebApplication.Resources;
-using Jering.VectorArtKit.WebApplication.ViewModels.Account;
+using Jering.VectorArtKit.WebApplication.FormModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +22,6 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         private IAccountSecurityServices<VakAccount> _accountSecurityServices;
         private IAccountRepository<VakAccount> _vakAccountRepository;
         private IEmailServices _emailServices;
-        private StringOptions _stringOptions;
         private string _confirmEmailPurpose = "ConfirmEmail";
         private string _confirmAlternativeEmailPurpose = "ConfirmAlternativeEmail";
         private string _resetPasswordPurpose = "ResetPassword";
@@ -31,14 +30,12 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         public AccountController(
             IAccountRepository<VakAccount> vakAccountRepository,
             IAccountSecurityServices<VakAccount> accountSecurityServices,
-            IEmailServices emailServices,
-            IOptions<StringOptions> stringOptionsAccessor
+            IEmailServices emailServices
             )
         {
             _vakAccountRepository = vakAccountRepository;
             _accountSecurityServices = accountSecurityServices;
             _emailServices = emailServices;
-            _stringOptions = stringOptionsAccessor?.Value;
         }
 
         /// <summary>
@@ -70,7 +67,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SignUp(SignUpViewModel model, string returnUrl = null)
+        public async Task<IActionResult> SignUp(SignUpFormModel model, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
@@ -85,12 +82,13 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                     return RedirectToAction(nameof(HomeController.Index), nameof(HomeController).Replace("Controller", ""));
                 }
 
-                ModelState.AddModelError(nameof(SignUpViewModel.Email), _stringOptions.ErrorMessage_EmailInUse);
+                ModelState.AddModelError(nameof(SignUpFormModel.Email), Strings.ErrorMessage_EmailInUse);
             }
-            else if (ModelState.ContainsKey(nameof(SignUpViewModel.Password)))
+            else if (ModelState.ContainsKey(nameof(SignUpFormModel.Password)))
             {
-                ModelState.Remove(nameof(SignUpViewModel.Password));
-                ModelState.AddModelError(nameof(SignUpViewModel.Password), _stringOptions.ErrorMessage_Password_FormatInvalid);
+                ModelState.Remove(nameof(SignUpFormModel.Password));
+                // Broke the following error message up 
+                //ModelState.AddModelError(nameof(SignUpFormModel.Password), Strings.ErrorMessage_Password_FormatInvalid);
             }
 
             return View(model);
@@ -126,7 +124,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LogIn(LoginViewModel model, string returnUrl = null)
+        public async Task<IActionResult> LogIn(LoginFormModel model, string returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
             if (ModelState.IsValid)
@@ -148,7 +146,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 }
             }
 
-            ModelState.AddModelError(string.Empty, _stringOptions.LogIn_Failed);
+            ModelState.AddModelError(string.Empty, Strings.LogIn_Failed);
             return View(model);
         }
 
@@ -190,7 +188,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         [SetSignedInAccount]
-        public async Task<IActionResult> VerifyTwoFactorCode(VerifyTwoFactorCodeViewModel model, string returnUrl = null)
+        public async Task<IActionResult> VerifyTwoFactorCode(VerifyTwoFactorCodeFormModel model, string returnUrl = null)
         {
             if (ModelState.IsValid)
             {
@@ -201,7 +199,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                     return RedirectToLocal(returnUrl);
                 }
 
-                ModelState.AddModelError(nameof(VerifyTwoFactorCodeViewModel.Code), _stringOptions.ErrorMessage_TwoFactorCode_Invalid);
+                ModelState.AddModelError(nameof(VerifyTwoFactorCodeFormModel.Code), Strings.ErrorMessage_TwoFactorCode_Invalid);
             }
 
             return View(model);
@@ -249,7 +247,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordFormModel model)
         {
             if (ModelState.IsValid)
             {
@@ -263,7 +261,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                         new { Token = token, Email = model.Email },
                         protocol: HttpContext.Request.Scheme);
 
-                    MimeMessage mimeMessage = _emailServices.CreateMimeMessage(model.Email, _stringOptions.ResetPasswordEmail_Subject, string.Format(_stringOptions.ResetPasswordEmail_Message, callbackUrl));
+                    MimeMessage mimeMessage = _emailServices.CreateMimeMessage(model.Email, Strings.ResetPasswordEmail_Subject, string.Format(Strings.ResetPasswordEmail_Message, callbackUrl));
                     await _emailServices.SendEmailAsync(mimeMessage);
                 }
 
@@ -301,7 +299,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 return View("Error");
             }
 
-            return View(new ResetPasswordViewModel { Email = email });
+            return View(new ResetPasswordFormModel { Email = email });
         }
 
         /// <summary>
@@ -317,7 +315,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        public async Task<IActionResult> ResetPassword(ResetPasswordFormModel model)
         {
             if (ModelState.IsValid)
             {
@@ -331,10 +329,11 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), new { Email = account.Email });
             }
-            else if (ModelState.ContainsKey(nameof(ResetPasswordViewModel.NewPassword)))
+            else if (ModelState.ContainsKey(nameof(ResetPasswordFormModel.NewPassword)))
             {
-                ModelState.Remove(nameof(ResetPasswordViewModel.NewPassword));
-                ModelState.AddModelError(nameof(ResetPasswordViewModel.NewPassword), _stringOptions.ErrorMessage_Password_FormatInvalid);
+                ModelState.Remove(nameof(ResetPasswordFormModel.NewPassword));
+                // Broke the following error message up 
+                //ModelState.AddModelError(nameof(ResetPasswordFormModel.NewPassword), Strings.ErrorMessage_Password_FormatInvalid);
             }
 
             return View(model);
@@ -395,7 +394,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [SetSignedInAccount]
-        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        public async Task<IActionResult> ChangePassword(ChangePasswordFormModel model)
         {
             if (ModelState.IsValid)
             {
@@ -403,7 +402,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(email, model.CurrentPassword);
                 if (account == null)
                 {
-                    ModelState.AddModelError(nameof(ChangePasswordViewModel.CurrentPassword), _stringOptions.ErrorMessage_CurrentPassword_Invalid);
+                    ModelState.AddModelError(nameof(ChangePasswordFormModel.CurrentPassword), Strings.ErrorMessage_CurrentPassword_Invalid);
                 }
                 else
                 {
@@ -420,10 +419,10 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                     return RedirectToAction(nameof(AccountController.ManageAccount));
                 }
             }
-            else if (ModelState.ContainsKey(nameof(ChangePasswordViewModel.NewPassword)))
+            else if (ModelState.ContainsKey(nameof(ChangePasswordFormModel.NewPassword)))
             {
-                ModelState.Remove(nameof(ChangePasswordViewModel.NewPassword));
-                ModelState.AddModelError(nameof(ChangePasswordViewModel.NewPassword), _stringOptions.ErrorMessage_NewPassword_FormatInvalid);
+                ModelState.Remove(nameof(ChangePasswordFormModel.NewPassword));
+                ModelState.AddModelError(nameof(ChangePasswordFormModel.NewPassword), Strings.ErrorMessage_NewPassword_FormatInvalid);
             }
 
             return View(model);
@@ -457,7 +456,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [SetSignedInAccount]
-        public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel model)
+        public async Task<IActionResult> ChangeEmail(ChangeEmailFormModel model)
         {
             if (ModelState.IsValid)
             {
@@ -470,7 +469,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(currentEmail, model.Password);
                 if (account == null)
                 {
-                    ModelState.AddModelError(nameof(ChangeEmailViewModel.Password), _stringOptions.ErrorMessage_Password_Invalid);
+                    ModelState.AddModelError(nameof(ChangeEmailFormModel.Password), Strings.ErrorMessage_Password_Invalid);
                 }
                 else
                 {
@@ -483,7 +482,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                     if (result.EmailInUse)
                     {
-                        ModelState.AddModelError(nameof(ChangeEmailViewModel.NewEmail), _stringOptions.ErrorMessage_EmailInUse);
+                        ModelState.AddModelError(nameof(ChangeEmailFormModel.NewEmail), Strings.ErrorMessage_EmailInUse);
                     }
                     else
                     {
@@ -526,7 +525,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [SetSignedInAccount]
-        public async Task<IActionResult> ChangeAlternativeEmail(ChangeAlternativeEmailViewModel model)
+        public async Task<IActionResult> ChangeAlternativeEmail(ChangeAlternativeEmailFormModel model)
         {
             if (ModelState.IsValid)
             {
@@ -535,7 +534,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 if (account == null)
                 {
-                    ModelState.AddModelError(nameof(ChangeAlternativeEmailViewModel.Password), _stringOptions.ErrorMessage_Password_Invalid);
+                    ModelState.AddModelError(nameof(ChangeAlternativeEmailFormModel.Password), Strings.ErrorMessage_Password_Invalid);
                 }
                 else if (account.AlternativeEmail == model.NewAlternativeEmail)
                 {
@@ -553,7 +552,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                     if (result.AlternativeEmailInUse)
                     {
-                        ModelState.AddModelError(nameof(ChangeAlternativeEmailViewModel.NewAlternativeEmail), _stringOptions.ErrorMessage_EmailInUse);
+                        ModelState.AddModelError(nameof(ChangeAlternativeEmailFormModel.NewAlternativeEmail), Strings.ErrorMessage_EmailInUse);
                     }
                     else
                     {
@@ -593,7 +592,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [SetSignedInAccount]
-        public async Task<IActionResult> ChangeDisplayName(ChangeDisplayNameViewModel model)
+        public async Task<IActionResult> ChangeDisplayName(ChangeDisplayNameFormModel model)
         {
             if (ModelState.IsValid)
             {
@@ -602,7 +601,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                 if (account == null)
                 {
-                    ModelState.AddModelError(nameof(ChangeAlternativeEmailViewModel.Password), _stringOptions.ErrorMessage_Password_Invalid);
+                    ModelState.AddModelError(nameof(ChangeAlternativeEmailFormModel.Password), Strings.ErrorMessage_Password_Invalid);
                 }
                 else if (account.DisplayName == model.NewDisplayName)
                 {
@@ -620,7 +619,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
 
                     if (result.DisplayNameInUse)
                     {
-                        ModelState.AddModelError(nameof(ChangeDisplayNameViewModel.NewDisplayName), _stringOptions.ErrorMessage_DisplayName_InUse);
+                        ModelState.AddModelError(nameof(ChangeDisplayNameFormModel.NewDisplayName), Strings.ErrorMessage_DisplayName_InUse);
                     }
                     else
                     {
@@ -736,7 +735,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [SetSignedInAccount]
-        public async Task<IActionResult> TestTwoFactor(TestTwoFactorViewModel model)
+        public async Task<IActionResult> TestTwoFactor(TestTwoFactorFormModel model)
         {
             if (ModelState.IsValid)
             {
@@ -760,7 +759,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 }
                 else
                 {
-                    ModelState.AddModelError(nameof(TestTwoFactorViewModel.Code), _stringOptions.ErrorMessage_TwoFactorCode_Invalid);
+                    ModelState.AddModelError(nameof(TestTwoFactorFormModel.Code), Strings.ErrorMessage_TwoFactorCode_Invalid);
                 }
             }
 
@@ -843,7 +842,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpGet]
         [AllowAnonymous]
         [SetSignedInAccount]
-        public async Task<IActionResult> EmailVerificationConfirmation(EmailVerificationConfirmationViewModel model)
+        public async Task<IActionResult> EmailVerificationConfirmation(EmailVerificationConfirmationFormModel model)
         {
             if (ModelState.IsValid)
             {
@@ -871,7 +870,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         [HttpGet]
         [AllowAnonymous]
         [SetSignedInAccount]
-        public async Task<IActionResult> AlternativeEmailVerificationConfirmation(AlternativeEmailVerificationConfirmationViewModel model)
+        public async Task<IActionResult> AlternativeEmailVerificationConfirmation(AlternativeEmailVerificationConfirmationFormModel model)
         {
             if (ModelState.IsValid)
             {
@@ -905,8 +904,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 protocol: HttpContext.Request.Scheme);
 
             MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.Email, 
-                _stringOptions.Email_EmailVerification_Subject, 
-                string.Format(_stringOptions.Email_EmailVerification_Message, 
+                Strings.Email_EmailVerification_Subject, 
+                string.Format(Strings.Email_EmailVerification_Message, 
                 callbackUrl));
             await _emailServices.SendEmailAsync(mimeMessage);
         }
@@ -926,8 +925,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
                 protocol: HttpContext.Request.Scheme);
 
             MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.AlternativeEmail,
-                _stringOptions.Email_EmailVerification_Subject,
-                string.Format(_stringOptions.Email_EmailVerification_Message,
+                Strings.Email_EmailVerification_Subject,
+                string.Format(Strings.Email_EmailVerification_Message,
                 callbackUrl));
             await _emailServices.SendEmailAsync(mimeMessage);
         }
@@ -935,7 +934,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         private async Task SendTwoFactorEmail(VakAccount account)
         {
             string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, account);
-            MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.Email, _stringOptions.TwoFactorEmail_Subject, string.Format(_stringOptions.TwoFactorEmail_Message, token));
+            MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.Email, Strings.TwoFactorEmail_Subject, string.Format(Strings.TwoFactorEmail_Message, token));
             await _emailServices.SendEmailAsync(mimeMessage);
         }
         [NonAction]

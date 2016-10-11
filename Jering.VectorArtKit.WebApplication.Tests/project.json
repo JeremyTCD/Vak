@@ -15,7 +15,8 @@
     "Moq": "4.6.36-alpha",
     "Microsoft.AspNetCore.TestHost": "1.0.0",
     "Jering.VectorArtKit.WebApplication": "1.0.0",
-    "dotnet-test-xunit": "2.2.0-preview2-build1029"
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "Newtonsoft.Json": "9.0.2-beta1"
   },
   "frameworks": {
     "netcoreapp1.0": {

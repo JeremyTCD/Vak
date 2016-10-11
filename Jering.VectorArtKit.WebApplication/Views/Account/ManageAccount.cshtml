@@ -1,16 +1,16 @@
 ﻿@{
-    ViewData["Title"] = StringOptionsAccessor.Value.ViewTitle_ManageAccount;
+    ViewData["Title"] = StringsAccessor.Value.ViewTitle_ManageAccount;
     VakAccount vakAccount = ViewData[nameof(VakAccount)] as VakAccount;
 }
 
-<h2>@StringOptionsAccessor.Value.ViewTitle_ManageAccount.</h2>
+<h2>@StringsAccessor.Value.ViewTitle_ManageAccount.</h2>
 <div>
     logo
 </div>
 <hr />
 <div>
     <div>
-        @StringOptionsAccessor.Value.DisplayName_Password
+        @StringsAccessor.Value.DisplayName_Password
     </div>
     <div>
         Last changed: <span duration-start="@vakAccount.PasswordLastChanged"></span>
@@ -22,7 +22,7 @@
 <hr />
 <div>
     <div>
-        @StringOptionsAccessor.Value.DisplayName_Email
+        @StringsAccessor.Value.DisplayName_Email
     </div>
     <div>
         Email address: @vakAccount.Email
@@ -53,7 +53,7 @@
 <hr />
 <div>
     <div>
-        @StringOptionsAccessor.Value.DisplayName_AlternativeEmail
+        @StringsAccessor.Value.DisplayName_AlternativeEmail
     </div>
     @if (vakAccount.AlternativeEmail == null)
     {
@@ -91,7 +91,7 @@
 <hr />
 <div>
     <div>
-        @StringOptionsAccessor.Value.DisplayName_DisplayName
+        @StringsAccessor.Value.DisplayName_DisplayName
     </div>
     @if (vakAccount.DisplayName == null)
     {
@@ -112,7 +112,7 @@
 <hr />
 <div>
     <div>
-        @StringOptionsAccessor.Value.DisplayName_TwoFactor
+        @StringsAccessor.Value.DisplayName_TwoFactor
     </div>
     @if (vakAccount.TwoFactorEnabled)
     {

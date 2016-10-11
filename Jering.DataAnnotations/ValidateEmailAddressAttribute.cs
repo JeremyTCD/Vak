@@ -11,22 +11,17 @@ namespace Jering.DataAnnotations
     /// Validates an email address's format.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ValidateEmailAddressAttribute : OptionsValidationAttribute
+    public class ValidateEmailAddressAttribute : ValidationAttribute
     {
         /// <summary>
         /// 
         /// </summary>
-        public ValidateEmailAddressAttribute() : base(null, null)
+        /// <param name="resourceName"></param>
+        /// <param name="resourceType"></param>
+        public ValidateEmailAddressAttribute(string resourceName, Type resourceType)
         {
-
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="errorMessageProperty"></param>
-        /// <param name="optionsType"></param>
-        public ValidateEmailAddressAttribute(string errorMessageProperty, Type optionsType) : base(errorMessageProperty, optionsType)
-        {
+            ErrorMessageResourceName = resourceName;
+            ErrorMessageResourceType = resourceType;
         }
 
         /// <summary>
@@ -44,7 +39,7 @@ namespace Jering.DataAnnotations
             string valueAsString = value as string;
             if (valueAsString == null)
             {
-                return new ValidationResult(GetErrorMessage(validationContext));
+                return new ValidationResult(ErrorMessageString);
             }
 
             // only return true if there is only 1 '@' character
@@ -56,13 +51,13 @@ namespace Jering.DataAnnotations
                 {
                     if (found || i == 0 || i == valueAsString.Length - 1)
                     {
-                        return new ValidationResult(GetErrorMessage(validationContext));
+                        return new ValidationResult(ErrorMessageString);
                     }
                     found = true;
                 }
             }
 
-            return found ? ValidationResult.Success : new ValidationResult(GetErrorMessage(validationContext));
+            return found ? ValidationResult.Success : new ValidationResult(ErrorMessageString);
         }
     }
 }

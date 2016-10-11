@@ -9,25 +9,21 @@ namespace Jering.DataAnnotations
     /// Validates property length.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ValidateMinLengthAttribute : OptionsValidationAttribute
+    public class ValidateMinLengthAttribute : ValidationAttribute
     {
-        private int _minLength { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public ValidateMinLengthAttribute(int minLength) : base(null, null)
-        {
-            _minLength = minLength;
-        }
+        private int MinLength { get; set; }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="minLength"></param>
-        /// <param name="errorMessageProperty"></param>
-        /// <param name="optionsType"></param>
-        public ValidateMinLengthAttribute(int minLength, string errorMessageProperty, Type optionsType) : base(errorMessageProperty, optionsType)
+        /// <param name="resourceName"></param>
+        /// <param name="resourceType"></param>
+        public ValidateMinLengthAttribute(int minLength, string resourceName, Type resourceType)
         {
-            _minLength = minLength;
+            MinLength = minLength;
+            ErrorMessageResourceName = resourceName;
+            ErrorMessageResourceType = resourceType;
         }
 
         /// <summary>
@@ -43,9 +39,9 @@ namespace Jering.DataAnnotations
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             string valueAsString = value as string;
-            if (valueAsString == null || valueAsString.Length < _minLength)
+            if (valueAsString == null || valueAsString.Length < MinLength)
             {
-                return new ValidationResult(GetErrorMessage(validationContext));
+                return new ValidationResult(ErrorMessageString);
             }
 
             return ValidationResult.Success;

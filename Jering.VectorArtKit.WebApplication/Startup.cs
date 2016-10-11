@@ -10,6 +10,7 @@ using Jering.VectorArtKit.WebApplication.BusinessModel;
 using Jering.AccountManagement.Extensions;
 using Jering.VectorArtKit.WebApplication.Test;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
+using Jering.DynamicForms;
 
 namespace Jering.VectorArtKit.WebApplication
 {
@@ -49,6 +50,8 @@ namespace Jering.VectorArtKit.WebApplication
                 AddDefaultTokenServices();
 
             services.AddEmailSender(_hostingEnvironment);
+
+            services.AddDynamicForms();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -84,7 +87,12 @@ namespace Jering.VectorArtKit.WebApplication
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "api/{controller=Home}/{action=Index}/{id?}");
+
+                routes.MapRoute(
+                    name: "spa-fallback",
+                    template: "{*url}",
+                    defaults: new { controller = "Home", action = "Index" });
             });
         }
     }

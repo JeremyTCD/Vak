@@ -8,21 +8,22 @@ namespace Jering.DataAnnotations
     /// Validates a properties value.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ValidateValueAttribute : OptionsValidationAttribute
+    public class ValidateValueAttribute : ValidationAttribute
     {
-        private object _expectedValue { get; set; }
+        private object ExpectedValue { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="expectedValue"></param>
-        /// <param name="errorMessageProperty"></param>
-        /// <param name="optionsType"></param>
-        public ValidateValueAttribute(object expectedValue, string errorMessageProperty, Type optionsType):base(errorMessageProperty, optionsType)
+        /// <param name="resourceName"></param>
+        /// <param name="resourceType"></param>
+        public ValidateValueAttribute(object expectedValue, string resourceName, Type resourceType)
         {
-            _expectedValue = expectedValue;
+            ExpectedValue = expectedValue;
+            ErrorMessageResourceName = resourceName;
+            ErrorMessageResourceType = resourceType;
         }
-
         /// <summary>
         /// Validates <paramref name="value"/>. 
         /// </summary>
@@ -34,9 +35,9 @@ namespace Jering.DataAnnotations
         /// </returns>
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            if (!Equals(value, _expectedValue))
+            if (!Equals(value, ExpectedValue))
             {
-                return new ValidationResult(GetErrorMessage(validationContext));
+                return new ValidationResult(ErrorMessageString);
             }
 
             return ValidationResult.Success;

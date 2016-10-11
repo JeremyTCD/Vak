@@ -1,10 +1,7 @@
-﻿using Microsoft.Extensions.Options;
-using Moq;
-using System;
+﻿using Jering.DataAnnotations.Tests.Resources;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Jering.DataAnnotations.Tests.UnitTests
 {
@@ -15,17 +12,8 @@ namespace Jering.DataAnnotations.Tests.UnitTests
         public void IsValid_GetValidationResult_ReturnsCorrectValidationResults(object testObject)
         {
             // Arrange
-            DummyOptions dummyOptions = new DummyOptions();
-
-            Mock<IOptions<DummyOptions>> mockOptions = new Mock<IOptions<DummyOptions>>();
-            mockOptions.Setup(o => o.Value).Returns(new DummyOptions());
-
-            Mock<IServiceProvider> mockServiceProvider = new Mock<IServiceProvider>();
-            mockServiceProvider.Setup(s => s.GetService(typeof(IOptions<DummyOptions>))).Returns(mockOptions.Object);
-
-            ValidationContext validationContext = new ValidationContext(new { }, mockServiceProvider.Object, null);
-
-            ValidateAllDigitsAttribute validateAllDigitsAttribute = new ValidateAllDigitsAttribute(nameof(dummyOptions.dummyString), typeof(DummyOptions));
+            ValidationContext validationContext = new ValidationContext(new { }, null, null);
+            ValidateAllDigitsAttribute validateAllDigitsAttribute = new ValidateAllDigitsAttribute(nameof(DummyStrings.Dummy), typeof(DummyStrings));
 
             // Act
             // IsValid is a protected function, the public function GetValidationResult calls it.
@@ -38,7 +26,7 @@ namespace Jering.DataAnnotations.Tests.UnitTests
             }
             else
             {
-                Assert.Equal(dummyOptions.dummyString, validationResult.ErrorMessage);
+                Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
             }
         }
 

@@ -1,7 +1,4 @@
-﻿using Jering.DataAnnotations;
-using Microsoft.Extensions.Options;
-using Moq;
-using System;
+﻿using Jering.DataAnnotations.Tests.Resources;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Xunit;
@@ -15,15 +12,8 @@ namespace Jering.DataAnnotations.Tests.UnitTests
         public void IsValid_GetValidationResult_ReturnsCorrectValidationResults(object dummyEmail, string outputString)
         {
             // Arrange
-            Mock<IOptions<DummyOptions>> mockOptions = new Mock<IOptions<DummyOptions>>();
-            mockOptions.Setup(o => o.Value).Returns(new DummyOptions());
-
-            Mock<IServiceProvider> mockServiceProvider = new Mock<IServiceProvider>();
-            mockServiceProvider.Setup(s => s.GetService(typeof(IOptions<DummyOptions>))).Returns(mockOptions.Object);
-
-            ValidationContext validationContext = new ValidationContext(new { }, mockServiceProvider.Object, null);
-
-            ValidateEmailAddressAttribute validateEmailAddressAttribute = new ValidateEmailAddressAttribute(nameof(DummyOptions.dummyString), typeof(DummyOptions));
+            ValidationContext validationContext = new ValidationContext(new { }, null, null);
+            ValidateEmailAddressAttribute validateEmailAddressAttribute = new ValidateEmailAddressAttribute(nameof(DummyStrings.Dummy), typeof(DummyStrings));
 
             // Act
             // IsValid is a protected function, the public function GetValidationResult calls it.
@@ -42,12 +32,12 @@ namespace Jering.DataAnnotations.Tests.UnitTests
 
         public static IEnumerable<object[]> IsValidData ()
         {
-            DummyOptions DummyOptions = new DummyOptions();
+            DummyStrings DummyStrings = new DummyStrings();
 
-            yield return new object[] { "@test", DummyOptions.dummyString };
-            yield return new object[] { "test@", DummyOptions.dummyString };
-            yield return new object[] { "test", DummyOptions.dummyString };
-            yield return new object[] { 0, DummyOptions.dummyString };
+            yield return new object[] { "@test", DummyStrings.Dummy };
+            yield return new object[] { "test@", DummyStrings.Dummy };
+            yield return new object[] { "test", DummyStrings.Dummy };
+            yield return new object[] { 0, DummyStrings.Dummy };
             yield return new object[] { "test@domain.com", null };
         }
     }

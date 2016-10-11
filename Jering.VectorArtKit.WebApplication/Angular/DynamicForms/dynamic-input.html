@@ -1,0 +1,15 @@
+﻿<!--why does formGroup directive property need to be bound to here?-->
+<div [formGroup]="parentFormGroup">
+    <label *ngIf="dynamicInput.renderLabel" [attr.for]="dynamicInput.name">{{dynamicInput.displayName}}</label>
+    <div [ngSwitch]="dynamicInput.tagName">
+        <input *ngSwitchCase="'input'" [formControlName]="dynamicInput.name"
+               [id]="dynamicInput.name" [type]="dynamicInput.type" [placeholder]="dynamicInput.placeholder">
+        <select *ngSwitchCase="'select'" [id]="dynamicInput.name" [formControlName]="dynamicInput.name">
+            <option *ngFor="let opt of dynamicInput.options" [value]="opt.name">{{opt.value}}</option>
+        </select>
+
+    </div>
+    <div *ngFor="let error of dynamicInput.errors">
+        <span>{{error}}</span>
+    </div>
+</div>

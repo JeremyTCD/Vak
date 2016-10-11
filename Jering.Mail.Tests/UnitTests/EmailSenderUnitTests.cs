@@ -1,12 +1,7 @@
 ﻿using Jering.Mail;
-using MailKit;
-using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Moq;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Jering.AccountManagement.Security.UnitTests.UnitTests

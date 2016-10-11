@@ -12,31 +12,8 @@ namespace Jering.VectorArtKit.WebApplication.Controllers
         /// <summary>
         /// Get: /Home/Index
         /// </summary>
-        /// <returns>
-        /// Home index view with logoff form, when an account is logged in.
-        /// Home index view with login form, when no account is logged in.
-        /// </returns>
         [SetSignedInAccount]
         public IActionResult Index()
-        {
-            return View();
-        }
-
-        public IActionResult About()
-        {
-            ViewData["Message"] = "Your application description page.";
-
-            return View();
-        }
-
-        public IActionResult Contact()
-        {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
-        }
-
-        public IActionResult Error()
         {
             return View();
         }

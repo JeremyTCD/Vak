@@ -24,7 +24,9 @@
     "Jering.AccountManagement.Security": "1.0.0",
     "Jering.AccountManagement.DatabaseInterface.Dapper": "1.0.0",
     "Jering.AccountManagement.Extensions": "1.0.0",
-    "Jering.DataAnnotations": "1.0.0"
+    "Jering.DataAnnotations": "1.0.0",
+    "Jering.DynamicForms": "1.0.0-*",
+    "Microsoft.AspNetCore.Antiforgery": "1.0.1"
   },
 
   "tools": {

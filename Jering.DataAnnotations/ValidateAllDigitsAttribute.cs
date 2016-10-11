@@ -8,14 +8,17 @@ namespace Jering.DataAnnotations
     /// Validates an integer.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ValidateAllDigitsAttribute : OptionsValidationAttribute
+    public class ValidateAllDigitsAttribute : ValidationAttribute
     {
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="errorMessageProperty"></param>
-        /// <param name="optionsType"></param>
-        public ValidateAllDigitsAttribute(string errorMessageProperty, Type optionsType) : base(errorMessageProperty, optionsType){}
+        /// <param name="resourceName"></param>
+        /// <param name="resourceType"></param>
+        public ValidateAllDigitsAttribute(string resourceName, Type resourceType){
+            ErrorMessageResourceName = resourceName;
+            ErrorMessageResourceType = resourceType;
+        }
 
         /// <summary>
         /// Validates <paramref name="value"/>. 
@@ -32,7 +35,7 @@ namespace Jering.DataAnnotations
             string valueAsString = value as string;
             if (valueAsString == null || !valueAsString.All(IsDigit))
             {
-                return new ValidationResult(GetErrorMessage(validationContext));
+                return new ValidationResult(ErrorMessageString);
             }
 
             return ValidationResult.Success;

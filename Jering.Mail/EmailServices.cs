@@ -15,7 +15,7 @@ namespace Jering.Mail
         protected SmtpClient _smtpClient { get; }
 
         /// <summary>
-        /// Constructs and instance of <see cref="EmailServices"/>. 
+        /// Constructs an instance of <see cref="EmailServices"/>. 
         /// </summary>
         /// <param name="emailOptionsAccessor"></param>
         /// <param name="smtpClient"></param>

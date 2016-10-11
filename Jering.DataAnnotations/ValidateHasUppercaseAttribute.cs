@@ -10,19 +10,17 @@ namespace Jering.DataAnnotations
     /// Validates that string has at least one uppercase character.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ValidateHasUppercaseAttribute : OptionsValidationAttribute
+    public class ValidateHasUppercaseAttribute : ValidationAttribute
     {
         /// <summary>
         /// 
         /// </summary>
-        public ValidateHasUppercaseAttribute() : base(null, null) { }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="errorMessageProperty"></param>
-        /// <param name="optionsType"></param>
-        public ValidateHasUppercaseAttribute(string errorMessageProperty, Type optionsType) : base(errorMessageProperty, optionsType)
+        /// <param name="resourceName"></param>
+        /// <param name="resourceType"></param>
+        public ValidateHasUppercaseAttribute(string resourceName, Type resourceType)
         {
+            ErrorMessageResourceName = resourceName;
+            ErrorMessageResourceType = resourceType;
         }
 
         /// <summary>
@@ -39,7 +37,7 @@ namespace Jering.DataAnnotations
             string valueAsString = value as string;
             if (valueAsString == null || !valueAsString.Any(IsUpper) )
             {
-                return new ValidationResult(GetErrorMessage(validationContext));
+                return new ValidationResult(ErrorMessageString);
             }
 
             return ValidationResult.Success;

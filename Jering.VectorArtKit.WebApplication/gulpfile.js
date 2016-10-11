@@ -1,5 +1,4 @@
-﻿/// <binding ProjectOpened='init' />
-
+/// <binding />
 // note - use process.env.ASPNETCORE_ENVIRONMENT to get environment
 const gulp = require('gulp');
 const del = require('del');
@@ -15,7 +14,7 @@ gulp.task('start:browser-sync', function () {
 });
 
 gulp.task('clean', function () {
-    del(['Angular/!(Aot)/*.{js,map}', 'Angular/Aot']);
+    del(['Angular/!(Compiled)/*.{js,map}', 'Angular/*.{js,map}', 'Angular/Compiled']);
 });
 
 gulp.task('build:ngc', shell.task(
@@ -23,7 +22,7 @@ gulp.task('build:ngc', shell.task(
 ));
 
 gulp.task('build:rollup', shell.task(
-    ['rollup -c rollup-config.js']
+    ['rollup -c rollup-development-config.js']
 ));
 
 gulp.task('build', function () {
@@ -31,10 +30,10 @@ gulp.task('build', function () {
 });
 
 gulp.task('watch:aot', function () {
-    gulp.watch('Angular/!(Aot)/**/*.{ts,html,css}', function (event) {
+    gulp.watch(['Angular/!(Compiled)/*.{ts,html,css}', 'Angular/*.{ts,html,css}'], function (event) {
         console.log('File ' + event.path + ' was ' + event.type);
     });
-    gulp.watch('Angular/!(Aot)/**/*.{ts,html,css}', ['build']);
+    gulp.watch(['Angular/!(Compiled)/*.{ts,html,css}', 'Angular/*.{ts,html,css}'], ['build']);
 });
 
 gulp.task('watch:browser-sync', function () {
@@ -45,7 +44,7 @@ gulp.task('watch:browser-sync', function () {
 });
 
 gulp.task('init', function () {
-    runSequence('start:browser-sync', 'watch:aot', 'watch:browser-sync');
+    runSequence('start:browser-sync', 'watch:browser-sync');
 });
 
 gulp.task('default', ['init']);

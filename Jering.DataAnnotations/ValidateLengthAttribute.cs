@@ -9,28 +9,24 @@ namespace Jering.DataAnnotations
     /// Validates property length.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ValidateLengthAttribute : OptionsValidationAttribute
+    public class ValidateLengthAttribute : ValidationAttribute
     {
-        private int _length { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Length { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="length"></param>
-        public ValidateLengthAttribute(int length):base(null,null)
+        /// <param name="resourceName"></param>
+        /// <param name="resourceType"></param>
+        public ValidateLengthAttribute(int length, string resourceName, Type resourceType)
         {
-            _length = length;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="length"></param>
-        /// <param name="errorMessageProperty"></param>
-        /// <param name="optionsType"></param>
-        public ValidateLengthAttribute(int length, string errorMessageProperty, Type optionsType) : base(errorMessageProperty, optionsType)
-        {
-            _length = length;
+            Length = length;
+            ErrorMessageResourceName = resourceName;
+            ErrorMessageResourceType = resourceType;
         }
 
         /// <summary>
@@ -46,9 +42,9 @@ namespace Jering.DataAnnotations
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             string valueAsString = value as string;
-            if (valueAsString == null || valueAsString.Length != _length)
+            if (valueAsString == null || valueAsString.Length != Length)
             {
-                return new ValidationResult(GetErrorMessage(validationContext));
+                return new ValidationResult(ErrorMessageString);
             }
 
             return ValidationResult.Success;

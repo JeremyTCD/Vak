@@ -1,5 +1,22 @@
 ﻿@{
     ViewBag.Title = "Home Page";
+    Layout = null;
 }
 
-<h1>Home</h1>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vector Art Kit</title>
+    <base href="/"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- Polyfill(s) for older browsers -->
+    <script src="~/js/shim.min.js"></script>
+    <script src="~/js/zone.js"></script>
+    <script src="~/js/Reflect.js"></script>
+</head>
+<body>
+    <vak-app>Loading...</vak-app>
+    <script src="~/js/vak-app.js"></script>
+</body>
+</html>
