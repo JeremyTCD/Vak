@@ -1,0 +1,24 @@
+{
+  "Data": {
+    "DefaultConnection": {
+      "ConnectionString": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Jering.VectorArtKit.Database.Test;Integrated Security=True;"
+    }
+  },
+  "version": "1.0.0-*",
+  "testRunner": "xunit",
+  "dependencies": {
+    "Microsoft.NETCore.App": {
+      "type": "platform",
+      "version": "1.0.0"
+    },
+    "xunit": "2.2.0-beta2-build3300",
+    "Moq": "4.6.36-alpha",
+    "Jering.VectorArtKit.WebApi": "1.0.0",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "Microsoft.AspNetCore.DataProtection.Extensions": "1.0.0"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {
+    }
+  }
+}

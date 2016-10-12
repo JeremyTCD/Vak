@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Jering.AccountManagement.Database", "Jering.AccountManagement.Database\Jering.AccountManagement.Database.sqlproj", "{E767C181-28A6-40DB-8C8C-32893DFECEEC}"
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Jering.AccountManagement.Database", "src\Jering.AccountManagement.Database\Jering.AccountManagement.Database.sqlproj", "{E767C181-28A6-40DB-8C8C-32893DFECEEC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.WebApplication", "Jering.VectorArtKit.WebApplication\Jering.VectorArtKit.WebApplication.xproj", "{A9C1E71F-CD6D-403D-A716-B287B74D4E82}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.WebApi", "src\Jering.VectorArtKit.WebApi\Jering.VectorArtKit.WebApi.xproj", "{A9C1E71F-CD6D-403D-A716-B287B74D4E82}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.DatabaseInterface", "Jering.AccountManagement.DatabaseInterface\Jering.AccountManagement.DatabaseInterface.xproj", "{DBDEE019-4817-4027-A068-AC510C3325E7}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.DatabaseInterface", "src\Jering.AccountManagement.DatabaseInterface\Jering.AccountManagement.DatabaseInterface.xproj", "{DBDEE019-4817-4027-A068-AC510C3325E7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AEED3B5D-F786-4DCD-8D28-AF198C25C52D}"
 	ProjectSection(SolutionItems) = preProject
@@ -18,31 +18,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{76C1A6FF-74F
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8978B5AE-BAF8-41A9-91F9-E80CEFE15E6E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.DatabaseInterface.Dapper.Tests", "Jering.AccountManagement.DatabaseInterface.Dapper.Tests\Jering.AccountManagement.DatabaseInterface.Dapper.Tests.xproj", "{10F447A8-2224-44FA-9565-5F3724EBBF23}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.DatabaseInterface.Dapper.Tests", "test\Jering.AccountManagement.DatabaseInterface.Dapper.Tests\Jering.AccountManagement.DatabaseInterface.Dapper.Tests.xproj", "{10F447A8-2224-44FA-9565-5F3724EBBF23}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.Security", "Jering.AccountManagement.Security\Jering.AccountManagement.Security.xproj", "{D333B72F-BACC-46DF-B153-E1F17F0CBFEB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.Security", "src\Jering.AccountManagement.Security\Jering.AccountManagement.Security.xproj", "{D333B72F-BACC-46DF-B153-E1F17F0CBFEB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.Security.Tests", "Jering.AccountManagement.Security.Tests\Jering.AccountManagement.Security.Tests.xproj", "{30AD707D-F8D3-4D13-BE73-222BEDA8C365}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.Security.Tests", "test\Jering.AccountManagement.Security.Tests\Jering.AccountManagement.Security.Tests.xproj", "{30AD707D-F8D3-4D13-BE73-222BEDA8C365}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.WebApplication.Tests", "Jering.VectorArtKit.WebApplication.Tests\Jering.VectorArtKit.WebApplication.Tests.xproj", "{E14F8A5D-64E2-42B4-B5D4-E43588C00EF4}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.WebApplication.Tests", "test\Jering.VectorArtKit.WebApplication.Tests\Jering.VectorArtKit.WebApplication.Tests.xproj", "{E14F8A5D-64E2-42B4-B5D4-E43588C00EF4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.DatabaseInterface.Dapper", "Jering.AccountManagement.DatabaseInterface.Dapper\Jering.AccountManagement.DatabaseInterface.Dapper.xproj", "{53220B05-143A-4686-8E63-30B58A82D3C3}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.DatabaseInterface.Dapper", "src\Jering.AccountManagement.DatabaseInterface.Dapper\Jering.AccountManagement.DatabaseInterface.Dapper.xproj", "{53220B05-143A-4686-8E63-30B58A82D3C3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.Extensions", "Jering.AccountManagement.Extensions\Jering.AccountManagement.Extensions.xproj", "{54D60533-7C04-48A8-8A5C-C929E1952B52}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.AccountManagement.Extensions", "src\Jering.AccountManagement.Extensions\Jering.AccountManagement.Extensions.xproj", "{54D60533-7C04-48A8-8A5C-C929E1952B52}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DataAnnotations", "Jering.DataAnnotations\Jering.DataAnnotations.xproj", "{1747DFA1-2D71-4666-A629-7460C67FBFFB}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DataAnnotations", "src\Jering.DataAnnotations\Jering.DataAnnotations.xproj", "{1747DFA1-2D71-4666-A629-7460C67FBFFB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DataAnnotations.Tests", "Jering.DataAnnotations.Tests\Jering.DataAnnotations.Tests.xproj", "{89229A9D-F465-4FCA-8E8F-9A4D61009158}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DataAnnotations.Tests", "test\Jering.DataAnnotations.Tests\Jering.DataAnnotations.Tests.xproj", "{89229A9D-F465-4FCA-8E8F-9A4D61009158}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Mail", "Jering.Mail\Jering.Mail.xproj", "{9E03C554-A038-4328-9053-7C65AD08E9CC}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Mail", "src\Jering.Mail\Jering.Mail.xproj", "{9E03C554-A038-4328-9053-7C65AD08E9CC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Mail.Tests", "Jering.Mail.Tests\Jering.Mail.Tests.xproj", "{521E8077-86AA-4BA8-9ECB-05FCB2C241F0}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Dapper", "..\..\..\..\Desktop\LibrariesAndTools\Dapper\dapper-dot-net\Dapper\Dapper.xproj", "{FAC24C3F-68F9-4247-A4B9-21D487E99275}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Mail.Tests", "test\Jering.Mail.Tests\Jering.Mail.Tests.xproj", "{521E8077-86AA-4BA8-9ECB-05FCB2C241F0}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DynamicForms", "src\Jering.DynamicForms\Jering.DynamicForms.xproj", "{E5356355-2687-4738-9456-368824112988}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DynamicForms.Tests", "Jering.DynamicForms.Tests\Jering.DynamicForms.Tests.xproj", "{987D60F4-915F-4386-A216-09043838C6F1}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DynamicForms.Tests", "test\Jering.DynamicForms.Tests\Jering.DynamicForms.Tests.xproj", "{987D60F4-915F-4386-A216-09043838C6F1}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.WebClient", "src\Jering.VectorArtKit.WebClient\Jering.VectorArtKit.WebClient.xproj", "{408B0629-E225-4D5A-97C7-9F4B62051961}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -104,10 +104,6 @@ Global
 		{521E8077-86AA-4BA8-9ECB-05FCB2C241F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{521E8077-86AA-4BA8-9ECB-05FCB2C241F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{521E8077-86AA-4BA8-9ECB-05FCB2C241F0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FAC24C3F-68F9-4247-A4B9-21D487E99275}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FAC24C3F-68F9-4247-A4B9-21D487E99275}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FAC24C3F-68F9-4247-A4B9-21D487E99275}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FAC24C3F-68F9-4247-A4B9-21D487E99275}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E5356355-2687-4738-9456-368824112988}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E5356355-2687-4738-9456-368824112988}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E5356355-2687-4738-9456-368824112988}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -116,6 +112,10 @@ Global
 		{987D60F4-915F-4386-A216-09043838C6F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{987D60F4-915F-4386-A216-09043838C6F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{987D60F4-915F-4386-A216-09043838C6F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{408B0629-E225-4D5A-97C7-9F4B62051961}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{408B0629-E225-4D5A-97C7-9F4B62051961}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{408B0629-E225-4D5A-97C7-9F4B62051961}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{408B0629-E225-4D5A-97C7-9F4B62051961}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -136,5 +136,6 @@ Global
 		{521E8077-86AA-4BA8-9ECB-05FCB2C241F0} = {8978B5AE-BAF8-41A9-91F9-E80CEFE15E6E}
 		{E5356355-2687-4738-9456-368824112988} = {76C1A6FF-74F0-4474-A6EB-2593B93C2874}
 		{987D60F4-915F-4386-A216-09043838C6F1} = {8978B5AE-BAF8-41A9-91F9-E80CEFE15E6E}
+		{408B0629-E225-4D5A-97C7-9F4B62051961} = {76C1A6FF-74F0-4474-A6EB-2593B93C2874}
 	EndGlobalSection
 EndGlobal

@@ -26,6 +26,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 Temp/
+dist/
 
 # Visual Studio 2015 cache/options directory
 .vs/
@@ -59,7 +60,7 @@ artifacts/
 *.pch
 *.pdb
 *.pgc
-*.pgd
+*.pgd 
 *.rsp
 *.sbr
 *.tlb

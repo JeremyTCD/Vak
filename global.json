@@ -1,8 +1,6 @@
 {
   "projects": [
     "src",
-    "test",
-    "../../../../Desktop/LibrariesAndTools/Dapper/dapper-dot-net",
-    "."
+    "test"
   ]
 }
