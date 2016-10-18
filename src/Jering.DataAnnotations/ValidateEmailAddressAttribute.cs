@@ -30,19 +30,19 @@ namespace Jering.DataAnnotations
         /// <param name="value"></param>
         /// <param name="validationContext"></param>
         /// <returns>
-        /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> cannot be converted into a string.
-        /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> isn't formatted as an email.
-        /// <see cref="ValidationResult.Success"/> if email address is properly formatted.
+        /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> isn't an email address.
+        /// <see cref="ValidationResult.Success"/> if <paramref name="value"/> is an email address.
+        /// <see cref="ValidationResult.Success"/> if <paramref name="value"/> is null or an empty string.
         /// </returns>
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             string valueAsString = value as string;
-            if (valueAsString == null)
+            if (valueAsString == null || valueAsString.Trim().Length == 0)
             {
-                return new ValidationResult(ErrorMessageString);
+                return ValidationResult.Success;
             }
 
-            // only return true if there is only 1 '@' character
+            // Email address is valid if there is only 1 '@' character
             // and it is neither the first nor the last character
             bool found = false;
             for (int i = 0; i < valueAsString.Length; i++)

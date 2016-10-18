@@ -29,21 +29,22 @@ namespace Jering.DataAnnotations
         /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> is not a string or 
         /// contains characters are arent digits.
         /// <see cref="ValidationResult.Success"/> if <paramref name="value"/> contains only digits.
+        /// <see cref="ValidationResult.Success"/> if <paramref name="value"/> is null or an empty string.
         /// </returns>
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             string valueAsString = value as string;
-            if (valueAsString == null || !valueAsString.All(IsDigit))
+            if (valueAsString == null || valueAsString.Trim().Length == 0 || !valueAsString.Any(IsNotDigit))
             {
-                return new ValidationResult(ErrorMessageString);
+                return ValidationResult.Success;
             }
 
-            return ValidationResult.Success;
+            return new ValidationResult(ErrorMessageString);
         }
 
-        private bool IsDigit(char c)
+        private bool IsNotDigit(char c)
         {
-            return c >= '0' && c <= '9';
+            return c < '0' || c > '9';
         }
     }
 }

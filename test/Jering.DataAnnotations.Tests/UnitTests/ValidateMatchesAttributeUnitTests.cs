@@ -13,8 +13,8 @@ namespace Jering.DataAnnotations.Tests.UnitTests
     public class ValidateMatchesAttributeUnitTests
     {
         [Theory]
-        [MemberData(nameof(IsValidData))]
-        public void IsValid_GetValidationResult_ReturnsCorrectValidationResults(object model, object actualValue)
+        [MemberData(nameof(IsValidReturnsNullData))]
+        public void IsValid_GetValidationResult_ReturnsNullWhenValuesMatchOrEitherValueIsNull(object model, object actualValue)
         {
             // Arrange
             ValidationContext validationContext = new ValidationContext(model, null, null);
@@ -25,29 +25,34 @@ namespace Jering.DataAnnotations.Tests.UnitTests
             ValidationResult validationResult = validateMatchesAttribute.GetValidationResult(actualValue, validationContext);
 
             // Assert
-            DummyModel dummyModel = model as DummyModel;
-            if (dummyModel != null && dummyModel.ExpectedValue == actualValue as string)
-            {
-                Assert.Null(validationResult);
-            }
-            else
-            {
-                Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
-            }
+            Assert.Null(validationResult);
         }
 
-        public static IEnumerable<object[]> IsValidData()
+        public static IEnumerable<object[]> IsValidReturnsNullData()
         {
-            yield return new object[] { new DummyModelEmpty(), "" };
-            yield return new object[] { new DummyModel { ExpectedValue = "does not match" }, 0 };
-            yield return new object[] { new DummyModel { ExpectedValue = "matches" }, "matches" };
+            yield return new object[] { new DummyModel { ExpectedValue = null }, null };
+            yield return new object[] { new DummyModel { ExpectedValue = "test" }, "test" };
         }
 
-        private class DummyModelEmpty : IXunitSerializable
+        [Theory]
+        [MemberData(nameof(IsValidReturnsValidationResultData))]
+        public void IsValid_GetValidationResult_ReturnsValidationResultWhenValuesDoNotMatch(object model, object actualValue)
         {
-            public void Deserialize(IXunitSerializationInfo info) { }
+            // Arrange
+            ValidationContext validationContext = new ValidationContext(model, null, null);
+            ValidateMatchesAttribute validateMatchesAttribute = new ValidateMatchesAttribute("ExpectedValue", nameof(DummyStrings.Dummy), typeof(DummyStrings));
 
-            public void Serialize(IXunitSerializationInfo info) { }
+            // Act
+            // IsValid is a protected function, the public function GetValidationResult calls it.
+            ValidationResult validationResult = validateMatchesAttribute.GetValidationResult(actualValue, validationContext);
+
+            // Assert
+            Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
+        }
+
+        public static IEnumerable<object[]> IsValidReturnsValidationResultData()
+        {
+            yield return new object[] { new DummyModel { ExpectedValue = "test1" }, "test2" };
         }
 
         private class DummyModel : IXunitSerializable

@@ -8,8 +8,8 @@ namespace Jering.DataAnnotations.Tests.UnitTests
     public class ValidateEmailAddressAttributeUnitTests
     {
         [Theory]
-        [MemberData(nameof(IsValidData))]
-        public void IsValid_GetValidationResult_ReturnsCorrectValidationResults(object dummyEmail, string outputString)
+        [MemberData(nameof(IsValidReturnsNullData))]
+        public void IsValid_GetValidationResult_ReturnsNullWhenValueIsAnEmailAddressOrNullOrAnEmptyString(object value)
         {
             // Arrange
             ValidationContext validationContext = new ValidationContext(new { }, null, null);
@@ -17,28 +17,42 @@ namespace Jering.DataAnnotations.Tests.UnitTests
 
             // Act
             // IsValid is a protected function, the public function GetValidationResult calls it.
-            ValidationResult validationResult = validateEmailAddressAttribute.GetValidationResult(dummyEmail, validationContext);
+            ValidationResult validationResult = validateEmailAddressAttribute.GetValidationResult(value, validationContext);
 
             // Assert
-            if(dummyEmail as string == "test@domain.com")
-            {
-                Assert.Null(validationResult);
-            }
-            else
-            {
-                Assert.Equal(outputString, validationResult.ErrorMessage);
-            }           
+            Assert.Null(validationResult); 
         }
 
-        public static IEnumerable<object[]> IsValidData ()
+        public static IEnumerable<object[]> IsValidReturnsNullData ()
         {
-            DummyStrings DummyStrings = new DummyStrings();
+            yield return new object[] { null };
+            yield return new object[] { "" };
+            yield return new object[] { "test@test.com"};
+            yield return new object[] { "test@test" };
+        }
 
-            yield return new object[] { "@test", DummyStrings.Dummy };
-            yield return new object[] { "test@", DummyStrings.Dummy };
-            yield return new object[] { "test", DummyStrings.Dummy };
-            yield return new object[] { 0, DummyStrings.Dummy };
-            yield return new object[] { "test@domain.com", null };
+        [Theory]
+        [MemberData(nameof(IsValidReturnsValidationObjectData))]
+        public void IsValid_GetValidationResult_ReturnsValidationObjectWhenValueIsNotAnEmailAddress(object value)
+        {
+            // Arrange
+            ValidationContext validationContext = new ValidationContext(new { }, null, null);
+            ValidateEmailAddressAttribute validateEmailAddressAttribute = new ValidateEmailAddressAttribute(nameof(DummyStrings.Dummy), typeof(DummyStrings));
+
+            // Act
+            // IsValid is a protected function, the public function GetValidationResult calls it.
+            ValidationResult validationResult = validateEmailAddressAttribute.GetValidationResult(value, validationContext);
+
+            // Assert
+            Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
+        }
+
+        public static IEnumerable<object[]> IsValidReturnsValidationObjectData()
+        {
+            yield return new object[] { "test@" };
+            yield return new object[] { "@test" };
+            yield return new object[] { "test@test@test" };
+            yield return new object[] { "test" };
         }
     }
 }

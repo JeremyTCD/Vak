@@ -32,19 +32,19 @@ namespace Jering.DataAnnotations
         /// <param name="value"></param>
         /// <param name="validationContext"></param>
         /// <returns>
-        /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> is not a string.
         /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> is too short.
         /// <see cref="ValidationResult.Success"/> if <paramref name="value"/> is long enough.
+        /// <see cref="ValidationResult.Success"/> if <paramref name="value"/> is null.
         /// </returns>
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
             string valueAsString = value as string;
-            if (valueAsString == null || valueAsString.Length < MinLength)
+            if(valueAsString == null || valueAsString.Trim().Length == 0 || valueAsString.Length >= MinLength)
             {
-                return new ValidationResult(ErrorMessageString);
+                return ValidationResult.Success;
             }
 
-            return ValidationResult.Success;
+            return new ValidationResult(ErrorMessageString);          
         }
     }
 }

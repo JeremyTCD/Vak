@@ -1,8 +1,4 @@
-﻿
-using Jering.DataAnnotations.Tests.Resources;
-using Microsoft.Extensions.Options;
-using Moq;
-using System;
+﻿using Jering.DataAnnotations.Tests.Resources;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Xunit;
@@ -13,8 +9,8 @@ namespace Jering.DataAnnotations.Tests.UnitTests
     public class ValidateDiffersAttributeUnitTests
     {
         [Theory]
-        [MemberData(nameof(IsValidData))]
-        public void IsValid_GetValidationResult_ReturnsCorrectValidationResults(object model, object actualValue)
+        [MemberData(nameof(IsValidReturnsNullData))]
+        public void IsValid_GetValidationResult_ReturnsNullWhenValuesDifferOrEitherValueIsNull(object model, object actualValue)
         {
             // Arrange
             ValidationContext validationContext = new ValidationContext(model, null, null);
@@ -25,29 +21,34 @@ namespace Jering.DataAnnotations.Tests.UnitTests
             ValidationResult validationResult = validateDiffersAttribute.GetValidationResult(actualValue, validationContext);
 
             // Assert
-            DummyModel dummyModel = model as DummyModel;
-            if (dummyModel != null && dummyModel.ExpectedValue != actualValue as string)
-            {
-                Assert.Null(validationResult);
-            }
-            else
-            {
-                Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
-            }
+            Assert.Null(validationResult);
         }
 
-        public static IEnumerable<object[]> IsValidData()
+        public static IEnumerable<object[]> IsValidReturnsNullData()
         {
-            yield return new object[] { new DummyModelEmpty(), "" };
-            yield return new object[] { new DummyModel { ExpectedValue = "differs" }, 0 };
+            yield return new object[] { new DummyModel { ExpectedValue = null }, null };
+            yield return new object[] { new DummyModel { ExpectedValue = "test1" }, "test2" };
+        }
+
+        [Theory]
+        [MemberData(nameof(IsValidReturnsValidationResultData))]
+        public void IsValid_GetValidationResult_ReturnsValidationResultWhenValuesDoNotDiffer(object model, object actualValue)
+        {
+            // Arrange
+            ValidationContext validationContext = new ValidationContext(model, null, null);
+            ValidateDiffersAttribute validateDiffersAttribute = new ValidateDiffersAttribute("ExpectedValue", nameof(DummyStrings.Dummy), typeof(DummyStrings));
+
+            // Act
+            // IsValid is a protected function, the public function GetValidationResult calls it.
+            ValidationResult validationResult = validateDiffersAttribute.GetValidationResult(actualValue, validationContext);
+
+            // Assert
+            Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
+        }
+
+        public static IEnumerable<object[]> IsValidReturnsValidationResultData()
+        {
             yield return new object[] { new DummyModel { ExpectedValue = "does not differ" }, "does not differ" };
-        }
-
-        private class DummyModelEmpty : IXunitSerializable
-        {
-            public void Deserialize(IXunitSerializationInfo info) { }
-
-            public void Serialize(IXunitSerializationInfo info) { }
         }
 
         private class DummyModel : IXunitSerializable

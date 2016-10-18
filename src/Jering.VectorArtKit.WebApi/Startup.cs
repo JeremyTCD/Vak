@@ -77,9 +77,7 @@ namespace Jering.VectorArtKit.WebApi
                 app.UseExceptionHandler("/Home/Error");
             }
 
-            app.UseStaticFiles();
-
-            // TODO Create actual views
+            // TODO not needed for a web api, find someway to return a json error object 
             app.UseStatusCodePages("text/plain", "Response, status code: {0}");
 
             AccountSecurityOptions securityOptions = app.ApplicationServices.GetRequiredService<IOptions<AccountSecurityOptions>>().Value;
@@ -89,17 +87,11 @@ namespace Jering.VectorArtKit.WebApi
             app.UseCookieAuthentication(securityOptions.CookieOptions.TwoFactorCookieOptions);
             app.UseCookieAuthentication(securityOptions.CookieOptions.ApplicationCookieOptions);
 
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "api/{controller=Home}/{action=Index}/{id?}");
-
-                routes.MapRoute(
-                    name: "spa-fallback",
-                    template: "{*url}",
-                    defaults: new { controller = "Home", action = "Index" });
+                    template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

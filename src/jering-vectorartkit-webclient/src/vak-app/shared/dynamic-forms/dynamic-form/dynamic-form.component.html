@@ -1,0 +1,11 @@
+<form>
+    <div *ngFor="let dynamicInput of dynamicForm.dynamicInputs">
+        <dynamic-input [dynamicInput]="dynamicInput"></dynamic-input>
+    </div>
+    <div>
+        <button type="submit">Submit</button>
+    </div>
+</form>
+<div *ngIf="payLoad">
+    <strong>Submitted the following values</strong><br>{{payLoad}}
+</div>

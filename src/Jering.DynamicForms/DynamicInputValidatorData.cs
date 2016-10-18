@@ -49,9 +49,9 @@ namespace Jering.DynamicForms
             foreach (PropertyInfo propertyInfo in propertyInfos)
             {
                 // Use ToString here since value may not be a string
-                options.Add(propertyInfo.Name, propertyInfo.GetValue(validationAttribute).ToString());
+                options.Add(propertyInfo.Name, 
+                    propertyInfo.GetValue(validationAttribute).ToString());
             }
-
             return new DynamicInputValidatorData(name, errorMessage, options);
         }
     }

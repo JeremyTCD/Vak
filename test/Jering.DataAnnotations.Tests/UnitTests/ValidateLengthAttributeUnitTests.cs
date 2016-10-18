@@ -12,34 +12,47 @@ namespace Jering.DataAnnotations.Tests.UnitTests
     public class ValidateLengthAttributeUnitTests
     {
         [Theory]
-        [MemberData(nameof(IsValidData))]
-        public void IsValid_GetValidationResult_ReturnsCorrectValidationResults(object testObject)
+        [MemberData(nameof(IsValidReturnsNullData))]
+        public void IsValid_GetValidationResult_ReturnsNullWhenValueHasSpecifiedLengthOrIsNullOrAnEmptyString(object value)
         {
             // Arrange
             ValidationContext validationContext = new ValidationContext(new { }, null, null);
-            ValidateLengthAttribute validateLengthAttribute = new ValidateLengthAttribute(6, nameof(DummyStrings.Dummy), typeof(DummyStrings));
+            ValidateLengthAttribute validateLengthAttribute = new ValidateLengthAttribute(8, nameof(DummyStrings.Dummy), typeof(DummyStrings));
 
             // Act
             // IsValid is a protected function, the public function GetValidationResult calls it.
-            ValidationResult validationResult = validateLengthAttribute.GetValidationResult(testObject, validationContext);
+            ValidationResult validationResult = validateLengthAttribute.GetValidationResult(value, validationContext);
 
             // Assert
-            if (testObject as string == "123456")
-            {
-                Assert.Null(validationResult);
-            }
-            else
-            {
-                Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
-            }
+            Assert.Null(validationResult);
         }
 
-        public static IEnumerable<object[]> IsValidData()
+        public static IEnumerable<object[]> IsValidReturnsNullData()
         {
-            yield return new object[] { 0 };
-            yield return new object[] { "1234" };
-            yield return new object[] { "123456" };
-            yield return new object[] { "12345678" };
+            yield return new object[] { null };
+            yield return new object[] { "" };
+            yield return new object[] { "testtest" };
+        }
+
+        [Theory]
+        [MemberData(nameof(IsValidReturnsValidationResultData))]
+        public void IsValid_GetValidationResult_ReturnsValidationResultWhenValueDoesNotHaveSpecifiedLength(object value)
+        {
+            // Arrange
+            ValidationContext validationContext = new ValidationContext(new { }, null, null);
+            ValidateLengthAttribute validateLengthAttribute = new ValidateLengthAttribute(8, nameof(DummyStrings.Dummy), typeof(DummyStrings));
+
+            // Act
+            // IsValid is a protected function, the public function GetValidationResult calls it.
+            ValidationResult validationResult = validateLengthAttribute.GetValidationResult(value, validationContext);
+
+            // Assert
+            Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
+        }
+
+        public static IEnumerable<object[]> IsValidReturnsValidationResultData()
+        {
+            yield return new object[] { "test" };
         }
     }
 }

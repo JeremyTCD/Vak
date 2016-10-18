@@ -8,8 +8,8 @@ namespace Jering.DataAnnotations.Tests.UnitTests
     public class ValidateAllDigitsAttributeUnitTests
     {
         [Theory]
-        [MemberData(nameof(IsValidData))]
-        public void IsValid_GetValidationResult_ReturnsCorrectValidationResults(object testObject)
+        [MemberData(nameof(IsValidReturnsNullData))]
+        public void IsValid_GetValidationResult_ReturnsNullWhenValueIsNullOrAnEmptyStringOrContainsOnlyDigits(object testObject)
         {
             // Arrange
             ValidationContext validationContext = new ValidationContext(new { }, null, null);
@@ -20,21 +20,39 @@ namespace Jering.DataAnnotations.Tests.UnitTests
             ValidationResult validationResult = validateAllDigitsAttribute.GetValidationResult(testObject, validationContext);
 
             // Assert
-            if (testObject as string == "123456")
-            {
-                Assert.Null(validationResult);
-            }
-            else
-            {
-                Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
-            }
+            Assert.Null(validationResult);
         }
 
-        public static IEnumerable<object[]> IsValidData()
+        public static IEnumerable<object[]> IsValidReturnsNullData()
         {
-            yield return new object[] { 0 };
-            yield return new object[] { "ab09-+" };
-            yield return new object[] { "123456" };
+            yield return new object[] { null };
+            yield return new object[] { "" };
+            yield return new object[] { "0" };
+            yield return new object[] { "12345" };
+        }
+
+        [Theory]
+        [MemberData(nameof(IsValidReturnsValidationResultData))]
+        public void IsValid_GetValidationResult_ReturnsValidationResultWhenValueDoesNotContainOnlyDigits(object testObject)
+        {
+            // Arrange
+            ValidationContext validationContext = new ValidationContext(new { }, null, null);
+            ValidateAllDigitsAttribute validateAllDigitsAttribute = new ValidateAllDigitsAttribute(nameof(DummyStrings.Dummy), typeof(DummyStrings));
+
+            // Act
+            // IsValid is a protected function, the public function GetValidationResult calls it.
+            ValidationResult validationResult = validateAllDigitsAttribute.GetValidationResult(testObject, validationContext);
+
+            // Assert
+            Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
+        }
+
+        public static IEnumerable<object[]> IsValidReturnsValidationResultData()
+        {
+            yield return new object[] { "-1" };
+            yield return new object[] { "1.1" };
+            yield return new object[] { "a12345" };
+            yield return new object[] { "test" };
         }
     }
 }

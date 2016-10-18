@@ -12,8 +12,8 @@ namespace Jering.DataAnnotations.Tests.UnitTests
     public class ValidateMinLengthAttributeUnitTests
     {
         [Theory]
-        [MemberData(nameof(IsValidData))]
-        public void IsValid_GetValidationResult_ReturnsCorrectValidationResults(object testObject)
+        [MemberData(nameof(IsValidReturnsNullData))]
+        public void IsValid_GetValidationResult_ReturnsNullWhenValueLengthIsGreaterThanOrEqualToSpecifiedMinimumOrValueIsNullOrValueIsAnEmptyString(object value)
         {
             // Arrange
             ValidationContext validationContext = new ValidationContext(new { }, null, null);
@@ -21,24 +21,38 @@ namespace Jering.DataAnnotations.Tests.UnitTests
 
             // Act
             // IsValid is a protected function, the public function GetValidationResult calls it.
-            ValidationResult validationResult = validateMinLengthAttribute.GetValidationResult(testObject, validationContext);
+            ValidationResult validationResult = validateMinLengthAttribute.GetValidationResult(value, validationContext);
 
             // Assert
-            if (testObject as string == "longEnough")
-            {
-                Assert.Null(validationResult);
-            }
-            else
-            {
-                Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
-            }
+            Assert.Null(validationResult);
         }
 
-        public static IEnumerable<object[]> IsValidData()
+        public static IEnumerable<object[]> IsValidReturnsNullData()
         {
-            yield return new object[] { 0 };
-            yield return new object[] { "short" };
-            yield return new object[] { "longEnough" };
+            yield return new object[] { null };
+            yield return new object[] { "testtest" };
+            yield return new object[] { "testtesttest" };
+        }
+
+        [Theory]
+        [MemberData(nameof(IsValidReturnsValidationResultData))]
+        public void IsValid_GetValidationResult_ReturnsValidationResultWhenValueLengthIsLessThanSpecifiedMinimum(object value)
+        {
+            // Arrange
+            ValidationContext validationContext = new ValidationContext(new { }, null, null);
+            ValidateMinLengthAttribute validateMinLengthAttribute = new ValidateMinLengthAttribute(8, nameof(DummyStrings.Dummy), typeof(DummyStrings));
+
+            // Act
+            // IsValid is a protected function, the public function GetValidationResult calls it.
+            ValidationResult validationResult = validateMinLengthAttribute.GetValidationResult(value, validationContext);
+
+            // Assert
+            Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
+        }
+
+        public static IEnumerable<object[]> IsValidReturnsValidationResultData()
+        {
+            yield return new object[] { "test" };
         }
     }
 }

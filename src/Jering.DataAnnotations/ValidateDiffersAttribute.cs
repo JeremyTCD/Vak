@@ -34,25 +34,23 @@ namespace Jering.DataAnnotations
         /// <param name="value"></param>
         /// <param name="validationContext"></param>
         /// <returns>
-        /// <see cref="ValidationResult"/> with an error message if other property does not exist.
         /// <see cref="ValidationResult"/> with an error message if <paramref name="value"/> does not differ from other property.
-        /// <see cref="ValidationResult.Success"/> if <paramref name="value"/> differs from other property.
+        /// <see cref="ValidationResult.Success"/> if <paramref name="value"/> differs from other property .
+        /// <see cref="ValidationResult.Success"/> if properties value is null.
         /// </returns>
         protected override ValidationResult IsValid(object value, ValidationContext validationContext)
         {
-            PropertyInfo otherPropertyInfo = validationContext.ObjectType.GetRuntimeProperty(OtherProperty);
-            if (otherPropertyInfo == null)
+            object otherPropertyValue = validationContext.
+                                            ObjectType.
+                                            GetRuntimeProperty(OtherProperty).
+                                            GetValue(validationContext.ObjectInstance, null);
+
+            if (value == null || otherPropertyValue == null || !Equals(value, otherPropertyValue))
             {
-                return new ValidationResult(ErrorMessageString);
+                return ValidationResult.Success;
             }
 
-            object otherPropertyValue = otherPropertyInfo.GetValue(validationContext.ObjectInstance, null);
-            if (Equals(value, otherPropertyValue))
-            {
-                return new ValidationResult(ErrorMessageString);
-            }
-
-            return ValidationResult.Success;
+            return new ValidationResult(ErrorMessageString);
         }
     }
 }

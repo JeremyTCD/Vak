@@ -258,6 +258,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Password too simple..
+        /// </summary>
+        public static string ErrorMessage_Password_TooSimple {
+            get {
+                return ResourceManager.GetString("ErrorMessage_Password_TooSimple", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to {0} is required..
         /// </summary>
         public static string ErrorMessage_Required {

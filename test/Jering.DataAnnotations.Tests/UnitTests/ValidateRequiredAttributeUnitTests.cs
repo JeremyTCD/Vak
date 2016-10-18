@@ -12,8 +12,8 @@ namespace Jering.DataAnnotations.Tests.UnitTests
     public class ValidateRequiredAttributeUnitTests
     {
         [Theory]
-        [MemberData(nameof(IsValidData))]
-        public void IsValid_GetValidationResult_ReturnsCorrectValidationResults(object value, bool success)
+        [MemberData(nameof(IsValidReturnsNullData))]
+        public void IsValid_GetValidationResult_ReturnsNullWhenValueIsNotNullOrAnEmptyString(object value)
         {
             // Arrange
             ValidationContext validationContext = new ValidationContext(new { }, null, null);
@@ -24,23 +24,36 @@ namespace Jering.DataAnnotations.Tests.UnitTests
             ValidationResult validationResult = validateRequiredAttribute.GetValidationResult(value, validationContext);
 
             // Assert
-            if (success)
-            {
-                Assert.Null(validationResult);
-            }
-            else
-            {
-                Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
-            }
+            Assert.Null(validationResult);
         }
 
-        public static IEnumerable<object[]> IsValidData()
+        public static IEnumerable<object[]> IsValidReturnsNullData()
         {
-            yield return new object[] { null, false };
-            yield return new object[] { "", false };
-            yield return new object[] { " ", false };
-            yield return new object[] { 0, true };
-            yield return new object[] { "test", true };
+            yield return new object[] { "test" };
+            yield return new object[] { 0 };
+            yield return new object[] { false };
+        }
+
+        [Theory]
+        [MemberData(nameof(IsValidReturnsValidationResultData))]
+        public void IsValid_GetValidationResult_ReturnsValidationResultWhenValueIsNullOrAnEmptyString(object value)
+        {
+            // Arrange
+            ValidationContext validationContext = new ValidationContext(new { }, null, null);
+            ValidateRequiredAttribute validateRequiredAttribute = new ValidateRequiredAttribute(nameof(DummyStrings.Dummy), typeof(DummyStrings));
+
+            // Act
+            // IsValid is a protected function, the public function GetValidationResult calls it.
+            ValidationResult validationResult = validateRequiredAttribute.GetValidationResult(value, validationContext);
+
+            // Assert
+            Assert.Equal(DummyStrings.Dummy, validationResult.ErrorMessage);
+        }
+
+        public static IEnumerable<object[]> IsValidReturnsValidationResultData()
+        {
+            yield return new object[] { "" };
+            yield return new object[] { null };
         }
     }
 }

@@ -42,7 +42,7 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DynamicForms", "src\
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DynamicForms.Tests", "test\Jering.DynamicForms.Tests\Jering.DynamicForms.Tests.xproj", "{987D60F4-915F-4386-A216-09043838C6F1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.WebClient", "src\Jering.VectorArtKit.WebClient\Jering.VectorArtKit.WebClient.xproj", "{408B0629-E225-4D5A-97C7-9F4B62051961}"
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "jering-vectorartkit-webclient", "src\jering-vectorartkit-webclient\jering-vectorartkit-webclient.xproj", "{408B0629-E225-4D5A-97C7-9F4B62051961}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
