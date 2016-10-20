@@ -1,0 +1,14 @@
+<label [attr.for]="dynamicControl.name">{{dynamicControl.displayName}}</label>
+<div [ngSwitch]="dynamicControl.tagName">
+    <input #control (input)="dynamicControl.onInput($event)"
+           (blur)="dynamicControl.onBlur($event)" 
+           *ngSwitchCase="'input'">
+    <!--TODO incomplete-->
+    <select #control (change)="dynamicControl.onChange($event)" 
+            *ngSwitchCase="'select'">
+        <option *ngFor="let opt of dynamicControl.options"></option>
+    </select>
+</div>
+<div *ngFor="let error of dynamicControl.errors">
+    <span>{{error}}</span>
+</div>

@@ -1,4 +1,7 @@
-﻿export class DynamicInputValidatorData {
+﻿/**
+ * Data used to defined a DynamicControlValidator
+ */
+export class DynamicControlValidatorData {
     name: string;
     errorMessage: string;
     options: { [key: string]: string };

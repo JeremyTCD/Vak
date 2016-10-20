@@ -11,19 +11,19 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Jering.DynamicForms.Tests
 {
-    public class DynamicInputValidatorUnitTests
+    public class DynamicControlValidatorDataUnitTests
     {
         [Fact]
-        public void ConvertToDynamicInput_ConvertsPropertyWithDynamicInputAttributeIntoDynamicInput()
+        public void FromValidationAttribute_CreatesDynamicControlValidatorDataFromValidationAttribute()
         {
             // Arrange
             DummyValidationAttribute dummyValidationAttribute = new DummyValidationAttribute("dummyString", 0, nameof(DummyStrings.Dummy), typeof(DummyStrings));
 
             // Act
-            DynamicInputValidatorData result = DynamicInputValidatorData.FromValidationAttribute(dummyValidationAttribute);
+            DynamicControlValidatorData result = DynamicControlValidatorData.FromValidationAttribute(dummyValidationAttribute);
 
             // Assert
-            Assert.Equal("DummyValidation", result.Name);
+            Assert.Equal("dummyValidation", result.Name);
             Assert.Equal(DummyStrings.Dummy, result.ErrorMessage);
             Assert.Equal(2, result.Options.Count);
             Assert.Equal(result.Options["DummyStringProperty"], "dummyString");

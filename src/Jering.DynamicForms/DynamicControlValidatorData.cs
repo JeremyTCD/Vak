@@ -6,27 +6,27 @@ using System.Reflection;
 namespace Jering.DynamicForms
 {
     /// <summary>
-    /// 
+    /// Holds data that defines a control validator
     /// </summary>
-    public class DynamicInputValidatorData
+    public class DynamicControlValidatorData
     {
         /// <summary>
-        /// 
+        /// Validator name  
         /// </summary>
         public string Name { get; set; }
         /// <summary>
-        /// 
+        /// Error message
         /// </summary>
         public string ErrorMessage { get; set; }
         /// <summary>
-        /// 
+        /// Validator specific options
         /// </summary>
         public Dictionary<string, string> Options { get; set; }
 
         /// <summary>
-        /// 
+        /// Constructor
         /// </summary>
-        public DynamicInputValidatorData(string name, string errorMessage, Dictionary<string, string> options)
+        public DynamicControlValidatorData(string name, string errorMessage, Dictionary<string, string> options)
         {
             Name = name;
             ErrorMessage = errorMessage;
@@ -34,10 +34,10 @@ namespace Jering.DynamicForms
         }
 
         /// <summary>
-        /// Creates a <see cref="DynamicInputValidatorData"/> instance based on <paramref name="validationAttribute"/>.
+        /// Creates a <see cref="DynamicControlValidatorData"/> instance from <paramref name="validationAttribute"/>.
         /// </summary>
         /// <param name="validationAttribute"></param>
-        public static DynamicInputValidatorData FromValidationAttribute(ValidationAttribute validationAttribute)
+        public static DynamicControlValidatorData FromValidationAttribute(ValidationAttribute validationAttribute)
         {
             Type validationAttributeType = validationAttribute.GetType();
 
@@ -52,7 +52,7 @@ namespace Jering.DynamicForms
                 options.Add(propertyInfo.Name, 
                     propertyInfo.GetValue(validationAttribute).ToString());
             }
-            return new DynamicInputValidatorData(name, errorMessage, options);
+            return new DynamicControlValidatorData(name, errorMessage, options);
         }
     }
 }

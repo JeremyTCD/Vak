@@ -20,7 +20,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="formModelName"></param>
         /// <returns>
-        /// Json representation of <see cref="DynamicForm"/> for <paramref name="formModelName"/> if <paramref name="formModelName"/> is the name of an existing view model.
+        /// Json representation of <see cref="DynamicFormData"/> for <paramref name="formModelName"/> if <paramref name="formModelName"/> is the name of an existing view model.
         /// NotFound if <paramref name="formModelName"/> is not the name of an existing view model.
         /// </returns>
         [HttpGet]
@@ -37,7 +37,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 return jsonResult;
             }
 
-            return Json(_dynamicFormsServices.GetToDynamicForm(type));
+            return Json(_dynamicFormsServices.GetDynamicForm(type));
         }
     }
 }

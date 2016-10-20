@@ -1,34 +1,38 @@
 import { Component, Input, OnInit } from '@angular/core';
 
 import { DynamicForm } from './dynamic-form';
-import { DynamicInput } from '../dynamic-input/dynamic-input';
 import { DynamicFormsService } from '../dynamic-forms.service';
 
 @Component({
     selector: 'dynamic-form',
-    templateUrl: 'dynamic-form.component.html',
-    providers: [DynamicFormsService]
+    templateUrl: 'dynamic-form.component.html'
 })
 export class DynamicFormComponent implements OnInit {
     @Input() formModelName: string;
 
     dynamicForm: DynamicForm = new DynamicForm([]);
-    payLoad = '';
 
     constructor(private _dynamicFormsService: DynamicFormsService) { }
 
+    /**
+     * Retrieves and sets dynamicForm
+     */
     ngOnInit() {
         this._dynamicFormsService
-            .getDynamicInputs(this.formModelName)
+            .getDynamicForm(this.formModelName)
             .subscribe(
-            dynamicInputs => {
-                this.dynamicForm = this._dynamicFormsService.createDynamicForm(dynamicInputs);
-            },
-            error => console.log('error: ' + error)
+                dynamicForm => {
+                    this.dynamicForm = dynamicForm;
+                },
+                error => console.log('error: ' + error)
             );
     }
 
-    onSubmit() {
-        //this.payLoad = JSON.stringify(this.dynamicForm.value);
+    /**
+     * Sends json representation of dynamicForm values
+     */
+    onSubmit(event: Event) {
+        // let value = JSON.stringify(this.dynamicForm.value);
+        event.preventDefault();
     }
 }

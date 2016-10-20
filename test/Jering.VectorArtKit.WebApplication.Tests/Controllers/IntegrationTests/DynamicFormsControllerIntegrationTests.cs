@@ -29,8 +29,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
             // Assert
             string json = await getDynamicFormGetResponse.Content.ReadAsStringAsync();
-            DynamicForm dynamicForm = JsonConvert.DeserializeObject<DynamicForm>(json);
-            Assert.Equal(3, dynamicForm.DynamicInputs.Count);
+            DynamicFormData dynamicForm = JsonConvert.DeserializeObject<DynamicFormData>(json);
+            Assert.Equal(3, dynamicForm.DynamicControlDatas.Count);
         }
     }
 }

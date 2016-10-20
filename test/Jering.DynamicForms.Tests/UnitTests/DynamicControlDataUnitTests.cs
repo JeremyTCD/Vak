@@ -10,33 +10,31 @@ using Jering.DynamicForms.Tests.Resources;
 
 namespace Jering.DynamicForms.Tests
 {
-    public class DynamicFormsServicesUnitTests
+    public class DynamicControlDataUnitTests
     {
         [Fact]
-        public void ConvertToDynamicInput_ConvertsPropertyWithDynamicInputAttributeIntoDynamicInput()
+        public void FromPropertyInfo_CreatesDynamicControlDataFromPropertyInfo()
         {
             // Arrange
-            DynamicFormsServices dynamicFormServices = new DynamicFormsServices();
-
             PropertyInfo propertyInfo = typeof(DummyFormModel).GetProperty(nameof(DummyFormModel.Email));
 
             // Act
-            DynamicInput result = dynamicFormServices.ConvertToDynamicInput(propertyInfo);
+            DynamicControlData result = DynamicControlData.FromPropertyInfo(propertyInfo);
 
             // Assert
             Assert.Equal("Email", result.Name);
-            Assert.NotNull(result.ValidatorData);
-            Assert.False(result.RenderLabel);
-            Assert.Equal("email", result.Type);
             Assert.Equal(0, result.Order);
             Assert.Equal("input", result.TagName);
-            Assert.Equal(DummyStrings.Dummy, result.InitialValue);
+            Assert.NotNull(result.ValidatorDatas);
+            Assert.Equal("validateMatches", result.ValidatorDatas[0].Name);
             Assert.Equal(DummyStrings.Dummy, result.DisplayName);
-            Assert.Equal(DummyStrings.Dummy, result.Placeholder);
+            Assert.NotNull(result.Properties);
+            Assert.Equal(result.Properties["type"], "email");
+            Assert.Equal(result.Properties["placeholder"], DummyStrings.Dummy);
         }
 
         [Fact]
-        public void ConvertToDynamicInput_ReturnsNullForPropertyWithNoDynamicInputAttribute()
+        public void FromPropertyInfo_ReturnsNullForPropertyInfoWithNoDynamicControlAttribute()
         {
             // Arrange
             DynamicFormsServices dynamicFormServices = new DynamicFormsServices();
@@ -44,7 +42,7 @@ namespace Jering.DynamicForms.Tests
             PropertyInfo propertyInfo = typeof(DummyFormModel).GetProperty(nameof(DummyFormModel.Password));
 
             // Act
-            DynamicInput result = dynamicFormServices.ConvertToDynamicInput(propertyInfo);
+            DynamicControlData result = DynamicControlData.FromPropertyInfo(propertyInfo);
 
             // Assert
             Assert.Null(result);
@@ -54,11 +52,11 @@ namespace Jering.DynamicForms.Tests
     public class DummyFormModel
     {
         [ValidateMatches("Password", nameof(DummyStrings.Dummy), typeof(DummyStrings))]
-        [DynamicInput(false, "email", nameof(DummyStrings.Dummy), typeof(DummyStrings), "input", 0, nameof(DummyStrings.Dummy), nameof(DummyStrings.Dummy))]
+        [DynamicControl("input", nameof(DummyStrings.Dummy), typeof(DummyStrings), 0)]
+        [DynamicControlProperty("type", "email")]
+        [DynamicControlProperty("placeholder", propertyValueResourceName: nameof(DummyStrings.Dummy), resourceType: typeof(DummyStrings))]
         public string Email { get; set; }
 
         public string Password { get; set; }
-        
-        public string ConfirmPassword { get; set; }
     }
 }

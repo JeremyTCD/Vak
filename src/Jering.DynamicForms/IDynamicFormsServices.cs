@@ -15,18 +15,8 @@ namespace Jering.DynamicForms
         /// </summary>
         /// <param name="viewModelType"></param>
         /// <returns>
-        /// <see cref="DynamicForm"/> equivalent of <paramref name="viewModelType"/>.
+        /// <see cref="DynamicFormData"/> equivalent of <paramref name="viewModelType"/>.
         /// </returns>
-        DynamicForm GetToDynamicForm(Type viewModelType);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="propertyInfo"></param>
-        /// <returns>
-        /// <see cref="DynamicInput"/> equivalent of <paramref name="propertyInfo"/> if <paramref name="propertyInfo"/> contains <see cref="DynamicInputAttribute"/>.
-        /// Otherwise, null.
-        /// </returns>
-        DynamicInput ConvertToDynamicInput(PropertyInfo propertyInfo);
+        DynamicFormData GetDynamicForm(Type viewModelType);
     }
 }

@@ -1,23 +1,42 @@
-﻿import { DynamicInput} from '../dynamic-input/dynamic-input';
+﻿import { DynamicControl} from '../dynamic-control/dynamic-control';
 
 /**
- * @Description
- * 
+ * Represents a dynamically generated form.
  */
 export class DynamicForm {
-    constructor(public dynamicInputs: DynamicInput<any>[]) {
-        for (let dynamicInput of dynamicInputs) {
-            dynamicInput.parent = this;
+    constructor(public dynamicControls: DynamicControl<any>[]) {
+        for (let dynamicControl of dynamicControls) {
+            dynamicControl.parent = this;
         }
     }
 
-    get(name: string): DynamicInput<any> {
-        return this.dynamicInputs.find(dynamicInput => dynamicInput.name === name);
+    /**
+     * Current form value
+     */
+    get value(): { [key: string]: string } {
+        let result: { [key: string]: string } = {};
+
+        for (let dynamicControl of this.dynamicControls) {
+            result[dynamicControl.name] = dynamicControl.value;
+        }
+
+        return result;
     }
 
+    /**
+     * Returns
+     * - DynamicControl with specified name
+     */
+    get(name: string): DynamicControl<any> {
+        return this.dynamicControls.find(dynamicControl => dynamicControl.name === name);
+    }
+
+    /**
+     * Validates form. Validation errors are added directly to each DynamicControl.
+     */
     validate(): void {
-        for (let dynamicInput of this.dynamicInputs) {
-            dynamicInput.validate();
+        for (let dynamicControl of this.dynamicControls) {
+            dynamicControl.validate();
         }
     }
 }

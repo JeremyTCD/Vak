@@ -1,11 +1,9 @@
-<form>
-    <div *ngFor="let dynamicInput of dynamicForm.dynamicInputs">
-        <dynamic-input [dynamicInput]="dynamicInput"></dynamic-input>
+<form (submit)="onSubmit($event)" novalidate>
+    <div *ngFor="let dynamicControl of dynamicForm.dynamicControls">
+        <dynamic-control [dynamicControl]="dynamicControl"></dynamic-control>
     </div>
     <div>
         <button type="submit">Submit</button>
     </div>
 </form>
-<div *ngIf="payLoad">
-    <strong>Submitted the following values</strong><br>{{payLoad}}
-</div>
+
