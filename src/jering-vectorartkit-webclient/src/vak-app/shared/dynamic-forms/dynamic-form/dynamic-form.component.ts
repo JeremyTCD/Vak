@@ -1,4 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { Response } from '@angular/http';
+import { Observable } from 'rxjs/Observable';
 
 import { DynamicForm } from './dynamic-form';
 import { DynamicFormsService } from '../dynamic-forms.service';
@@ -9,30 +11,44 @@ import { DynamicFormsService } from '../dynamic-forms.service';
 })
 export class DynamicFormComponent implements OnInit {
     @Input() formModelName: string;
+    @Input() formSubmitUrl: string;
+    @Output() submitSuccess = new EventEmitter<Response>();
+    @Output() submitError = new EventEmitter<Response | any>();
 
-    dynamicForm: DynamicForm = new DynamicForm([]);
+    // create resolve guard to this does not need to be initialized
+    dynamicForm: DynamicForm = new DynamicForm([], null);
 
     constructor(private _dynamicFormsService: DynamicFormsService) { }
 
     /**
      * Retrieves and sets dynamicForm
      */
-    ngOnInit() {
+    ngOnInit(): void {
         this._dynamicFormsService
             .getDynamicForm(this.formModelName)
             .subscribe(
-                dynamicForm => {
-                    this.dynamicForm = dynamicForm;
-                },
-                error => console.log('error: ' + error)
+            dynamicForm => {
+                this.dynamicForm = dynamicForm;
+            },
+            // TODO - handle error
+            error => alert('error: ' + error)
             );
     }
 
     /**
-     * Sends json representation of dynamicForm values
+     * Sends json representation of dynamicForm values if form is valid
      */
-    onSubmit(event: Event) {
-        // let value = JSON.stringify(this.dynamicForm.value);
+    onSubmit(event: Event): void {
         event.preventDefault();
+
+        if (this.dynamicForm.onSubmit()) {
+            this.
+                _dynamicFormsService.
+                submitDynamicForm(this.formSubmitUrl, this.dynamicForm).
+                subscribe(
+                    (response: Response) => this.submitSuccess.emit(response),
+                    (error: Response | any) => this.submitError.emit(error)
+                );
+        }
     }
 }

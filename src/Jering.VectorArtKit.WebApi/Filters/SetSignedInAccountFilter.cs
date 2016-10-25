@@ -1,5 +1,5 @@
 ﻿using Jering.AccountManagement.Security;
-using Jering.VectorArtKit.WebApi.BusinessModel;
+using Jering.VectorArtKit.WebApi.BusinessModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using System;

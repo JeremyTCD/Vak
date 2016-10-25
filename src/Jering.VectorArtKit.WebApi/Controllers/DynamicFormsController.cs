@@ -1,4 +1,5 @@
 ﻿using Jering.DynamicForms;
+using Jering.VectorArtKit.WebApi.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -20,24 +21,22 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="formModelName"></param>
         /// <returns>
-        /// Json representation of <see cref="DynamicFormData"/> for <paramref name="formModelName"/> if <paramref name="formModelName"/> is the name of an existing view model.
-        /// NotFound if <paramref name="formModelName"/> is not the name of an existing view model.
+        /// 200 ok with json representation of <see cref="DynamicFormData"/> for <paramref name="formModelName"/> and validation forgery cookies if <paramref name="formModelName"/> is the name of an existing form model.
+        /// 404 not found if <paramref name="formModelName"/> is not the name of an existing form model.
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        public JsonResult GetDynamicForm(string formModelName)
+        [SetAntiForgeryToken]
+        public IActionResult GetDynamicForm(string formModelName)
         {
             Type type = Type.GetType($"Jering.VectorArtKit.WebApi.FormModels.{formModelName}FormModel");
 
             if(type == null)
             {
-                JsonResult jsonResult = new JsonResult(null);
-                jsonResult.StatusCode = (int)HttpStatusCode.NotFound;
-
-                return jsonResult;
+                return NotFound();
             }
 
-            return Json(_dynamicFormsServices.GetDynamicForm(type));
+            return Ok(_dynamicFormsServices.GetDynamicForm(type));
         }
     }
 }

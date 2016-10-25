@@ -60,6 +60,8 @@ describe('DynamicControlComponent', () => {
 
     it(`Renders errors`, () => {
         dynamicControl.errors = [testError];
+        dynamicControl.dirty = true;
+        dynamicControl.blurred = true;
 
         stubHostFixture.detectChanges();
 

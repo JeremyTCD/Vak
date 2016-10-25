@@ -1,20 +1,23 @@
-﻿using System;
-using Xunit;
-using Microsoft.AspNetCore.TestHost;
-using System.Net.Http;
+﻿using Dapper;
+using Jering.VectorArtKit.WebApi.BusinessModels;
 using Microsoft.AspNetCore.Hosting;
-using Jering.VectorArtKit.WebApi.BusinessModel;
-using System.Data.SqlClient;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
-using System.IO;
-using System.Threading.Tasks;
-using System.Data;
-using Dapper;
 using Microsoft.Extensions.PlatformAbstractions;
-using System.Collections.Generic;
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 {
@@ -42,7 +45,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             SqlConnection = new SqlConnection(ConfigurationRoot["Data:DefaultConnection:ConnectionString"]);
 
             string testProjectPath = PlatformServices.Default.Application.ApplicationBasePath;
-            string webApplicationProjectPath = Path.GetFullPath(Path.Combine(testProjectPath, @"..\..\..\..\Jering.VectorArtKit.WebApi"));
+            string webApplicationProjectPath = Path.GetFullPath(Path.Combine(testProjectPath, @"..\..\..\..\..\src\Jering.VectorArtKit.WebApi"));
 
             VakAccountRepository = new VakAccountRepository(SqlConnection);
 
@@ -77,19 +80,15 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
             var httpRequestMessage = new HttpRequestMessage(requestMethod, path)
             {
-                Content = new FormUrlEncodedContent(ToFormPostData(formPostBodyData))
+                Content = new StringContent(ToJson(formPostBodyData), Encoding.UTF8, "application/json")
             };
+
             return httpRequestMessage;
         }
 
-        public static List<KeyValuePair<string, string>> ToFormPostData(IDictionary<string, string> formPostBodyData)
+        public static string ToJson(IDictionary<string, string> formPostBodyData)
         {
-            List<KeyValuePair<string, string>> result = new List<KeyValuePair<string, string>>();
-            formPostBodyData.Keys.ToList().ForEach(key =>
-            {
-                result.Add(new KeyValuePair<string, string>(key, formPostBodyData[key]));
-            });
-            return result;
+            return JsonConvert.SerializeObject(formPostBodyData);
         }
 
         public static HttpRequestMessage CreateWithCookiesFromResponse(string path, HttpMethod requestMethod, IDictionary<string, string> formPostBodyData,

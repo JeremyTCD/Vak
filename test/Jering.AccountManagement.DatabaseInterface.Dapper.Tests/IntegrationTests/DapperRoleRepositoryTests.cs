@@ -10,7 +10,7 @@ using System.IO;
 using System.Text;
 using System.Data;
 using Dapper;
-using Jering.VectorArtKit.WebApi.BusinessModel;
+using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.AccountManagement.DatabaseInterface;
 
 namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTests

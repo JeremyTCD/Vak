@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Jering.VectorArtKit.WebApi.FormModels
 {
+    [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), typeof(Strings))]
     public class SignUpFormModel
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_Required), typeof(Strings))]

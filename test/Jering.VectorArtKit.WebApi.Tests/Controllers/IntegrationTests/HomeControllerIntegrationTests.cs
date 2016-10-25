@@ -1,4 +1,4 @@
-﻿using Jering.VectorArtKit.WebApi.BusinessModel;
+﻿using Jering.VectorArtKit.WebApi.BusinessModels;
 using Moq;
 using System;
 using System.Collections.Generic;

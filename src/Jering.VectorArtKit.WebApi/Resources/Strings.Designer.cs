@@ -168,6 +168,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Email already in use by another account..
+        /// </summary>
+        public static string ErrorMessage_Email_InUse {
+            get {
+                return ResourceManager.GetString("ErrorMessage_Email_InUse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Email address is invalid..
         /// </summary>
         public static string ErrorMessage_Email_Invalid {
@@ -177,11 +186,11 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Email already in use by another account..
+        ///    Looks up a localized string similar to Form has invalid fields..
         /// </summary>
-        public static string ErrorMessage_EmailInUse {
+        public static string ErrorMessage_Form_Invalid {
             get {
-                return ResourceManager.GetString("ErrorMessage_EmailInUse", resourceCulture);
+                return ResourceManager.GetString("ErrorMessage_Form_Invalid", resourceCulture);
             }
         }
         
@@ -281,6 +290,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         public static string ErrorMessage_TwoFactorCode_Invalid {
             get {
                 return ResourceManager.GetString("ErrorMessage_TwoFactorCode_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to An unexpected error occurred..
+        /// </summary>
+        public static string ErrorMessage_UnexpectedError {
+            get {
+                return ResourceManager.GetString("ErrorMessage_UnexpectedError", resourceCulture);
             }
         }
         

@@ -9,6 +9,6 @@
         <option *ngFor="let opt of dynamicControl.options"></option>
     </select>
 </div>
-<div *ngFor="let error of dynamicControl.errors">
-    <span>{{error}}</span>
+<div *ngIf="dynamicControl.dirty && dynamicControl.blurred">
+    <span *ngFor="let error of dynamicControl.errors">{{error}}</span>
 </div>

@@ -198,7 +198,7 @@
   <data name="LogIn_Failed" xml:space="preserve">
     <value>Invalid email or password.</value>
   </data>
-  <data name="ErrorMessage_EmailInUse" xml:space="preserve">
+  <data name="ErrorMessage_Email_InUse" xml:space="preserve">
     <value>Email already in use by another account.</value>
   </data>
   <data name="ErrorMessage_DisplayName_InUse" xml:space="preserve">
@@ -260,5 +260,11 @@
   </data>
   <data name="ErrorMessage_Password_TooSimple" xml:space="preserve">
     <value>Password too simple.</value>
+  </data>
+  <data name="ErrorMessage_Form_Invalid" xml:space="preserve">
+    <value>Form has invalid fields.</value>
+  </data>
+  <data name="ErrorMessage_UnexpectedError" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
   </data>
 </root>

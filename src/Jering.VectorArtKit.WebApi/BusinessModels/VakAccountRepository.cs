@@ -8,7 +8,7 @@ using System;
 using Jering.AccountManagement.DatabaseInterface;
 using Jering.AccountManagement.DatabaseInterface.Dapper;
 
-namespace Jering.VectorArtKit.WebApi.BusinessModel
+namespace Jering.VectorArtKit.WebApi.BusinessModels
 {
     /// <summary>
     /// Provides an interface for performing CRUD operations on account representations in a database. 

@@ -6,11 +6,19 @@ using Microsoft.Extensions.Logging;
 using Jering.AccountManagement.Security;
 using Microsoft.Extensions.Options;
 using System.Data.SqlClient;
-using Jering.VectorArtKit.WebApi.BusinessModel;
+using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.AccountManagement.Extensions;
 using Jering.VectorArtKit.WebApi.Test;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Jering.DynamicForms;
+using Microsoft.AspNetCore.Antiforgery;
+using Jering.VectorArtKit.WebApi.Resources;
+using Newtonsoft.Json;
+using System.Net;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApi
 {
@@ -34,29 +42,30 @@ namespace Jering.VectorArtKit.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.Configure<AntiforgeryOptions>(options =>
+            {
+                options.CookieName = "AF-TOKEN";
+                options.HeaderName = "X-XSRF-TOKEN";
+            });
 
             services.AddAccountManagementSecurity<VakAccount>(_configurationRoot).
                 AddAccountRepository<VakAccountRepository>().
                 AddDefaultTokenServices();
 
             services.AddDynamicForms();
+            services.AddCors();
 
             if (_hostingEnvironment.IsDevelopment())
             {
-                // Provide means to debug views
-                services.AddSingleton<ICompilationService, CustomCompilationService>();
-                // Allow cross origin resource sharing for development
-                services.AddCors();
-                // TODO different connection string for release
                 services.AddScoped(_ => new SqlConnection(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
                 services.AddDevelopmentEmailSender();
             }
             else
             {
+                // TODO different connection string for release
+                services.AddScoped(_ => new SqlConnection(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
                 services.AddEmailSender();
             }
-
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -64,21 +73,53 @@ namespace Jering.VectorArtKit.WebApi
         {
             loggerFactory.AddConsole(_configurationRoot.GetSection("Logging"));
 
+            // Sets body to a general error message for all responses with no bodies and status code >= 400 or < 600. 
+            app.UseStatusCodePages(new StatusCodePagesOptions()
+            {
+                HandleAsync = (StatusCodeContext context) =>
+                {
+                    context.HttpContext.Response.ContentType = "application/json";
+                    return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(new { unexpectedError = Strings.ErrorMessage_UnexpectedError }));
+                }
+            });
+
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
+                app.UseExceptionHandler(new ExceptionHandlerOptions()
+                {
+                    ExceptionHandler = async (HttpContext context) => {
+                        context.Response.ContentType = "application/json";
+                        Exception exception = context.Features.Get<IExceptionHandlerFeature>().Error;
+                        if (exception != null)
+                        {
+                            await context.Response.WriteAsync(JsonConvert.SerializeObject(exception));
+                        }
+                    }
+                });
+                  
                 loggerFactory.AddDebug();
                 app.UseBrowserLink();
-                // Allow cross origin resource sharing for development
-                app.UseCors(builder => builder.AllowAnyOrigin());
+                app.UseCors(builder => builder.
+                    AllowAnyOrigin().
+                    AllowAnyMethod().
+                    AllowAnyHeader().
+                    AllowCredentials());
             }
             else
             {
-                app.UseExceptionHandler("/Home/Error");
-            }
+                // Catches exceptions. Sets status code of response to 500 if an exception is caught.
+                app.UseExceptionHandler(new ExceptionHandlerOptions()
+                {
+                    // If not set, middleware will attempt to retry pipeline.
+                    ExceptionHandler = (HttpContext context) => {
+                        // Do nothing
+                        return Task.FromResult(0);
+                    }
+                });
 
-            // TODO not needed for a web api, find someway to return a json error object 
-            app.UseStatusCodePages("text/plain", "Response, status code: {0}");
+                // TODO limit requests to client domain
+                // app.UseCors(builder => builder.AllowAnyOrigin());
+            }
 
             AccountSecurityOptions securityOptions = app.ApplicationServices.GetRequiredService<IOptions<AccountSecurityOptions>>().Value;
             // CookieAuthenticationMiddleware for TwoFactorCookie must be registered first. Otherwise if ApplicationCookie's middleware runs
@@ -91,7 +132,7 @@ namespace Jering.VectorArtKit.WebApi
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    template: "{controller=Home}/{action=Index}");
             });
         }
     }

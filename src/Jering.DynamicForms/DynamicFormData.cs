@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
+using System.Reflection;
+using System;
 
 namespace Jering.DynamicForms
 {
@@ -9,12 +10,17 @@ namespace Jering.DynamicForms
     public class DynamicFormData
     {
         /// <summary>
+        /// Error message
+        /// </summary>
+        public string ErrorMessage { get; set; }
+
+        /// <summary>
         /// Dynamic controls
         /// </summary>
         public List<DynamicControlData> DynamicControlDatas = new List<DynamicControlData>();
 
         /// <summary>
-        /// Adds a dynamic control to the dynamic form
+        /// Adds a dynamic control
         /// </summary>
         /// <param name="dynamicControl"></param>
         public void AddDynamicControl(DynamicControlData dynamicControl)

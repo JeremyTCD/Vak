@@ -14,11 +14,12 @@ export class DynamicControl<T>{
     validators: DynamicControlValidator[];
     properties: { [key: string]: string };
 
-    errors: string[];
     parent: DynamicForm;
+    errors: string[];
     value: string;
     dirty: boolean;
     blurred: boolean;
+    valid: boolean;
 
     constructor(options: {
         name?: string,
@@ -44,12 +45,14 @@ export class DynamicControl<T>{
      * Validates control if it is both dirty and blurred
      */
     validate(): void {
-        if (this.dirty && this.blurred) {
-            this.errors = [];
-            for (let validator of this.validators) {
-                let error = validator(this);
-                if (error != null) {
-                    this.errors.push(error);
+        this.errors = [];
+        this.valid = true;
+        for (let validator of this.validators) {
+            let error = validator(this);
+            if (error != null) {
+                this.errors.push(error);
+                if (this.valid) {
+                    this.valid = false;
                 }
             }
         }

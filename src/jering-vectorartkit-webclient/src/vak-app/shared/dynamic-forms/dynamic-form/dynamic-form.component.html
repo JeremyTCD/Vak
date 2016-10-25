@@ -4,6 +4,9 @@
     </div>
     <div>
         <button type="submit">Submit</button>
+        <div *ngIf="dynamicForm.submitAttempted">
+            <span *ngFor="let error of dynamicForm.errors">{{error}}</span>
+        </div>
     </div>
 </form>
 

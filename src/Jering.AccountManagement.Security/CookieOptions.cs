@@ -24,7 +24,6 @@ namespace Jering.AccountManagement.Security
             CookieName = DefaultApplicationScheme,
             AutomaticAuthenticate = true,
             AutomaticChallenge = true,
-            LoginPath = new PathString("/Account/LogIn"),
             SlidingExpiration = true,
             Events = new CookieAuthenticationEvents
             {
@@ -40,7 +39,7 @@ namespace Jering.AccountManagement.Security
             AutomaticAuthenticate = false,
             AuthenticationScheme = DefaultTwoFactorScheme,
             CookieName = DefaultTwoFactorScheme,
-            ExpireTimeSpan = TimeSpan.FromMinutes(5)
+            ExpireTimeSpan = TimeSpan.FromMinutes(5),
         };
     }
 }
