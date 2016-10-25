@@ -79,7 +79,7 @@ namespace Jering.VectorArtKit.WebApi
                 HandleAsync = (StatusCodeContext context) =>
                 {
                     context.HttpContext.Response.ContentType = "application/json";
-                    return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(new { unexpectedError = Strings.ErrorMessage_UnexpectedError }));
+                    return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(new { errorMessage = Strings.ErrorMessage_UnexpectedError }));
                 }
             });
 
