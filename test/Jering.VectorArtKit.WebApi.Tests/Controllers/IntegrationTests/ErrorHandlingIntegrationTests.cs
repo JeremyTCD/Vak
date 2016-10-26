@@ -40,7 +40,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             // Assert
             dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal("InternalServerError", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.unexpectedError, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(modelState.errorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             // Assert
             dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal("NotFound", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.unexpectedError, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(modelState.errorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             // Assert
             dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal("Unauthorized", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.unexpectedError, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(modelState.errorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
@@ -76,7 +76,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             // Assert
             dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal("BadRequest", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.unexpectedError, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(modelState.errorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             // Assert
             dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal("InternalServerError", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.unexpectedError, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(modelState.errorMessage, Strings.ErrorMessage_UnexpectedError);
         }
     }
 

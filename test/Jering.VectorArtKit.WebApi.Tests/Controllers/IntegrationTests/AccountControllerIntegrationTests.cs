@@ -43,11 +43,11 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await SignUp("test", "test1", "test2");
 
             // Assert
-            dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.Email[0], Strings.ErrorMessage_Email_Invalid);
-            Assert.Equal(modelState.Password[0], Strings.ErrorMessage_Password_TooSimple);
-            Assert.Equal(modelState.ConfirmPassword[0], Strings.ErrorMessage_ConfirmPassword_Differs);
+            Assert.Equal(body.Email[0], Strings.ErrorMessage_Email_Invalid);
+            Assert.Equal(body.Password[0], Strings.ErrorMessage_Password_TooSimple);
+            Assert.Equal(body.ConfirmPassword[0], Strings.ErrorMessage_ConfirmPassword_Differs);
         }
 
         [Fact]
@@ -62,9 +62,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await SignUp(testEmail, testPassword, testPassword);
 
             // Assert
-            dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.Email[0], Strings.ErrorMessage_Email_InUse);
+            Assert.Equal(body.Email[0], Strings.ErrorMessage_Email_InUse);
         }
 
         [Fact]
@@ -86,9 +86,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
             // Assert
-            dynamic errorMessage = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(errorMessage.unexpectedError, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(body.errorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
