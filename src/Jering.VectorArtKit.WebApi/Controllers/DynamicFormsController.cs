@@ -1,23 +1,28 @@
-﻿using Jering.DynamicForms;
+﻿using Jering.AccountManagement.DatabaseInterface;
+using Jering.DynamicForms;
+using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
-using System.Net;
+using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApi.Controllers
 {
     public class DynamicFormsController : Controller
     {
         private IDynamicFormsServices _dynamicFormsServices {get;set;}
-
-        public DynamicFormsController(IDynamicFormsServices dynamicFormsServices)
+        private IAccountRepository<VakAccount> _vakAccountRepository;
+        public DynamicFormsController(IAccountRepository<VakAccount> vakAccountRepository, 
+            IDynamicFormsServices dynamicFormsServices)
         {
+            _vakAccountRepository = vakAccountRepository;
             _dynamicFormsServices = dynamicFormsServices;
         }
 
         /// <summary>
-        /// 
+        /// Gets <see cref="DynamicFormData"/> for a form model.
         /// </summary>
         /// <param name="formModelName"></param>
         /// <returns>
@@ -37,6 +42,27 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             }
 
             return Ok(_dynamicFormsServices.GetDynamicForm(type));
+        }
+
+        /// <summary>
+        /// Validates that an email address is not in use.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>
+        /// 200 ok with json representation of object with a single property. Property has key valid and value true if email is not in use, false otherwise.
+        /// 400 bad request if <paramref name="value"/> is null.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        [SetAntiForgeryToken]
+        public async Task<IActionResult> ValidateEmailNotInUse(string value)
+        {
+            if(value == null)
+            {
+                return BadRequest();
+            }
+                       
+            return Ok(JsonConvert.SerializeObject(new {valid = !await _vakAccountRepository.CheckEmailInUseAsync(value) }));
         }
     }
 }
