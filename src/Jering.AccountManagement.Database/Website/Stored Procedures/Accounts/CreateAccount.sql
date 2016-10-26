@@ -7,11 +7,19 @@ BEGIN
 	SET XACT_ABORT ON;
 
 	BEGIN TRY
-		DECLARE @Salt UNIQUEIDENTIFIER = NEWID();
+		BEGIN TRANSACTION
+			IF EXISTS(SELECT * FROM [dbo].[Accounts] WHERE [AlternativeEmail] = @Email)
+			THROW 51000, 'EmailInUse', 1;
 
-		INSERT INTO [dbo].[Accounts] ([PasswordHash], [Salt], [Email])
-		OUTPUT INSERTED.[AccountId], INSERTED.[PasswordLastChanged], INSERTED.[SecurityStamp], INSERTED.[Email] 
-		VALUES (HASHBYTES(N'SHA2_256', @Password + CONVERT(char(36), @Salt)), @Salt, @Email)
+			--Need to ensure that isolation level prevents email from being written to an alt email 
+			--between these statements
+
+			DECLARE @Salt UNIQUEIDENTIFIER = NEWID();
+
+			INSERT INTO [dbo].[Accounts] ([PasswordHash], [Salt], [Email])
+			OUTPUT INSERTED.[AccountId], INSERTED.[PasswordLastChanged], INSERTED.[SecurityStamp], INSERTED.[Email] 
+			VALUES (HASHBYTES(N'SHA2_256', @Password + CONVERT(char(36), @Salt)), @Salt, @Email)
+		COMMIT
 	END TRY
     BEGIN CATCH
         IF XACT_STATE() <> 0 ROLLBACK;
