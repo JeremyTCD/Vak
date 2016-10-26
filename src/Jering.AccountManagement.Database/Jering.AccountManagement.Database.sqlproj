@@ -100,6 +100,7 @@
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountDisplayName.sql" />
     <Build Include="Website\Stored Procedures\Accounts\GetAccountByEmailOrAlternativeEmail.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountAlternativeEmailVerified.sql" />
+    <Build Include="Website\Stored Procedures\Accounts\CheckEmailInUse.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\Tables\AccountClaims.sql" />
