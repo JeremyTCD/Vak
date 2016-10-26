@@ -381,5 +381,20 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
                 },
                 commandType: CommandType.StoredProcedure) > 0;
         }
+
+        /// <summary>
+        /// Checks whether <paramref name="email"/> is in use as a primary or secondary email of another account.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns>True if in use, false otherwise.</returns>
+        public virtual async Task<bool> CheckEmailInUseAsync(string email)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[CheckEmailInUse]",
+                new
+                {
+                    Email = email
+                },
+                commandType: CommandType.StoredProcedure) == 1;
+        }
     }
 }

@@ -181,5 +181,12 @@ namespace Jering.AccountManagement.DatabaseInterface
         /// <param name="alternativeEmailVerified"></param>
         /// <returns></returns>
         Task<bool> UpdateAccountAlternativeEmailVerifiedAsync(int accountId, bool alternativeEmailVerified);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns></returns>
+        Task<bool> CheckEmailInUseAsync(string email);
     }
 }

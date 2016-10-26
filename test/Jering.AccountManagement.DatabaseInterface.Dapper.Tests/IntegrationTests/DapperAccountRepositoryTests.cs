@@ -998,5 +998,33 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Assert
             Assert.False(result);
         }
+
+        [Fact]
+        public async Task CheckEmailInUseAsync_ReturnsTrueIfEmailIsInUse()
+        {
+            // Arrange
+            string testEmail = "test@email.com";
+            await _resetAccountsTable();
+            await _dapperAccountRepository.CreateAccountAsync(testEmail, "testPassword");
+
+            // Act
+            bool result = await _dapperAccountRepository.CheckEmailInUseAsync(testEmail);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public async Task CheckEmailInUseAsync_ReturnsFalseIfEmailIsNotInUse()
+        {
+            // Arrange
+            await _resetAccountsTable();
+
+            // Act
+            bool result = await _dapperAccountRepository.CheckEmailInUseAsync("test@email.com");
+
+            // Assert
+            Assert.False(result);
+        }
     }
 }
