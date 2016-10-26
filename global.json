@@ -2,8 +2,6 @@
   "projects": [
     "src",
     "test",
-    "C:\\Users\\Jeremy\\Desktop\\LibrariesAndTools\\Dapper\\dapper-dot-net",
-    "C:\\Users\\Jeremy\\Desktop\\LibrariesAndTools\\AspNetCore.Diagnostics\\src",
-    "C:\\Users\\Jeremy\\Desktop\\LibrariesAndTools\\AspNetCore.Security\\Security\\src"
+    "C:\\Users\\Jeremy\\Desktop\\LibrariesAndTools\\Dapper\\dapper-dot-net"
   ]
 }
