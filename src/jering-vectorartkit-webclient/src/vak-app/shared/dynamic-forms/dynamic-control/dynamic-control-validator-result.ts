@@ -1,6 +1,6 @@
 ﻿import { Validity } from '../validity';
 
 export class DynamicControlValidatorResult {
-    constructor(public validity: Validity, public errorMessage?: string) {
+    constructor(public validity: Validity, public message?: string) {
     }
 }
