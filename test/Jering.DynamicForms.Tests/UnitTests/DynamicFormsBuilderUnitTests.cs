@@ -22,8 +22,11 @@ namespace Jering.DynamicForms.Tests.UnitTests
             Assert.Equal("Email", result.Name);
             Assert.Equal(0, result.Order);
             Assert.Equal("input", result.TagName);
-            Assert.NotNull(result.ValidatorDatas);
-            Assert.Equal("validateMatches", result.ValidatorDatas[0].Name);
+            Assert.NotNull(result.ValidatorData);
+            Assert.Equal(result.ValidatorData.Count, 1);
+            Assert.Equal("validateMatches", result.ValidatorData[0].Name);
+            Assert.NotNull(result.AsyncValidatorData);
+            Assert.Equal("asyncValidateEmailNotInUse", result.AsyncValidatorData.Name);
             Assert.Equal(DummyStrings.Dummy, result.DisplayName);
             Assert.NotNull(result.Properties);
             Assert.Equal(result.Properties["type"], "email");

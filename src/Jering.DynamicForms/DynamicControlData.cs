@@ -37,6 +37,11 @@ namespace Jering.DynamicForms
         /// <summary>
         /// Control validators data
         /// </summary>
-        public List<DynamicControlValidatorData> ValidatorDatas { get; set; }
+        public List<DynamicControlValidatorData> ValidatorData { get; set; }
+
+        /// <summary>
+        /// Control async validators data
+        /// </summary>
+        public DynamicControlValidatorData AsyncValidatorData { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Jering.DataAnnotations;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -41,13 +42,29 @@ namespace Jering.DynamicForms
 
             if (dynamicControlAttribute != null)
             {
+                // Validator data
                 IEnumerable<ValidationAttribute> validationAttributes = propertyInfo.GetCustomAttributes<ValidationAttribute>();
-                List<DynamicControlValidatorData> validators = new List<DynamicControlValidatorData>();
+                List<DynamicControlValidatorData> validatorData = new List<DynamicControlValidatorData>();
+                DynamicControlValidatorData asyncValidatorData = null;
                 foreach (ValidationAttribute validationAttribute in validationAttributes)
                 {
-                    validators.Add(BuildDynamicControlValidatorData(validationAttribute));
+                    if (validationAttribute is AsyncValidationAttribute)
+                    { 
+                        if(asyncValidatorData == null)
+                        {
+                            asyncValidatorData = BuildDynamicControlValidatorData(validationAttribute);
+                        }else
+                        {
+                            throw new ArgumentException($"{nameof(propertyInfo)} cannot have more than 1 {nameof(AsyncValidationAttribute)}");
+                        }
+                    }
+                    else
+                    {
+                        validatorData.Add(BuildDynamicControlValidatorData(validationAttribute));
+                    }
                 }
 
+                // Html properties
                 IEnumerable<DynamicControlPropertyAttribute> propertyAttributes = propertyInfo.GetCustomAttributes<DynamicControlPropertyAttribute>();
                 Dictionary<string, string> properties = new Dictionary<string, string>();
                 foreach (DynamicControlPropertyAttribute propertyAttribute in propertyAttributes)
@@ -63,7 +80,8 @@ namespace Jering.DynamicForms
                     Name = propertyInfo.Name,
                     Order = dynamicControlAttribute.Order,
                     TagName = dynamicControlAttribute.TagName,
-                    ValidatorDatas = validators,
+                    ValidatorData = validatorData,
+                    AsyncValidatorData = asyncValidatorData,
                     DisplayName = dynamicControlAttribute.
                                     ResourceType.
                                     GetTypeInfo().
