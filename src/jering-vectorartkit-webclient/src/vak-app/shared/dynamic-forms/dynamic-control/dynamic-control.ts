@@ -18,7 +18,7 @@ export class DynamicControl<T>{
     properties: { [key: string]: string };
 
     parent: DynamicForm;
-    errors: string[];
+    messages: string[];
     value: string;
     dirty: boolean;
     blurred: boolean;
@@ -50,34 +50,49 @@ export class DynamicControl<T>{
      * Validates control if it is both dirty and blurred
      */
     validate(): void {
-        this.errors = [];
+        this.messages = [];
+
         this.validity = Validity.valid;
         for (let validator of this.validators) {
-            let result = validator(this);
+            let validatorResult = validator(this);
 
-            if (result.validity !== Validity.valid) {
-                this.validity = result.validity;
+            if (validatorResult.validity === Validity.invalid) {
+                this.validity = Validity.invalid;
             }
-            if (result.message) {
-                this.errors.push(result.message);
+            if (validatorResult.message) {
+                this.messages.push(validatorResult.message);
+            }
+        }
+
+        if (this.asyncValidator) {
+            let asyncValidatorResult = this.asyncValidator(this);
+
+            this.validity = asyncValidatorResult.validity;
+            if (asyncValidatorResult.message) {
+                this.messages.push(asyncValidatorResult.message);
             }
         }
     }
 
     /**
-     * Updates value, sets dirty to true and triggers validation for all DynamicControls in containing DynamicForm.
+     * Updates value and sets dirty to true. If control has been blurred before, run validation.
      */
     onInput(event: any): void {
         this.value = event.target.value;
         this.dirty = true;
-        this.parent.validate();
+        if (this.blurred) {
+            this.validate();
+        }
     }
 
     /**
-     * Sets blurred to true and triggers validation for all DynamicControls in containing DynamicForm.
+     * On first blur event, set blurred to true and run validation.
      */
     onBlur(event: any): void {
-        this.blurred = true;
+        if (!this.blurred) {
+            this.validate();
+            this.blurred = true;
+        }
     }
 
     /**
@@ -87,13 +102,10 @@ export class DynamicControl<T>{
         this.value = event.target.value;
         this.dirty = true;
         this.blurred = true;
-        this.parent.validate();
+        this.validate();
     }
 
-    /**
-     * Validation pending
-     */
-    get pending(): boolean {
+    isValidityPending(): boolean {
         return this.validity === Validity.pending;
     }
 }

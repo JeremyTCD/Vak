@@ -59,7 +59,7 @@ describe('DynamicControlComponent', () => {
     });
 
     it(`Renders errors`, () => {
-        dynamicControl.errors = [testError];
+        dynamicControl.messages = [testError];
         dynamicControl.dirty = true;
         dynamicControl.blurred = true;
 

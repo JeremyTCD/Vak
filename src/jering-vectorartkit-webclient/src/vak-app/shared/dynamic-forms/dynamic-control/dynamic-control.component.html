@@ -9,7 +9,7 @@
         <option *ngFor="let opt of dynamicControl.options"></option>
     </select>
 </div>
-<div *ngIf="dynamicControl.dirty && dynamicControl.blurred">
-    <span *ngFor="let error of dynamicControl.errors">{{error}}</span>
+<div>
+    <span *ngFor="let message of dynamicControl.messages">{{message}}</span>
 </div>
-<div *ngIf="dynamicControl.pending">Pending</div>
+<div *ngIf="dynamicControl.isValidityPending()">Pending</div>
