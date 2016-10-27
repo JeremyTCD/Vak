@@ -1,382 +1,550 @@
 ﻿import { DynamicControlValidators } from './dynamic-control-validators';
 import { DynamicControlValidator } from './dynamic-control-validator';
 import { DynamicControlValidatorData } from './dynamic-control-validator-data';
+import { DynamicControlValidatorResult } from './dynamic-control-validator-result';
 import { DynamicControl } from './dynamic-control';
 import { DynamicForm } from '../dynamic-form/dynamic-form';
+import { Validity } from '../validity';
+
+let testErrorMessage = 'testErrorMessage';
+let result: DynamicControlValidatorResult;
 
 describe('validateAllDigits', () => {
+    let dynamicControl: DynamicControl<any>;
+    let dynamicControlValidatorData: DynamicControlValidatorData;
+    let validateAllDigitsValidator: DynamicControlValidator;
 
-    let dynamicControlValidatorData = new DynamicControlValidatorData(
-        {
-            name: 'validateAllDigits',
-            errorMessage: 'Error message',
-            options: null
-        });
-    let validateAllDigitsValidator = DynamicControlValidators.validateAllDigits(dynamicControlValidatorData);
-    let errorMessage = 'Error message';
-    let dynamicControl = new DynamicControl();
+    beforeEach(() => {
+        dynamicControl = new DynamicControl();
+        dynamicControlValidatorData = new DynamicControlValidatorData(
+            {
+                name: 'validateAllDigits',
+                errorMessage: testErrorMessage,
+                options: null
+            });
+        validateAllDigitsValidator = DynamicControlValidators.validateAllDigits(dynamicControlValidatorData);
+    });
 
-    it('returns null if control value is null, undefined or an empty string', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is null, undefined or an empty string', () => {
         dynamicControl.value = null;
-        expect(validateAllDigitsValidator(dynamicControl)).toBe(null);
+        result = validateAllDigitsValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = undefined;
-        expect(validateAllDigitsValidator(dynamicControl)).toBe(null);
+        result = validateAllDigitsValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = '';
-        expect(validateAllDigitsValidator(dynamicControl)).toBe(null);
+        result = validateAllDigitsValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 
-    it('returns null if control value contains only digits', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value contains only digits', () => {
         dynamicControl.value = '0';
-        expect(validateAllDigitsValidator(dynamicControl)).toBe(null);
+        result = validateAllDigitsValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = '12345';
-        expect(validateAllDigitsValidator(dynamicControl)).toBe(null);
+        result = validateAllDigitsValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 
-    it('returns error message if control value does not contain only digits', () => {
+    it('DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value does not contain only digits', () => {
         dynamicControl.value = '-1';
-        expect(validateAllDigitsValidator(dynamicControl)).toBe(errorMessage);
+        result = validateAllDigitsValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
 
         dynamicControl.value = '1.1';
-        expect(validateAllDigitsValidator(dynamicControl)).toBe(errorMessage);
+        result = validateAllDigitsValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
 
         dynamicControl.value = 'a12345';
-        expect(validateAllDigitsValidator(dynamicControl)).toBe(errorMessage);
+        result = validateAllDigitsValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
 
         dynamicControl.value = 'test';
-        expect(validateAllDigitsValidator(dynamicControl)).toBe(errorMessage);
+        result = validateAllDigitsValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
     });
 });
 
 describe('validateComplexity', () => {
+    let dynamicControl: DynamicControl<any>;
+    let dynamicControlValidatorData: DynamicControlValidatorData;
+    let validateComplexityValidator: DynamicControlValidator;
 
-    let dynamicControlValidatorData = new DynamicControlValidatorData(
-        {
-            name: 'validateComplexity',
-            errorMessage: 'Error message',
-            options: null
-        });
-    let validateComplexityValidator = DynamicControlValidators.validateComplexity(dynamicControlValidatorData);
-    let errorMessage = 'Error message';
-    let dynamicControl = new DynamicControl();
+    beforeEach(() => {
+        dynamicControl = new DynamicControl();
+        dynamicControlValidatorData = new DynamicControlValidatorData(
+            {
+                name: 'validateComplexity',
+                errorMessage: testErrorMessage,
+                options: null
+            });
+        validateComplexityValidator = DynamicControlValidators.validateComplexity(dynamicControlValidatorData);;
+    });
 
-    it('returns null if control value is null, undefined or an empty string', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is null, undefined or an empty string', () => {
         dynamicControl.value = null;
-        expect(validateComplexityValidator(dynamicControl)).toBe(null);
+        result = validateComplexityValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = undefined;
-        expect(validateComplexityValidator(dynamicControl)).toBe(null);
+        result = validateComplexityValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = '';
-        expect(validateComplexityValidator(dynamicControl)).toBe(null);
+        result = validateComplexityValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 
-    it('returns null if control value is sufficiently complex', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is sufficiently complex', () => {
         dynamicControl.value = 'aaabbb00';
-        expect(validateComplexityValidator(dynamicControl)).toBe(null);
+        result = validateComplexityValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = 'aaAA11@@';
-        expect(validateComplexityValidator(dynamicControl)).toBe(null);
+        result = validateComplexityValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = '1234567890123';
-        expect(validateComplexityValidator(dynamicControl)).toBe(null);
+        result = validateComplexityValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 
-    it('returns error message if control value is not sufficiently complex', () => {
+    it('DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value is not sufficiently complex', () => {
         dynamicControl.value = 'aaaaaaaa';
-        expect(validateComplexityValidator(dynamicControl)).toBe(errorMessage);
+        result = validateComplexityValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
 
         dynamicControl.value = '@!#$%^&*';
-        expect(validateComplexityValidator(dynamicControl)).toBe(errorMessage);
+        result = validateComplexityValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
 
         dynamicControl.value = '123456789012';
-        expect(validateComplexityValidator(dynamicControl)).toBe(errorMessage);
+        result = validateComplexityValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
     });
 });
 
 describe('validateDiffers', () => {
-
+    let dynamicControl: DynamicControl<any>;
     let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateDiffersValidator: DynamicControlValidator;
-    let errorMessage: string;
     let otherDynamicControl: DynamicControl<any>;
-    let dynamicControl: DynamicControl<any>;
     let dynamicForm: DynamicForm;
 
     beforeEach(() => {
         dynamicControlValidatorData = new DynamicControlValidatorData(
             {
                 name: 'validateDiffers',
-                errorMessage: 'Error message',
+                errorMessage: testErrorMessage,
                 options: {
                     OtherProperty: ''
                 }
             });
         validateDiffersValidator = DynamicControlValidators.validateDiffers(dynamicControlValidatorData);
-        errorMessage = 'Error message';
+        testErrorMessage = 'Error message';
         otherDynamicControl = new DynamicControl();
         dynamicControl = new DynamicControl();
-        dynamicForm = new DynamicForm([], "", null);
+        dynamicForm = new DynamicForm([], "");
 
         spyOn(dynamicForm, 'get').and.returnValue(otherDynamicControl);
         dynamicControl.parent = dynamicForm;
     });
 
-    it('returns null if either control value or other value is null, undefined or an empty string', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if either control value or other value is null, undefined or an empty string', () => {
         dynamicControl.value = null;
-        otherDynamicControl.value = null;
-        expect(validateDiffersValidator(dynamicControl)).toBe(null);
+        otherDynamicControl.value = null;       
+        result = validateDiffersValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = undefined;
         otherDynamicControl.value = undefined;
-        expect(validateDiffersValidator(dynamicControl)).toBe(null);
+        result = validateDiffersValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = '';
         otherDynamicControl.value = '';
-        expect(validateDiffersValidator(dynamicControl)).toBe(null);
+        result = validateDiffersValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         expect(dynamicForm.get).toHaveBeenCalledTimes(3);
     });
 
-    it('returns null if control values differ', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control values differ', () => {
         dynamicControl.value = 'test1';
         otherDynamicControl.value = 'test2';
-        expect(validateDiffersValidator(dynamicControl)).toBe(null);
+        result = validateDiffersValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         expect(dynamicForm.get).toHaveBeenCalledTimes(1);
     });
 
-    it('returns error message if control values do not differ', () => {
+    it('DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control values do not differ', () => {
         dynamicControl.value = 'test';
         otherDynamicControl.value = 'test';
-        expect(validateDiffersValidator(dynamicControl)).toBe(errorMessage);
+        result = validateDiffersValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
 
         expect(dynamicForm.get).toHaveBeenCalledTimes(1);
     });
 });
 
 describe('validateEmailAddress', () => {
+    let dynamicControl: DynamicControl<any>;
+    let dynamicControlValidatorData: DynamicControlValidatorData;
+    let validateEmailAddressValidator: DynamicControlValidator;
 
-    let dynamicControlValidatorData = new DynamicControlValidatorData(
-        {
-            name: 'validateEmailAddress',
-            errorMessage: 'Error message',
-            options: null
-        });
-    let validateEmailAddressValidator = DynamicControlValidators.validateEmailAddress(dynamicControlValidatorData);
-    let errorMessage = 'Error message';
-    let dynamicControl = new DynamicControl();
+    beforeEach(() => {
+        dynamicControl = new DynamicControl();
+        dynamicControlValidatorData = new DynamicControlValidatorData(
+            {
+                name: 'validateEmailAddress',
+                errorMessage: testErrorMessage,
+                options: null
+            });
+        validateEmailAddressValidator = DynamicControlValidators.validateEmailAddress(dynamicControlValidatorData);;
+    });
 
-    it('returns null if control value is null, undefined or an empty string', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is null, undefined or an empty string', () => {
         dynamicControl.value = null;
-        expect(validateEmailAddressValidator(dynamicControl)).toBe(null);
+        result = validateEmailAddressValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = undefined;
-        expect(validateEmailAddressValidator(dynamicControl)).toBe(null);
+        result = validateEmailAddressValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = '';
-        expect(validateEmailAddressValidator(dynamicControl)).toBe(null);
+        result = validateEmailAddressValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 
-    it('returns null if control value is an email address', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is an email address', () => {
         dynamicControl.value = 'test@test.com';
-        expect(validateEmailAddressValidator(dynamicControl)).toBe(null);
+        result = validateEmailAddressValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = 'test@test';
-        expect(validateEmailAddressValidator(dynamicControl)).toBe(null);
+        result = validateEmailAddressValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 
-    it('returns error message if control value is not an email address', () => {
+    it('DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value is not an email address', () => {
         dynamicControl.value = 'test@';
-        expect(validateEmailAddressValidator(dynamicControl)).toBe(errorMessage);
+        result = validateEmailAddressValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
 
         dynamicControl.value = '@test';
-        expect(validateEmailAddressValidator(dynamicControl)).toBe(errorMessage);
+        result = validateEmailAddressValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
 
         dynamicControl.value = 'test@test@test';
-        expect(validateEmailAddressValidator(dynamicControl)).toBe(errorMessage);
+        result = validateEmailAddressValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
 
         dynamicControl.value = 'test';
-        expect(validateEmailAddressValidator(dynamicControl)).toBe(errorMessage);
+        result = validateEmailAddressValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
     });
 });
 
 describe('validateLength', () => {
+    let dynamicControl: DynamicControl<any>;
     let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateLengthValidator: DynamicControlValidator;
-    let errorMessage: string;
-    let dynamicControl: DynamicControl<any>;
 
     beforeEach(() => {
+        dynamicControl = new DynamicControl();
         dynamicControlValidatorData = new DynamicControlValidatorData(
             {
                 name: 'validateLength',
-                errorMessage: 'Error message',
+                errorMessage: testErrorMessage,
                 options: {
                     Length: '8'
                 }
             });
         validateLengthValidator = DynamicControlValidators.validateLength(dynamicControlValidatorData);
-        errorMessage = 'Error message';
-        dynamicControl = new DynamicControl();
     });
 
-    it('returns null if control value is null, undefined or an empty string', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is null, undefined or an empty string', () => {
         dynamicControl.value = null;
-        expect(validateLengthValidator(dynamicControl)).toBe(null);
+        result = validateLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = undefined;
-        expect(validateLengthValidator(dynamicControl)).toBe(null);
+        result = validateLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = '';
-        expect(validateLengthValidator(dynamicControl)).toBe(null);
+        result = validateLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 
-    it('returns null if control value has specified length', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value has specified length', () => {
         dynamicControl.value = 'testtest';
-        expect(validateLengthValidator(dynamicControl)).toBe(null);
+        result = validateLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 
-    it('returns error message if control value does not have specified length', () => {
+    it('DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value does not have specified length', () => {
         dynamicControl.value = 'test';
-        expect(validateLengthValidator(dynamicControl)).toBe(errorMessage);
+        result = validateLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
     });
 });
 
 describe('validateMatches', () => {
-
+    let dynamicControl: DynamicControl<any>;
     let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateMatchesValidator: DynamicControlValidator;
-    let errorMessage: string;
     let otherDynamicControl: DynamicControl<any>;
-    let dynamicControl: DynamicControl <any>;
     let dynamicForm: DynamicForm;
 
     beforeEach(() => {
         dynamicControlValidatorData = new DynamicControlValidatorData(
             {
                 name: 'validateMatches',
-                errorMessage: 'Error message',
+                errorMessage: testErrorMessage,
                 options: {
                     OtherProperty: ''
                 }
             });
         validateMatchesValidator = DynamicControlValidators.validateMatches(dynamicControlValidatorData);
-        errorMessage = 'Error message';
         otherDynamicControl = new DynamicControl();
         dynamicControl = new DynamicControl();
-        dynamicForm = new DynamicForm([], "", null);
+        dynamicForm = new DynamicForm([], "");
 
         spyOn(dynamicForm, 'get').and.returnValue(otherDynamicControl);
         dynamicControl.parent = dynamicForm;
     });
 
-    it('returns null if either control value or other value is null, undefined or an empty string', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if either control value or other value is null, undefined or an empty string', () => {
         dynamicControl.value = null;
         otherDynamicControl.value = null;
-        expect(validateMatchesValidator(dynamicControl)).toBe(null);
+        result = validateMatchesValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = undefined;
         otherDynamicControl.value = undefined;
-        expect(validateMatchesValidator(dynamicControl)).toBe(null);
+        result = validateMatchesValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = '';
         otherDynamicControl.value = '';
-        expect(validateMatchesValidator(dynamicControl)).toBe(null);
+        result = validateMatchesValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         expect(dynamicForm.get).toHaveBeenCalledTimes(3);
     });
 
-    it('returns null if control values match', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control values match', () => {
         dynamicControl.value = 'test';
         otherDynamicControl.value = 'test';
-        expect(validateMatchesValidator(dynamicControl)).toBe(null);
+        result = validateMatchesValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         expect(dynamicForm.get).toHaveBeenCalledTimes(1);
     });
 
-    it('returns error message if control values do not match', () => {
+    it('DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control values do not match', () => {
         dynamicControl.value = 'test1';
         otherDynamicControl.value = 'test2';
-        expect(validateMatchesValidator(dynamicControl)).toBe(errorMessage);
+        result = validateMatchesValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
 
         expect(dynamicForm.get).toHaveBeenCalledTimes(1);
     });
 });
 
 describe('validateMinLength', () => {
+    let dynamicControl: DynamicControl<any>;
     let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateMinLengthValidator: DynamicControlValidator;
-    let errorMessage: string;
-    let dynamicControl: DynamicControl<any>;
 
     beforeEach(() => {
+        dynamicControl = new DynamicControl();
         dynamicControlValidatorData = new DynamicControlValidatorData(
             {
                 name: 'validateMinLength',
-                errorMessage: 'Error message',
+                errorMessage: testErrorMessage,
                 options: {
                     MinLength: '5'
                 }
             });
         validateMinLengthValidator = DynamicControlValidators.validateMinLength(dynamicControlValidatorData);
-        errorMessage = 'Error message';
-        dynamicControl = new DynamicControl();
     });
 
-    it('returns null if control value is null, undefined or an empty string', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is null, undefined or an empty string', () => {
         dynamicControl.value = null;
-        expect(validateMinLengthValidator(dynamicControl)).toBe(null);
+        result = validateMinLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = undefined;
-        expect(validateMinLengthValidator(dynamicControl)).toBe(null);
+        result = validateMinLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = '';
-        expect(validateMinLengthValidator(dynamicControl)).toBe(null);
+        result = validateMinLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 
-    it('null if control value\'s length is greater than or equal to specified minimum length', () => {
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value\'s length is greater than or equal to specified minimum length', () => {
         dynamicControl.value = 'testtest';
-        expect(validateMinLengthValidator(dynamicControl)).toBe(null);
+        result = validateMinLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
 
         dynamicControl.value = 'testtesttest';
-        expect(validateMinLengthValidator(dynamicControl)).toBe(null);
+        result = validateMinLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 
-    it('error message if control value\'s length is less than specified minimum length length', () => {
-        dynamicControl.value = 'test';
-        expect(validateMinLengthValidator(dynamicControl)).toBe(errorMessage);
+    it('DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value\'s length is less than specified minimum length length', () => {
+        dynamicControl.value = 'test';        
+        result = validateMinLengthValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(testErrorMessage);
     });
 });
 
 describe('validateRequired', () => {
+    let dynamicControl: DynamicControl<any>;
+    let dynamicControlValidatorData: DynamicControlValidatorData;
+    let validateRequiredValidator: DynamicControlValidator;
 
-    let dynamicControlValidatorData = new DynamicControlValidatorData(
-        {
-            name: 'validateRequired',
-            errorMessage: '{0} is required.',
-            options: null
-        });
-    let dynamicControl = new DynamicControl({ displayName: 'Field' });
-    let validateRequiredValidator = DynamicControlValidators.validateRequired(dynamicControlValidatorData);
-    let errorMessage = dynamicControlValidatorData.errorMessage.replace('{0}', dynamicControl.displayName);
-
-    it('returns error message if control value is null, undefined or an empty string', () => {
-        dynamicControl.value = null;
-        expect(validateRequiredValidator(dynamicControl)).toBe(errorMessage);
-
-        dynamicControl.value = undefined;
-        expect(validateRequiredValidator(dynamicControl)).toBe(errorMessage);
-
-        dynamicControl.value = '';
-        expect(validateRequiredValidator(dynamicControl)).toBe(errorMessage);
+    beforeEach(() => {
+        dynamicControl = new DynamicControl({ displayName: `testDisplayName` });
+        dynamicControlValidatorData = new DynamicControlValidatorData(
+            {
+                name: 'validateRequired',
+                errorMessage: `{0} testErrorMessage`,
+                options: null
+            });
+        validateRequiredValidator = DynamicControlValidators.validateRequired(dynamicControlValidatorData);
     });
 
-    it('returns null if control value is not null, undefined or an empty string', () => {
+    it('DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value is null, undefined or an empty string', () => {
+        dynamicControl.value = null;
+        result = validateRequiredValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(`testDisplayName testErrorMessage`);
+
+        dynamicControl.value = undefined;
+        result = validateRequiredValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(`testDisplayName testErrorMessage`);
+
+        dynamicControl.value = '';
+        result = validateRequiredValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.invalid);
+        expect(result.message).toBe(`testDisplayName testErrorMessage`);
+    });
+
+    it('DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is not null, undefined or an empty string', () => {
         dynamicControl.value = 'test';
-        expect(validateRequiredValidator(dynamicControl)).toBe(null);
+        result = validateRequiredValidator(dynamicControl);
+        expect(result).toBeDefined();
+        expect(result.validity).toBe(Validity.valid);
+        expect(result.message).toBe(undefined);
     });
 });
 

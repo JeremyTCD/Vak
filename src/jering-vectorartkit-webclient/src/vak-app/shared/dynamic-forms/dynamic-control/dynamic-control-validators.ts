@@ -25,12 +25,11 @@ export class DynamicControlValidators {
      * Returns a DynamicControlValidator function.
      *
      * Generated DynamicControlValidator function returns
-     * - null if control value contains only digits
-     * - null if control value is null, undefined or an empty string
-     * - error message if control value does not contain only digits
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value contains only digits
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is null, undefined or an empty string
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value does not contain only digits
      */
-    static validateAllDigits(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
-        dynamicFormsService: DynamicFormsService): DynamicControlValidator {
+    static validateAllDigits(validatorData: DynamicControlValidatorData): DynamicControlValidator {
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
             if (!Check.isValue(dynamicControl.value)) {
                 return new DynamicControlValidatorResult(Validity.valid);
@@ -50,12 +49,11 @@ export class DynamicControlValidators {
      * Returns a DynamicControlValidator function.
      *
      * Generated DynamicControlValidator function returns
-     * - null if control value is sufficiently complex
-     * - null if control value is null, undefined or an empty string
-     * - error message if control value is not sufficiently complex
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is sufficiently complex
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is null, undefined or an empty string
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value is not sufficiently complex
      */
-    static validateComplexity(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
-        dynamicFormsService: DynamicFormsService): DynamicControlValidator {
+    static validateComplexity(validatorData: DynamicControlValidatorData): DynamicControlValidator {
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
             if (!Check.isValue(dynamicControl.value)) {
                 return new DynamicControlValidatorResult(Validity.valid);
@@ -98,12 +96,11 @@ export class DynamicControlValidators {
      * Returns a DynamicControlValidator function.
      *
      * Generated DynamicControlValidator function returns
-     * - null if either control value or other value is null, undefined or an empty string
-     * - null if control values differ
-     * - error message if control values do not differ
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if either control value or other value is null, undefined or an empty string
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control values differ
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control values do not differ
      */
-    static validateDiffers(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
-        dynamicFormsService: DynamicFormsService): DynamicControlValidator {
+    static validateDiffers(validatorData: DynamicControlValidatorData): DynamicControlValidator {
         let otherControlName = validatorData.options['OtherProperty'];
 
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
@@ -122,12 +119,11 @@ export class DynamicControlValidators {
      * Returns a DynamicControlValidator function.
      *
      * Generated DynamicControlValidator function returns
-     * - null if control value is an email address
-     * - null if control value is null, undefined or an empty string
-     * - error message if control value is not an email address
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is an email address
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is null, undefined or an empty string
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value is not an email address
      */
-    static validateEmailAddress(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
-        dynamicFormsService: DynamicFormsService): DynamicControlValidator {
+    static validateEmailAddress(validatorData: DynamicControlValidatorData): DynamicControlValidator {
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
             if (!Check.isValue(dynamicControl.value)) {
                 return new DynamicControlValidatorResult(Validity.valid);
@@ -154,12 +150,11 @@ export class DynamicControlValidators {
      * Returns a DynamicControlValidator function.
      *
      * Generated DynamicControlValidator function returns
-     * - null if control value is has specified length
-     * - null if control value is null, undefined or an empty string
-     * - error message if control value does not have specified length
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is has specified length
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is null, undefined or an empty string
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value does not have specified length
      */
-    static validateLength(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
-        dynamicFormsService: DynamicFormsService): DynamicControlValidator {
+    static validateLength(validatorData: DynamicControlValidatorData): DynamicControlValidator {
         let length = parseInt(validatorData.options['Length'], 10);
 
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
@@ -175,12 +170,11 @@ export class DynamicControlValidators {
      * Returns a DynamicControlValidator function.
      *
      * Generated DynamicControlValidator function returns
-     * - null if either control value is null, undefined or an empty string
-     * - null if control values match
-     * - error message if control values do not match
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if either control value is null, undefined or an empty string
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control values match
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control values do not match
      */
-    static validateMatches(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
-        dynamicFormsService: DynamicFormsService): DynamicControlValidator {
+    static validateMatches(validatorData: DynamicControlValidatorData): DynamicControlValidator {
         let otherControlName = validatorData.options['OtherProperty'];
 
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
@@ -198,12 +192,11 @@ export class DynamicControlValidators {
      * Returns a DynamicControlValidator function.
      *
      * Generated DynamicControlValidator function returns
-     * - null if control value's length is greater than or equal to specified minimum length
-     * - null if control value is null, undefined or an empty string
-     * - error message if control value's length is less than specified minimum length length
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value's length is greater than or equal to specified minimum length
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is null, undefined or an empty string
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value's length is less than specified minimum length length
      */
-    static validateMinLength(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
-        dynamicFormsService: DynamicFormsService): DynamicControlValidator {
+    static validateMinLength(validatorData: DynamicControlValidatorData): DynamicControlValidator {
         let length = parseInt(validatorData.options['MinLength'], 10);
 
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
@@ -219,11 +212,10 @@ export class DynamicControlValidators {
      * Returns a DynamicControlValidator function.
      *
      * Generated DynamicControlValidator function returns
-     * - null if control value is not null, undefined or an empty string.
-     * - error message if control value is null, undefined or an empty string.
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is not null, undefined or an empty string.
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value is null, undefined or an empty string.
      */
-    static validateRequired(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
-        dynamicFormsService: DynamicFormsService): DynamicControlValidator {
+    static validateRequired(validatorData: DynamicControlValidatorData): DynamicControlValidator {
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
             return Check.isValue(dynamicControl.value) ?
                 new DynamicControlValidatorResult(Validity.valid) :
@@ -235,8 +227,8 @@ export class DynamicControlValidators {
      * Returns a DynamicControlValidator function.
      *
      * Generated DynamicControlValidator function returns
-     * - null if control value is not null, undefined or an empty string.
-     * - error message if control value is null, undefined or an empty string.
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is not null, undefined or an empty string.
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value is null, undefined or an empty string.
      */
     static asyncValidateEmailNotInUse(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
         dynamicFormsService: DynamicFormsService): DynamicControlValidator {

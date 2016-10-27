@@ -40,7 +40,7 @@ export class DynamicControl<T>{
         this.validators = [];
         let validatorData = options.validatorData || [];
         for (let validatorDatum of validatorData) {
-            this.validators.push(DynamicControlValidators[validatorDatum.name](validatorDatum, this, dynamicFormsService));
+            this.validators.push(DynamicControlValidators[validatorDatum.name](validatorDatum));
         }
         this.asyncValidator = options.asyncValidatorData ? DynamicControlValidators[options.asyncValidatorData.name](options.asyncValidatorData, this, dynamicFormsService) : null;
         this.properties = options.properties || {};
@@ -58,8 +58,8 @@ export class DynamicControl<T>{
             if (result.validity !== Validity.valid) {
                 this.validity = result.validity;
             }
-            if (result.errorMessage) {
-                this.errors.push(result.errorMessage);
+            if (result.message) {
+                this.errors.push(result.message);
             }
         }
     }
