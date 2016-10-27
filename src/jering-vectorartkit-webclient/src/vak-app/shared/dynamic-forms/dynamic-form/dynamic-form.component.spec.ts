@@ -23,7 +23,7 @@ let testControlName = `testControlName`;
 let testFormModelName = `testFormModelName`;
 let testSubmitUrl = `testSubmitUrl`;
 let testErrorMessage = `testErrorMessage`;
-let testDynamicForm = new DynamicForm([new DynamicControl<any>({ name: testControlName })], testErrorMessage, null);
+let testDynamicForm = new DynamicForm([new DynamicControl<any>({ name: testControlName })], testErrorMessage);
 let testSubmitEvent = {
     preventDefault: () => null
 };
