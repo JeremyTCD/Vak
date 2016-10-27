@@ -8,17 +8,17 @@ namespace Jering.DataAnnotations
     /// Validates that a properties value is not an in-use email
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false)]
-    public class ValidateEmailInUseAttribute : ValidationAttribute
+    public class AsyncValidateEmailNotInUseAttribute : AsyncValidationAttribute
     {
         /// <summary>
         /// Constructor
         /// </summary>
+        /// <param name="action"></param>
+        /// <param name="controller"></param>
         /// <param name="resourceName"></param>
         /// <param name="resourceType"></param>
-        public ValidateEmailInUseAttribute(string resourceName, Type resourceType)
+        public AsyncValidateEmailNotInUseAttribute(string resourceName, Type resourceType, string controller, string action) : base(resourceName, resourceType, controller, action)
         {
-            ErrorMessageResourceName = resourceName;
-            ErrorMessageResourceType = resourceType;
         }
 
         /// <summary>
