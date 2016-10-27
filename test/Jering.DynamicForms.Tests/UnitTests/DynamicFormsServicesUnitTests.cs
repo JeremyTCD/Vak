@@ -2,6 +2,8 @@
 using System;
 using Moq;
 using System.Reflection;
+using Jering.DynamicForms.Tests.Resources;
+using Jering.DataAnnotations;
 
 namespace Jering.DynamicForms.Tests.UnitTests
 {
@@ -35,9 +37,22 @@ namespace Jering.DynamicForms.Tests.UnitTests
             Assert.Equal(result.DynamicControlDatas.Count, 2);
             mockBuilder.VerifyAll();
         }
-    }
 
-    public class DummyNoDynamicFormAttributeFormModel
-    {
+        [DynamicForm(nameof(DummyStrings.Dummy), typeof(DummyStrings))]
+        private class DummyFormModel
+        {
+            [ValidateMatches("Password", nameof(DummyStrings.Dummy), typeof(DummyStrings))]
+            [AsyncValidateEmailNotInUse(nameof(DummyStrings.Dummy), typeof(DummyStrings), "TestController", "TestAction")]
+            [DynamicControl("input", nameof(DummyStrings.Dummy), typeof(DummyStrings), 0)]
+            [DynamicControlProperty("type", "email")]
+            [DynamicControlProperty("placeholder", propertyValueResourceName: nameof(DummyStrings.Dummy), resourceType: typeof(DummyStrings))]
+            public string Email { get; set; }
+
+            public string Password { get; set; }
+        }
+
+        private class DummyNoDynamicFormAttributeFormModel
+        {
+        }
     }
 }
