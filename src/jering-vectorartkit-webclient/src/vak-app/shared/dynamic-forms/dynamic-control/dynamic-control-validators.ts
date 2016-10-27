@@ -224,42 +224,40 @@ export class DynamicControlValidators {
     }
 
     /**
-     * Returns a DynamicControlValidator function.
+     * Starts a Subject stream and returns a DynamicControlValidator function. Subject stream uses dynamicFormsService to validate provided values.
+     *
+     * Generated DynamicControlValidator function
+     * - Emits null to stream if dynamicControl is already invalid.
+     * - Emits value to stream if dynamicControl is valid.  
      *
      * Generated DynamicControlValidator function returns
-     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control value is not null, undefined or an empty string.
-     * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value is null, undefined or an empty string.
+     * - DynamicControlValidatorResult with validity = Validity.pending and message = undefined if dynamicControl is valid.
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message = undefined if dynamicControl is already invalid.
      */
     static asyncValidateEmailNotInUse(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
         dynamicFormsService: DynamicFormsService): DynamicControlValidator {
         let valueStream = new Subject<string>();
         valueStream.
             debounceTime(200).
-            //distinctUntilChanged().
-            //do((value: string) => {
-            //    if (value !== null) {
-            //        dynamicControl.validity = Validity.pending;
-            //    }
-            //}).
             map((value: string) => {
                 if (value === null) {
                     return Observable.empty<Validity>();
                 } 
 
                 return dynamicFormsService.
-                    validateValue(`${environment.apiUrl}${validatorData.options[`relativeUrl`]}`, value).
+                    validateValue(`${environment.apiUrl}${validatorData.options[`RelativeUrl`]}`, value).
                     catch((error: any) =>
                         Observable.of(Validity.valid)
                     );
             }).
             switch().
             subscribe(
-                validity => {
+            validity => {
                     if (validity === Validity.valid) {
                         dynamicControl.validity = Validity.valid;
                     } else {
                         dynamicControl.validity = Validity.invalid;
-                        dynamicControl.errors.push(validatorData.errorMessage);
+                        dynamicControl.messages.push(validatorData.errorMessage);
                     }
                 },
                 error => {
@@ -268,15 +266,15 @@ export class DynamicControlValidators {
             );
 
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
-            if (dynamicControl.validity !== Validity.invalid) {
-                valueStream.next(dynamicControl.value);
-
-                return new DynamicControlValidatorResult(Validity.pending);
-            } else {
+            if (dynamicControl.validity === Validity.invalid) {
                 // This is necessary so that any pending validateValue Observables are unsubscribed from. See Observable.switchMap.
                 valueStream.next(null);
 
                 return new DynamicControlValidatorResult(Validity.invalid);
+            } else {
+                valueStream.next(dynamicControl.value);
+
+                return new DynamicControlValidatorResult(Validity.pending);
             }
         };
     }
