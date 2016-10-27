@@ -2,6 +2,8 @@
 import { DynamicControlValidator } from './dynamic-control-validator';
 import { DynamicControlValidators } from './dynamic-control-validators';
 import { DynamicForm } from '../dynamic-form/dynamic-form';
+import { DynamicFormsService } from '../dynamic-forms.service';
+import { Validity } from '../validity';
 
 /**
  * Dynamically generated control
@@ -12,6 +14,7 @@ export class DynamicControl<T>{
     order: number;
     tagName: string;
     validators: DynamicControlValidator[];
+    asyncValidator: DynamicControlValidator;
     properties: { [key: string]: string };
 
     parent: DynamicForm;
@@ -19,25 +22,27 @@ export class DynamicControl<T>{
     value: string;
     dirty: boolean;
     blurred: boolean;
-    valid: boolean;
+    validity: Validity;
 
     constructor(options: {
         name?: string,
         displayName?: string,
         order?: number,
         tagName?: string,
-        validatorDatas?: DynamicControlValidatorData[],
+        validatorData?: DynamicControlValidatorData[],
+        asyncValidatorData?: DynamicControlValidatorData,
         properties?: { [key: string]: string }
-    } = {}) {
+    } = {}, dynamicFormsService?: DynamicFormsService) {
         this.name = options.name || '';
         this.displayName = options.displayName || '';
         this.order = options.order === undefined ? 1 : options.order;
         this.tagName = options.tagName || '';
         this.validators = [];
-        let validatorDatas = options.validatorDatas || [];
-        for (let validatorData of validatorDatas) {
-            this.validators.push(DynamicControlValidators[validatorData.name](validatorData, this));
+        let validatorData = options.validatorData || [];
+        for (let validatorDatum of validatorData) {
+            this.validators.push(DynamicControlValidators[validatorDatum.name](validatorDatum, this, dynamicFormsService));
         }
+        this.asyncValidator = options.asyncValidatorData ? DynamicControlValidators[options.asyncValidatorData.name](options.asyncValidatorData, this, dynamicFormsService) : null;
         this.properties = options.properties || {};
     }
 
@@ -46,14 +51,15 @@ export class DynamicControl<T>{
      */
     validate(): void {
         this.errors = [];
-        this.valid = true;
+        this.validity = Validity.valid;
         for (let validator of this.validators) {
-            let error = validator(this);
-            if (error != null) {
-                this.errors.push(error);
-                if (this.valid) {
-                    this.valid = false;
-                }
+            let result = validator(this);
+
+            if (result.validity !== Validity.valid) {
+                this.validity = result.validity;
+            }
+            if (result.errorMessage) {
+                this.errors.push(result.errorMessage);
             }
         }
     }
@@ -72,7 +78,6 @@ export class DynamicControl<T>{
      */
     onBlur(event: any): void {
         this.blurred = true;
-        this.parent.validate();
     }
 
     /**
@@ -83,5 +88,12 @@ export class DynamicControl<T>{
         this.dirty = true;
         this.blurred = true;
         this.parent.validate();
+    }
+
+    /**
+     * Validation pending
+     */
+    get pending(): boolean {
+        return this.validity === Validity.pending;
     }
 }

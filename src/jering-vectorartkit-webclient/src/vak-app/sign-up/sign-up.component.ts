@@ -8,13 +8,22 @@ import { environment } from '../../environments/environment';
     templateUrl: './sign-up.component.html'
 })
 export class SignUpComponent {
-    formModelName = 'SignUp';
+    formModelName = `SignUp`;
     formSubmitUrl = `${environment.apiUrl}Account/SignUp`;
 
     constructor(private _router: Router) {
     }
 
-    onSubmitSuccess(Response): void {
-        this._router.navigate(["/home"]);
+    onSubmitSuccess(response: Response): void {
+        this._router.navigate([`/home`]);
+    }
+
+    onSubmitError(error: Response | any): void {
+        if (error instanceof Response) {
+            this._router.navigate([`/error`, { errorMessage: error.json().errorMessage }]);
+        }
+        else {
+            this._router.navigate([`/error`]);
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Jering.DynamicForms.Tests.Resources;
+﻿using Jering.DataAnnotations;
+using Jering.DynamicForms.Tests.Resources;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
@@ -78,6 +79,23 @@ namespace Jering.DynamicForms.Tests.UnitTests
             Assert.Equal(result.Options["DummyStringProperty"], "dummyString");
             Assert.Equal(result.Options["DummyIntProperty"], "0");
         }
+
+        [Fact]
+        public void BuildDynamicControlValidatorData_CreatesDynamicControlValidatorDataFromAsyncValidationAttribute()
+        {
+            // Arrange
+            DynamicFormsBuilder dynamicFormsBuilder = new DynamicFormsBuilder();
+            DummyAsyncValidationAttribute dummyValidationAttribute = new DummyAsyncValidationAttribute(nameof(DummyStrings.Dummy), typeof(DummyStrings), "testController", "testAction");
+
+            // Act
+            DynamicControlValidatorData result = dynamicFormsBuilder.BuildDynamicControlValidatorData(dummyValidationAttribute);
+
+            // Assert
+            Assert.Equal("dummyAsyncValidation", result.Name);
+            Assert.Equal(DummyStrings.Dummy, result.ErrorMessage);
+            Assert.Equal(1, result.Options.Count);
+            Assert.Equal(result.Options[nameof(AsyncValidationAttribute.RelativeUrl)], "test/testAction");
+        }
     }
 
     public class DummyValidationAttribute : ValidationAttribute
@@ -96,6 +114,20 @@ namespace Jering.DynamicForms.Tests.UnitTests
             DummyIntProperty = dummyIntProperty;
             ErrorMessageResourceName = resourceName;
             ErrorMessageResourceType = resourceType;
+        }
+    }
+
+    public class DummyAsyncValidationAttribute : AsyncValidationAttribute
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="resourceName"></param>
+        /// <param name="resourceType"></param>
+        /// <param name="controller"></param>
+        /// <param name="action"></param>
+        public DummyAsyncValidationAttribute(string resourceName, Type resourceType, string controller, string action): base(resourceName, resourceType, controller, action)
+        {
         }
     }
 }

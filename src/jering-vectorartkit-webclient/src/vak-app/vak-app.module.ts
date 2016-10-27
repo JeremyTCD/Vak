@@ -7,6 +7,7 @@ import { VakAppRouting } from './vak-app.routing';
 
 import { SignUpModule } from './sign-up/sign-up.module';
 import { HomeModule } from './home/home.module';
+import { ErrorModule } from './error/error.module';
 
 @NgModule({
     imports: [
@@ -14,6 +15,7 @@ import { HomeModule } from './home/home.module';
         CommonModule,
         SignUpModule,
         HomeModule,
+        ErrorModule,
         VakAppRouting
     ],
     declarations: [VakAppComponent],

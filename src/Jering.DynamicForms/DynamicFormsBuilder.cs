@@ -108,7 +108,12 @@ namespace Jering.DynamicForms
             string name = char.ToLower(validationAttributeType.Name[0]) + validationAttributeType.Name.Replace("Attribute", "").Substring(1);
             string errorMessage = validationAttribute.ErrorMessageResourceType.GetProperty(validationAttribute.ErrorMessageResourceName).GetValue(null, null) as string;
 
-            PropertyInfo[] propertyInfos = validationAttributeType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly);
+            List<PropertyInfo> propertyInfos = validationAttributeType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).ToList<PropertyInfo>();
+            if(validationAttribute is AsyncValidationAttribute)
+            {
+                propertyInfos.Add(validationAttributeType.GetProperty(nameof(AsyncValidationAttribute.RelativeUrl)));
+            }
+
             Dictionary<string, string> options = new Dictionary<string, string>();
             foreach (PropertyInfo propertyInfo in propertyInfos)
             {

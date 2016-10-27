@@ -1,10 +1,11 @@
-﻿import { DynamicControl} from '../dynamic-control/dynamic-control';
+﻿import { DynamicControl } from '../dynamic-control/dynamic-control';
+import { Validity } from '../validity';
 
 /**
  * Represents a dynamically generated form.
  */
 export class DynamicForm {
-    valid: boolean;
+    validity: Validity;
     submitAttempted: boolean;
     errors: string[];
 
@@ -31,11 +32,12 @@ export class DynamicForm {
         this.validate();
 
         this.errors = [];
-        if (!this.valid) {
+        if (this.validity === Validity.invalid) {
             this.errors.push(this.errorMessage);
+            return false;
         }
 
-        return this.valid;
+        return true;
     }
 
     /**
@@ -63,11 +65,11 @@ export class DynamicForm {
      * Validates form. Validation errors are added directly to each DynamicControl.
      */
     validate(): void {
-        this.valid = true;
+        this.validity = Validity.valid;
         for (let dynamicControl of this.dynamicControls) {
             dynamicControl.validate();
-            if (this.valid && !dynamicControl.valid) {
-                this.valid = false;
+            if (dynamicControl.validity === Validity.invalid) {
+                this.validity = Validity.invalid;
             }
         }
     }

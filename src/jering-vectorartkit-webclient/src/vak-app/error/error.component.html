@@ -1,4 +1,2 @@
 ﻿<h2>Error</h2>
-<div>
-    {{errorMessage}}
-</div>
+<div *ngIf="errorMessage !== null">{{errorMessage}}</div>

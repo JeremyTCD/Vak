@@ -8,6 +8,7 @@ import 'rxjs/add/operator/catch';
 import { environment } from '../../../environments/environment';
 import { DynamicForm } from './dynamic-form/dynamic-form';
 import { DynamicControl } from './dynamic-control/dynamic-control';
+import { Validity } from './validity';
 
 /**
  * Wraps Http requests and response processing for the dynamic forms system.
@@ -31,18 +32,18 @@ export class DynamicFormsService {
 
         return this._http.
             get(this._dynamicFormsUrl, requestOptions).
-            map(this.createDynamicFormFromData);
+            map(this.dynamicFormFromData);
     }
 
     /**
      * Converts a Response into a DynamicForm
      */
-    private createDynamicFormFromData(response: Response): DynamicForm {
+    private dynamicFormFromData = (response: Response): DynamicForm => {
         let body = response.json();
         let dynamicControls: DynamicControl<any>[] = [];
 
         for (let dynamicControlData of body.dynamicControlDatas) {
-            dynamicControls.push(new DynamicControl<any>(dynamicControlData));
+            dynamicControls.push(new DynamicControl<any>(dynamicControlData, this));
         }
 
         return new DynamicForm(dynamicControls.sort((dynamicControl1, dynamicControl2) => dynamicControl1.order - dynamicControl2.order), body.errorMessage);
@@ -54,14 +55,22 @@ export class DynamicFormsService {
 
         return this.
             _http.
-            post(url, JSON.stringify(dynamicForm.value), requestOptions).
-            catch(this.handleThrownError);
+            post(url, JSON.stringify(dynamicForm.value), requestOptions);
     }
 
-    /**
-     * If an error is caught, return an ErrorObservable. Note that an ErrorObservable immediately emits an error notification. 
-     */
-    handleThrownError(error: any): ErrorObservable {
-        return Observable.throw(error);
+    public validateValue(url: string, value: string): Observable<Validity> {
+        let urlSearchParams = new URLSearchParams();
+        urlSearchParams.set(`value`, value);
+        let requestOptions = new RequestOptions({ withCredentials: true, search: urlSearchParams });
+
+        return this._http.
+            get(url, requestOptions).
+            map(this.validityFromData);
+    }
+
+    private validityFromData(response: Response): Validity{
+        let body = response.json();
+
+        return body.valid ? Validity.valid : Validity.invalid;
     }
 }

@@ -12,3 +12,4 @@
 <div *ngIf="dynamicControl.dirty && dynamicControl.blurred">
     <span *ngFor="let error of dynamicControl.errors">{{error}}</span>
 </div>
+<div *ngIf="dynamicControl.pending">Pending</div>
