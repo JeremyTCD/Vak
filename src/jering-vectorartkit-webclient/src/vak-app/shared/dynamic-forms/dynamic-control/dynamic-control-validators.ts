@@ -9,6 +9,7 @@ import { environment } from '../../../../environments/environment';
 import { Check } from '../../utility/check';
 import { DynamicControlValidatorData } from './dynamic-control-validator-data';
 import { DynamicControlValidator } from './dynamic-control-validator';
+import { DynamicControlAsyncValidator } from './dynamic-control-async-validator';
 import { DynamicControl } from './dynamic-control';
 import { DynamicFormsService } from '../dynamic-forms.service';
 import { DynamicControlValidatorResult } from './dynamic-control-validator-result';
@@ -174,13 +175,14 @@ export class DynamicControlValidators {
      * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control values match
      * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control values do not match
      */
-    static validateMatches(validatorData: DynamicControlValidatorData): DynamicControlValidator {
+    static validateMatches(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>): DynamicControlValidator {
         let otherControlName = validatorData.options['OtherProperty'];
+        dynamicControl.providerSiblingsNames.push(otherControlName);
 
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
-            let otherValue = dynamicControl.parent.get(otherControlName).value;
+            let otherControl = dynamicControl.parent.get(otherControlName);
 
-            if (!Check.isValue(dynamicControl.value) || !Check.isValue(otherValue) || dynamicControl.value === otherValue) {
+            if (!Check.isValue(dynamicControl.value) || !Check.isValue(otherControl.value) || dynamicControl.value === otherControl.value) {
                 return new DynamicControlValidatorResult(Validity.valid);
             }
 
@@ -235,9 +237,9 @@ export class DynamicControlValidators {
      * - DynamicControlValidatorResult with validity = Validity.invalid and message = undefined if dynamicControl is already invalid.
      */
     static asyncValidateEmailNotInUse(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
-        dynamicFormsService: DynamicFormsService): DynamicControlValidator {
+        dynamicFormsService: DynamicFormsService): DynamicControlAsyncValidator {
         let valueStream = new Subject<string>();
-        valueStream.
+        let subscription = valueStream.
             debounceTime(200).
             map((value: string) => {
                 if (value === null) {
@@ -265,17 +267,19 @@ export class DynamicControlValidators {
                 }
             );
 
-        return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
-            if (dynamicControl.validity === Validity.invalid) {
-                // This is necessary so that any pending validateValue Observables are unsubscribed from. See Observable.switchMap.
-                valueStream.next(null);
+        return new DynamicControlAsyncValidator(
+            (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
+                if (dynamicControl.validity === Validity.invalid) {
+                    // This is necessary so that any pending validateValue Observables are unsubscribed from. See Observable.switchMap.
+                    valueStream.next(null);
 
-                return new DynamicControlValidatorResult(Validity.invalid);
-            } else {
-                valueStream.next(dynamicControl.value);
+                    return new DynamicControlValidatorResult(Validity.invalid);
+                } else {
+                    valueStream.next(dynamicControl.value);
 
-                return new DynamicControlValidatorResult(Validity.pending);
-            }
-        };
+                    return new DynamicControlValidatorResult(Validity.pending);
+                }
+            },
+            subscription);
     }
 }
