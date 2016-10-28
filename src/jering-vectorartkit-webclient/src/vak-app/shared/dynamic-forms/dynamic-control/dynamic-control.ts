@@ -23,9 +23,22 @@ export class DynamicControl<T>{
     value: string;
     dirty: boolean;
     blurred: boolean;
-    validity: Validity;
     providerSiblingsNames: string[] = [];
     dependentSiblings: DynamicControl<any>[] = [];
+
+    private _validity: Validity;
+    get validity(): Validity {
+        return this._validity;
+    }
+    // If parent DynamicForm has had an attempted submission, validate DynamicForm.
+    set validity(validity: Validity) {
+        if (this._validity !== validity) {
+            this._validity = validity;
+            if (this.parent.submitAttempted) {
+                this.parent.validate();
+            }
+        }
+    }
 
     constructor(options: {
         name?: string,
@@ -55,11 +68,12 @@ export class DynamicControl<T>{
     validate(): void {
         this.messages = [];
 
-        this.validity = Validity.valid;
+        this._validity = Validity.valid;
         for (let validator of this.validators) {
             let validatorResult = validator(this);
 
-            if (validatorResult.validity === Validity.invalid) {
+            if (this.validity !== Validity.invalid &&
+                validatorResult.validity === Validity.invalid) {
                 this.validity = Validity.invalid;
             }
             if (validatorResult.message) {
@@ -90,7 +104,6 @@ export class DynamicControl<T>{
         this.value = event.target.value;
         if (this.blurred) {
             this.validate();
-            this.parent.validate();
         }
         this.dirty = true;
     }
@@ -102,7 +115,6 @@ export class DynamicControl<T>{
         if (this.dirty && !this.blurred) {
             this.blurred = true;
             this.validate();
-            this.parent.validate();
         }
     }
 
