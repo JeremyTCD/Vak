@@ -88,10 +88,11 @@ export class DynamicControl<T>{
      */
     onInput(event: any): void {
         this.value = event.target.value;
-        this.dirty = true;
         if (this.blurred) {
             this.validate();
+            this.parent.validate();
         }
+        this.dirty = true;
     }
 
     /**
@@ -99,8 +100,9 @@ export class DynamicControl<T>{
      */
     onBlur(event: any): void {
         if (this.dirty && !this.blurred) {
-            this.validate();
             this.blurred = true;
+            this.validate();
+            this.parent.validate();
         }
     }
 
@@ -108,10 +110,7 @@ export class DynamicControl<T>{
      * Updates value, sets dirty and blurred to true and triggers validation for all DynamicControls in contaning DynamicForm.
      */
     onChange(event: any): void {
-        this.value = event.target.value;
-        this.dirty = true;
-        this.blurred = true;
-        this.validate();
+        // TODO
     }
 
     /**
