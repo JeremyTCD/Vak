@@ -32,13 +32,13 @@ export class DynamicFormsService {
 
         return this._http.
             get(this._dynamicFormsUrl, requestOptions).
-            map(this.dynamicFormFromData);
+            map(this.dynamicFormFromData, this);
     }
 
     /**
      * Converts a Response into a DynamicForm
      */
-    private dynamicFormFromData = (response: Response): DynamicForm => {
+    private dynamicFormFromData(response: Response): DynamicForm {
         let body = response.json();
         let dynamicControls: DynamicControl<any>[] = [];
 
@@ -58,7 +58,7 @@ export class DynamicFormsService {
             post(url, JSON.stringify(dynamicForm.value), requestOptions);
     }
 
-    public validateValue(url: string, value: string): Observable<Validity> {
+    validateValue(url: string, value: string): Observable<Validity> {
         let urlSearchParams = new URLSearchParams();
         urlSearchParams.set(`value`, value);
         let requestOptions = new RequestOptions({ withCredentials: true, search: urlSearchParams });
