@@ -11,7 +11,7 @@ export class DynamicForm {
 
     constructor(public dynamicControls: DynamicControl<any>[], public errorMessage: string) {
         for (let dynamicControl of dynamicControls) {
-            dynamicControl.parent = this;
+            dynamicControl.setupContext(this);
         }
     }
 
@@ -71,6 +71,12 @@ export class DynamicForm {
             if (dynamicControl.validity === Validity.invalid) {
                 this.validity = Validity.invalid;
             }
+        }
+    }
+
+    dispose(): void {
+        for (let dynamicControl of this.dynamicControls) {
+            dynamicControl.dispose();
         }
     }
 }
