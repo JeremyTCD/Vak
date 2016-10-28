@@ -1,5 +1,6 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
+import { Subscription } from 'rxjs';
 import 'rxjs/add/operator/catch';
 
 import { Check } from '../shared/utility/check';
@@ -9,12 +10,13 @@ import { Check } from '../shared/utility/check';
 })
 export class ErrorComponent implements OnInit {
     public errorMessage: string;
+    private _paramsSubscription: Subscription;
 
     constructor(private _activatedRoute: ActivatedRoute) {
     }
 
     ngOnInit(): void {
-        this._activatedRoute.
+        this._paramsSubscription = this._activatedRoute.
             params.
             subscribe(
                 (params: Params) => {
@@ -25,5 +27,11 @@ export class ErrorComponent implements OnInit {
                     this.errorMessage = null;
                 }
             );
+    }
+
+    ngOnDestroy(): void {
+        if (this._paramsSubscription) {
+            this._paramsSubscription.unsubscribe();
+        }
     }
 }
