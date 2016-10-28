@@ -1,15 +1,17 @@
-import { Component, Input, Output, OnInit, EventEmitter } from '@angular/core';
+import { Component, Input, Output, OnInit, OnDestroy, EventEmitter } from '@angular/core';
+import { Router } from '@angular/router/index';
 import { Response } from '@angular/http';
-import { Observable } from 'rxjs/Observable';
+import { Subscription } from 'rxjs';
 
 import { DynamicForm } from './dynamic-form';
 import { DynamicFormsService } from '../dynamic-forms.service';
+import { handleUnexpectedError } from '../../utility/error-handling';
 
 @Component({
     selector: 'dynamic-form',
     templateUrl: 'dynamic-form.component.html'
 })
-export class DynamicFormComponent implements OnInit {
+export class DynamicFormComponent implements OnInit, OnDestroy {
     @Input() formModelName: string;
     @Input() formSubmitUrl: string;
     @Output() submitSuccess = new EventEmitter<Response>();
@@ -18,21 +20,22 @@ export class DynamicFormComponent implements OnInit {
     // create resolve guard to this does not need to be initialized
     dynamicForm: DynamicForm = new DynamicForm([], null);
 
-    constructor(private _dynamicFormsService: DynamicFormsService) { }
+    private _getDynamicFormSubscription: Subscription;
+    private _submitDynamicFormSubscription: Subscription;
+
+    constructor(private _dynamicFormsService: DynamicFormsService, private _router: Router) { }
 
     /**
      * Retrieves and sets dynamicForm
      */
     ngOnInit(): void {
-        this._dynamicFormsService
+        this._getDynamicFormSubscription = this._dynamicFormsService
             .getDynamicForm(this.formModelName)
             .subscribe(
             dynamicForm => {
                 this.dynamicForm = dynamicForm;
             },
-            // TODO - handle error
-            error => alert('error: ' + error)
-            );
+            error => handleUnexpectedError(this._router, error));
     }
 
     /**
@@ -42,13 +45,30 @@ export class DynamicFormComponent implements OnInit {
         event.preventDefault();
 
         if (this.dynamicForm.onSubmit()) {
-            this.
+            this._submitDynamicFormSubscription = this.
                 _dynamicFormsService.
                 submitDynamicForm(this.formSubmitUrl, this.dynamicForm).
                 subscribe(
                     (response: Response) => this.submitSuccess.emit(response),
                     (error: Response | any) => this.submitError.emit(error)
                 );
+        }
+    }
+
+    ngOnDestroy(): void {
+        this.submitError.unsubscribe();
+        this.submitSuccess.unsubscribe();
+
+        if (this._getDynamicFormSubscription) {
+            this._getDynamicFormSubscription.unsubscribe();
+        }
+
+        if (this._submitDynamicFormSubscription) {
+            this._submitDynamicFormSubscription.unsubscribe();
+        }
+
+        if (this.dynamicForm) {
+            this.dynamicForm.dispose();
         }
     }
 }
