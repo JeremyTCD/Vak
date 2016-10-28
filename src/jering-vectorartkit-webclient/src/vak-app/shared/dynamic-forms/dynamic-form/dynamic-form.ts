@@ -6,20 +6,20 @@ import { Validity } from '../validity';
  */
 export class DynamicForm {
     validity: Validity;
+    messages: string[];
     submitAttempted: boolean;
-    errors: string[];
 
-    constructor(public dynamicControls: DynamicControl<any>[], public errorMessage: string) {
+    constructor(public dynamicControls: DynamicControl<any>[], public message: string) {
         for (let dynamicControl of dynamicControls) {
             dynamicControl.setupContext(this);
         }
     }
 
     /**
-     * Validate form and determine whether form is valid.
+     * Validates DynamicForm and determines whether it can be submitted.
      *
      * Returns
-     * - True if form is valid, false otherwise.
+     * - True if form can be submitted, false otherwise.
      */
     onSubmit(): boolean {
         this.submitAttempted = true;
@@ -31,13 +31,7 @@ export class DynamicForm {
 
         this.validate();
 
-        this.errors = [];
-        if (this.validity === Validity.invalid) {
-            this.errors.push(this.errorMessage);
-            return false;
-        }
-
-        return true;
+        return this.validity === Validity.valid;
     }
 
     /**
@@ -62,14 +56,23 @@ export class DynamicForm {
     }
 
     /**
-     * Validates form. Validation errors are added directly to each DynamicControl.
+     * Validates DynamicForm and its DynamicControls. Sets form validity to invalid if any of its DynamicControls are invalid or pending. Otherwise, sets form validity to valid.
      */
     validate(): void {
         this.validity = Validity.valid;
+        this.messages = [];
         for (let dynamicControl of this.dynamicControls) {
-            dynamicControl.validate();
-            if (dynamicControl.validity === Validity.invalid) {
+            // Force validation of controls that have never been validated
+            if (dynamicControl.validity === undefined) {
+                dynamicControl.validate();
+            }
+
+            // If any control invalid, mark form as invalid
+            if (this.validity !== Validity.invalid &&
+                dynamicControl.validity === Validity.invalid ||
+                dynamicControl.validity === Validity.pending) {
                 this.validity = Validity.invalid;
+                this.messages.push(this.message);
             }
         }
     }
