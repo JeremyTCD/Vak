@@ -1,5 +1,6 @@
 ﻿import { DynamicControlValidatorData } from './dynamic-control-validator-data';
 import { DynamicControlValidator } from './dynamic-control-validator';
+import { DynamicControlAsyncValidator } from './dynamic-control-async-validator';
 import { DynamicControlValidators } from './dynamic-control-validators';
 import { DynamicForm } from '../dynamic-form/dynamic-form';
 import { DynamicFormsService } from '../dynamic-forms.service';
@@ -14,7 +15,7 @@ export class DynamicControl<T>{
     order: number;
     tagName: string;
     validators: DynamicControlValidator[];
-    asyncValidator: DynamicControlValidator;
+    asyncValidator: DynamicControlAsyncValidator;
     properties: { [key: string]: string };
 
     parent: DynamicForm;
@@ -23,6 +24,8 @@ export class DynamicControl<T>{
     dirty: boolean;
     blurred: boolean;
     validity: Validity;
+    providerSiblingsNames: string[] = [];
+    dependentSiblings: DynamicControl<any>[] = [];
 
     constructor(options: {
         name?: string,
@@ -40,7 +43,7 @@ export class DynamicControl<T>{
         this.validators = [];
         let validatorData = options.validatorData || [];
         for (let validatorDatum of validatorData) {
-            this.validators.push(DynamicControlValidators[validatorDatum.name](validatorDatum));
+            this.validators.push(DynamicControlValidators[validatorDatum.name](validatorDatum, this));
         }
         this.asyncValidator = options.asyncValidatorData ? DynamicControlValidators[options.asyncValidatorData.name](options.asyncValidatorData, this, dynamicFormsService) : null;
         this.properties = options.properties || {};
@@ -65,11 +68,17 @@ export class DynamicControl<T>{
         }
 
         if (this.asyncValidator) {
-            let asyncValidatorResult = this.asyncValidator(this);
+            let asyncValidatorResult = this.asyncValidator.validate(this);
 
             this.validity = asyncValidatorResult.validity;
             if (asyncValidatorResult.message) {
                 this.messages.push(asyncValidatorResult.message);
+            }
+        }
+
+        for (let sibling of this.dependentSiblings) {
+            if (sibling.dirty && sibling.blurred) {
+                sibling.validate();
             }
         }
     }
@@ -89,7 +98,7 @@ export class DynamicControl<T>{
      * On first blur event, set blurred to true and run validation.
      */
     onBlur(event: any): void {
-        if (!this.blurred) {
+        if (this.dirty && !this.blurred) {
             this.validate();
             this.blurred = true;
         }
@@ -105,7 +114,33 @@ export class DynamicControl<T>{
         this.validate();
     }
 
+    /**
+     * Sets hook referencing parent DynamicForm. Also sets hooks between sibling DynamicControls.
+     */
+    setupContext(dynamicForm: DynamicForm): void {
+        this.parent = dynamicForm;
+        for (let name of this.providerSiblingsNames) {
+            let sibling = dynamicForm.get(name);
+            if (sibling) {
+                sibling.dependentSiblings.push(this);
+            } else {
+                throw Error(`Sibling does not exist.`);
+            }
+        }
+    }
+
+    /**
+     * Returns
+     * - True if validity is Validity.pending
+     * - False otherwise
+     */
     isValidityPending(): boolean {
         return this.validity === Validity.pending;
+    }
+
+    dispose(): void {
+        if (this.asyncValidator) {
+            this.asyncValidator.unsubscribe();
+        }
     }
 }
