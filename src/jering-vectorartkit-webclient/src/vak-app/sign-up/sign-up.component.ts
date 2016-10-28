@@ -3,6 +3,7 @@ import { Router } from '@angular/router/index';
 import { Response } from '@angular/http';
 
 import { environment } from '../../environments/environment';
+import { handleUnexpectedError } from '../shared/utility/error-handling';
 
 @Component({
     templateUrl: './sign-up.component.html'
@@ -19,11 +20,6 @@ export class SignUpComponent {
     }
 
     onSubmitError(error: Response | any): void {
-        if (error instanceof Response) {
-            this._router.navigate([`/error`, { errorMessage: error.json().errorMessage }]);
-        }
-        else {
-            this._router.navigate([`/error`]);
-        }
+        handleUnexpectedError(this._router, error);
     }
 }
