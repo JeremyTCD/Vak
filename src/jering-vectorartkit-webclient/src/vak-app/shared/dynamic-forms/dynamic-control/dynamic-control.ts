@@ -68,18 +68,19 @@ export class DynamicControl<T>{
     validate(): void {
         this.messages = [];
 
-        this._validity = Validity.valid;
+        let validity = Validity.valid;
         for (let validator of this.validators) {
             let validatorResult = validator(this);
 
-            if (this.validity !== Validity.invalid &&
+            if (validity !== Validity.invalid &&
                 validatorResult.validity === Validity.invalid) {
-                this.validity = Validity.invalid;
+                validity = Validity.invalid;
             }
             if (validatorResult.message) {
                 this.messages.push(validatorResult.message);
             }
         }
+        this.validity = validity;
 
         if (this.asyncValidator) {
             let asyncValidatorResult = this.asyncValidator.validate(this);

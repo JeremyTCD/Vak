@@ -20,6 +20,7 @@ export function handleUnexpectedError(router: Router, error: any) {
                                stack: ${error.stack}\n`
             }
         ]);
+        return;
     }
 
     router.navigate([`/error`]);

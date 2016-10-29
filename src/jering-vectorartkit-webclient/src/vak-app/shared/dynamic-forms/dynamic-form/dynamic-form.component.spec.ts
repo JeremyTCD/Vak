@@ -17,7 +17,7 @@ let stubHostComponent: StubHostComponent;
 let stubHostFixture: ComponentFixture<StubHostComponent>;
 let hostDebugElement: DebugElement;
 let nativeElement: HTMLElement;
-let stubDynamicFormsService 
+let stubDynamicFormsService; 
 
 let testControlName = `testControlName`;
 let testFormModelName = `testFormModelName`;
