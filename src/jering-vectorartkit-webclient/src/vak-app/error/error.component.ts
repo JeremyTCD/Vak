@@ -8,7 +8,7 @@ import { Check } from '../shared/utility/check';
 @Component({
     templateUrl: './error.component.html'
 })
-export class ErrorComponent implements OnInit {
+export class ErrorComponent implements OnInit, OnDestroy {
     public errorMessage: string;
     private _paramsSubscription: Subscription;
 

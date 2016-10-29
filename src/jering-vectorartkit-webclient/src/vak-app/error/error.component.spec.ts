@@ -30,7 +30,7 @@ describe('ErrorComponent', () => {
         stubActivatedRoute = TestBed.get(ActivatedRoute) as StubActivatedRoute;
     });
 
-    it(`Subscribes to params and does not render error message if it is null`, () => {
+    it(`Subscribes to params on initialization and does not render error message if it is null, undefined or an empty string`, () => {
         let errorDebugElement: DebugElement;
 
         stubActivatedRoute.testParams = { errorMessage: `` };
@@ -49,7 +49,7 @@ describe('ErrorComponent', () => {
         expect(errorDebugElement).toBeNull();
     });
 
-    it(`Subscribes to params and renders error message if it is a non-empty string`, () => {
+    it(`Subscribes to params on initialization and renders error message if it is a non-empty string`, () => {
         stubActivatedRoute.testParams = { errorMessage: testErrorMessage };
         errorComponentFixture.detectChanges();
         let errorNativeElement = errorComponentDebugElement.query(By.css(`div`)).nativeElement;
