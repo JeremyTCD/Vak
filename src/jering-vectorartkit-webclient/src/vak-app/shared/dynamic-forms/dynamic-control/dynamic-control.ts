@@ -1,4 +1,5 @@
 ﻿import { DynamicControlValidatorData } from './dynamic-control-validator-data';
+import { DynamicControlData } from './dynamic-control-data';
 import { DynamicControlValidator } from './dynamic-control-validator';
 import { DynamicControlAsyncValidator } from './dynamic-control-async-validator';
 import { DynamicControlValidators } from './dynamic-control-validators';
@@ -40,26 +41,20 @@ export class DynamicControl<T>{
         }
     }
 
-    constructor(options: {
-        name?: string,
-        displayName?: string,
-        order?: number,
-        tagName?: string,
-        validatorData?: DynamicControlValidatorData[],
-        asyncValidatorData?: DynamicControlValidatorData,
-        properties?: { [key: string]: string }
-    } = {}, dynamicFormsService?: DynamicFormsService) {
-        this.name = options.name || '';
-        this.displayName = options.displayName || '';
-        this.order = options.order === undefined ? 1 : options.order;
-        this.tagName = options.tagName || '';
+    constructor(dynamicControlData: DynamicControlData, dynamicFormsService?: DynamicFormsService) {
+        this.name = dynamicControlData.name || '';
+        this.displayName = dynamicControlData.displayName || '';
+        this.order = dynamicControlData.order === undefined ? 1 : dynamicControlData.order;
+        this.tagName = dynamicControlData.tagName || '';
         this.validators = [];
-        let validatorData = options.validatorData || [];
+        let validatorData = dynamicControlData.validatorData || [];
         for (let validatorDatum of validatorData) {
             this.validators.push(DynamicControlValidators[validatorDatum.name](validatorDatum, this));
         }
-        this.asyncValidator = options.asyncValidatorData ? DynamicControlValidators[options.asyncValidatorData.name](options.asyncValidatorData, this, dynamicFormsService) : null;
-        this.properties = options.properties || {};
+        this.asyncValidator = dynamicControlData.asyncValidatorData ?
+            DynamicControlValidators[dynamicControlData.asyncValidatorData.name](dynamicControlData.asyncValidatorData, this, dynamicFormsService) :
+            null;
+        this.properties = dynamicControlData.properties || {};
     }
 
     /**

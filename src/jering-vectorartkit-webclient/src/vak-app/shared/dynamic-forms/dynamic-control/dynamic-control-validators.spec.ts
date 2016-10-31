@@ -15,14 +15,12 @@ describe(`validateAllDigits`, () => {
     let validateAllDigitsValidator: DynamicControlValidator;
 
     beforeEach(() => {
-        dynamicControl = new DynamicControl();
-        dynamicControlValidatorData = new DynamicControlValidatorData(
-            {
-                name: `validateAllDigits`,
-                errorMessage: testErrorMessage,
-                options: null
-            });
-        validateAllDigitsValidator = DynamicControlValidators.validateAllDigits(dynamicControlValidatorData);
+        dynamicControl = new DynamicControl({});
+        validateAllDigitsValidator = DynamicControlValidators.validateAllDigits({
+            name: `validateAllDigits`,
+            errorMessage: testErrorMessage,
+            options: null
+        });
     });
 
     it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
@@ -95,14 +93,12 @@ describe(`validateComplexity`, () => {
     let validateComplexityValidator: DynamicControlValidator;
 
     beforeEach(() => {
-        dynamicControl = new DynamicControl();
-        dynamicControlValidatorData = new DynamicControlValidatorData(
-            {
-                name: `validateComplexity`,
-                errorMessage: testErrorMessage,
-                options: null
-            });
-        validateComplexityValidator = DynamicControlValidators.validateComplexity(dynamicControlValidatorData);;
+        dynamicControl = new DynamicControl({});
+        validateComplexityValidator = DynamicControlValidators.validateComplexity({
+            name: `validateComplexity`,
+            errorMessage: testErrorMessage,
+            options: null
+        });
     });
 
     it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
@@ -177,18 +173,16 @@ describe(`validateDiffers`, () => {
     let dynamicForm: DynamicForm;
 
     beforeEach(() => {
-        dynamicControlValidatorData = new DynamicControlValidatorData(
-            {
-                name: `validateDiffers`,
-                errorMessage: testErrorMessage,
-                options: {
-                    OtherProperty: ``
-                }
-            });
-        validateDiffersValidator = DynamicControlValidators.validateDiffers(dynamicControlValidatorData);
+        validateDiffersValidator = DynamicControlValidators.validateDiffers({
+            name: `validateDiffers`,
+            errorMessage: testErrorMessage,
+            options: {
+                OtherProperty: ``
+            }
+        });
         testErrorMessage = `Error message`;
-        otherDynamicControl = new DynamicControl();
-        dynamicControl = new DynamicControl();
+        otherDynamicControl = new DynamicControl({});
+        dynamicControl = new DynamicControl({});
         dynamicForm = new DynamicForm([], ``);
 
         spyOn(dynamicForm, `get`).and.returnValue(otherDynamicControl);
@@ -252,14 +246,12 @@ describe(`validateEmailAddress`, () => {
     let validateEmailAddressValidator: DynamicControlValidator;
 
     beforeEach(() => {
-        dynamicControl = new DynamicControl();
-        dynamicControlValidatorData = new DynamicControlValidatorData(
-            {
-                name: `validateEmailAddress`,
-                errorMessage: testErrorMessage,
-                options: null
-            });
-        validateEmailAddressValidator = DynamicControlValidators.validateEmailAddress(dynamicControlValidatorData);;
+        dynamicControl = new DynamicControl({});
+        validateEmailAddressValidator = DynamicControlValidators.validateEmailAddress({
+            name: `validateEmailAddress`,
+            errorMessage: testErrorMessage,
+            options: null
+        });
     });
 
     it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
@@ -332,16 +324,14 @@ describe(`validateLength`, () => {
     let validateLengthValidator: DynamicControlValidator;
 
     beforeEach(() => {
-        dynamicControl = new DynamicControl();
-        dynamicControlValidatorData = new DynamicControlValidatorData(
-            {
-                name: `validateLength`,
-                errorMessage: testErrorMessage,
-                options: {
-                    Length: `8`
-                }
-            });
-        validateLengthValidator = DynamicControlValidators.validateLength(dynamicControlValidatorData);
+        dynamicControl = new DynamicControl({});
+        validateLengthValidator = DynamicControlValidators.validateLength({
+            name: `validateLength`,
+            errorMessage: testErrorMessage,
+            options: {
+                Length: `8`
+            }
+        });
     });
 
     it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
@@ -392,17 +382,16 @@ describe(`validateMatches`, () => {
     let dynamicForm: DynamicForm;
 
     beforeEach(() => {
-        dynamicControlValidatorData = new DynamicControlValidatorData(
-            {
+        otherDynamicControl = new DynamicControl({});
+        dynamicControl = new DynamicControl({});
+        validateMatchesValidator = DynamicControlValidators.validateMatches({
                 name: `validateMatches`,
                 errorMessage: testErrorMessage,
                 options: {
                     OtherProperty: ``
                 }
-            });
-        otherDynamicControl = new DynamicControl();
-        dynamicControl = new DynamicControl();
-        validateMatchesValidator = DynamicControlValidators.validateMatches(dynamicControlValidatorData, dynamicControl);
+            },
+            dynamicControl);
         dynamicForm = new DynamicForm([], ``);
 
         spyOn(dynamicForm, `get`).and.returnValue(otherDynamicControl);
@@ -466,16 +455,14 @@ describe(`validateMinLength`, () => {
     let validateMinLengthValidator: DynamicControlValidator;
 
     beforeEach(() => {
-        dynamicControl = new DynamicControl();
-        dynamicControlValidatorData = new DynamicControlValidatorData(
-            {
-                name: `validateMinLength`,
-                errorMessage: testErrorMessage,
-                options: {
-                    MinLength: `5`
-                }
-            });
-        validateMinLengthValidator = DynamicControlValidators.validateMinLength(dynamicControlValidatorData);
+        dynamicControl = new DynamicControl({});
+        validateMinLengthValidator = DynamicControlValidators.validateMinLength({
+            name: `validateMinLength`,
+            errorMessage: testErrorMessage,
+            options: {
+                MinLength: `5`
+            }
+        });
     });
 
     it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
@@ -531,13 +518,11 @@ describe(`validateRequired`, () => {
 
     beforeEach(() => {
         dynamicControl = new DynamicControl({ displayName: `testDisplayName` });
-        dynamicControlValidatorData = new DynamicControlValidatorData(
-            {
-                name: `validateRequired`,
-                errorMessage: `{0} testErrorMessage`,
-                options: null
-            });
-        validateRequiredValidator = DynamicControlValidators.validateRequired(dynamicControlValidatorData);
+        validateRequiredValidator = DynamicControlValidators.validateRequired({
+            name: `validateRequired`,
+            errorMessage: `{0} testErrorMessage`,
+            options: null
+        });
     });
 
     it(`DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
