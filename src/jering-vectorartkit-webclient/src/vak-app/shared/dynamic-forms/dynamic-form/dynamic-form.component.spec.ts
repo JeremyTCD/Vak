@@ -11,6 +11,7 @@ import { DynamicFormComponent } from './dynamic-form.component';
 import { DynamicFormsService } from '../dynamic-forms.service';
 import { DynamicControl } from '../dynamic-control/dynamic-control';
 import { DynamicForm } from './dynamic-form';
+import { StubDomEvent } from '../../../../testing/dom-stubs';
 
 let dynamicFormComponent: DynamicFormComponent;
 let stubHostComponent: StubHostComponent;
@@ -24,9 +25,7 @@ let testFormModelName = `testFormModelName`;
 let testSubmitUrl = `testSubmitUrl`;
 let testErrorMessage = `testErrorMessage`;
 let testDynamicForm = new DynamicForm([new DynamicControl<any>({ name: testControlName })], testErrorMessage);
-let testSubmitEvent = {
-    preventDefault: () => null
-};
+let testSubmitEvent = new StubDomEvent();
 let testResponse = new Response(
     new ResponseOptions({
         body: ``
