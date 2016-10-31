@@ -34,7 +34,7 @@ export class DynamicControl<T>{
     set validity(validity: Validity) {
         if (this._validity !== validity) {
             this._validity = validity;
-            if (this.parent.submitAttempted) {
+            if (this.parent && this.parent.submitAttempted) {
                 this.parent.validate();
             }
         }
@@ -63,11 +63,10 @@ export class DynamicControl<T>{
     }
 
     /**
-     * Validates control if it is both dirty and blurred
+     * Validates DynamicControl
      */
     validate(): void {
         this.messages = [];
-
         let validity = Validity.valid;
         for (let validator of this.validators) {
             let validatorResult = validator(this);
@@ -99,7 +98,7 @@ export class DynamicControl<T>{
     }
 
     /**
-     * Updates value and sets dirty to true. If control has been blurred before, run validation.
+     * Updates value and sets dirty to true. If DynamicControl has been blurred, validate DynamicControl.
      */
     onInput(event: any): void {
         this.value = event.target.value;
@@ -110,7 +109,7 @@ export class DynamicControl<T>{
     }
 
     /**
-     * On first blur event, set blurred to true and run validation.
+     * On first blur when DynamicControl is dirty, set blurred to true and run validation.
      */
     onBlur(event: any): void {
         if (this.dirty && !this.blurred) {
@@ -127,7 +126,10 @@ export class DynamicControl<T>{
     }
 
     /**
-     * Sets hook referencing parent DynamicForm. Also sets hooks between sibling DynamicControls.
+     * Sets hook referencing parent DynamicForms and registers DynamicControl with provider siblings.
+     *
+     * Errors
+     * - RangeError if no sibling corresponds to a provider sibling name.
      */
     setupContext(dynamicForm: DynamicForm): void {
         this.parent = dynamicForm;
@@ -136,7 +138,7 @@ export class DynamicControl<T>{
             if (sibling) {
                 sibling.dependentSiblings.push(this);
             } else {
-                throw Error(`Sibling does not exist.`);
+                throw new RangeError(`No sibling with name ${name} exists`);
             }
         }
     }
