@@ -1,17 +1,21 @@
-﻿import { DynamicControlValidators } from './dynamic-control-validators';
+﻿import { Observable } from 'rxjs';
+
+import { DynamicControlValidators } from './dynamic-control-validators';
 import { DynamicControlValidator } from './dynamic-control-validator';
+import { DynamicControlAsyncValidator } from './dynamic-control-async-validator';
 import { DynamicControlValidatorData } from './dynamic-control-validator-data';
 import { DynamicControlValidatorResult } from './dynamic-control-validator-result';
 import { DynamicControl } from './dynamic-control';
 import { DynamicForm } from '../dynamic-form/dynamic-form';
+import { DynamicFormsService } from '../dynamic-forms.service';
 import { Validity } from '../validity';
 
 let testErrorMessage = `testErrorMessage`;
+let testDisplayName = `testDisplayName`;
 let result: DynamicControlValidatorResult;
 
 describe(`validateAllDigits`, () => {
     let dynamicControl: DynamicControl<any>;
-    let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateAllDigitsValidator: DynamicControlValidator;
 
     beforeEach(() => {
@@ -23,7 +27,7 @@ describe(`validateAllDigits`, () => {
         });
     });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value is null, undefined or an empty string`, () => {
             dynamicControl.value = null;
             result = validateAllDigitsValidator(dynamicControl);
@@ -44,7 +48,7 @@ describe(`validateAllDigits`, () => {
             expect(result.message).toBe(undefined);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value contains only digits`, () => {
             dynamicControl.value = `0`;
             result = validateAllDigitsValidator(dynamicControl);
@@ -59,7 +63,7 @@ describe(`validateAllDigits`, () => {
             expect(result.message).toBe(undefined);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
         if control value does not contain only digits`, () => {
             dynamicControl.value = `-1`;
             result = validateAllDigitsValidator(dynamicControl);
@@ -89,7 +93,6 @@ describe(`validateAllDigits`, () => {
 
 describe(`validateComplexity`, () => {
     let dynamicControl: DynamicControl<any>;
-    let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateComplexityValidator: DynamicControlValidator;
 
     beforeEach(() => {
@@ -101,7 +104,7 @@ describe(`validateComplexity`, () => {
         });
     });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value is null, undefined or an empty string`, () => {
             dynamicControl.value = null;
             result = validateComplexityValidator(dynamicControl);
@@ -122,7 +125,7 @@ describe(`validateComplexity`, () => {
             expect(result.message).toBe(undefined);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value is sufficiently complex`, () => {
             dynamicControl.value = `aaabbb00`;
             result = validateComplexityValidator(dynamicControl);
@@ -143,7 +146,7 @@ describe(`validateComplexity`, () => {
             expect(result.message).toBe(undefined);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if 
         control value is not sufficiently complex`, () => {
             dynamicControl.value = `aaaaaaaa`;
             result = validateComplexityValidator(dynamicControl);
@@ -167,7 +170,6 @@ describe(`validateComplexity`, () => {
 
 describe(`validateDiffers`, () => {
     let dynamicControl: DynamicControl<any>;
-    let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateDiffersValidator: DynamicControlValidator;
     let otherDynamicControl: DynamicControl<any>;
     let dynamicForm: DynamicForm;
@@ -189,7 +191,7 @@ describe(`validateDiffers`, () => {
         dynamicControl.parent = dynamicForm;
     });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined if 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined if 
         either control value or other value is null, undefined or an empty string`, () => {
             dynamicControl.value = null;
             otherDynamicControl.value = null;
@@ -215,7 +217,7 @@ describe(`validateDiffers`, () => {
             expect(dynamicForm.get).toHaveBeenCalledTimes(3);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control values differ`, () => {
             dynamicControl.value = `test1`;
             otherDynamicControl.value = `test2`;
@@ -227,7 +229,7 @@ describe(`validateDiffers`, () => {
             expect(dynamicForm.get).toHaveBeenCalledTimes(1);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
         if control values do not differ`, () => {
             dynamicControl.value = `test`;
             otherDynamicControl.value = `test`;
@@ -242,7 +244,6 @@ describe(`validateDiffers`, () => {
 
 describe(`validateEmailAddress`, () => {
     let dynamicControl: DynamicControl<any>;
-    let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateEmailAddressValidator: DynamicControlValidator;
 
     beforeEach(() => {
@@ -254,7 +255,7 @@ describe(`validateEmailAddress`, () => {
         });
     });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value is null, undefined or an empty string`, () => {
             dynamicControl.value = null;
             result = validateEmailAddressValidator(dynamicControl);
@@ -275,7 +276,7 @@ describe(`validateEmailAddress`, () => {
             expect(result.message).toBe(undefined);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value is an email address`, () => {
             dynamicControl.value = `test@test.com`;
             result = validateEmailAddressValidator(dynamicControl);
@@ -290,7 +291,7 @@ describe(`validateEmailAddress`, () => {
             expect(result.message).toBe(undefined);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
         if control value is not an email address`, () => {
             dynamicControl.value = `test@`;
             result = validateEmailAddressValidator(dynamicControl);
@@ -320,7 +321,6 @@ describe(`validateEmailAddress`, () => {
 
 describe(`validateLength`, () => {
     let dynamicControl: DynamicControl<any>;
-    let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateLengthValidator: DynamicControlValidator;
 
     beforeEach(() => {
@@ -334,7 +334,7 @@ describe(`validateLength`, () => {
         });
     });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value is null, undefined or an empty string`, () => {
             dynamicControl.value = null;
             result = validateLengthValidator(dynamicControl);
@@ -355,7 +355,7 @@ describe(`validateLength`, () => {
             expect(result.message).toBe(undefined);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value has specified length`, () => {
             dynamicControl.value = `testtest`;
             result = validateLengthValidator(dynamicControl);
@@ -364,7 +364,7 @@ describe(`validateLength`, () => {
             expect(result.message).toBe(undefined);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
         if control value does not have specified length`, () => {
             dynamicControl.value = `test`;
             result = validateLengthValidator(dynamicControl);
@@ -376,7 +376,6 @@ describe(`validateLength`, () => {
 
 describe(`validateMatches`, () => {
     let dynamicControl: DynamicControl<any>;
-    let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateMatchesValidator: DynamicControlValidator;
     let otherDynamicControl: DynamicControl<any>;
     let dynamicForm: DynamicForm;
@@ -385,12 +384,12 @@ describe(`validateMatches`, () => {
         otherDynamicControl = new DynamicControl({});
         dynamicControl = new DynamicControl({});
         validateMatchesValidator = DynamicControlValidators.validateMatches({
-                name: `validateMatches`,
-                errorMessage: testErrorMessage,
-                options: {
-                    OtherProperty: ``
-                }
-            },
+            name: `validateMatches`,
+            errorMessage: testErrorMessage,
+            options: {
+                OtherProperty: ``
+            }
+        },
             dynamicControl);
         dynamicForm = new DynamicForm([], ``);
 
@@ -398,7 +397,7 @@ describe(`validateMatches`, () => {
         dynamicControl.parent = dynamicForm;
     });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if either control value or other value is null, undefined or an empty string`, () => {
             dynamicControl.value = null;
             otherDynamicControl.value = null;
@@ -424,7 +423,7 @@ describe(`validateMatches`, () => {
             expect(dynamicForm.get).toHaveBeenCalledTimes(3);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control values match`, () => {
             dynamicControl.value = `test`;
             otherDynamicControl.value = `test`;
@@ -436,7 +435,7 @@ describe(`validateMatches`, () => {
             expect(dynamicForm.get).toHaveBeenCalledTimes(1);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
         if control values do not match`, () => {
             dynamicControl.value = `test1`;
             otherDynamicControl.value = `test2`;
@@ -451,7 +450,6 @@ describe(`validateMatches`, () => {
 
 describe(`validateMinLength`, () => {
     let dynamicControl: DynamicControl<any>;
-    let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateMinLengthValidator: DynamicControlValidator;
 
     beforeEach(() => {
@@ -465,7 +463,7 @@ describe(`validateMinLength`, () => {
         });
     });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value is null, undefined or an empty string`, () => {
             dynamicControl.value = null;
             result = validateMinLengthValidator(dynamicControl);
@@ -486,7 +484,7 @@ describe(`validateMinLength`, () => {
             expect(result.message).toBe(undefined);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value\`s length is greater than or equal to specified minimum length`, () => {
             dynamicControl.value = `testtest`;
             result = validateMinLengthValidator(dynamicControl);
@@ -501,7 +499,7 @@ describe(`validateMinLength`, () => {
             expect(result.message).toBe(undefined);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
         if control value\`s length is less than specified minimum length length`, () => {
             dynamicControl.value = `test`;
             result = validateMinLengthValidator(dynamicControl);
@@ -513,11 +511,10 @@ describe(`validateMinLength`, () => {
 
 describe(`validateRequired`, () => {
     let dynamicControl: DynamicControl<any>;
-    let dynamicControlValidatorData: DynamicControlValidatorData;
     let validateRequiredValidator: DynamicControlValidator;
 
     beforeEach(() => {
-        dynamicControl = new DynamicControl({ displayName: `testDisplayName` });
+        dynamicControl = new DynamicControl({ displayName: testDisplayName });
         validateRequiredValidator = DynamicControlValidators.validateRequired({
             name: `validateRequired`,
             errorMessage: `{0} testErrorMessage`,
@@ -525,7 +522,7 @@ describe(`validateRequired`, () => {
         });
     });
 
-    it(`DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
         if control value is null, undefined or an empty string`, () => {
             dynamicControl.value = null;
             result = validateRequiredValidator(dynamicControl);
@@ -546,7 +543,7 @@ describe(`validateRequired`, () => {
             expect(result.message).toBe(`testDisplayName testErrorMessage`);
         });
 
-    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
+    it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
         if control value is not null, undefined or an empty string`, () => {
             dynamicControl.value = `test`;
             result = validateRequiredValidator(dynamicControl);
@@ -556,3 +553,70 @@ describe(`validateRequired`, () => {
         });
 });
 
+describe(`validateAsync`, () => {
+    let dynamicControl: DynamicControl<any>;
+    let validateAsyncValidator: DynamicControlAsyncValidator;
+    let testDynamicFormsService = new DynamicFormsService(null);
+
+    beforeEach(() => {
+        dynamicControl = new DynamicControl({ displayName: testDisplayName });
+        validateAsyncValidator = DynamicControlValidators.validateAsync({
+            name: `validateAsync`,
+            errorMessage: `{0} testErrorMessage`,
+            options: null
+        },
+            dynamicControl,
+            null);
+        spyOn(testDynamicFormsService, `validateValue`).and.returnValue(Observable.empty<Validity>());
+    });
+
+    it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message = undefined if 
+        dynamicControl is invalid before function is called`, () => {
+            dynamicControl.validity = Validity.invalid;
+
+            result = validateAsyncValidator.validate(dynamicControl);
+
+            expect(result).toBeDefined();
+            expect(result.validity).toBe(Validity.invalid);
+            expect(result.message).toBe(undefined);
+        });
+
+    it(`DynamicControlValidatorResult with validity = Validity.valid and message = undefined if
+        control value is null, undefined or an empty string`, () => {
+            dynamicControl.validity = Validity.valid;
+
+            dynamicControl.value = null;
+            result = validateAsyncValidator.validate(dynamicControl);
+            expect(result).toBeDefined();
+            expect(result.validity).toBe(Validity.valid);
+            expect(result.message).toBe(undefined);
+
+            dynamicControl.value = undefined;
+            result = validateAsyncValidator.validate(dynamicControl);
+            expect(result).toBeDefined();
+            expect(result.validity).toBe(Validity.valid);
+            expect(result.message).toBe(undefined);
+
+            dynamicControl.value = ``;
+            result = validateAsyncValidator.validate(dynamicControl);
+            expect(result).toBeDefined();
+            expect(result.validity).toBe(Validity.valid);
+            expect(result.message).toBe(undefined);
+        });
+
+    it(`Returns DynamicControlValidatorResult with validity = Validity.pending and message = undefined if 
+        dynamicControl is valid before function is called`, () => {
+            dynamicControl.validity = Validity.valid;
+            dynamicControl.value = `test`;
+
+            result = validateAsyncValidator.validate(dynamicControl);
+
+            expect(result).toBeDefined();
+            expect(result.validity).toBe(Validity.pending);
+            expect(result.message).toBe(undefined);
+        });
+
+    // TODO Figure out how to test
+    // describe(`Creates subject stream`, () => {
+    // });
+});

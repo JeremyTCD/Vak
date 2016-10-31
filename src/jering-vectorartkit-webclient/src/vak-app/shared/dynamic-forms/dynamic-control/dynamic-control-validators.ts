@@ -238,14 +238,22 @@ export class DynamicControlValidators {
      * Starts a Subject stream and returns a DynamicControlValidator function. Subject stream uses dynamicFormsService to validate provided values.
      *
      * Generated DynamicControlValidator function
-     * - Emits null to stream if dynamicControl is already invalid.
-     * - Emits value to stream if dynamicControl is valid.  
+     * - Emits null to stream if dynamicControl is already invalid
+     * - Emits value to stream if dynamicControl is valid
      *
      * Generated DynamicControlValidator function returns
-     * - DynamicControlValidatorResult with validity = Validity.pending and message = undefined if dynamicControl is valid.
-     * - DynamicControlValidatorResult with validity = Validity.invalid and message = undefined if dynamicControl is already invalid.
+     * - DynamicControlValidatorResult with validity = Validity.pending and message = undefined if
+     *   dynamicControl is valid before function is called
+     * - DynamicControlValidatorResult with validity = Validity.invalid and message = undefined if
+     *   dynamicControl is invalid before function is called
+     * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if
+     *   control value is null, undefined or an empty string
+     *
+     * Subject stream
+     * - Directly sets dynamicControl.validity to Validity.valid if query observable returns Validity.valid
+     * - Otherwise, directly sets dynamicControl.validity to Validity.invalid
      */
-    static asyncValidateEmailNotInUse(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
+    static validateAsync(validatorData: DynamicControlValidatorData, dynamicControl: DynamicControl<any>,
         dynamicFormsService: DynamicFormsService): DynamicControlAsyncValidator {
         let valueStream = new Subject<string>();
         let subscription = valueStream.
@@ -283,6 +291,10 @@ export class DynamicControlValidators {
                     valueStream.next(null);
 
                     return new DynamicControlValidatorResult(Validity.invalid);
+                } else if (!Check.isValue(dynamicControl.value)){
+                    valueStream.next(null);
+
+                    return new DynamicControlValidatorResult(Validity.valid);
                 } else {
                     valueStream.next(dynamicControl.value);
 
