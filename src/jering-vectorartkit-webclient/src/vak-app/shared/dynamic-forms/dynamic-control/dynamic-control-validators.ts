@@ -114,7 +114,7 @@ export class DynamicControlValidators {
         let otherControlName = validatorData.options[`OtherProperty`];
 
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
-            let otherValue = dynamicControl.parent.get(otherControlName).value;
+            let otherValue = dynamicControl.parent.getDynamicControl(otherControlName).value;
 
             if (!Check.isValue(dynamicControl.value) || !Check.isValue(otherValue) ||
                 dynamicControl.value !== otherValue) {
@@ -189,7 +189,7 @@ export class DynamicControlValidators {
         dynamicControl.providerSiblingsNames.push(otherControlName);
 
         return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
-            let otherControl = dynamicControl.parent.get(otherControlName);
+            let otherControl = dynamicControl.parent.getDynamicControl(otherControlName);
 
             if (!Check.isValue(dynamicControl.value) || !Check.isValue(otherControl.value) || dynamicControl.value === otherControl.value) {
                 return new DynamicControlValidatorResult(Validity.valid);

@@ -6,13 +6,10 @@ import { Validity } from '../validity';
  */
 export class DynamicForm {
     validity: Validity;
-    messages: string[];
+    messages: string[] = [];
     submitAttempted: boolean;
 
     constructor(public dynamicControls: DynamicControl<any>[], public message: string) {
-        for (let dynamicControl of dynamicControls) {
-            dynamicControl.setupContext(this);
-        }
     }
 
     /**
@@ -51,7 +48,7 @@ export class DynamicForm {
      * Returns
      * - DynamicControl with specified name
      */
-    get(name: string): DynamicControl<any> {
+    getDynamicControl(name: string): DynamicControl<any> {
         return this.dynamicControls.find(dynamicControl => dynamicControl.name === name);
     }
 
@@ -74,6 +71,15 @@ export class DynamicForm {
                 this.validity = Validity.invalid;
                 this.messages.push(this.message);
             }
+        }
+    }
+
+    /**
+     * Sets up context for each child DynamicControl.
+     */
+    setupContext(): void {
+        for (let dynamicControl of this.dynamicControls) {
+            dynamicControl.setupContext(this);
         }
     }
 

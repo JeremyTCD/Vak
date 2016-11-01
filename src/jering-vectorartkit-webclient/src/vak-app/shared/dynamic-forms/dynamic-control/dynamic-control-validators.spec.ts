@@ -214,7 +214,7 @@ describe(`validateDiffers`, () => {
             expect(result.validity).toBe(Validity.valid);
             expect(result.message).toBe(undefined);
 
-            expect(dynamicForm.get).toHaveBeenCalledTimes(3);
+            expect(dynamicForm.getDynamicControl).toHaveBeenCalledTimes(3);
         });
 
     it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
@@ -226,7 +226,7 @@ describe(`validateDiffers`, () => {
             expect(result.validity).toBe(Validity.valid);
             expect(result.message).toBe(undefined);
 
-            expect(dynamicForm.get).toHaveBeenCalledTimes(1);
+            expect(dynamicForm.getDynamicControl).toHaveBeenCalledTimes(1);
         });
 
     it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
@@ -238,7 +238,7 @@ describe(`validateDiffers`, () => {
             expect(result.validity).toBe(Validity.invalid);
             expect(result.message).toBe(testErrorMessage);
 
-            expect(dynamicForm.get).toHaveBeenCalledTimes(1);
+            expect(dynamicForm.getDynamicControl).toHaveBeenCalledTimes(1);
         });
 });
 
@@ -420,7 +420,7 @@ describe(`validateMatches`, () => {
             expect(result.validity).toBe(Validity.valid);
             expect(result.message).toBe(undefined);
 
-            expect(dynamicForm.get).toHaveBeenCalledTimes(3);
+            expect(dynamicForm.getDynamicControl).toHaveBeenCalledTimes(3);
         });
 
     it(`Returns DynamicControlValidatorResult with validity = Validity.valid and message = undefined 
@@ -432,7 +432,7 @@ describe(`validateMatches`, () => {
             expect(result.validity).toBe(Validity.valid);
             expect(result.message).toBe(undefined);
 
-            expect(dynamicForm.get).toHaveBeenCalledTimes(1);
+            expect(dynamicForm.getDynamicControl).toHaveBeenCalledTimes(1);
         });
 
     it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message 
@@ -444,7 +444,7 @@ describe(`validateMatches`, () => {
             expect(result.validity).toBe(Validity.invalid);
             expect(result.message).toBe(testErrorMessage);
 
-            expect(dynamicForm.get).toHaveBeenCalledTimes(1);
+            expect(dynamicForm.getDynamicControl).toHaveBeenCalledTimes(1);
         });
 });
 

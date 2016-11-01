@@ -20,7 +20,7 @@ export class DynamicControl<T>{
     properties: { [key: string]: string };
 
     parent: DynamicForm;
-    messages: string[];
+    messages: string[] = [];
     value: string;
     dirty: boolean;
     blurred: boolean;
@@ -121,7 +121,7 @@ export class DynamicControl<T>{
     }
 
     /**
-     * Sets hook referencing parent DynamicForms and registers DynamicControl with provider siblings.
+     * Sets hook referencing parent DynamicForm and registers DynamicControl with provider siblings.
      *
      * Errors
      * - RangeError if no sibling corresponds to a provider sibling name.
@@ -129,7 +129,7 @@ export class DynamicControl<T>{
     setupContext(dynamicForm: DynamicForm): void {
         this.parent = dynamicForm;
         for (let name of this.providerSiblingsNames) {
-            let sibling = dynamicForm.get(name);
+            let sibling = dynamicForm.getDynamicControl(name);
             if (sibling) {
                 sibling.dependentSiblings.push(this);
             } else {

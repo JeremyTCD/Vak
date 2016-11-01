@@ -80,7 +80,7 @@ describe('DynamicControl', () => {
 
         dynamicControl.setupContext(testDynamicForm);
 
-        expect(testDynamicForm.get).toHaveBeenCalledTimes(1);
+        expect(testDynamicForm.getDynamicControl).toHaveBeenCalledTimes(1);
         expect(dynamicControl.parent).toBe(testDynamicForm);
         expect(testDynamicControl.dependentSiblings[0]).toBe(dynamicControl);
     });
@@ -92,7 +92,7 @@ describe('DynamicControl', () => {
 
         expect(() => dynamicControl.setupContext(testDynamicForm)).toThrow(new RangeError(`No sibling with name ${testDynamicControlName} exists`));
         expect(dynamicControl.parent).toBe(testDynamicForm);
-        expect(testDynamicForm.get).toHaveBeenCalledTimes(1);
+        expect(testDynamicForm.getDynamicControl).toHaveBeenCalledTimes(1);
     });
 
     it(`validate sets validity to invalid and adds message if any synchronous validator returns invalid and a message`, () => {
