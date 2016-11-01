@@ -45,7 +45,10 @@ export class DynamicFormsService {
             dynamicControls.push(new DynamicControl<any>(dynamicControlData, this));
         }
 
-        return new DynamicForm(dynamicControls.sort((dynamicControl1, dynamicControl2) => dynamicControl1.order - dynamicControl2.order), body.errorMessage);
+        let dynamicForm = new DynamicForm(dynamicControls.sort((dynamicControl1, dynamicControl2) => dynamicControl1.order - dynamicControl2.order), body.errorMessage);
+        dynamicForm.setupContext();
+
+        return dynamicForm;
     }
 
     submitDynamicForm(url: string, dynamicForm: DynamicForm): Observable<Response> {
