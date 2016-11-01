@@ -10,13 +10,15 @@ import { environment } from '../../../environments/environment';
  */
 @Injectable()
 export class ErrorHandlerService {
-    handleUnexpectedError(router: Router, error: any): void {
+    constructor(private _router: Router) { }
+
+    handleUnexpectedError(error: any): void {
         if (!Check.isValue(error)){
-            router.navigate([`/error`]);
+            this._router.navigate([`/error`]);
         }
 
         if (Check.isString(error)) {
-            router.navigate([`/error`, { errorMessage: error }]);
+            this._router.navigate([`/error`, { errorMessage: error }]);
             return;
         }
 
@@ -35,7 +37,7 @@ export class ErrorHandlerService {
         }
 
         if (Check.isValue(errorMessage)) {
-            router.navigate([`/error`,
+            this._router.navigate([`/error`,
                 {
                     errorMessage: errorMessage
                 }
@@ -44,6 +46,6 @@ export class ErrorHandlerService {
             return;
         }
 
-        router.navigate([`/error`]);
+        this._router.navigate([`/error`]);
     }
 }
