@@ -13,13 +13,14 @@ export class DynamicForm {
     }
 
     /**
-     * Validates DynamicForm and determines whether it can be submitted.
+     * Sets submitAttempted to true, sets dirty and blurred to true for all child DynamicControls,
+     * calls validate and determines whether it can be submitted.
      *
      * Returns
-     * - True if form can be submitted, false otherwise.
+     * - True if DynamicForm is valid and can thus be submitted, false otherwise.
      */
     onSubmit(): boolean {
-        this.submitAttempted = true;
+        this.submitAttempted = true;  
 
         for (let dynamicControl of this.dynamicControls) {
             dynamicControl.dirty = true;
@@ -33,6 +34,9 @@ export class DynamicForm {
 
     /**
      * Current form value
+     *
+     * Returns
+     * - Map of child DynamicControl name-value pairs
      */
     get value(): { [key: string]: string } {
         let result: { [key: string]: string } = {};
@@ -56,7 +60,7 @@ export class DynamicForm {
      * Validates DynamicForm and its DynamicControls. Sets form validity to invalid if any of its DynamicControls are invalid or pending. Otherwise, sets form validity to valid.
      */
     validate(): void {
-        this.validity = Validity.valid;
+        let validity = Validity.valid;
         this.messages = [];
         for (let dynamicControl of this.dynamicControls) {
             // Force validation of controls that have never been validated
@@ -65,13 +69,14 @@ export class DynamicForm {
             }
 
             // If any control invalid, mark form as invalid
-            if (this.validity !== Validity.invalid &&
+            if (validity !== Validity.invalid &&
                 dynamicControl.validity === Validity.invalid ||
                 dynamicControl.validity === Validity.pending) {
-                this.validity = Validity.invalid;
+                validity = Validity.invalid;
                 this.messages.push(this.message);
             }
         }
+        this.validity = validity;
     }
 
     /**
