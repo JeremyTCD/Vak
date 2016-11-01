@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 
 import { DynamicForm } from './dynamic-form';
 import { DynamicFormsService } from '../dynamic-forms.service';
-import { handleUnexpectedError } from '../../utility/error-handling';
+import { ErrorHandlerService } from '../../utility/error-handler.service';
 
 @Component({
     selector: 'dynamic-form',
@@ -23,7 +23,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     private _getDynamicFormSubscription: Subscription;
     private _submitDynamicFormSubscription: Subscription;
 
-    constructor(private _dynamicFormsService: DynamicFormsService, private _router: Router) { }
+    constructor(private _dynamicFormsService: DynamicFormsService, private _router: Router, private _errorHandlerService: ErrorHandlerService) { }
 
     /**
      * Retrieves and sets dynamicForm
@@ -35,7 +35,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
             dynamicForm => {
                 this.dynamicForm = dynamicForm;
             },
-            error => handleUnexpectedError(this._router, error));
+            error => this._errorHandlerService.handleUnexpectedError(this._router, error));
     }
 
     /**

@@ -11,6 +11,7 @@ import { DynamicFormComponent } from './dynamic-form.component';
 import { DynamicFormsService } from '../dynamic-forms.service';
 import { DynamicControl } from '../dynamic-control/dynamic-control';
 import { DynamicForm } from './dynamic-form';
+import { ErrorHandlerService } from '../../utility/error-handler.service';
 import { StubDomEvent } from '../../../../testing/dom-stubs';
 
 let dynamicFormComponent: DynamicFormComponent;
@@ -18,13 +19,14 @@ let stubHostComponent: StubHostComponent;
 let stubHostFixture: ComponentFixture<StubHostComponent>;
 let hostDebugElement: DebugElement;
 let nativeElement: HTMLElement;
-let stubDynamicFormsService; 
+let stubDynamicFormsService: StubDynamicFormsService; 
+let stubErrorHandlerService: StubErrorHandlerService;
 
 let testControlName = `testControlName`;
 let testFormModelName = `testFormModelName`;
 let testSubmitUrl = `testSubmitUrl`;
-let testErrorMessage = `testErrorMessage`;
-let testDynamicForm = new DynamicForm([new DynamicControl<any>({ name: testControlName })], testErrorMessage);
+let testMessage = `testErrorMessage`;
+let testDynamicForm = new DynamicForm([new DynamicControl<any>({ name: testControlName })], testMessage);
 let testSubmitEvent = new StubDomEvent();
 let testResponse = new Response(
     new ResponseOptions({
@@ -37,7 +39,8 @@ describe('DynamicFormComponent', () => {
         TestBed.configureTestingModule({
             declarations: [DynamicFormComponent, StubDynamicControlComponent, StubHostComponent],
             providers: [{ provide: DynamicFormsService, useClass: StubDynamicFormsService },
-                { provide: Router, useClass: StubRouter }]
+                { provide: Router, useClass: StubRouter },
+                { provide: ErrorHandlerService, useClass: StubErrorHandlerService }]
         }).compileComponents();
     }));
 
@@ -47,6 +50,7 @@ describe('DynamicFormComponent', () => {
         dynamicFormComponent = stubHostComponent.dynamicFormComponent;
         hostDebugElement = stubHostFixture.debugElement;
         stubDynamicFormsService = TestBed.get(DynamicFormsService) as StubDynamicFormsService;
+        stubErrorHandlerService = TestBed.get(ErrorHandlerService) as StubErrorHandlerService;
     });
 
     it(`Emits output`, () => {
@@ -69,39 +73,95 @@ describe('DynamicFormComponent', () => {
         expect(dynamicFormComponent.formSubmitUrl).toBe(stubHostComponent.formSubmitUrl);
     });
 
-    it(`Initializes`, () => {
-        spyOn(stubDynamicFormsService, `getDynamicForm`).and.callThrough();
+    describe(`Oninit`, () => {
+        it(`Calls DynamicFormsService.getDynamicForm`, () => {
+            spyOn(stubDynamicFormsService, `getDynamicForm`).and.returnValue(Observable.empty<DynamicForm>());
 
-        stubHostFixture.detectChanges();
+            stubHostFixture.detectChanges();
 
-        expect(stubDynamicFormsService.getDynamicForm).toHaveBeenCalledWith(testFormModelName);
-        expect(dynamicFormComponent.dynamicForm).toBe(testDynamicForm);
+            expect(stubDynamicFormsService.getDynamicForm).toHaveBeenCalled();
+
+        });
+
+        it(`Sets dynamicForm if DynamicFormsService.getDynamicForm succeeds`, () => {
+            spyOn(stubDynamicFormsService, `getDynamicForm`).and.returnValue(Observable.of(testDynamicForm));
+
+            stubHostFixture.detectChanges();
+
+            expect(dynamicFormComponent.dynamicForm).toBe(testDynamicForm);
+        });
+
+        it(`Calls ErrorHandlerService.handleUnexpectedError if DynamicFormsService.getDynamicForm fails`, () => {
+            spyOn(stubDynamicFormsService, `getDynamicForm`).and.returnValue(Observable.throw(null));
+            spyOn(stubErrorHandlerService, `handleUnexpectedError`);
+
+            stubHostFixture.detectChanges();
+
+            expect(stubErrorHandlerService.handleUnexpectedError).toHaveBeenCalledTimes(1);
+        });
     });
 
-    it(`Displays DynamicForm`, () => {
+    it(`Displays DynamicForm DynamicControls`, () => {
         stubHostFixture.detectChanges();
 
         expect(hostDebugElement.query(By.css(`dynamic-control`)).nativeElement.textContent).
             toBe(testControlName);
     });
 
-    it(`Listens to form submit event`, () => {
+    it(`Displays DynamicForm messages`, () => {
+        testDynamicForm.messages.push(testDynamicForm.message);
+
         stubHostFixture.detectChanges();
 
-        spyOn(dynamicFormComponent, `onSubmit`).and.callThrough();
-        spyOn(testDynamicForm, `onSubmit`).and.returnValue(true);
-        spyOn(stubDynamicFormsService, `submitDynamicForm`).and.callThrough();
+        expect(hostDebugElement.query(By.css(`span`)).nativeElement.textContent).
+            toBe(testMessage);
+    });
 
-        let formDebugElement = hostDebugElement.query(By.css(`form`));
-        formDebugElement.triggerEventHandler('submit', testSubmitEvent);
+    describe(`Submit event`, () => {
+        let formDebugElement: DebugElement;
 
-        expect(dynamicFormComponent.onSubmit).toHaveBeenCalledWith(testSubmitEvent);
-        expect(testDynamicForm.onSubmit).toHaveBeenCalled();
-        expect(stubDynamicFormsService.submitDynamicForm).toHaveBeenCalledWith(testSubmitUrl, testDynamicForm);
+        beforeEach(() => {
+            stubHostFixture.detectChanges();
+            formDebugElement = hostDebugElement.query(By.css(`form`));
+        });
 
-        // ensure that service http submission is called
+        it(`Calls onSubmit, which calls DynamicFormServices.submitDynamicForm if DynamicForm.onSubmit is true`, () => {
+            spyOn(dynamicFormComponent, `onSubmit`).and.callThrough();
+            spyOn(testDynamicForm, `onSubmit`).and.returnValue(true);
+            spyOn(stubDynamicFormsService, `submitDynamicForm`).and.returnValue(Observable.empty<Response>());
+
+            formDebugElement.triggerEventHandler('submit', testSubmitEvent);
+
+            expect(dynamicFormComponent.onSubmit).toHaveBeenCalledWith(testSubmitEvent);
+            expect(testDynamicForm.onSubmit).toHaveBeenCalled();
+            expect(stubDynamicFormsService.submitDynamicForm).toHaveBeenCalledWith(testSubmitUrl, testDynamicForm);
+        });
+
+        it(`Emits submitSuccess event if DynamicFormServices.submitDynamicForm succeeds`, () => {
+            spyOn(stubDynamicFormsService, `submitDynamicForm`).and.returnValue(Observable.of(testResponse));
+            spyOn(dynamicFormComponent.submitSuccess, `emit`);
+
+            formDebugElement.triggerEventHandler('submit', testSubmitEvent);
+
+            expect(dynamicFormComponent.submitSuccess.emit).toHaveBeenCalledWith(testResponse);
+        });
+
+        it(`Emits submitError event if DynamicFormServices.submitDynamicForm fails`, () => {
+            spyOn(stubDynamicFormsService, `submitDynamicForm`).and.returnValue(Observable.throw(testResponse));
+            spyOn(dynamicFormComponent.submitError, `emit`);
+
+            formDebugElement.triggerEventHandler('submit', testSubmitEvent);
+
+            expect(dynamicFormComponent.submitError.emit).toHaveBeenCalledWith(testResponse);
+        });
     });
 });
+
+class StubErrorHandlerService {
+    handleUnexpectedError(router: Router, error: any): void {
+
+    }
+}
 
 class StubDynamicFormsService {
     getDynamicForm(formModelName: string): Observable<DynamicForm> {
