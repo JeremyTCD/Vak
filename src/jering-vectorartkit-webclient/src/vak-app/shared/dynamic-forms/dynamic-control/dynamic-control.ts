@@ -62,6 +62,7 @@ export class DynamicControl<T>{
      */
     validate(): void {
         this.messages = [];
+        // Use local variable since this.validity may call parent.validate when its value is set
         let validity = Validity.valid;
         for (let validator of this.validators) {
             let validatorResult = validator(this);
