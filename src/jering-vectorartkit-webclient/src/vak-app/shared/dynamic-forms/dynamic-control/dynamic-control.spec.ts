@@ -76,7 +76,7 @@ describe('DynamicControl', () => {
         dynamicControl.providerSiblingsNames.push(testDynamicControlName);
         let testDynamicControl = new DynamicControl({ name: testDynamicControlName });
         testDynamicForm = new DynamicForm([testDynamicControl], null);
-        spyOn(testDynamicForm, `get`).and.returnValue(testDynamicControl);
+        spyOn(testDynamicForm, `getDynamicControl`).and.returnValue(testDynamicControl);
 
         dynamicControl.setupContext(testDynamicForm);
 
@@ -88,7 +88,7 @@ describe('DynamicControl', () => {
     it(`setupContext sets parent but throws error if sibling does not exist `, () => {
         dynamicControl.providerSiblingsNames.push(testDynamicControlName);
         testDynamicForm = new DynamicForm([], null);
-        spyOn(testDynamicForm, `get`).and.returnValue(null);
+        spyOn(testDynamicForm, `getDynamicControl`).and.returnValue(null);
 
         expect(() => dynamicControl.setupContext(testDynamicForm)).toThrow(new RangeError(`No sibling with name ${testDynamicControlName} exists`));
         expect(dynamicControl.parent).toBe(testDynamicForm);

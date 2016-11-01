@@ -187,7 +187,7 @@ describe(`validateDiffers`, () => {
         dynamicControl = new DynamicControl({});
         dynamicForm = new DynamicForm([], ``);
 
-        spyOn(dynamicForm, `get`).and.returnValue(otherDynamicControl);
+        spyOn(dynamicForm, `getDynamicControl`).and.returnValue(otherDynamicControl);
         dynamicControl.parent = dynamicForm;
     });
 
@@ -393,7 +393,7 @@ describe(`validateMatches`, () => {
             dynamicControl);
         dynamicForm = new DynamicForm([], ``);
 
-        spyOn(dynamicForm, `get`).and.returnValue(otherDynamicControl);
+        spyOn(dynamicForm, `getDynamicControl`).and.returnValue(otherDynamicControl);
         dynamicControl.parent = dynamicForm;
     });
 
