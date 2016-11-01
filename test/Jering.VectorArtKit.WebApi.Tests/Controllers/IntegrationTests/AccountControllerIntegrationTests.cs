@@ -34,7 +34,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_Returns400BadRequestWithErrorMessagesIfModelStateIsInvalid()
+        public async Task SignUpPost_Returns400BadRequestWithModelStateIfModelStateIsInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -45,13 +45,13 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.Email[0], Strings.ErrorMessage_Email_Invalid);
-            Assert.Equal(body.Password[0], Strings.ErrorMessage_Password_TooSimple);
-            Assert.Equal(body.ConfirmPassword[0], Strings.ErrorMessage_ConfirmPassword_Differs);
+            Assert.Equal(body.modelState.Email[0], Strings.ErrorMessage_Email_Invalid);
+            Assert.Equal(body.modelState.Password[0], Strings.ErrorMessage_Password_TooSimple);
+            Assert.Equal(body.modelState.ConfirmPassword[0], Strings.ErrorMessage_ConfirmPassword_Differs);
         }
 
         [Fact]
-        public async Task SignUpPost_Returns400BadRequestWithErrorMessageIfEmailInUse()
+        public async Task SignUpPost_Returns400BadRequestWithModelStateIfEmailInUse()
         {
             // Arrange
             string testEmail = "test@email.com", testPassword = "testPassword";
@@ -64,7 +64,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.Email[0], Strings.ErrorMessage_Email_InUse);
+            Assert.Equal(body.modelState.Email[0], Strings.ErrorMessage_Email_InUse);
         }
 
         [Fact]

@@ -3,17 +3,13 @@ using Jering.AccountManagement.Security;
 using Jering.Mail;
 using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Filters;
-using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.FormModels;
+using Jering.VectorArtKit.WebApi.Resources;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using MimeKit;
 using System;
-using System.Data.SqlClient;
 using System.Threading.Tasks;
-using System.Net;
 
 namespace Jering.VectorArtKit.WebApi.Controllers
 {
@@ -45,8 +41,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// <param name="model"></param>
         /// <returns>
         /// 400 bad request with no body if anti-forgery credentials are invalid.
-        /// 400 bad request with error messages if model state is invalid. 
-        /// 400 bad request with error message if email in use. 
+        /// 400 bad request with model state if model state is invalid. 
+        /// 400 bad request with model state if email in use. 
         /// 200 okay with application cookie and sends email verification email if account is created successfully.
         /// </returns>
         [HttpPost]
@@ -68,7 +64,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 ModelState.AddModelError(nameof(SignUpFormModel.Email), Strings.ErrorMessage_Email_InUse);
             }
 
-            return BadRequest(ModelState);
+            return BadRequest(new { modelState = new SerializableError(ModelState) });
         }
 
         ///// <summary>
