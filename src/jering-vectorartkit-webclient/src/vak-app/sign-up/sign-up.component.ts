@@ -15,11 +15,7 @@ export class SignUpComponent {
     constructor(private _router: Router, private _errorHandlerService: ErrorHandlerService) {
     }
 
-    onSubmitSuccess(response: Response): void {
+    onSubmitSuccess(): void {
         this._router.navigate([`/home`]);
-    }
-
-    onSubmitError(error: Response | any): void {
-        this._errorHandlerService.handleUnexpectedError(this._router, error);
     }
 }
