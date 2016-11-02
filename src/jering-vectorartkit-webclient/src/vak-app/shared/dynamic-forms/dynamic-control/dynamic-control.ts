@@ -121,7 +121,7 @@ export class DynamicControl<T>{
     /**
      * Validates parent if parent is defined and submit has been attempted on it.
      */
-    private tryValidateParent() {
+    tryValidateParent() {
         if (this.parent &&
             this.parent.submitAttempted) {
             this.parent.validate();
