@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { DynamicForm } from './dynamic-form';
 import { DynamicFormsService } from '../dynamic-forms.service';
 import { ErrorHandlerService } from '../../utility/error-handler.service';
+import { Validity } from '../validity';
 
 @Component({
     selector: 'dynamic-form',
@@ -15,7 +16,6 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     @Input() formModelName: string;
     @Input() formSubmitUrl: string;
     @Output() submitSuccess = new EventEmitter<Response>();
-    @Output() submitError = new EventEmitter<Response | any>();
 
     // create resolve guard to this does not need to be initialized
     dynamicForm: DynamicForm = new DynamicForm([], null);
@@ -23,7 +23,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     private _getDynamicFormSubscription: Subscription;
     private _submitDynamicFormSubscription: Subscription;
 
-    constructor(private _dynamicFormsService: DynamicFormsService, private _router: Router, private _errorHandlerService: ErrorHandlerService) { }
+    constructor(private _dynamicFormsService: DynamicFormsService, private _router: Router) { }
 
     /**
      * Retrieves and sets dynamicForm
@@ -31,32 +31,42 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this._getDynamicFormSubscription = this._dynamicFormsService
             .getDynamicForm(this.formModelName)
-            .subscribe(
-            dynamicForm => {
+            .subscribe(dynamicForm => {
                 this.dynamicForm = dynamicForm;
-            },
-            error => this._errorHandlerService.handleUnexpectedError(this._router, error));
+            });
     }
 
     /**
      * Sends json representation of dynamicForm values if form is valid
      */
-    onSubmit(event: Event): void {
+    onSubmit(event: any): void {
         event.preventDefault();
 
+        // TODO disable resubmission or editing of fields until response arrives
         if (this.dynamicForm.onSubmit()) {
             this._submitDynamicFormSubscription = this.
                 _dynamicFormsService.
                 submitDynamicForm(this.formSubmitUrl, this.dynamicForm).
                 subscribe(
-                    (response: Response) => this.submitSuccess.emit(response),
-                    (error: Response | any) => this.submitError.emit(error)
+                    () => this.submitSuccess.emit(),
+                    this.handleSubmitDynamicFormError
                 );
         }
     }
 
+    private handleSubmitDynamicFormError = (error: { [key: string]: string[] }): void => {
+        for (let key of Object.keys(error)) {
+            let dynamicControl = this.dynamicForm.getDynamicControl(key);
+            if (dynamicControl) {
+                dynamicControl.messages = error[key];
+                dynamicControl.validity = Validity.invalid;
+            }
+        }
+        this.dynamicForm.messages = [this.dynamicForm.message];
+        this.dynamicForm.validity = Validity.invalid;
+    }
+
     ngOnDestroy(): void {
-        this.submitError.unsubscribe();
         this.submitSuccess.unsubscribe();
 
         if (this._getDynamicFormSubscription) {
