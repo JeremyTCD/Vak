@@ -36,7 +36,7 @@ export class DynamicForm {
      * Current form value
      *
      * Returns
-     * - Map of child DynamicControl name-value pairs
+     * - Child DynamicControl name-value map
      */
     get value(): { [key: string]: string } {
         let result: { [key: string]: string } = {};
@@ -68,7 +68,7 @@ export class DynamicForm {
                 dynamicControl.validate();
             }
 
-            // If any control invalid, mark form as invalid
+            // If any control is invalid, mark form as invalid
             if (validity !== Validity.invalid &&
                 dynamicControl.validity === Validity.invalid ||
                 dynamicControl.validity === Validity.pending) {
