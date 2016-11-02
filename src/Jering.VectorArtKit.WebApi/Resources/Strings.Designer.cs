@@ -132,11 +132,20 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Confirmation password does not match password..
+        ///    Looks up a localized string similar to Password confirmation does not match password..
         /// </summary>
         public static string ErrorMessage_ConfirmPassword_Differs {
             get {
                 return ResourceManager.GetString("ErrorMessage_ConfirmPassword_Differs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Password confirmation is required..
+        /// </summary>
+        public static string ErrorMessage_ConfirmPassword_Required {
+            get {
+                return ResourceManager.GetString("ErrorMessage_ConfirmPassword_Required", resourceCulture);
             }
         }
         
@@ -182,6 +191,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         public static string ErrorMessage_Email_Invalid {
             get {
                 return ResourceManager.GetString("ErrorMessage_Email_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Email address is required..
+        /// </summary>
+        public static string ErrorMessage_Email_Required {
+            get {
+                return ResourceManager.GetString("ErrorMessage_Email_Required", resourceCulture);
             }
         }
         
@@ -240,6 +258,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Password is required..
+        /// </summary>
+        public static string ErrorMessage_Password_Required {
+            get {
+                return ResourceManager.GetString("ErrorMessage_Password_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Password must include at least 1 lower case character..
         /// </summary>
         public static string ErrorMessage_Password_RequiresLowerCase {
@@ -272,15 +299,6 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         public static string ErrorMessage_Password_TooSimple {
             get {
                 return ResourceManager.GetString("ErrorMessage_Password_TooSimple", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to {0} is required..
-        /// </summary>
-        public static string ErrorMessage_Required {
-            get {
-                return ResourceManager.GetString("ErrorMessage_Required", resourceCulture);
             }
         }
         

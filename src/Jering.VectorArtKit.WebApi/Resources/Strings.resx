@@ -190,7 +190,7 @@
     <value>Invalid password</value>
   </data>
   <data name="ErrorMessage_ConfirmPassword_Differs" xml:space="preserve">
-    <value>Confirmation password does not match password.</value>
+    <value>Password confirmation does not match password.</value>
   </data>
   <data name="ErrorMessage_Email_Invalid" xml:space="preserve">
     <value>Email address is invalid.</value>
@@ -255,9 +255,6 @@
   <data name="ErrorMessage_NewPassword_MustDiffer" xml:space="preserve">
     <value>New password cannot bt the same as current password.</value>
   </data>
-  <data name="ErrorMessage_Required" xml:space="preserve">
-    <value>{0} is required.</value>
-  </data>
   <data name="ErrorMessage_Password_TooSimple" xml:space="preserve">
     <value>Password too simple.</value>
   </data>
@@ -266,5 +263,14 @@
   </data>
   <data name="ErrorMessage_UnexpectedError" xml:space="preserve">
     <value>An unexpected error occurred.</value>
+  </data>
+  <data name="ErrorMessage_ConfirmPassword_Required" xml:space="preserve">
+    <value>Password confirmation is required.</value>
+  </data>
+  <data name="ErrorMessage_Email_Required" xml:space="preserve">
+    <value>Email address is required.</value>
+  </data>
+  <data name="ErrorMessage_Password_Required" xml:space="preserve">
+    <value>Password is required.</value>
   </data>
 </root>
