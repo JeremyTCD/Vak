@@ -556,7 +556,6 @@ describe(`validateRequired`, () => {
 describe(`validateAsync`, () => {
     let dynamicControl: DynamicControl<any>;
     let validateAsyncValidator: DynamicControlAsyncValidator;
-    let testDynamicFormsService = new DynamicFormsService(null);
 
     beforeEach(() => {
         dynamicControl = new DynamicControl({ displayName: testDisplayName });
@@ -567,7 +566,6 @@ describe(`validateAsync`, () => {
         },
             dynamicControl,
             null);
-        spyOn(testDynamicFormsService, `validateValue`).and.returnValue(Observable.empty<Validity>());
     });
 
     it(`Returns DynamicControlValidatorResult with validity = Validity.invalid and message = undefined if 
