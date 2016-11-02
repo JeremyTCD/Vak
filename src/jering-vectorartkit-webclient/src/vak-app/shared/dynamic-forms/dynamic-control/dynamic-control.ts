@@ -26,20 +26,7 @@ export class DynamicControl<T>{
     blurred: boolean;
     providerSiblingsNames: string[] = [];
     dependentSiblings: DynamicControl<any>[] = [];
-
-    private _validity: Validity;
-    get validity(): Validity {
-        return this._validity;
-    }
-    // If parent DynamicForm has had an attempted submission, validate DynamicForm.
-    set validity(validity: Validity) {
-        if (this._validity !== validity) {
-            this._validity = validity;
-            if (this.parent && this.parent.submitAttempted) {
-                this.parent.validate();
-            }
-        }
-    }
+    validity: Validity;
 
     constructor(dynamicControlData: DynamicControlData, dynamicFormsService?: DynamicFormsService) {
         this.name = dynamicControlData.name || '';
@@ -62,7 +49,7 @@ export class DynamicControl<T>{
      */
     validate(): void {
         this.messages = [];
-        // Use local variable since this.validity may call parent.validate when its value is set
+
         let validity = Validity.valid;
         for (let validator of this.validators) {
             let validatorResult = validator(this);
@@ -94,31 +81,51 @@ export class DynamicControl<T>{
     }
 
     /**
-     * Updates value and sets dirty to true. If DynamicControl has been blurred, validate DynamicControl.
+     * Updates value and sets dirty to true. Validates DynamicControl if it has been blurred.
+     * Tries to validate parent if DynamicControl validity changes.
      */
     onInput(event: any): void {
         this.value = event.target.value;
         if (this.blurred) {
+            let initialValidity = this.validity;
             this.validate();
+            if (this.validity !== initialValidity) {
+                this.tryValidateParent();
+            }
         }
         this.dirty = true;
     }
 
     /**
-     * On first blur when DynamicControl is dirty, set blurred to true and run validation.
+     * Sets blurred to true and validates DynamicControl on first blur when DynamicControl is dirty.
+     * Tries to validate parent if DynamicControl validity changes.
      */
     onBlur(event: any): void {
         if (this.dirty && !this.blurred) {
             this.blurred = true;
+            let initialValidity = this.validity;
             this.validate();
+            if (this.validity !== initialValidity) {
+                this.tryValidateParent();
+            }
         }
     }
 
     /**
-     * Updates value, sets dirty and blurred to true and triggers validation for all DynamicControls in contaning DynamicForm.
+     * Updates value, sets dirty and blurred to true.
      */
     onChange(event: any): void {
         // TODO
+    }
+
+    /**
+     * Validates parent if parent is defined and submit has been attempted on it.
+     */
+    private tryValidateParent() {
+        if (this.parent &&
+            this.parent.submitAttempted) {
+            this.parent.validate();
+        }
     }
 
     /**

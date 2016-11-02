@@ -13,63 +13,130 @@ let testValue = `testValue`;
 let testDynamicControlName = `testDynamicControlName`;
 let testValidatorMessage = `testValidatorMessage`;
 
-describe('DynamicControl', () => {
+describe(`DynamicControl`, () => {
     beforeEach(() => {
         dynamicControl = new DynamicControl({});
     });
 
-    it(`onInput sets value, sets dirty to true and calls validate if blurred is truthy`, () => {
-        let stubInputEvent = new StubDomEvent(new StubDomElement(testValue));
-        dynamicControl.blurred = true;
-        spyOn(dynamicControl, `validate`);
+    describe(`onInput`, () => {
+        let stubInputEvent: StubDomEvent;
 
-        dynamicControl.onInput(stubInputEvent);
+        beforeEach(() => {
+            stubInputEvent = new StubDomEvent(new StubDomElement(testValue));
+        });
 
-        expect(dynamicControl.value).toBe(testValue);
-        expect(dynamicControl.dirty).toBe(true);
-        expect(dynamicControl.validate).toHaveBeenCalledTimes(1);
+        it(`Sets value, sets dirty to true and calls validate if blurred is truthy`, () => {
+            dynamicControl.blurred = true;
+            spyOn(dynamicControl, `validate`);
+
+            dynamicControl.onInput(stubInputEvent);
+
+            expect(dynamicControl.value).toBe(testValue);
+            expect(dynamicControl.dirty).toBe(true);
+            expect(dynamicControl.validate).toHaveBeenCalledTimes(1);
+        });
+
+        it(`Calls parent.validate if validity changes`, () => {
+            dynamicControl.blurred = true;
+            spyOn(dynamicControl, `validate`).and.callFake(() => {
+                dynamicControl.validity = Validity.valid;
+            });
+            testDynamicForm = new DynamicForm(null, null);
+            testDynamicForm.submitAttempted = true;
+            spyOn(testDynamicForm, `validate`);
+            dynamicControl.parent = testDynamicForm;
+
+            dynamicControl.onInput(stubInputEvent);
+
+            expect(testDynamicForm.validate).toHaveBeenCalledTimes(1);
+        });
+
+        it(`Does not call parent.validate if validity does not change`, () => {
+            dynamicControl.blurred = true;
+            spyOn(dynamicControl, `validate`);
+            testDynamicForm = new DynamicForm(null, null);
+            testDynamicForm.submitAttempted = true;
+            spyOn(testDynamicForm, `validate`);
+            dynamicControl.parent = testDynamicForm;
+
+            dynamicControl.onInput(stubInputEvent);
+
+            expect(testDynamicForm.validate).not.toHaveBeenCalled();
+        });
+
+        it(`Sets value, sets dirty to true but does not call validate if blurred is falsey`, () => {
+            spyOn(dynamicControl, `validate`);
+
+            dynamicControl.onInput(stubInputEvent);
+
+            expect(dynamicControl.value).toBe(testValue);
+            expect(dynamicControl.dirty).toBe(true);
+            expect(dynamicControl.validate).not.toHaveBeenCalled();
+        });
     });
 
-    it(`onInput sets value, sets dirty to true but does not call validate if blurred is falsey`, () => {
-        let stubInputEvent = new StubDomEvent(new StubDomElement(testValue));
-        spyOn(dynamicControl, `validate`);
+    describe(`onBlur`, () => {
+        let stubInputEvent: StubDomEvent;
 
-        dynamicControl.onInput(stubInputEvent);
+        beforeEach(() => {
+            stubInputEvent = new StubDomEvent(new StubDomElement(testValue));
+        });
 
-        expect(dynamicControl.value).toBe(testValue);
-        expect(dynamicControl.dirty).toBe(true);
-        expect(dynamicControl.validate).not.toHaveBeenCalled();
-    });
+        it(`Sets blurred to true and calls validate if dirty is truthy and blurred is falsey`, () => {
+            dynamicControl.dirty = true;
+            spyOn(dynamicControl, `validate`);
 
-    it(`onBlur sets blurred to true and calls validate if dirty is truthy and blurred is falsey`, () => {
-        let stubInputEvent = new StubDomEvent(new StubDomElement(testValue));
-        dynamicControl.dirty = true;
-        spyOn(dynamicControl, `validate`);
+            dynamicControl.onBlur(stubInputEvent);
 
-        dynamicControl.onBlur(stubInputEvent);
+            expect(dynamicControl.blurred).toBe(true);
+            expect(dynamicControl.validate).toHaveBeenCalledTimes(1);
+        });
 
-        expect(dynamicControl.blurred).toBe(true);
-        expect(dynamicControl.validate).toHaveBeenCalledTimes(1);
-    });
+        it(`Calls parent.validate if validity changes`, () => {
+            dynamicControl.dirty = true;
+            spyOn(dynamicControl, `validate`).and.callFake(() => {
+                dynamicControl.validity = Validity.valid;
+            });
+            testDynamicForm = new DynamicForm(null, null);
+            testDynamicForm.submitAttempted = true;
+            spyOn(testDynamicForm, `validate`);
+            dynamicControl.parent = testDynamicForm;
 
-    it(`onBlur does nothing if dirty is falsey`, () => {
-        let stubInputEvent = new StubDomEvent(new StubDomElement(testValue));
-        spyOn(dynamicControl, `validate`);
+            dynamicControl.onBlur(stubInputEvent);
 
-        dynamicControl.onBlur(stubInputEvent);
+            expect(testDynamicForm.validate).toHaveBeenCalledTimes(1);
+        });
 
-        expect(dynamicControl.blurred).not.toBeDefined();
-        expect(dynamicControl.validate).not.toHaveBeenCalled();
-    });
+        it(`Does not call parent.validate if validity does not change`, () => {
+            dynamicControl.dirty = true;
+            spyOn(dynamicControl, `validate`);
+            testDynamicForm = new DynamicForm(null, null);
+            testDynamicForm.submitAttempted = true;
+            spyOn(testDynamicForm, `validate`);
+            dynamicControl.parent = testDynamicForm;
 
-    it(`onBlur does nothing if blurred is truthy`, () => {
-        let stubInputEvent = new StubDomEvent(new StubDomElement(testValue));
-        dynamicControl.blurred = true;
-        spyOn(dynamicControl, `validate`);
+            dynamicControl.onBlur(stubInputEvent);
 
-        dynamicControl.onBlur(stubInputEvent);
+            expect(testDynamicForm.validate).not.toHaveBeenCalled();
+        });
 
-        expect(dynamicControl.validate).not.toHaveBeenCalled();
+        it(`Does nothing if dirty is falsey`, () => {
+            spyOn(dynamicControl, `validate`);
+
+            dynamicControl.onBlur(stubInputEvent);
+
+            expect(dynamicControl.blurred).not.toBeDefined();
+            expect(dynamicControl.validate).not.toHaveBeenCalled();
+        });
+
+        it(`Does nothing if blurred is truthy`, () => {
+            dynamicControl.blurred = true;
+            spyOn(dynamicControl, `validate`);
+
+            dynamicControl.onBlur(stubInputEvent);
+
+            expect(dynamicControl.validate).not.toHaveBeenCalled();
+        });
     });
 
     it(`setupContext sets parent and registers with provider siblings`, () => {
