@@ -39,7 +39,7 @@ export class DynamicControl<T>{
             this.validators.push(DynamicControlValidators[validatorDatum.name](validatorDatum, this));
         }
         this.asyncValidator = dynamicControlData.asyncValidatorData ?
-            DynamicControlValidators.validateAsync(dynamicControlData.asyncValidatorData, this, dynamicFormsService) :
+            new DynamicControlAsyncValidator(dynamicControlData.asyncValidatorData, this, dynamicFormsService) :
             null;
         this.properties = dynamicControlData.properties || {};
     }
@@ -157,7 +157,7 @@ export class DynamicControl<T>{
 
     dispose(): void {
         if (this.asyncValidator) {
-            this.asyncValidator.unsubscribe();
+            this.asyncValidator.subscription.unsubscribe();
         }
     }
 }

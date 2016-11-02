@@ -181,8 +181,8 @@ describe(`DynamicControl`, () => {
     });
 
     it(`validate calls asyncValidator.validate, sets validity to the returned validity and adds returned message if asyncValidator is defined`, () => {
-        dynamicControl.asyncValidator = stubAsyncValidator(Validity.pending, testValidatorMessage);
-        spyOn(dynamicControl.asyncValidator, `validate`).and.callThrough();
+        dynamicControl.asyncValidator = new DynamicControlAsyncValidator(null, null, null);
+        spyOn(dynamicControl.asyncValidator, `validate`).and.returnValue(new DynamicControlValidatorResult(Validity.pending, testValidatorMessage));
 
         dynamicControl.validate();
 
@@ -208,12 +208,4 @@ function stubValidator(validity: Validity, message: string): DynamicControlValid
     return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
         return new DynamicControlValidatorResult(validity, message);
     }; 
-}
-
-function stubAsyncValidator(validity: Validity, message: string): DynamicControlAsyncValidator {
-    return new DynamicControlAsyncValidator(
-        (dynamicControl: DynamicControl<any>, ): DynamicControlValidatorResult => {
-            return new DynamicControlValidatorResult(validity, message);
-        },
-        null);
 }
