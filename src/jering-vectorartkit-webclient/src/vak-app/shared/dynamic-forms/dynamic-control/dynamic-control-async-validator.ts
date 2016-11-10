@@ -31,10 +31,7 @@ export class DynamicControlAsyncValidator {
             debounceTime(200).
             map((value: string) => {
                 return dynamicFormsService.
-                    validateValue(`${environment.apiUrl}${validatorData.options[`RelativeUrl`]}`, value).
-                    catch((error: any) =>
-                        Observable.of(Validity.valid)
-                    );
+                    validateValue(`${environment.apiUrl}${validatorData.options[`RelativeUrl`]}`, value);
             }).
             switch();
 
