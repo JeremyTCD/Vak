@@ -21,3 +21,8 @@ export class StubActivatedRoute {
         return { params: this.testParams };
     }
 }
+
+export class StubRouter {
+    navigate(commands: any[]): void {
+    }
+}
