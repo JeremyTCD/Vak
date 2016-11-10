@@ -14,6 +14,7 @@ import { DynamicForm } from './dynamic-form';
 import { Validity } from '../validity';
 import { ErrorHandlerService } from '../../utility/error-handler.service';
 import { StubDomEvent } from '../../../../testing/dom-stubs';
+import { StubRouter } from '../../../../testing/router-stubs';
 
 let dynamicFormComponent: DynamicFormComponent;
 let stubHostComponent: StubHostComponent;
@@ -179,11 +180,6 @@ class StubDynamicFormsService {
 
     submitDynamicForm(url: string, dynamicForm: DynamicForm): Observable<Response> {
         return Observable.of(testResponse);
-    }
-}
-
-class StubRouter {
-    navigate(commands: any[]): void {
     }
 }
 
