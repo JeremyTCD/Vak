@@ -79,6 +79,7 @@ export class DynamicFormsService {
         return this.
             _http.
             post(url, JSON.stringify(dynamicForm.value), requestOptions).
+            map(response => response.json()).
             catch(error => {
                 return this.handleSubmitDynamicFormError(error);
             });
