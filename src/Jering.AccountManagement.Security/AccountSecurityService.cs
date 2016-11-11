@@ -14,9 +14,9 @@ namespace Jering.AccountManagement.Security
     /// <summary>
     /// Provides an API for managing Account security.
     /// </summary>
-    public class AccountSecurityServices<TAccount> : IAccountSecurityServices<TAccount> where TAccount : IAccount
+    public class AccountSecurityService<TAccount> : IAccountSecurityService<TAccount> where TAccount : IAccount
     {
-        private ClaimsPrincipalServices<TAccount> _claimsPrincipalServices { get; }
+        private ClaimsPrincipalService<TAccount> _claimsPrincipalService { get; }
         private IAccountRepository<TAccount> _accountRepository { get; }
         private HttpContext _httpContext { get; }
         private AccountSecurityOptions _securityOptions { get; }
@@ -32,20 +32,20 @@ namespace Jering.AccountManagement.Security
         protected const string _twoFactorTokenPurpose = "TwoFactor";
 
         /// <summary>
-        /// Constructs a new instance of <see cref="AccountSecurityServices{TAccount}"/>.
+        /// Constructs a new instance of <see cref="AccountSecurityService{TAccount}"/>.
         /// </summary>
-        /// <param name="claimsPrincipalServices"></param>
+        /// <param name="claimsPrincipalService"></param>
         /// <param name="httpContextAccessor"></param>
         /// <param name="securityOptionsAccessor"></param>
         /// <param name="accountRepository"></param>
         /// <param name="serviceProvider"></param>
-        public AccountSecurityServices(ClaimsPrincipalServices<TAccount> claimsPrincipalServices,
+        public AccountSecurityService(ClaimsPrincipalService<TAccount> claimsPrincipalService,
             IHttpContextAccessor httpContextAccessor,
             IOptions<AccountSecurityOptions> securityOptionsAccessor,
             IAccountRepository<TAccount> accountRepository,
             IServiceProvider serviceProvider)
         {
-            _claimsPrincipalServices = claimsPrincipalServices;
+            _claimsPrincipalService = claimsPrincipalService;
             _httpContext = httpContextAccessor?.HttpContext;
             _securityOptions = securityOptionsAccessor?.Value;
             _accountRepository = accountRepository;
@@ -83,7 +83,7 @@ namespace Jering.AccountManagement.Security
         /// <returns></returns>
         public virtual async Task SignInAsync(TAccount account, AuthenticationProperties authenticationProperties)
         {
-            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalServices.CreateClaimsPrincipalAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme, authenticationProperties);
+            ClaimsPrincipal claimsPrincipal = await _claimsPrincipalService.CreateClaimsPrincipalAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme, authenticationProperties);
             authenticationProperties.AllowRefresh = true;
 
             await _httpContext.Authentication.SignInAsync(
@@ -99,7 +99,7 @@ namespace Jering.AccountManagement.Security
         /// <returns></returns>
         public virtual async Task RefreshSignInAsync(TAccount account)
         {
-            _claimsPrincipalServices.UpdateClaimsPrincipal(account, _httpContext.User);
+            _claimsPrincipalService.UpdateClaimsPrincipal(account, _httpContext.User);
 
             bool isPersistent = Convert.ToBoolean(_httpContext.User.FindFirst(_securityOptions.ClaimsOptions.IsPersistenClaimType).Value);
 
@@ -287,7 +287,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="account"></param>
         public virtual async Task CreateTwoFactorCookieAsync(TAccount account)
         {
-            ClaimsPrincipal claimsPrincipal = _claimsPrincipalServices.CreateClaimsPrincipal(account.AccountId, _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
+            ClaimsPrincipal claimsPrincipal = _claimsPrincipalService.CreateClaimsPrincipal(account.AccountId, _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
 
             await _httpContext.Authentication.SignInAsync(
                 _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme,

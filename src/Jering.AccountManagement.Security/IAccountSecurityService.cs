@@ -13,7 +13,7 @@ namespace Jering.AccountManagement.Security
     /// <summary>
     /// Provides an API for managing Account security.
     /// </summary>
-    public interface IAccountSecurityServices<TAccount> where TAccount : IAccount
+    public interface IAccountSecurityService<TAccount> where TAccount : IAccount
     {
         /// <summary>
         /// 

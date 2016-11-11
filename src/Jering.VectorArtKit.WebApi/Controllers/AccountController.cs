@@ -16,9 +16,9 @@ namespace Jering.VectorArtKit.WebApi.Controllers
     [Authorize]
     public class AccountController : Controller
     {
-        private IAccountSecurityServices<VakAccount> _accountSecurityServices;
+        private IAccountSecurityService<VakAccount> _accountSecurityService;
         private IAccountRepository<VakAccount> _vakAccountRepository;
-        private IEmailServices _emailServices;
+        private IEmailService _emailService;
         private string _confirmEmailPurpose = "ConfirmEmail";
         private string _confirmAlternativeEmailPurpose = "ConfirmAlternativeEmail";
         private string _resetPasswordPurpose = "ResetPassword";
@@ -26,13 +26,13 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
         public AccountController(
             IAccountRepository<VakAccount> vakAccountRepository,
-            IAccountSecurityServices<VakAccount> accountSecurityServices,
-            IEmailServices emailServices
+            IAccountSecurityService<VakAccount> accountSecurityService,
+            IEmailService emailService
             )
         {
             _vakAccountRepository = vakAccountRepository;
-            _accountSecurityServices = accountSecurityServices;
-            _emailServices = emailServices;
+            _accountSecurityService = accountSecurityService;
+            _emailService = emailService;
         }
 
         /// <summary>
@@ -52,7 +52,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                CreateAccountResult<VakAccount> createAccountResult = await _accountSecurityServices.CreateAccountAsync(model.Email, model.Password);
+                CreateAccountResult<VakAccount> createAccountResult = await _accountSecurityService.CreateAccountAsync(model.Email, model.Password);
 
                 if (createAccountResult.Succeeded)
                 {
@@ -102,13 +102,13 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //    ViewData["ReturnUrl"] = returnUrl;
         //    if (ModelState.IsValid)
         //    {
-        //        PasswordSignInResult<VakAccount> passwordSignInResult = await _accountSecurityServices.PasswordSignInAsync(model.Email,
+        //        PasswordSignInResult<VakAccount> passwordSignInResult = await _accountSecurityService.PasswordSignInAsync(model.Email,
         //            model.Password,
         //            new AuthenticationProperties() { IsPersistent = model.RememberMe });
 
         //        if (passwordSignInResult.TwoFactorRequired)
         //        {
-        //            await _accountSecurityServices.CreateTwoFactorCookieAsync(passwordSignInResult.Account);
+        //            await _accountSecurityService.CreateTwoFactorCookieAsync(passwordSignInResult.Account);
         //            await SendTwoFactorEmail(passwordSignInResult.Account);
 
         //            return RedirectToAction(nameof(VerifyTwoFactorCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl });
@@ -136,7 +136,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //[AllowAnonymous]
         //public async Task<IActionResult> VerifyTwoFactorCode(bool isPersistent, string returnUrl = null)
         //{
-        //    VakAccount vakAccount = await _accountSecurityServices.GetTwoFactorAccountAsync();
+        //    VakAccount vakAccount = await _accountSecurityService.GetTwoFactorAccountAsync();
         //    if (vakAccount == null)
         //    {
         //        return View("Error");
@@ -165,7 +165,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //{
         //    if (ModelState.IsValid)
         //    {
-        //        TwoFactorSignInResult twoFactorSignInResult = await _accountSecurityServices.TwoFactorSignInAsync(model.Code, model.IsPersistent);
+        //        TwoFactorSignInResult twoFactorSignInResult = await _accountSecurityService.TwoFactorSignInAsync(model.Code, model.IsPersistent);
 
         //        if (twoFactorSignInResult.Succeeded)
         //        {
@@ -190,7 +190,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //[ValidateAntiForgeryToken]
         //public async Task<IActionResult> LogOff()
         //{
-        //    await _accountSecurityServices.SignOutAsync();
+        //    await _accountSecurityService.SignOutAsync();
         //    return RedirectToAction(nameof(HomeController.Index), "Home");
         //}
 
@@ -227,15 +227,15 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //        VakAccount account = await _vakAccountRepository.GetAccountByEmailOrAlternativeEmailAsync(model.Email);
         //        if (account != null)
         //        {
-        //            string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account);
+        //            string token = await _accountSecurityService.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account);
         //            string callbackUrl = Url.Action(
         //                nameof(AccountController.ResetPassword),
         //                nameof(AccountController).Replace("Controller", ""),
         //                new { Token = token, Email = model.Email },
         //                protocol: HttpContext.Request.Scheme);
 
-        //            MimeMessage mimeMessage = _emailServices.CreateMimeMessage(model.Email, Strings.ResetPasswordEmail_Subject, string.Format(Strings.ResetPasswordEmail_Message, callbackUrl));
-        //            await _emailServices.SendEmailAsync(mimeMessage);
+        //            MimeMessage mimeMessage = _emailService.CreateMimeMessage(model.Email, Strings.ResetPasswordEmail_Subject, string.Format(Strings.ResetPasswordEmail_Message, callbackUrl));
+        //            await _emailService.SendEmailAsync(mimeMessage);
         //        }
 
         //        return RedirectToAction(nameof(ForgotPasswordConfirmation), new { Email = model.Email });
@@ -294,7 +294,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //    {
         //        VakAccount account = model.Email == null ? null : await _vakAccountRepository.GetAccountByEmailOrAlternativeEmailAsync(model.Email);
         //        if (account == null || model.Token == null ||
-        //            !await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account, model.Token) ||
+        //            !await _accountSecurityService.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account, model.Token) ||
         //            !await _vakAccountRepository.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword))
         //        {
         //            return View("Error");
@@ -371,7 +371,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //{
         //    if (ModelState.IsValid)
         //    {
-        //        string email = _accountSecurityServices.GetSignedInAccountEmail();
+        //        string email = _accountSecurityService.GetSignedInAccountEmail();
         //        VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(email, model.CurrentPassword);
         //        if (account == null)
         //        {
@@ -379,7 +379,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //        }
         //        else
         //        {
-        //            UpdateAccountPasswordHashResult result = await _accountSecurityServices.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword);
+        //            UpdateAccountPasswordHashResult result = await _accountSecurityService.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword);
 
         //            if (result.Failed)
         //            {
@@ -387,7 +387,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //            }
 
         //            account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
-        //            await _accountSecurityServices.RefreshSignInAsync(account);
+        //            await _accountSecurityService.RefreshSignInAsync(account);
 
         //            return RedirectToAction(nameof(AccountController.ManageAccount));
         //        }
@@ -433,7 +433,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //{
         //    if (ModelState.IsValid)
         //    {
-        //        string currentEmail = _accountSecurityServices.GetSignedInAccountEmail();
+        //        string currentEmail = _accountSecurityService.GetSignedInAccountEmail();
         //        if (currentEmail == model.NewEmail)
         //        {
         //            // If we get here something has gone wrong since model validation should ensure that current email and new email differ
@@ -446,7 +446,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //        }
         //        else
         //        {
-        //            UpdateAccountEmailResult result = await _accountSecurityServices.UpdateAccountEmailAsync(account.AccountId, model.NewEmail);
+        //            UpdateAccountEmailResult result = await _accountSecurityService.UpdateAccountEmailAsync(account.AccountId, model.NewEmail);
 
         //            if (result.Failed)
         //            {
@@ -460,7 +460,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //            else
         //            {
         //                account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
-        //                await _accountSecurityServices.RefreshSignInAsync(account);
+        //                await _accountSecurityService.RefreshSignInAsync(account);
 
         //                return RedirectToAction(nameof(AccountController.ManageAccount));
         //            }
@@ -502,7 +502,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //{
         //    if (ModelState.IsValid)
         //    {
-        //        string currentEmail = _accountSecurityServices.GetSignedInAccountEmail();
+        //        string currentEmail = _accountSecurityService.GetSignedInAccountEmail();
         //        VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(currentEmail, model.Password);
 
         //        if (account == null)
@@ -516,7 +516,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //        }
         //        else
         //        {
-        //            UpdateAccountAlternativeEmailResult result = await _accountSecurityServices.UpdateAccountAlternativeEmailAsync(account.AccountId, model.NewAlternativeEmail);
+        //            UpdateAccountAlternativeEmailResult result = await _accountSecurityService.UpdateAccountAlternativeEmailAsync(account.AccountId, model.NewAlternativeEmail);
 
         //            if (result.Failed)
         //            {
@@ -569,7 +569,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //{
         //    if (ModelState.IsValid)
         //    {
-        //        string currentEmail = _accountSecurityServices.GetSignedInAccountEmail();
+        //        string currentEmail = _accountSecurityService.GetSignedInAccountEmail();
         //        VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(currentEmail, model.Password);
 
         //        if (account == null)
@@ -583,7 +583,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //        }
         //        else
         //        {
-        //            UpdateAccountDisplayNameResult result = await _accountSecurityServices.UpdateAccountDisplayNameAsync(account.AccountId, model.NewDisplayName);
+        //            UpdateAccountDisplayNameResult result = await _accountSecurityService.UpdateAccountDisplayNameAsync(account.AccountId, model.NewDisplayName);
 
         //            if (result.Failed)
         //            {
@@ -619,7 +619,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //[SetSignedInAccount]
         //public async Task<IActionResult> EnableTwoFactor()
         //{
-        //    VakAccount account = await _accountSecurityServices.GetSignedInAccountAsync();
+        //    VakAccount account = await _accountSecurityService.GetSignedInAccountAsync();
 
         //    if (account == null)
         //    {
@@ -633,7 +633,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
         //    if (account.EmailVerified)
         //    {
-        //        if((await _accountSecurityServices.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true)).Failed){
+        //        if((await _accountSecurityService.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true)).Failed){
         //            return View("Error");
         //        }
 
@@ -659,7 +659,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //[SetSignedInAccount]
         //public async Task<IActionResult> DisableTwoFactor()
         //{
-        //    VakAccount account = await _accountSecurityServices.GetSignedInAccountAsync();
+        //    VakAccount account = await _accountSecurityService.GetSignedInAccountAsync();
 
         //    if (account == null)
         //    {
@@ -671,7 +671,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //        return RedirectToAction(nameof(ManageAccount));
         //    }
 
-        //    if ((await _accountSecurityServices.UpdateAccountTwoFactorEnabledAsync(account.AccountId, false)).Failed)
+        //    if ((await _accountSecurityService.UpdateAccountTwoFactorEnabledAsync(account.AccountId, false)).Failed)
         //    {
         //        return View("Error");
         //    }
@@ -712,18 +712,18 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //{
         //    if (ModelState.IsValid)
         //    {
-        //        VakAccount account = await _accountSecurityServices.GetSignedInAccountAsync();
+        //        VakAccount account = await _accountSecurityService.GetSignedInAccountAsync();
 
         //        if (account == null)
         //        {
         //            return View("Error");
         //        }
 
-        //        if (await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, account, model.Code))
+        //        if (await _accountSecurityService.ValidateTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, account, model.Code))
         //        {
         //            // wrap UpdateAccountEmailVerifiedAsync in ass for consistency? 
         //            if (!account.EmailVerified && !await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true) ||
-        //                !account.TwoFactorEnabled && (await _accountSecurityServices.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true)).Failed)
+        //                !account.TwoFactorEnabled && (await _accountSecurityService.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true)).Failed)
         //            {
         //                return View("Error");
         //            }
@@ -753,7 +753,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //[SetSignedInAccount]
         //public async Task<IActionResult> SendEmailVerificationEmail()
         //{
-        //    VakAccount account = await _accountSecurityServices.GetSignedInAccountAsync();
+        //    VakAccount account = await _accountSecurityService.GetSignedInAccountAsync();
 
         //    if (account == null || account.EmailVerified)
         //    {
@@ -779,7 +779,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //[SetSignedInAccount]
         //public async Task<IActionResult> SendAlternativeEmailVerificationEmail()
         //{
-        //    VakAccount account = await _accountSecurityServices.GetSignedInAccountAsync();
+        //    VakAccount account = await _accountSecurityService.GetSignedInAccountAsync();
 
         //    if (account == null || account.AlternativeEmail == null || account.AlternativeEmailVerified)
         //    {
@@ -822,7 +822,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 VakAccount account = await _vakAccountRepository.GetAccountAsync(model.AccountId);
 
                 if (account != null &&
-                    await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account, model.Token) &&
+                    await _accountSecurityService.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account, model.Token) &&
                     await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true))
                 {
                     // TODO redirect to confirmation view
@@ -851,7 +851,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 VakAccount account = await _vakAccountRepository.GetAccountAsync(model.AccountId);
 
                 if (account != null &&
-                    await _accountSecurityServices.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmAlternativeEmailPurpose, account, model.Token) &&
+                    await _accountSecurityService.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmAlternativeEmailPurpose, account, model.Token) &&
                     await _vakAccountRepository.UpdateAccountAlternativeEmailVerifiedAsync(account.AccountId, true))
                 {
                     // TODO redirect to confirmation view
@@ -871,18 +871,18 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 throw new ArgumentNullException();
             }            
 
-            string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account);
+            string token = await _accountSecurityService.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account);
             string callbackUrl = Url.Action(
                 nameof(AccountController.EmailVerificationConfirmation),
                 nameof(AccountController).Replace("Controller", ""),
                 new { Token = token, AccountId = account.AccountId },
                 protocol: HttpContext.Request.Scheme);
 
-            MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.Email, 
+            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email, 
                 Strings.Email_EmailVerification_Subject, 
                 string.Format(Strings.Email_EmailVerification_Message, 
                 callbackUrl));
-            await _emailServices.SendEmailAsync(mimeMessage);
+            await _emailService.SendEmailAsync(mimeMessage);
         }
         [NonAction]
         private async Task SendAlternativeEmailVerificationEmail(VakAccount account)
@@ -892,25 +892,25 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 throw new ArgumentNullException();
             }
 
-            string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService,_confirmAlternativeEmailPurpose, account);
+            string token = await _accountSecurityService.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService,_confirmAlternativeEmailPurpose, account);
             string callbackUrl = Url.Action(
                 nameof(AccountController.AlternativeEmailVerificationConfirmation),
                 nameof(AccountController).Replace("Controller", ""),
                 new { Token = token, AccountId = account.AccountId },
                 protocol: HttpContext.Request.Scheme);
 
-            MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.AlternativeEmail,
+            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.AlternativeEmail,
                 Strings.Email_EmailVerification_Subject,
                 string.Format(Strings.Email_EmailVerification_Message,
                 callbackUrl));
-            await _emailServices.SendEmailAsync(mimeMessage);
+            await _emailService.SendEmailAsync(mimeMessage);
         }
         [NonAction]
         private async Task SendTwoFactorEmail(VakAccount account)
         {
-            string token = await _accountSecurityServices.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, account);
-            MimeMessage mimeMessage = _emailServices.CreateMimeMessage(account.Email, Strings.TwoFactorEmail_Subject, string.Format(Strings.TwoFactorEmail_Message, token));
-            await _emailServices.SendEmailAsync(mimeMessage);
+            string token = await _accountSecurityService.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, account);
+            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email, Strings.TwoFactorEmail_Subject, string.Format(Strings.TwoFactorEmail_Message, token));
+            await _emailService.SendEmailAsync(mimeMessage);
         }
         //[NonAction]
         //private IActionResult RedirectToLocal(string returnUrl)

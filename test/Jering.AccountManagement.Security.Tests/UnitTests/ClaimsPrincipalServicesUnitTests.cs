@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
-    public class ClaimsPrincipalServicesUnitTests
+    public class ClaimsPrincipalServiceUnitTests
     {
         [Fact]
         public async Task CreateClaimsPrincipalAsync_CreatesClaimsPrincipalTest()
@@ -36,12 +36,12 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityOptions securityOptions = new AccountSecurityOptions();
             mockOptions.Setup(o => o.Value).Returns(securityOptions);
 
-            ClaimsPrincipalServices<Account> claimsPrincipalServices = new ClaimsPrincipalServices<Account>(mockAccountRepository.Object, mockRoleRepository.Object, mockOptions.Object);
+            ClaimsPrincipalService<Account> claimsPrincipalService = new ClaimsPrincipalService<Account>(mockAccountRepository.Object, mockRoleRepository.Object, mockOptions.Object);
 
             AuthenticationProperties authenticationProperties = new AuthenticationProperties { IsPersistent = true };
 
             // Act
-            ClaimsPrincipal claimsPrincipal = await claimsPrincipalServices.CreateClaimsPrincipalAsync(account, 
+            ClaimsPrincipal claimsPrincipal = await claimsPrincipalService.CreateClaimsPrincipalAsync(account, 
                 securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme,
                 authenticationProperties);
 
@@ -80,10 +80,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
 
             Account account = new Account() { AccountId = 1, Email = "final@test.com", SecurityStamp = Guid.NewGuid() };
 
-            ClaimsPrincipalServices<Account> claimsPrincipalServices = new ClaimsPrincipalServices<Account>(null, null, mockOptions.Object);
+            ClaimsPrincipalService<Account> claimsPrincipalService = new ClaimsPrincipalService<Account>(null, null, mockOptions.Object);
 
             // Act
-            claimsPrincipalServices.UpdateClaimsPrincipal(account, claimsPrincipal);
+            claimsPrincipalService.UpdateClaimsPrincipal(account, claimsPrincipal);
 
             // Assert
             Assert.Equal("final@test.com", claimsPrincipal.FindFirst(securityOptions.ClaimsOptions.UsernameClaimType).Value);
@@ -106,10 +106,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
 
             Account account = new Account() { AccountId = 2, Email = "final@test.com", SecurityStamp = Guid.NewGuid() };
 
-            ClaimsPrincipalServices<Account> claimsPrincipalServices = new ClaimsPrincipalServices<Account>(null, null, mockOptions.Object);
+            ClaimsPrincipalService<Account> claimsPrincipalService = new ClaimsPrincipalService<Account>(null, null, mockOptions.Object);
 
             // Act and Assert
-            Assert.Throws<ArgumentException>(() => claimsPrincipalServices.UpdateClaimsPrincipal(account, claimsPrincipal));
+            Assert.Throws<ArgumentException>(() => claimsPrincipalService.UpdateClaimsPrincipal(account, claimsPrincipal));
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityOptions securityOptions = new AccountSecurityOptions();
             mockOptions.Setup(o => o.Value).Returns(securityOptions);
 
-            ClaimsPrincipalServices<Account> claimsPrincipalFactory = new ClaimsPrincipalServices<Account>(null, null, mockOptions.Object);
+            ClaimsPrincipalService<Account> claimsPrincipalFactory = new ClaimsPrincipalService<Account>(null, null, mockOptions.Object);
 
             // Act
             ClaimsPrincipal claimsPrincipal = claimsPrincipalFactory.CreateClaimsPrincipal(0, securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);

@@ -15,25 +15,25 @@ namespace Jering.AccountManagement.Security
     {
         private readonly AccountSecurityOptions _securityOptions;
         private readonly IAccountRepository<TAccount> _accountRepository;
-        private readonly IAccountSecurityServices<TAccount> _accountSecurityServices;
-        private readonly ClaimsPrincipalServices<TAccount> _claimsPrincipalServices;
+        private readonly IAccountSecurityService<TAccount> _accountSecurityService;
+        private readonly ClaimsPrincipalService<TAccount> _claimsPrincipalService;
 
         /// <summary>
         /// Constructs an instance of <see cref="CookieSecurityStampValidator{TAccount}"/> .
         /// </summary>
         /// <param name="securityOptionsAccessor"></param>
         /// <param name="accountRepository"></param>
-        /// <param name="accountSecurityServices"></param>
-        /// <param name="claimsPrincipalServices"></param>
+        /// <param name="accountSecurityService"></param>
+        /// <param name="claimsPrincipalService"></param>
         public CookieSecurityStampValidator(IOptions<AccountSecurityOptions> securityOptionsAccessor,
                         IAccountRepository<TAccount> accountRepository,
-                        IAccountSecurityServices<TAccount> accountSecurityServices,
-                        ClaimsPrincipalServices<TAccount> claimsPrincipalServices)
+                        IAccountSecurityService<TAccount> accountSecurityService,
+                        ClaimsPrincipalService<TAccount> claimsPrincipalService)
         {
             _accountRepository = accountRepository;
             _securityOptions = securityOptionsAccessor.Value;
-            _accountSecurityServices = accountSecurityServices;
-            _claimsPrincipalServices = claimsPrincipalServices;
+            _accountSecurityService = accountSecurityService;
+            _claimsPrincipalService = claimsPrincipalService;
         }
 
         /// <summary>
@@ -44,11 +44,11 @@ namespace Jering.AccountManagement.Security
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
             if (context.Principal != null) {
-                TAccount account = await _accountSecurityServices.GetSignedInAccountAsync(context.Principal);
+                TAccount account = await _accountSecurityService.GetSignedInAccountAsync(context.Principal);
 
                 if (account == null || account.SecurityStamp.ToString() != context.Principal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType)?.Value) {
                     context.RejectPrincipal();
-                    await _accountSecurityServices.SignOutAsync();
+                    await _accountSecurityService.SignOutAsync();
                 }
             }
         }

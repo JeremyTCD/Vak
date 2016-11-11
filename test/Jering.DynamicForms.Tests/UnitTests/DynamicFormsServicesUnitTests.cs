@@ -14,10 +14,10 @@ namespace Jering.DynamicForms.Tests.UnitTests
         {
             // Arrange
             Mock<IDynamicFormsBuilder> mockBuilder = new Mock<IDynamicFormsBuilder>();
-            DynamicFormsServices dynamicFormsServices = new DynamicFormsServices(mockBuilder.Object);
+            DynamicFormsService dynamicFormsService = new DynamicFormsService(mockBuilder.Object);
 
             // Act and assert
-            Assert.Throws<ArgumentException>(() => dynamicFormsServices.GetDynamicForm(typeof(DummyNoDynamicFormAttributeFormModel)));
+            Assert.Throws<ArgumentException>(() => dynamicFormsService.GetDynamicForm(typeof(DummyNoDynamicFormAttributeFormModel)));
         }
 
         [Fact]
@@ -27,10 +27,10 @@ namespace Jering.DynamicForms.Tests.UnitTests
             Mock<IDynamicFormsBuilder> mockBuilder = new Mock<IDynamicFormsBuilder>();
             mockBuilder.Setup(b => b.BuildDynamicFormData(It.IsAny<DynamicFormAttribute>())).Returns(new DynamicFormData());
             mockBuilder.Setup(b => b.BuildDynamicControlData(It.IsAny<PropertyInfo>())).Returns(new DynamicControlData());
-            DynamicFormsServices dynamicFormsServices = new DynamicFormsServices(mockBuilder.Object);
+            DynamicFormsService dynamicFormsService = new DynamicFormsService(mockBuilder.Object);
 
             // Act 
-            DynamicFormData result = dynamicFormsServices.GetDynamicForm(typeof(DummyFormModel));
+            DynamicFormData result = dynamicFormsService.GetDynamicForm(typeof(DummyFormModel));
 
             // Assert
             Assert.NotNull(result);

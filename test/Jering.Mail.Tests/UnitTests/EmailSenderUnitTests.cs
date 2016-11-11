@@ -21,7 +21,7 @@ namespace Jering.AccountManagement.Security.UnitTests.UnitTests
             Mock<IOptions<EmailOptions>> mockOptions = new Mock<IOptions<EmailOptions>>();
             mockOptions.Setup(o => o.Value).Returns(emailOptions);
 
-            EmailServices emailSender = new EmailServices(mockOptions.Object, null);
+            EmailService emailSender = new EmailService(mockOptions.Object, null);
 
             // Act
             MimeMessage mimeMessage = emailSender.CreateMimeMessage(emailAddress, subject, message);

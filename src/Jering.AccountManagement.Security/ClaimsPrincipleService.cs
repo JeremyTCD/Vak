@@ -12,7 +12,7 @@ namespace Jering.AccountManagement.Security
     /// <summary>
     /// Provides methods to create a claims principal for a given account.
     /// </summary>
-    public class ClaimsPrincipalServices<TAccount> where TAccount : IAccount
+    public class ClaimsPrincipalService<TAccount> where TAccount : IAccount
     {
         private IAccountRepository<TAccount> _accountRepository { get; }
         private IRoleRepository _roleRepository { get; }
@@ -24,7 +24,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="accountRepository"></param>
         /// <param name="roleRepository"></param>
         /// <param name="securityOptionsAccessor"></param>
-        public ClaimsPrincipalServices(IAccountRepository<TAccount> accountRepository, IRoleRepository roleRepository, IOptions<AccountSecurityOptions> securityOptionsAccessor)
+        public ClaimsPrincipalService(IAccountRepository<TAccount> accountRepository, IRoleRepository roleRepository, IOptions<AccountSecurityOptions> securityOptionsAccessor)
         {
             _accountRepository = accountRepository;
             _roleRepository = roleRepository;

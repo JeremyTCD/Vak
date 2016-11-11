@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityServices{TAccount}.TwoFactorSignInAsync"/>.
+    /// Results for <see cref="IAccountSecurityService{TAccount}.TwoFactorSignInAsync"/>.
     /// </summary>
     public class TwoFactorSignInResult
     {

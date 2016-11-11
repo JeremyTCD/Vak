@@ -120,7 +120,7 @@ namespace Jering.VectorArtKit.WebApi
 
             AccountSecurityOptions securityOptions = app.ApplicationServices.GetRequiredService<IOptions<AccountSecurityOptions>>().Value;
             // CookieAuthenticationMiddleware for TwoFactorCookie must be registered first. Otherwise if ApplicationCookie's middleware runs
-            // first and SecurityStamp is invalid, the middleware will call AccountSecurityServices.SignOutAsync before a handler is created
+            // first and SecurityStamp is invalid, the middleware will call AccountSecurityService.SignOutAsync before a handler is created
             // for TwoFactorCookies.
             app.UseCookieAuthentication(securityOptions.CookieOptions.TwoFactorCookieOptions);
             app.UseCookieAuthentication(securityOptions.CookieOptions.ApplicationCookieOptions);

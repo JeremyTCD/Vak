@@ -12,12 +12,12 @@ namespace Jering.DynamicForms
     public static class DynamicFormsServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds <see cref="IDynamicFormsServices"/> service.
+        /// Adds <see cref="IDynamicFormsService"/> service.
         /// </summary>
         /// <param name="services"></param>
         public static void AddDynamicForms(this IServiceCollection services)
         {
-            services.AddScoped<IDynamicFormsServices, DynamicFormsServices>();
+            services.AddScoped<IDynamicFormsService, DynamicFormsService>();
             services.AddScoped<IDynamicFormsBuilder, DynamicFormsBuilder>();
         }
     }

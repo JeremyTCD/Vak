@@ -12,13 +12,13 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 {
     public class DynamicFormsController : Controller
     {
-        private IDynamicFormsServices _dynamicFormsServices {get;set;}
+        private IDynamicFormsService _dynamicFormsService {get;set;}
         private IAccountRepository<VakAccount> _vakAccountRepository;
         public DynamicFormsController(IAccountRepository<VakAccount> vakAccountRepository, 
-            IDynamicFormsServices dynamicFormsServices)
+            IDynamicFormsService dynamicFormsService)
         {
             _vakAccountRepository = vakAccountRepository;
-            _dynamicFormsServices = dynamicFormsServices;
+            _dynamicFormsService = dynamicFormsService;
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 return NotFound();
             }
 
-            return Ok(_dynamicFormsServices.GetDynamicForm(type));
+            return Ok(_dynamicFormsService.GetDynamicForm(type));
         }
 
         /// <summary>

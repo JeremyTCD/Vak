@@ -6,7 +6,7 @@ namespace Jering.Mail
     /// <summary>
     /// 
     /// </summary>
-    public interface IEmailServices
+    public interface IEmailService
     {
         /// <summary>
         /// 

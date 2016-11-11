@@ -1,7 +1,7 @@
 ﻿namespace Jering.Mail
 {
     /// <summary>
-    /// Specifies options for implementations of <see cref="IEmailServices"/> .
+    /// Specifies options for implementations of <see cref="IEmailService"/> .
     /// </summary>
     public class EmailOptions
     {

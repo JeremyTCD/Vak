@@ -24,8 +24,8 @@ namespace Jering.AccountManagement.Extensions
         {
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<ICookieSecurityStampValidator, CookieSecurityStampValidator<TAccount>>();
-            services.AddScoped<ClaimsPrincipalServices<TAccount>>();
-            services.AddScoped<IAccountSecurityServices<TAccount>, AccountSecurityServices<TAccount>>();
+            services.AddScoped<ClaimsPrincipalService<TAccount>>();
+            services.AddScoped<IAccountSecurityService<TAccount>, AccountSecurityService<TAccount>>();
             services.AddScoped<IRoleRepository, DapperRoleRepository>();
             services.AddScoped<IClaimRepository, DapperClaimRepository>();
 
@@ -38,7 +38,7 @@ namespace Jering.AccountManagement.Extensions
         /// <param name="services"></param>
         public static void AddDevelopmentEmailSender(this IServiceCollection services)
         {
-            services.AddScoped<IEmailServices, DevelopmentEmailServices>();
+            services.AddScoped<IEmailService, DevelopmentEmailService>();
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace Jering.AccountManagement.Extensions
         /// <param name="services"></param>
         public static void AddEmailSender(this IServiceCollection services)
         {
-            services.AddScoped<IEmailServices, EmailServices>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<SmtpClient>();
         }
     }

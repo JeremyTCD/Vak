@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityServices{TAccount}.PasswordSignInAsync"/>.
+    /// Results for <see cref="IAccountSecurityService{TAccount}.PasswordSignInAsync"/>.
     /// </summary>
     public class PasswordSignInResult<TAccount> where TAccount : IAccount
     {

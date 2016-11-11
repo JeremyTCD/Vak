@@ -11,14 +11,14 @@ namespace Jering.Mail
     /// <summary>
     /// Provides an API for handling emails in the development environment.
     /// </summary>
-    public class DevelopmentEmailServices : EmailServices
+    public class DevelopmentEmailService : EmailService
     {
         /// <summary>
-        /// Constructs an instance of <see cref="DevelopmentEmailServices"/> .
+        /// Constructs an instance of <see cref="DevelopmentEmailService"/> .
         /// </summary>
         /// <param name="emailOptionsAccessor"></param>
         /// <param name="smtpClient"></param>
-        public DevelopmentEmailServices(IOptions<EmailOptions> emailOptionsAccessor) : base(emailOptionsAccessor, null)
+        public DevelopmentEmailService(IOptions<EmailOptions> emailOptionsAccessor) : base(emailOptionsAccessor, null)
         {
         }
 

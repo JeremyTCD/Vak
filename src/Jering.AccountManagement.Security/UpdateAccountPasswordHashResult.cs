@@ -3,7 +3,7 @@
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityServices{TAccount}.UpdateAccountPasswordHashAsync"/>.
+    /// Results for <see cref="IAccountSecurityService{TAccount}.UpdateAccountPasswordHashAsync"/>.
     /// </summary>
     public class UpdateAccountPasswordHashResult
     {

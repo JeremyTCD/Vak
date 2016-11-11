@@ -8,7 +8,7 @@ namespace Jering.DynamicForms
     /// <summary>
     /// 
     /// </summary>
-    public interface IDynamicFormsServices
+    public interface IDynamicFormsService
     {
         /// <summary>
         /// 

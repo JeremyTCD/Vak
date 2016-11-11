@@ -3,7 +3,7 @@
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityServices{TAccount}.UpdateAccountDisplayNameAsync"/>.
+    /// Results for <see cref="IAccountSecurityService{TAccount}.UpdateAccountDisplayNameAsync"/>.
     /// </summary>
     public class UpdateAccountDisplayNameResult
     {

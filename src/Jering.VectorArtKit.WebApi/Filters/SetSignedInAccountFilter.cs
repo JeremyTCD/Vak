@@ -14,14 +14,14 @@ namespace Jering.VectorArtKit.WebApi.Filters
         {
             await next();
 
-            IAccountSecurityServices<VakAccount> accountSecurityServices = (IAccountSecurityServices<VakAccount>) context.
+            IAccountSecurityService<VakAccount> accountSecurityService = (IAccountSecurityService<VakAccount>) context.
                 HttpContext.
                 RequestServices.
-                GetService(typeof(IAccountSecurityServices<VakAccount>));
+                GetService(typeof(IAccountSecurityService<VakAccount>));
 
             (context.Controller as Controller).ViewData.Add(
                 nameof(VakAccount),
-                await accountSecurityServices.GetSignedInAccountAsync());
+                await accountSecurityService.GetSignedInAccountAsync());
         }
     }
 }

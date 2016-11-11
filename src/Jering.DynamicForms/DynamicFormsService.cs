@@ -11,14 +11,14 @@ namespace Jering.DynamicForms
     /// <summary>
     /// 
     /// </summary>
-    public class DynamicFormsServices : IDynamicFormsServices
+    public class DynamicFormsService : IDynamicFormsService
     {
         private IDynamicFormsBuilder _dynamicFormsBuilder;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public DynamicFormsServices(IDynamicFormsBuilder dynamicFormsBuilder)
+        public DynamicFormsService(IDynamicFormsBuilder dynamicFormsBuilder)
         {
             _dynamicFormsBuilder = dynamicFormsBuilder;
         }

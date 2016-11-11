@@ -3,7 +3,7 @@
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityServices{TAccount}.UpdateAccountTwoFactorEnabledAsync"/>.
+    /// Results for <see cref="IAccountSecurityService{TAccount}.UpdateAccountTwoFactorEnabledAsync"/>.
     /// </summary>
     public class UpdateAccountTwoFactorEnabledResult
     {

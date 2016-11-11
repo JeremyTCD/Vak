@@ -9,17 +9,17 @@ namespace Jering.Mail
     /// <summary>
     /// Provides an API for handling emails.
     /// </summary>
-    public class EmailServices : IEmailServices
+    public class EmailService : IEmailService
     {
         protected EmailOptions _emailOptions { get; }
         protected SmtpClient _smtpClient { get; }
 
         /// <summary>
-        /// Constructs an instance of <see cref="EmailServices"/>. 
+        /// Constructs an instance of <see cref="EmailService"/>. 
         /// </summary>
         /// <param name="emailOptionsAccessor"></param>
         /// <param name="smtpClient"></param>
-        public EmailServices(IOptions<EmailOptions> emailOptionsAccessor, SmtpClient smtpClient)
+        public EmailService(IOptions<EmailOptions> emailOptionsAccessor, SmtpClient smtpClient)
         {
             _emailOptions = emailOptionsAccessor.Value;
             _smtpClient = smtpClient;
