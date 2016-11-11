@@ -1,9 +1,4 @@
-﻿using Jering.DataAnnotations;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System;
 using System.Reflection;
 
 namespace Jering.DynamicForms
@@ -14,6 +9,10 @@ namespace Jering.DynamicForms
     public class DynamicFormsService : IDynamicFormsService
     {
         private IDynamicFormsBuilder _dynamicFormsBuilder;
+        /// <summary>
+        /// Generic form name.
+        /// </summary>
+        public static string DynamicFormName = "DynamicForm";
 
         /// <summary>
         /// Constructor
