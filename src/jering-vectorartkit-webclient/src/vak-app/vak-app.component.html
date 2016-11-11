@@ -1,25 +1,25 @@
 <a routerLink="home">Logo</a><br />
-<a>My VakKits</a><br />
-<a>My VakUnits</a><br />
-<a routerLink="signup">Sign up</a><br />
-<a>Log in</a><br />
+<div *ngIf="userService.loggedIn">
+    <a>My VakKits</a><br />
+    <a>My VakUnits</a><br />
+</div>
+<div *ngIf="!userService.loggedIn">
+    <a routerLink="signup">Sign up</a><br />
+    <a>Log in</a><br />
+</div>
 <a>Overview</a><br />
 <a>VakUnit gallery</a><br />
 <a>Learn</a><br />
 <a>Help</a><br />
-<a>Account:</a><br />
-<a>Manage account</a><br />
-<form>
-    <button type="submit">Log off</button>
-</form>
-
+<div *ngIf="userService.loggedIn">
+    <a>Account:{{userService.userName}}</a><br />
+    <a>Manage account</a><br />
+    <form>
+        <button type="submit">Log off</button>
+    </form>
+</div>
 <div>
     more
 </div>
 
-<!--<nav>
-    <a routerLink="contact" routerLinkActive="active">Contact</a>
-    <a routerLink="crisis" routerLinkActive="active">Crisis Center</a>
-    <a routerLink="heroes" routerLinkActive="active">Heroes</a>
-</nav>-->
 <router-outlet></router-outlet>
