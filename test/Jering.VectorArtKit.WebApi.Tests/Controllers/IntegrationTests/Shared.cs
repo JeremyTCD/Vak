@@ -83,6 +83,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
                 Content = new StringContent(ToJson(formPostBodyData), Encoding.UTF8, "application/json")
             };
 
+            httpRequestMessage.Headers.Add("X-Requested-With", "XMLHttpRequest");
+
             return httpRequestMessage;
         }
 

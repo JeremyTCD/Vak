@@ -105,6 +105,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Remember me?.
+        /// </summary>
+        public static string DisplayName_RememberMe {
+            get {
+                return ResourceManager.GetString("DisplayName_RememberMe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Two factor authentication.
         /// </summary>
         public static string DisplayName_TwoFactor {
@@ -213,6 +222,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Invalid email or password..
+        /// </summary>
+        public static string ErrorMessage_LogIn_Failed {
+            get {
+                return ResourceManager.GetString("ErrorMessage_LogIn_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to New display name cannot be the same as current display name..
         /// </summary>
         public static string ErrorMessage_NewDisplayName_MustDiffer {
@@ -317,15 +335,6 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         public static string ErrorMessage_UnexpectedError {
             get {
                 return ResourceManager.GetString("ErrorMessage_UnexpectedError", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Invalid email or password..
-        /// </summary>
-        public static string LogIn_Failed {
-            get {
-                return ResourceManager.GetString("LogIn_Failed", resourceCulture);
             }
         }
         

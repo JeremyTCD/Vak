@@ -195,7 +195,7 @@
   <data name="ErrorMessage_Email_Invalid" xml:space="preserve">
     <value>Email address is invalid.</value>
   </data>
-  <data name="LogIn_Failed" xml:space="preserve">
+  <data name="ErrorMessage_LogIn_Failed" xml:space="preserve">
     <value>Invalid email or password.</value>
   </data>
   <data name="ErrorMessage_Email_InUse" xml:space="preserve">
@@ -272,5 +272,8 @@
   </data>
   <data name="ErrorMessage_Password_Required" xml:space="preserve">
     <value>Password is required.</value>
+  </data>
+  <data name="DisplayName_RememberMe" xml:space="preserve">
+    <value>Remember me?</value>
   </data>
 </root>

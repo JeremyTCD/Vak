@@ -1,4 +1,5 @@
 ﻿using Jering.DataAnnotations;
+using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.Resources;
 using System.ComponentModel.DataAnnotations;
 
@@ -6,19 +7,19 @@ namespace Jering.VectorArtKit.WebApi.FormModels
 {
     public class LoginFormModel
     {
-        [Required]
+        [ValidateRequired(nameof(Strings.ErrorMessage_Email_Required), typeof(Strings))]
         [ValidateEmailAddress(nameof(Strings.ErrorMessage_Email_Invalid), typeof(Strings))]
-        [DataType(DataType.EmailAddress)]
+        [DynamicControl("input", nameof(Strings.DisplayName_Email), typeof(Strings), 0)]
+        [DynamicControlProperty("type", "email")]
         public string Email { get; set; }
 
-        [Required]
-        [ValidateMinLength(8, nameof(Strings.ErrorMessage_Password_TooShort), typeof(Strings))]
-        [ValidateHasLowercase(nameof(Strings.ErrorMessage_Password_RequiresLowerCase), typeof(Strings))]
-        [ValidateHasUppercase(nameof(Strings.ErrorMessage_Password_RequiresUpperCase), typeof(Strings))]
-        [DataType(DataType.Password)]
+        [ValidateRequired(nameof(Strings.ErrorMessage_Password_Required), typeof(Strings))]
+        [DynamicControl("input", nameof(Strings.DisplayName_Password), typeof(Strings), 1)]
+        [DynamicControlProperty("type", "password")]
         public string Password { get; set; }
 
-        [Display(Name = "Remember me?")]
+        [DynamicControl("input", nameof(Strings.DisplayName_RememberMe), typeof(Strings), 2)]
+        [DynamicControlProperty("type", "checkbox")]
         public bool RememberMe { get; set; }
     }
 }

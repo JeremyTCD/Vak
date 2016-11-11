@@ -1,11 +1,13 @@
 ﻿using Jering.AccountManagement.DatabaseInterface;
 using Jering.AccountManagement.Security;
+using Jering.DynamicForms;
 using Jering.Mail;
 using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Filters;
 using Jering.VectorArtKit.WebApi.FormModels;
 using Jering.VectorArtKit.WebApi.Resources;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using MimeKit;
 using System;
@@ -36,11 +38,25 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         }
 
         /// <summary>
+        /// POST: /Account/LoggedIn
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// 401 unauthorized with default body if authentication fails.
+        /// 200 okay with username if authentication succeeds.
+        /// </returns>
+        [HttpGet]
+        public IActionResult LoggedIn()
+        {
+            return Ok(new { userName = _accountSecurityService.GetSignedInAccountEmail() });
+        }
+
+        /// <summary>
         /// POST: /Account/SignUp
         /// </summary>
         /// <param name="model"></param>
         /// <returns>
-        /// 400 bad request with no body if anti-forgery credentials are invalid.
+        /// 400 bad request with default body if anti-forgery credentials are invalid.
         /// 400 bad request with model state if model state is invalid. 
         /// 400 bad request with model state if email in use. 
         /// 200 okay with username, application cookie and sends email verification email if account is created successfully.
@@ -67,61 +83,46 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             return BadRequest(new { modelState = new SerializableError(ModelState) });
         }
 
-        ///// <summary>
-        ///// GET: /Account/LogIn
-        ///// </summary>
-        ///// <param name="returnUrl"></param>
-        ///// <returns>
-        ///// Login view with anti-forgery token and cookie.
-        ///// </returns>
-        //[HttpGet]
-        //[AllowAnonymous]
-        //[SetSignedInAccount]
-        //public IActionResult LogIn(string returnUrl = null)
-        //{
-        //    ViewData["ReturnUrl"] = returnUrl;
-        //    return View();
-        //}
+        /// <summary>
+        /// Post: /Account/LogIn
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="returnUrl"></param>
+        /// <returns>
+        /// 400 bad request with default body if anti-forgery credentials are invalid.
+        /// 400 bad request with model state if model state is invalid. 
+        /// 400 bad request with model state if credentials are invalid. 
+        /// 200 okay with username and application cookie if login succeeds.
+        /// 200 okay with isPersistent, two factor cookie and sends two factor email if two factor authentication is required. 
+        /// </returns>
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LogIn([FromBody] LoginFormModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                PasswordSignInResult<VakAccount> passwordSignInResult = await _accountSecurityService.PasswordSignInAsync(model.Email,
+                    model.Password,
+                    new AuthenticationProperties() { IsPersistent = model.RememberMe });
 
-        ///// <summary>
-        ///// Post: /Account/LogIn
-        ///// </summary>
-        ///// <param name="model"></param>
-        ///// <param name="returnUrl"></param>
-        ///// <returns>
-        ///// Bad request if anti-forgery credentials are invalid.
-        ///// Login view with error message if model state or login credentials are invalid. 
-        ///// Home index view or return Url view with an application cookie if login is successful.
-        ///// Redirects to /Account/VerifyCode with a two factor cookie and sends two factor email if two factor is required. 
-        ///// </returns>
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> LogIn(LoginFormModel model, string returnUrl = null)
-        //{
-        //    ViewData["ReturnUrl"] = returnUrl;
-        //    if (ModelState.IsValid)
-        //    {
-        //        PasswordSignInResult<VakAccount> passwordSignInResult = await _accountSecurityService.PasswordSignInAsync(model.Email,
-        //            model.Password,
-        //            new AuthenticationProperties() { IsPersistent = model.RememberMe });
+                if (passwordSignInResult.TwoFactorRequired)
+                {
+                    await _accountSecurityService.CreateTwoFactorCookieAsync(passwordSignInResult.Account);
+                    await SendTwoFactorEmail(passwordSignInResult.Account);
 
-        //        if (passwordSignInResult.TwoFactorRequired)
-        //        {
-        //            await _accountSecurityService.CreateTwoFactorCookieAsync(passwordSignInResult.Account);
-        //            await SendTwoFactorEmail(passwordSignInResult.Account);
+                    return Ok(new { isPersistent = model.RememberMe });
+                }
+                if (passwordSignInResult.Succeeded)
+                {
+                    return Ok(new { userName = model.Email });
+                }
 
-        //            return RedirectToAction(nameof(VerifyTwoFactorCode), new { IsPersistent = model.RememberMe, ReturnUrl = returnUrl });
-        //        }
-        //        if (passwordSignInResult.Succeeded)
-        //        {
-        //            return RedirectToLocal(returnUrl);
-        //        }
-        //    }
+                ModelState.AddModelError(DynamicFormsService.DynamicFormName, Strings.ErrorMessage_LogIn_Failed);
+            }
 
-        //    ModelState.AddModelError(string.Empty, Strings.LogIn_Failed);
-        //    return View(model);
-        //}
+            return BadRequest(new { modelState = new SerializableError(ModelState) });
+        }
 
         ///// <summary>
         ///// GET: /Account/VerifyTwoFactorCode

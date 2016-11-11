@@ -23,14 +23,57 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         private string _accountControllerName { get; } = nameof(AccountController).Replace("Controller", "");
         private string _badRequest { get; } = "BadRequest";
+        private string _unauthorized { get; } = "Unauthorized";
         private string _ok { get; } = "OK";
         private string _tempEmailFile { get; } = @"Temp\SmtpTest.txt";
+        private string _applicationCookieName { get; } = "Jering.Application";
+        private string _twoFactorCookieName { get; } = "Jering.TwoFactor";
+        private string _testEmail { get; } = "test@email.com";
+        private string _testPassword { get; } = "testPassword";
 
         public AccountControllerIntegrationTests(ControllersFixture controllersFixture)
         {
             _httpClient = controllersFixture.HttpClient;
             _vakAccountRepository = controllersFixture.VakAccountRepository;
             _resetAccountsTable = controllersFixture.ResetAccountsTable;
+        }
+
+        [Fact]
+        public async Task LoggedIn_Returns200OkWithUsernameIfAuthenticationSucceeds()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
+            HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
+
+
+            // Act
+            httpResponseMessage = await _httpClient.SendAsync(
+                RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.LoggedIn)}", HttpMethod.Get, null, httpResponseMessage)
+            );
+
+            // Assert
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            Assert.Equal(body.userName, _testEmail);
+        }
+
+        [Fact]
+        public async Task LoggedIn_Returns401UnauthorizedWithDefaultBodyIfAuthenticationFails()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(
+                RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.LoggedIn)}", HttpMethod.Get)
+            );
+
+            // Assert
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
+            Assert.Equal(body.errorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
@@ -54,12 +97,11 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         public async Task SignUpPost_Returns400BadRequestWithModelStateIfEmailInUse()
         {
             // Arrange
-            string testEmail = "test@email.com", testPassword = "testPassword";
             await _resetAccountsTable();
-            await _vakAccountRepository.CreateAccountAsync(testEmail, testPassword);
+            await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
 
             // Act
-            HttpResponseMessage httpResponseMessage = await SignUp(testEmail, testPassword, testPassword);
+            HttpResponseMessage httpResponseMessage = await SignUp(_testEmail, _testPassword, _testPassword);
 
             // Assert
             dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
@@ -68,17 +110,16 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_Returns400BadRequestIfAntiForgeryCredentialsAreInvalid()
+        public async Task SignUpPost_Returns400BadRequestWithDefaultBodyIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
-            string testPassword = "testPassword";
             await _resetAccountsTable();
 
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { "Email", "test@email.com"},
-                { "Password", testPassword},
-                { "ConfirmPassword",  testPassword}
+                { "Email", _testEmail},
+                { "Password", _testPassword},
+                { "ConfirmPassword",  _testPassword}
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.SignUp)}", HttpMethod.Post, formPostBodyData);
 
@@ -92,135 +133,117 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_Returns200OkWithUsernameApplicationCookieAndSendEmailVerificationEmailIfRegistrationIsSuccessful()
+        public async Task SignUpPost_Returns200OkWithUsernameApplicationCookieAndSendEmailVerificationEmailIfRegistrationSucceeds()
         {
             // Arrange
-            string testEmail = "test@email.com", testPassword = "testPassword";
             await _resetAccountsTable();
             File.WriteAllText(_tempEmailFile, "");
 
             // Act
-            HttpResponseMessage httpResponseMessage = await SignUp(testEmail, testPassword, testPassword);
+            HttpResponseMessage httpResponseMessage = await SignUp(_testEmail, _testPassword, _testPassword);
 
             // Assert
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
-            Assert.Equal("Jering.Application", cookies.Keys.First());
+            Assert.Equal(_applicationCookieName, cookies.Keys.First());
             dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal(testEmail, body.userName);
+            Assert.Equal(_testEmail, body.userName);
             string emailVerificationEmail = File.ReadAllText(_tempEmailFile);
             Assert.Contains(Strings.Email_EmailVerification_Subject, emailVerificationEmail);
-            Assert.Contains(testEmail, emailVerificationEmail);
+            Assert.Contains(_testEmail, emailVerificationEmail);
             Assert.Matches(Strings.Email_EmailVerification_Message.Replace("{0}", $"http://localhost/{_accountControllerName}/{nameof(AccountController.EmailVerificationConfirmation)}.*?"), emailVerificationEmail);
         }
 
-        //[Fact]
-        //public async Task LoginGet_ReturnsLoginViewWithAntiForgeryTokenAndCookie()
-        //{
-        //    // Act
-        //    HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("Account/Login");
+        [Fact]
+        public async Task LoginPost_ReturnsBadRequestWithDefaultBodyIfAntiForgeryCredentialsAreInvalid()
+        {
+            // Arrange
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                { "Email", _testEmail},
+                { "Password", _testPassword}
+            };
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.LogIn)}", HttpMethod.Post, formPostBodyData);
 
-        //    // Assert
-        //    string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(httpResponseMessage);
-        //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
-        //    string html = await httpResponseMessage.Content.ReadAsStringAsync();
-        //    Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
+            // Act
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
-        //    Assert.True(html.Contains(Strings.ViewTitle_LogIn));
-        //    Assert.NotNull(antiForgeryToken);
-        //    Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
-        //}
+            // Assert
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.Equal(body.errorMessage, Strings.ErrorMessage_UnexpectedError);
+        }
 
-        //[Theory]
-        //[MemberData(nameof(LoginPostData))]
-        //public async Task LoginPost_ReturnsLoginViewWithErrorMessageIfModelStateOrLoginCredentialsAreInvalid(string email, string password)
-        //{
-        //    // Arrange
-        //    await _resetAccountsTable();
-        //    await CreateAccount("Email1@test.com", "Password1@");
+        [Fact]
+        public async Task LoginPost_Returns400BadRequestWithModelStateIfModelStateIsInvalid()
+        {
+            // Arrange
+            await _resetAccountsTable();
 
-        //    // Act
-        //    HttpResponseMessage httpResponseMessage = await LogIn(email, password);
+            // Act
+            HttpResponseMessage httpResponseMessage = await LogIn("", "");
 
-        //    // Assert
-        //    string html = await httpResponseMessage.Content.ReadAsStringAsync();
+            // Assert
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.Equal(body.modelState.Email[0], Strings.ErrorMessage_Email_Required);
+            Assert.Equal(body.modelState.Password[0], Strings.ErrorMessage_Password_Required);
+        }
 
-        //    Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-        //    Assert.True(html.Contains(Strings.ViewTitle_LogIn));
-        //    Assert.True(html.Contains(Strings.LogIn_Failed));
-        //}
+        [Fact]
+        public async Task LoginPost_Returns400BadRequestWithModelStateIfCredentialsAreInvalid()
+        {
+            // Arrange
+            await _resetAccountsTable();
 
-        //public static IEnumerable<object[]> LoginPostData()
-        //{
-        //    yield return new object[] { "invalidModelState", "x" };
-        //    yield return new object[] { "invalid@Credentials", "@InvalidCredentials0" };
-        //}
+            // Act
+            HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
 
-        //[Fact]
-        //public async Task LoginPost_RedirectsToHomeIndexViewAndSendsAuthenticationCookieIfLoginSucceeds()
-        //{
-        //    // Arrange
-        //    string email = "Email1@test.com";
-        //    string password = "Password1@";
+            // Assert
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.Equal(body.modelState.DynamicForm[0], Strings.ErrorMessage_LogIn_Failed);
+        }
 
-        //    await _resetAccountsTable();
-        //    await _vakAccountRepository.CreateAccountAsync(email, password);
+        [Fact]
+        public async Task LoginPost_Returns200OkWithUsernameAndApplicationCookieIfLoginSucceeds()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
 
-        //    // Act
-        //    HttpResponseMessage httpResponseMessage = await LogIn(email, password);
+            // Act
+            HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
 
-        //    // Assert
-        //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
-        //    Assert.Equal("Jering.Application", cookies.Keys.First());
-        //    Assert.Equal("Redirect", httpResponseMessage.StatusCode.ToString());
-        //    Assert.Equal("/", httpResponseMessage.Headers.Location.ToString());
-        //}
+            // Assert
+            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
+            Assert.Equal(_applicationCookieName, cookies.Keys.First());
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            Assert.Equal(_testEmail, body.userName);
+        }
 
-        //[Fact]
-        //public async Task LoginPost_RedirectsToVerifyCodeViewAndSendsTwoFactorCookieAndSendsTwoFactorEmailIfTwoFactorIsRequired()
-        //{
-        //    // Arrange
-        //    string email = "Email1@test.com";
-        //    string password = "Password1@";
+        [Fact]
+        public async Task LoginPost_Returns200OkWithIsPersistentTwoFactorCookieAndSendsTwoFactorEmailIfTwoFactorAuthenticationIsRequired()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            await CreateAccount(_testEmail, _testPassword, true);
+            File.WriteAllText(_tempEmailFile, "");
 
-        //    await _resetAccountsTable();
-        //    await CreateAccount(email, password, true);
-        //    File.WriteAllText(@"Temp\SmtpTest.txt", "");
+            // Act
+            HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
 
-        //    // Act
-        //    HttpResponseMessage httpResponseMessage = await LogIn(email, password);
-
-        //    // Assert
-        //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
-        //    Assert.Equal("Jering.TwoFactor", cookies.Keys.First());
-        //    Assert.Equal("Redirect", httpResponseMessage.StatusCode.ToString());
-        //    Assert.Equal($"/Account/{nameof(AccountController.VerifyTwoFactorCode)}?IsPersistent=True", httpResponseMessage.Headers.Location.ToString());
-
-        //    string twoFactorEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
-        //    Assert.Contains(Strings.TwoFactorEmail_Subject, twoFactorEmail);
-        //    Assert.Contains(email, twoFactorEmail);
-        //    Assert.Matches(Strings.TwoFactorEmail_Message.Replace("{0}", @"\d{6,6}"), twoFactorEmail);
-        //}
-
-        //[Fact]
-        //public async Task LoginPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
-        //{
-        //    // Arrange
-        //    IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
-        //    {
-        //        { "Email", "Email1@test.com"},
-        //        { "Password", "Password1@"},
-        //        { "RememberMe", "true" }
-        //    };
-
-        //    HttpRequestMessage httpRequestMessage = RequestHelper.Create("Account/Login", HttpMethod.Post, formPostBodyData);
-
-        //    // Act
-        //    HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
-
-        //    // Assert
-        //    Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-        //}
+            // Assert
+            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
+            Assert.Equal(_twoFactorCookieName, cookies.Keys.First());
+            string twoFactorEmail = File.ReadAllText(_tempEmailFile);
+            Assert.Contains(Strings.TwoFactorEmail_Subject, twoFactorEmail);
+            Assert.Contains(_testEmail, twoFactorEmail);
+            Assert.Matches(Strings.TwoFactorEmail_Message.Replace("{0}", @"\d{6,6}"), twoFactorEmail);
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            Assert.False(body.isPersistent);
+        }
 
         //[Fact]
         //public async Task LogOffPost_RedirectsToHomeIndexViewAndSendsHeaderToRemoveAllCookiesIfSuccessful()
@@ -248,8 +271,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //    // Assert
         //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(logOffPostResponse);
         //    Assert.Equal(2, cookies.Count);
-        //    Assert.Contains("Jering.Application", cookies.Keys);
-        //    Assert.Equal("", cookies["Jering.Application"]);
+        //    Assert.Contains(_applicationCookieName, cookies.Keys);
+        //    Assert.Equal("", cookies[_applicationCookieName]);
         //    Assert.Contains("Jering.TwoFactor", cookies.Keys);
         //    Assert.Equal("", cookies["Jering.TwoFactor"]);
         //    Assert.Equal("Redirect", logOffPostResponse.StatusCode.ToString());
@@ -364,7 +387,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //    // Assert
         //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(VerifyTwoFactorCodePostResponse);
-        //    Assert.Contains("Jering.Application", cookies.Keys);
+        //    Assert.Contains(_applicationCookieName, cookies.Keys);
         //    Assert.Contains("Jering.TwoFactor", cookies.Keys);
         //    Assert.Equal("", cookies["Jering.TwoFactor"]);
         //    Assert.Equal("Redirect", VerifyTwoFactorCodePostResponse.StatusCode.ToString());
@@ -663,7 +686,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //    Assert.Equal("Redirect", changePasswordPostResponse.StatusCode.ToString());
         //    Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.ManageAccount)}", changePasswordPostResponse.Headers.Location.ToString());
         //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(changePasswordPostResponse);
-        //    Assert.Equal("Jering.Application", cookies.Keys.First());
+        //    Assert.Equal(_applicationCookieName, cookies.Keys.First());
         //    VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(email, newPassword);
         //    Assert.NotNull(account);
         //}
@@ -876,14 +899,14 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //    Assert.Equal("Redirect", changeEmailPostResponse.StatusCode.ToString());
         //    Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.ManageAccount)}", changeEmailPostResponse.Headers.Location.ToString());
         //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(changeEmailPostResponse);
-        //    Assert.Equal("Jering.Application", cookies.Keys.First());
+        //    Assert.Equal(_applicationCookieName, cookies.Keys.First());
         //    VakAccount account = await _vakAccountRepository.GetAccountByEmailAsync(newEmail);
         //    Assert.NotNull(account);
         //}
 
         //[Theory]
         //[MemberData(nameof(ChangeEmailPostData))]
-        //public async Task ChangeEmailPost_ChangeEmailViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrEmailIsInUse(string testPassword, string newEmail)
+        //public async Task ChangeEmailPost_ChangeEmailViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrEmailIsInUse(string _testPassword, string newEmail)
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -904,7 +927,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //    IDictionary<string, string> applicationCookie = CookiesHelper.ExtractCookiesFromResponse(logInPostResponse);
 
         //    // Act
-        //    HttpResponseMessage changeEmailPostResponse = await ChangeEmail(testPassword, email, newEmail, applicationCookie);
+        //    HttpResponseMessage changeEmailPostResponse = await ChangeEmail(_testPassword, email, newEmail, applicationCookie);
 
         //    // Assert
         //    Assert.Equal("OK", changeEmailPostResponse.StatusCode.ToString());
@@ -914,7 +937,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //    {
         //        Assert.Contains(Strings.ErrorMessage_Email_Invalid, html);
         //    }
-        //    else if (testPassword == "invalidPassword")
+        //    else if (_testPassword == "invalidPassword")
         //    {
         //        Assert.Contains(Strings.ErrorMessage_Password_Invalid, html);
         //    }
@@ -1090,7 +1113,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(ChangeAlternativeEmailPostData))]
-        //public async Task ChangeAlternativeEmailPost_ChangeAlternativeEmailViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrAlternativeEmailIsInUse(string testPassword, string newAlternativeEmail)
+        //public async Task ChangeAlternativeEmailPost_ChangeAlternativeEmailViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrAlternativeEmailIsInUse(string _testPassword, string newAlternativeEmail)
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1111,7 +1134,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //    IDictionary<string, string> applicationCookie = CookiesHelper.ExtractCookiesFromResponse(logInPostResponse);
 
         //    // Act
-        //    HttpResponseMessage changeAlternativeEmailPostResponse = await ChangeAlternativeEmail(testPassword,
+        //    HttpResponseMessage changeAlternativeEmailPostResponse = await ChangeAlternativeEmail(_testPassword,
         //        newAlternativeEmail == "matches@email.com" ? newAlternativeEmail : null,
         //        newAlternativeEmail,
         //        applicationCookie);
@@ -1124,7 +1147,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //    {
         //        Assert.Contains(Strings.ErrorMessage_Email_Invalid, html);
         //    }
-        //    else if (testPassword == "invalidPassword")
+        //    else if (_testPassword == "invalidPassword")
         //    {
         //        Assert.Contains(Strings.ErrorMessage_Password_Invalid, html);
         //    }
@@ -1260,7 +1283,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(ChangeDisplayNamePostData))]
-        //public async Task ChangeDisplayNamePost_ChangeDisplayNameViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrDisplayNameIsInUse(string testPassword, string newDisplayName)
+        //public async Task ChangeDisplayNamePost_ChangeDisplayNameViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrDisplayNameIsInUse(string _testPassword, string newDisplayName)
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1277,7 +1300,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //    IDictionary<string, string> applicationCookie = CookiesHelper.ExtractCookiesFromResponse(logInPostResponse);
 
         //    // Act
-        //    HttpResponseMessage changeDisplayNamePostResponse = await ChangeDisplayName(testPassword,
+        //    HttpResponseMessage changeDisplayNamePostResponse = await ChangeDisplayName(_testPassword,
         //        newDisplayName == "doesNotDiffer" ? newDisplayName : null,
         //        newDisplayName,
         //        applicationCookie);
@@ -1290,7 +1313,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //    {
         //        Assert.Contains(Strings.ErrorMessage_DisplayName_FormatInvalid, html);
         //    }
-        //    else if (testPassword == "invalidPassword")
+        //    else if (_testPassword == "invalidPassword")
         //    {
         //        Assert.Contains(Strings.ErrorMessage_Password_Invalid, html);
         //    }
@@ -2436,45 +2459,39 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             return await _httpClient.SendAsync(httpRequestMessage);
         }
 
-        ///// <summary>
-        ///// Log in to account with credentials <paramref name="email"/> and <paramref name="password"/>.
-        ///// </summary>
-        ///// <param name="email"></param>
-        ///// <param name="password"></param>
-        ///// <returns>
-        ///// Returns login post <see cref="HttpResponseMessage"/>. If successful, returns home index view and contains application cookie. 
-        ///// </returns>
-        //public async Task<HttpResponseMessage> LogIn(string email, string password)
-        //{
-        //    HttpResponseMessage loginGetResponse = await _httpClient.GetAsync("Account/Login");
-        //    string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(loginGetResponse);
+        public async Task<HttpResponseMessage> LogIn(string email, string password)
+        {
+            HttpRequestMessage getDynamicFormGetRequest = RequestHelper.Create($"{nameof(DynamicFormsController).Replace("Controller", "")}/" +
+                $"{nameof(DynamicFormsController.GetDynamicForm)}?formModelName=LogIn", HttpMethod.Get);
+            HttpResponseMessage getDynamicFormGetResponse = await _httpClient.SendAsync(getDynamicFormGetRequest);
+            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(getDynamicFormGetResponse);
 
-        //    IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
-        //    {
-        //        { "Email", email},
-        //        { "Password", password},
-        //        { "RememberMe", "true" },
-        //        { "__RequestVerificationToken", antiForgeryToken }
-        //    };
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                { "Email", email},
+                { "Password", password}
+            };
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.LogIn)}", HttpMethod.Post, formPostBodyData);
+            httpRequestMessage.Headers.Add("X-XSRF-TOKEN", cookies["XSRF-TOKEN"]);
+            CookiesHelper.PutCookiesOnRequest(httpRequestMessage, cookies);
 
-        //    HttpRequestMessage loginPostRequest = RequestHelper.CreateWithCookiesFromResponse("Account/Login", HttpMethod.Post, formPostBodyData, loginGetResponse);
-        //    return await _httpClient.SendAsync(loginPostRequest);
-        //}
+            return await _httpClient.SendAsync(httpRequestMessage);
+        }
 
-        //public async Task<VakAccount> CreateAccount(string email, string password, bool twoFactorEnabled = false, bool emailConfirmed = false)
-        //{
-        //    VakAccount account = await _vakAccountRepository.CreateAccountAsync(email, password);
-        //    if (twoFactorEnabled)
-        //    {
-        //        await _vakAccountRepository.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true);
-        //    }
-        //    if (emailConfirmed)
-        //    {
-        //        await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true);
-        //    }
+        public async Task<VakAccount> CreateAccount(string email, string password, bool twoFactorEnabled = false, bool emailConfirmed = false)
+        {
+            VakAccount account = await _vakAccountRepository.CreateAccountAsync(email, password);
+            if (twoFactorEnabled)
+            {
+                await _vakAccountRepository.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true);
+            }
+            if (emailConfirmed)
+            {
+                await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true);
+            }
 
-        //    return account;
-        //}
+            return account;
+        }
 
         #endregion
     }
