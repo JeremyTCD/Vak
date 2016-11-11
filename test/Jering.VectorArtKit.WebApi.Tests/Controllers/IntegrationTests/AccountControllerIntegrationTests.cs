@@ -92,7 +92,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_Returns200OkWithApplicationCookieAndSendEmailVerificationEmailIfRegistrationIsSuccessful()
+        public async Task SignUpPost_Returns200OkWithUsernameApplicationCookieAndSendEmailVerificationEmailIfRegistrationIsSuccessful()
         {
             // Arrange
             string testEmail = "test@email.com", testPassword = "testPassword";
@@ -106,6 +106,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
             Assert.Equal("Jering.Application", cookies.Keys.First());
+            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            Assert.Equal(testEmail, body.userName);
             string emailVerificationEmail = File.ReadAllText(_tempEmailFile);
             Assert.Contains(Strings.Email_EmailVerification_Subject, emailVerificationEmail);
             Assert.Contains(testEmail, emailVerificationEmail);

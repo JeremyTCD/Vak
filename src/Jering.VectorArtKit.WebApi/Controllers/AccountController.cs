@@ -43,7 +43,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 400 bad request with no body if anti-forgery credentials are invalid.
         /// 400 bad request with model state if model state is invalid. 
         /// 400 bad request with model state if email in use. 
-        /// 200 okay with application cookie and sends email verification email if account is created successfully.
+        /// 200 okay with username, application cookie and sends email verification email if account is created successfully.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -58,7 +58,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 {
                     await SendEmailVerificationEmail(createAccountResult.Account);
 
-                    return Ok();
+                    return Ok(new { userName = createAccountResult.Account.Email });
                 }
 
                 ModelState.AddModelError(nameof(SignUpFormModel.Email), Strings.ErrorMessage_Email_InUse);
