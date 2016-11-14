@@ -7,6 +7,7 @@ import 'rxjs/add/operator/catch';
 import { environment } from '../../../environments/environment';
 import { ErrorHandlerService } from '../utility/error-handler.service';
 import { DynamicForm } from './dynamic-form/dynamic-form';
+import { DynamicFormData } from './dynamic-form/dynamic-form-data';
 import { DynamicControl } from './dynamic-control/dynamic-control';
 import { Validity } from './validity';
 
@@ -49,7 +50,7 @@ export class DynamicFormsService {
      * - DynamicForm
      */
     private dynamicFormFromData(response: Response): DynamicForm {
-        let dynamicFormData = response.json();
+        let dynamicFormData = response.json() as DynamicFormData;
         let dynamicControls: DynamicControl<any>[] = [];
 
         for (let dynamicControlData of dynamicFormData.dynamicControlDatas) {
