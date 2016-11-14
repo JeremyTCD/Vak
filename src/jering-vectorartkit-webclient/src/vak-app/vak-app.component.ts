@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 
 import { UserService } from './shared/user.service';
 
@@ -6,8 +6,12 @@ import { UserService } from './shared/user.service';
     selector: 'vak-app',
     templateUrl: './vak-app.component.html'
 })
-export class VakAppComponent {
+export class VakAppComponent implements OnInit {
     title = 'Vector Art Kit';
 
     constructor(public userService: UserService) { }
+
+    ngOnInit(): void {
+        this.userService.syncWithStorage();
+    }
 }
