@@ -9,6 +9,7 @@ import { SignUpModule } from './sign-up/sign-up.module';
 import { HomeModule } from './home/home.module';
 import { ErrorModule } from './error/error.module';
 import { UserService } from './shared/user.service';
+import { StorageService } from './shared/storage.service';
 
 @NgModule({
     imports: [
@@ -20,7 +21,8 @@ import { UserService } from './shared/user.service';
         VakAppRouting
     ],
     declarations: [VakAppComponent],
-    providers: [UserService],
+    providers: [UserService,
+                StorageService],
     bootstrap: [VakAppComponent]
 })
 export class VakAppModule { }
