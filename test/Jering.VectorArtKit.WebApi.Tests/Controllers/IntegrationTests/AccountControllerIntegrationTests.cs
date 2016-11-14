@@ -39,44 +39,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LoggedIn_Returns200OkWithUsernameIfAuthenticationSucceeds()
-        {
-            // Arrange
-            await _resetAccountsTable();
-            await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
-            HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
-
-
-            // Act
-            httpResponseMessage = await _httpClient.SendAsync(
-                RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.LoggedIn)}", HttpMethod.Get, null, httpResponseMessage)
-            );
-
-            // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.username, _testEmail);
-        }
-
-        [Fact]
-        public async Task LoggedIn_Returns401UnauthorizedWithDefaultBodyIfAuthenticationFails()
-        {
-            // Arrange
-            await _resetAccountsTable();
-            await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(
-                RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.LoggedIn)}", HttpMethod.Get)
-            );
-
-            // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.errorMessage, Strings.ErrorMessage_UnexpectedError);
-        }
-
-        [Fact]
         public async Task SignUpPost_Returns400BadRequestWithModelStateIfModelStateIsInvalid()
         {
             // Arrange

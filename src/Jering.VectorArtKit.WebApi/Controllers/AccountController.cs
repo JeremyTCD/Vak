@@ -38,20 +38,6 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         }
 
         /// <summary>
-        /// POST: /Account/LoggedIn
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns>
-        /// 401 unauthorized with default body if authentication fails.
-        /// 200 okay with username if authentication succeeds.
-        /// </returns>
-        [HttpGet]
-        public IActionResult LoggedIn()
-        {
-            return Ok(new { username = _accountSecurityService.GetSignedInAccountEmail() });
-        }
-
-        /// <summary>
         /// POST: /Account/SignUp
         /// </summary>
         /// <param name="model"></param>
