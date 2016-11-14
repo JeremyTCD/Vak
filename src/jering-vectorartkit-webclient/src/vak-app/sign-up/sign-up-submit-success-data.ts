@@ -1,3 +1,3 @@
 ﻿export interface SignUpSubmitSuccessData {
-    userName: string;
+    username: string;
 }
