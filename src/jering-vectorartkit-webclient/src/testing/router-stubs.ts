@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { ReplaySubject, BehaviorSubject } from 'rxjs';
 
 @Injectable()
 export class StubActivatedRoute {
@@ -20,6 +20,16 @@ export class StubActivatedRoute {
     get snapshot() {
         return { params: this.testParams };
     }
+
+    private _data = new ReplaySubject(1);
+    public data = this._data.asObservable();
+    private _testData: {};
+    get testData() { return this._testData; }
+    set testData(data: {}) {
+        this._testData = data;
+        this._data.next(data);
+    }
+
 }
 
 export class StubRouter {
