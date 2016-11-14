@@ -54,7 +54,6 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        [SetAntiForgeryToken]
         public async Task<IActionResult> ValidateEmailNotInUse(string value)
         {
             if(value == null)
