@@ -110,6 +110,22 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             return BadRequest(new { modelState = new SerializableError(ModelState) });
         }
 
+        /// <summary>
+        /// Get: /Account/LogOff
+        /// Note that this action is not protected from CSRF. Navigating to https://accounts.google.com/Logout 
+        /// logs you out of all google accounts. This means google does not consider logout CSRF to be a threat.
+        /// </summary>
+        /// <returns>
+        /// 401 unauthorized if authentication fails.
+        /// 200 okay with two factor cookie and application cookie (with empty string values) if authentication succeeds. 
+        /// </returns>
+        [HttpPost]
+        public async Task<IActionResult> LogOff()
+        {
+            await _accountSecurityService.SignOutAsync();
+            return Ok();
+        }
+
         ///// <summary>
         ///// GET: /Account/VerifyTwoFactorCode
         ///// </summary>
@@ -163,22 +179,6 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         //    }
 
         //    return View(model);
-        //}
-
-        ///// <summary>
-        ///// POST: /Account/LogOff
-        ///// </summary>
-        ///// <returns>
-        ///// Redirects to /Home/Index with set-cookie headers to remove all cookies.
-        ///// Redirects to /Account/Login if authentication fails.
-        ///// Bad request if anti-forgery credentials are invalid.
-        ///// </returns>
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> LogOff()
-        //{
-        //    await _accountSecurityService.SignOutAsync();
-        //    return RedirectToAction(nameof(HomeController.Index), "Home");
         //}
 
         ///// <summary>

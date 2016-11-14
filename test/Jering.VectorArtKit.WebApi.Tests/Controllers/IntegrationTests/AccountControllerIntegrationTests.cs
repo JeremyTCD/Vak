@@ -197,6 +197,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
 
             // Assert
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
             Assert.Equal(_twoFactorCookieName, cookies.Keys.First());
             string twoFactorEmail = File.ReadAllText(_tempEmailFile);
@@ -207,91 +208,45 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.False(body.isPersistent);
         }
 
-        //[Fact]
-        //public async Task LogOffPost_RedirectsToHomeIndexViewAndSendsHeaderToRemoveAllCookiesIfSuccessful()
-        //{
-        //    //Arrange
-        //    string email = "Email1@test.com", password = "Password1@";
+        [Fact]
+        public async Task LogOffPost_Returns200OkWithTwoFactorCookieAndApplicationCookieIfAuthenticationIsSuccessful()
+        {
+            //Arrange
+            await _resetAccountsTable();
+            await CreateAccount(_testEmail, _testPassword);
+            HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
+            HttpRequestMessage httpRequestMessage = RequestHelper.CreateWithCookiesFromResponse(
+                $"{ _accountControllerName}/{ nameof(AccountController.LogOff)}", 
+                HttpMethod.Post, 
+                null,
+                httpResponseMessage);
 
-        //    await _resetAccountsTable();
-        //    await CreateAccount(email, password);
+            // Act
+            httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
-        //    HttpResponseMessage loginPostResponse = await LogIn(email, password);
-        //    HttpRequestMessage indexGetRequest = RequestHelper.CreateWithCookiesFromResponse("Home/Index", HttpMethod.Get, null, loginPostResponse);
-        //    HttpResponseMessage indexGetResponse = await _httpClient.SendAsync(indexGetRequest);
+            // Assert
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
+            Assert.Equal(2, cookies.Count);
+            Assert.Contains(_applicationCookieName, cookies.Keys);
+            Assert.Equal("", cookies[_applicationCookieName]);
+            Assert.Contains(_twoFactorCookieName, cookies.Keys);
+            Assert.Equal("", cookies[_twoFactorCookieName]);
+        }
 
-        //    IDictionary<string, string> logOffPostBody = new Dictionary<string, string>
-        //    {
-        //        { "__RequestVerificationToken", await AntiForgeryTokenHelper.ExtractAntiForgeryToken(indexGetResponse) }
-        //    };
-        //    HttpRequestMessage logOffPostRequest = RequestHelper.CreateWithCookiesFromResponse("Account/LogOff", HttpMethod.Post, logOffPostBody, loginPostResponse);
-        //    CookiesHelper.PutCookiesOnRequest(logOffPostRequest, CookiesHelper.ExtractCookiesFromResponse(indexGetResponse));
+        [Fact]
+        public async Task LogOffPost_Returns401UnauthorizedWithDefaultBodyIfAuthenticationFails()
+        {
+            //Arrange
+            await _resetAccountsTable();
 
-        //    // Act
-        //    HttpResponseMessage logOffPostResponse = await _httpClient.SendAsync(logOffPostRequest);
+            // Act
+            HttpResponseMessage httpResponseMessage = await _httpClient.
+                SendAsync(RequestHelper.Create($"{ _accountControllerName}/{ nameof(AccountController.LogOff)}", HttpMethod.Post));
 
-        //    // Assert
-        //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(logOffPostResponse);
-        //    Assert.Equal(2, cookies.Count);
-        //    Assert.Contains(_applicationCookieName, cookies.Keys);
-        //    Assert.Equal("", cookies[_applicationCookieName]);
-        //    Assert.Contains("Jering.TwoFactor", cookies.Keys);
-        //    Assert.Equal("", cookies["Jering.TwoFactor"]);
-        //    Assert.Equal("Redirect", logOffPostResponse.StatusCode.ToString());
-        //    Assert.Equal("/", logOffPostResponse.Headers.Location.ToString());
-        //}
-
-        //[Fact]
-        //public async Task LogOffPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
-        //{
-        //    //Arrange
-        //    string email = "Email1@test.com", password = "Password1@";
-
-        //    await _resetAccountsTable();
-        //    await _vakAccountRepository.CreateAccountAsync(email, password);
-        //    await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(1, true);
-
-        //    HttpResponseMessage loginPostResponse = await LogIn(email, password);
-
-        //    HttpRequestMessage indexGetRequest = RequestHelper.CreateWithCookiesFromResponse("Home/Index", HttpMethod.Get, null, loginPostResponse);
-        //    HttpResponseMessage indexGetResponse = await _httpClient.SendAsync(indexGetRequest);
-
-        //    HttpRequestMessage logOffPostRequest = RequestHelper.CreateWithCookiesFromResponse("Account/LogOff", HttpMethod.Post, null, loginPostResponse);
-
-        //    // Act
-        //    HttpResponseMessage logOffPostResponse = await _httpClient.SendAsync(logOffPostRequest);
-
-        //    // Assert
-        //    Assert.Equal(_badRequest, logOffPostResponse.StatusCode.ToString());
-        //}
-
-        //[Fact]
-        //public async Task LogOffPost_RedirectsToLoginViewIfAuthenticationFails()
-        //{
-        //    //Arrange
-        //    string email = "Email1@test.com", password = "Password1@";
-
-        //    await _resetAccountsTable();
-        //    await _vakAccountRepository.CreateAccountAsync(email, password);
-        //    await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(1, true);
-
-        //    HttpResponseMessage loginPostResponse = await LogIn(email, password);
-        //    HttpRequestMessage indexGetRequest = RequestHelper.CreateWithCookiesFromResponse("Home/Index", HttpMethod.Get, null, loginPostResponse);
-        //    HttpResponseMessage indexGetResponse = await _httpClient.SendAsync(indexGetRequest);
-
-        //    IDictionary<string, string> logOffPostBody = new Dictionary<string, string>
-        //    {
-        //        { "__RequestVerificationToken", await AntiForgeryTokenHelper.ExtractAntiForgeryToken(indexGetResponse) }
-        //    };
-        //    HttpRequestMessage logOffPostRequest = RequestHelper.CreateWithCookiesFromResponse("Account/LogOff", HttpMethod.Post, logOffPostBody, indexGetResponse);
-
-        //    // Act
-        //    HttpResponseMessage logOffPostResponse = await _httpClient.SendAsync(logOffPostRequest);
-
-        //    // Assert
-        //    Assert.Equal("Redirect", logOffPostResponse.StatusCode.ToString());
-        //    Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.LogIn)}", logOffPostResponse.Headers.Location.AbsolutePath);
-        //}
+            // Assert
+            Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
+        }
 
         //[Fact]
         //public async Task VerifyTwoFactorCodeGet_ReturnsVerifyTwoFactorCodeViewWithAntiForgeryTokenAndCookieIfTwoFactorCookieIsValid()
