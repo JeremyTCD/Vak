@@ -55,7 +55,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.userName, _testEmail);
+            Assert.Equal(body.username, _testEmail);
         }
 
         [Fact]
@@ -147,7 +147,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
             Assert.Equal(_applicationCookieName, cookies.Keys.First());
             dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal(_testEmail, body.userName);
+            Assert.Equal(_testEmail, body.username);
             string emailVerificationEmail = File.ReadAllText(_tempEmailFile);
             Assert.Contains(Strings.Email_EmailVerification_Subject, emailVerificationEmail);
             Assert.Contains(_testEmail, emailVerificationEmail);
@@ -220,7 +220,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_applicationCookieName, cookies.Keys.First());
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
             dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal(_testEmail, body.userName);
+            Assert.Equal(_testEmail, body.username);
         }
 
         [Fact]

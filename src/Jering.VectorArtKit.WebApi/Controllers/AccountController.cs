@@ -48,7 +48,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         [HttpGet]
         public IActionResult LoggedIn()
         {
-            return Ok(new { userName = _accountSecurityService.GetSignedInAccountEmail() });
+            return Ok(new { username = _accountSecurityService.GetSignedInAccountEmail() });
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 {
                     await SendEmailVerificationEmail(createAccountResult.Account);
 
-                    return Ok(new { userName = createAccountResult.Account.Email });
+                    return Ok(new { username = createAccountResult.Account.Email });
                 }
 
                 ModelState.AddModelError(nameof(SignUpFormModel.Email), Strings.ErrorMessage_Email_InUse);
@@ -115,7 +115,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 }
                 if (passwordSignInResult.Succeeded)
                 {
-                    return Ok(new { userName = model.Email });
+                    return Ok(new { username = model.Email });
                 }
 
                 ModelState.AddModelError(DynamicFormsService.DynamicFormName, Strings.ErrorMessage_LogIn_Failed);
