@@ -1,5 +1,5 @@
 import { Component, Input, Output, OnInit, OnDestroy, EventEmitter } from '@angular/core';
-import { Router } from '@angular/router/index';
+import { Router, ActivatedRoute } from '@angular/router/index';
 import { Response } from '@angular/http';
 import { Subscription } from 'rxjs';
 
@@ -23,17 +23,20 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     private _getDynamicFormSubscription: Subscription;
     private _submitDynamicFormSubscription: Subscription;
 
-    constructor(private _dynamicFormsService: DynamicFormsService, private _router: Router) { }
+    constructor(private _dynamicFormsService: DynamicFormsService,
+        private _router: Router,
+        private _activatedRoute: ActivatedRoute) { }
 
     /**
      * Retrieves and sets dynamicForm
      */
     ngOnInit(): void {
-        this._getDynamicFormSubscription = this._dynamicFormsService
-            .getDynamicForm(this.formModelName)
-            .subscribe(dynamicForm => {
-                this.dynamicForm = dynamicForm;
-            });
+        this._getDynamicFormSubscription = this.
+            _activatedRoute.
+            data.
+            subscribe((data: { dynamicForm: DynamicForm }) =>
+                this.dynamicForm = data.dynamicForm
+            );
     }
 
     /**

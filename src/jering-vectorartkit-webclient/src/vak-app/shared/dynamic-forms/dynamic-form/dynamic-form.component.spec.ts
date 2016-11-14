@@ -4,7 +4,7 @@ import { DebugElement, Component, Input, ViewChild } from '@angular/core';
 import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { Observable } from 'rxjs';
-import { Router } from '@angular/router/index';
+import { Router, ActivatedRoute } from '@angular/router/index';
 import { Response, ResponseOptions } from '@angular/http';
 
 import { DynamicFormComponent } from './dynamic-form.component';
@@ -14,7 +14,7 @@ import { DynamicForm } from './dynamic-form';
 import { Validity } from '../validity';
 import { ErrorHandlerService } from '../../utility/error-handler.service';
 import { StubDomEvent } from '../../../../testing/dom-stubs';
-import { StubRouter } from '../../../../testing/router-stubs';
+import { StubRouter, StubActivatedRoute } from '../../../../testing/router-stubs';
 
 let dynamicFormComponent: DynamicFormComponent;
 let stubHostComponent: StubHostComponent;
@@ -23,6 +23,7 @@ let hostDebugElement: DebugElement;
 let nativeElement: HTMLElement;
 let stubDynamicFormsService: StubDynamicFormsService;
 let stubErrorHandlerService: StubErrorHandlerService;
+let stubActivatedRoute: StubActivatedRoute;
 
 let testControlName = `testControlName`;
 let testFormModelName = `testFormModelName`;
@@ -39,7 +40,8 @@ describe('DynamicFormComponent', () => {
             declarations: [DynamicFormComponent, StubDynamicControlComponent, StubHostComponent],
             providers: [{ provide: DynamicFormsService, useClass: StubDynamicFormsService },
             { provide: Router, useClass: StubRouter },
-            { provide: ErrorHandlerService, useClass: StubErrorHandlerService }]
+            { provide: ErrorHandlerService, useClass: StubErrorHandlerService },
+            { provide: ActivatedRoute, useClass: StubActivatedRoute }]
         }).compileComponents();
     }));
 
@@ -50,6 +52,7 @@ describe('DynamicFormComponent', () => {
         hostDebugElement = stubHostFixture.debugElement;
         stubDynamicFormsService = TestBed.get(DynamicFormsService) as StubDynamicFormsService;
         stubErrorHandlerService = TestBed.get(ErrorHandlerService) as StubErrorHandlerService;
+        stubActivatedRoute = TestBed.get(ActivatedRoute) as StubActivatedRoute;
         testDynamicControl = new DynamicControl<any>({ name: testControlName });
         testDynamicForm = new DynamicForm([testDynamicControl], testMessage);
         testSubmitEvent = new StubDomEvent();
@@ -58,6 +61,7 @@ describe('DynamicFormComponent', () => {
                 body: ``
             })
         );
+        stubActivatedRoute.testData = { dynamicForm: testDynamicForm };
     });
 
     it(`Emits output`, () => {
@@ -78,15 +82,6 @@ describe('DynamicFormComponent', () => {
     });
 
     describe(`Oninit`, () => {
-        it(`Calls DynamicFormsService.getDynamicForm`, () => {
-            spyOn(stubDynamicFormsService, `getDynamicForm`).and.returnValue(Observable.empty<DynamicForm>());
-
-            stubHostFixture.detectChanges();
-
-            expect(stubDynamicFormsService.getDynamicForm).toHaveBeenCalled();
-
-        });
-
         it(`Sets dynamicForm if DynamicFormsService.getDynamicForm succeeds`, () => {
             spyOn(stubDynamicFormsService, `getDynamicForm`).and.returnValue(Observable.of(testDynamicForm));
 
