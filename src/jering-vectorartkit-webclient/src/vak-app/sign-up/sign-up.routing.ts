@@ -2,9 +2,19 @@
 import { Routes, RouterModule } from '@angular/router';
 
 import { SignUpComponent } from './sign-up.component';
+import { DynamicFormsResolve } from '../shared/dynamic-forms/dynamic-forms-resolve';
 
 const signUpRoutes: Routes = [
-    { path: 'signup', component: SignUpComponent }
+    {
+        path: 'signup',
+        component: SignUpComponent,
+        data: {
+            formModelName: SignUpComponent.formModelName
+        },
+        resolve: {
+            dynamicForm: DynamicFormsResolve
+        }
+    }
 ];
 
 export const SignUpRouting: ModuleWithProviders = RouterModule.forChild(signUpRoutes);

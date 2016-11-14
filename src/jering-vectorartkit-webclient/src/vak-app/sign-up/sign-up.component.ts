@@ -10,7 +10,7 @@ import { SignUpSubmitSuccessData } from './sign-up-submit-success-data';
     templateUrl: './sign-up.component.html'
 })
 export class SignUpComponent {
-    formModelName = `SignUp`;
+    static formModelName = `SignUp`;
     formSubmitUrl = `${environment.apiUrl}Account/SignUp`;
 
     constructor(private _router: Router, private _userService: UserService) {
@@ -18,6 +18,6 @@ export class SignUpComponent {
 
     onSubmitSuccess(data: SignUpSubmitSuccessData): void {
         this._router.navigate([`/home`]);
-        this._userService.logIn(data.userName);
+        this._userService.logIn(data.username, false);
     }
 }
