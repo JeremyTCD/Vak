@@ -18,6 +18,7 @@ export class SignUpComponent {
 
     onSubmitSuccess(data: SignUpSubmitSuccessData): void {
         this._router.navigate([`/home`]);
-        this._userService.logIn(data.username, false);
+        // Store username in persistent storage to minimize engagement barriers
+        this._userService.logIn(data.username, true);
     }
 }
