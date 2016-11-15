@@ -51,7 +51,7 @@ describe('SignUpComponent', () => {
             signUpComponent.onSubmitSuccess({username: testUsername});
 
             expect(stubRouter.navigate).toHaveBeenCalledWith([`/home`]);
-            expect(stubUserService.logIn).toHaveBeenCalledWith(testUsername, false);
+            expect(stubUserService.logIn).toHaveBeenCalledWith(testUsername, true);
         });
     });
 });
