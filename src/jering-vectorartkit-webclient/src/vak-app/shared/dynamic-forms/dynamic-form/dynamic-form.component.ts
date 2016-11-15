@@ -13,8 +13,7 @@ import { Validity } from '../validity';
     templateUrl: 'dynamic-form.component.html'
 })
 export class DynamicFormComponent implements OnInit, OnDestroy {
-    @Input() formModelName: string;
-    @Input() formSubmitUrl: string;
+    formSubmitRelativeUrl: string;
     @Output() submitSuccess = new EventEmitter<Response>();
 
     // create resolve guard to this does not need to be initialized
@@ -34,9 +33,10 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
         this._getDynamicFormSubscription = this.
             _activatedRoute.
             data.
-            subscribe((data: { dynamicForm: DynamicForm }) =>
-                this.dynamicForm = data.dynamicForm
-            );
+            subscribe((data: { dynamicForm: DynamicForm, formSubmitRelativeUrl: string }) => {
+                this.dynamicForm = data.dynamicForm;
+                this.formSubmitRelativeUrl = data.formSubmitRelativeUrl;
+            });
     }
 
     /**
@@ -49,7 +49,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
         if (this.dynamicForm.onSubmit()) {
             this._submitDynamicFormSubscription = this.
                 _dynamicFormsService.
-                submitDynamicForm(this.formSubmitUrl, this.dynamicForm).
+                submitDynamicForm(this.formSubmitRelativeUrl, this.dynamicForm).
                 subscribe(
                     data => this.submitSuccess.emit(data),
                     this.handleSubmitDynamicFormError

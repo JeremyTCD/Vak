@@ -61,7 +61,7 @@ describe('DynamicFormComponent', () => {
                 body: ``
             })
         );
-        stubActivatedRoute.testData = { dynamicForm: testDynamicForm };
+        stubActivatedRoute.testData = { dynamicForm: testDynamicForm, formSubmitRelativeUrl: testSubmitUrl };
     });
 
     it(`Emits output`, () => {
@@ -74,21 +74,13 @@ describe('DynamicFormComponent', () => {
         expect(stubHostComponent.onSubmitSuccess).toHaveBeenCalledWith(testResponse);
     });
 
-    it(`Recieves input`, () => {
+    it(`ngOnInit Sets dynamicForm and formSubmitRelativeUrl`, () => {
+        spyOn(stubDynamicFormsService, `getDynamicForm`).and.returnValue(Observable.of(testDynamicForm));
+
         stubHostFixture.detectChanges();
 
-        expect(dynamicFormComponent.formModelName).toBe(stubHostComponent.formModelName);
-        expect(dynamicFormComponent.formSubmitUrl).toBe(stubHostComponent.formSubmitUrl);
-    });
-
-    describe(`Oninit`, () => {
-        it(`Sets dynamicForm if DynamicFormsService.getDynamicForm succeeds`, () => {
-            spyOn(stubDynamicFormsService, `getDynamicForm`).and.returnValue(Observable.of(testDynamicForm));
-
-            stubHostFixture.detectChanges();
-
-            expect(dynamicFormComponent.dynamicForm).toBe(testDynamicForm);
-        });
+        expect(dynamicFormComponent.formSubmitRelativeUrl).toBe(testSubmitUrl);
+        expect(dynamicFormComponent.dynamicForm).toBe(testDynamicForm);
     });
 
     it(`Displays DynamicForm DynamicControls`, () => {
@@ -123,7 +115,7 @@ describe('DynamicFormComponent', () => {
             // OnInit and input from a host component initialize these fields in production.
             // In this case they must be manually set to limit test scope.
             dynamicFormComponent.dynamicForm = testDynamicForm;
-            dynamicFormComponent.formSubmitUrl = testSubmitUrl;
+            dynamicFormComponent.formSubmitRelativeUrl = testSubmitUrl;
         });
 
         it(`Calls DynamicFormServices.submitDynamicForm if DynamicForm.onSubmit is true`, () => {
@@ -179,12 +171,10 @@ class StubDynamicFormsService {
 }
 
 @Component({
-    template: `<dynamic-form [formModelName]="formModelName" [formSubmitUrl]="formSubmitUrl" (submitSuccess)="onSubmitSuccess($event)" (submitError)="onSubmitError($event)"></dynamic-form>`
+    template: `<dynamic-form (submitSuccess)="onSubmitSuccess($event)"></dynamic-form>`
 })
 class StubHostComponent {
     @ViewChild(DynamicFormComponent) dynamicFormComponent: DynamicFormComponent;
-    formModelName = testFormModelName;
-    formSubmitUrl = testSubmitUrl;
 
     onSubmitSuccess(response: Response): void {
     }
