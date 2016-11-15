@@ -33,14 +33,6 @@ describe('SignUpComponent', () => {
         stubUserService = TestBed.get(UserService) as StubUserService;
     });
 
-    it(`Set up child DynamicFormComponent input`, () => {
-        signUpComponentFixture.detectChanges();
-
-        let divDebugElements = signUpDebugElement.queryAll(By.css(`div`));
-
-        expect(divDebugElements.some(div => div.nativeElement.textContent === signUpComponent.formSubmitUrl)).toBe(true);
-    });
-
     it(`Listens to child DynamicFormComponent output`, () => {
         spyOn(signUpComponent, `onSubmitSuccess`);
         signUpComponentFixture.detectChanges();
@@ -66,11 +58,9 @@ describe('SignUpComponent', () => {
 
 @Component({
     selector: `dynamic-form`,
-    template: `<div>{{formSubmitUrl}}</div>
-               <a (click)=submitSuccess.emit()></a>`
+    template: `<a (click)=submitSuccess.emit()></a>`
 })
 class StubDynamicFormComponent {
-    @Input() formSubmitUrl: string;
     @Output() submitSuccess = new EventEmitter<Response>();
 }
 

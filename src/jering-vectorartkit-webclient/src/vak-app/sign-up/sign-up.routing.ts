@@ -9,7 +9,8 @@ const signUpRoutes: Routes = [
         path: 'signup',
         component: SignUpComponent,
         data: {
-            formModelName: SignUpComponent.formModelName
+            formModelName: SignUpComponent.formModelName,
+            formSubmitRelativeUrl: SignUpComponent.formSubmitRelativeUrl
         },
         resolve: {
             dynamicForm: DynamicFormsResolve

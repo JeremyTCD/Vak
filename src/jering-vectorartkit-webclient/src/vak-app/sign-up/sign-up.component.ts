@@ -11,7 +11,7 @@ import { SignUpSubmitSuccessData } from './sign-up-submit-success-data';
 })
 export class SignUpComponent {
     static formModelName = `SignUp`;
-    formSubmitUrl = `${environment.apiUrl}Account/SignUp`;
+    static formSubmitRelativeUrl = `Account/SignUp`;
 
     constructor(private _router: Router, private _userService: UserService) {
     }
