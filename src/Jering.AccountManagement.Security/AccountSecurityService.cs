@@ -342,7 +342,7 @@ namespace Jering.AccountManagement.Security
                     throw new NullReferenceException(nameof(account));
                 }
 
-                await SignInAsync(account, new AuthenticationProperties { IsPersistent = false });
+                await SignInAsync(account, new AuthenticationProperties { IsPersistent = true });
 
                 return CreateAccountResult<TAccount>.GetSucceededResult(account);
             }
