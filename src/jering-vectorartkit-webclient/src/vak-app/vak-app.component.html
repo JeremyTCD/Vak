@@ -14,9 +14,7 @@
 <div *ngIf="userService.loggedIn">
     <a>Account:{{userService.username}}</a><br />
     <a>Manage account</a><br />
-    <form>
-        <button type="submit">Log off</button>
-    </form>
+    <a (click)="logOff()">Log off</a>
 </div>
 <div>
     more

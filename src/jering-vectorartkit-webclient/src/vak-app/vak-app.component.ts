@@ -14,4 +14,8 @@ export class VakAppComponent implements OnInit {
     ngOnInit(): void {
         this.userService.syncWithStorage();
     }
+
+    logOff(): void {
+        this.userService.logOff();
+    }
 }
