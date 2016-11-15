@@ -1,5 +1,5 @@
 ﻿import { TestBed, inject } from '@angular/core/testing';
-import { Http, Response, ResponseOptions, RequestOptionsArgs, URLSearchParams } from '@angular/http';
+import { Response, ResponseOptions, RequestOptionsArgs, URLSearchParams } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 
 import { DynamicControl } from './dynamic-control/dynamic-control';
@@ -8,11 +8,12 @@ import { DynamicFormsService } from './dynamic-forms.service';
 import { ErrorHandlerService } from '../utility/error-handler.service';
 import { environment } from '../../../environments/environment';
 import { Validity } from './validity';
+import { HttpService } from '../http.service';
 
 let testFormModelName = `testFormModelName`;
 let testControlName = `testControlName`;
 let testMessage = `testMessage`;
-let testUrl = `testUrl`;
+let testRelativeUrl = `testRelativeUrl`;
 let testDynamicControl: DynamicControl<any>;
 let testDynamicForm: DynamicForm;
 let testResponse: Response;
@@ -20,7 +21,7 @@ let testResponse: Response;
 describe('DynamicFormsService', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [DynamicFormsService, { provide: ErrorHandlerService, useClass: StubErrorHandlerService }, { provide: Http, useClass: StubHttpService }]
+            providers: [DynamicFormsService, { provide: ErrorHandlerService, useClass: StubErrorHandlerService }, { provide: HttpService, useClass: StubHttpService }]
         });
         testDynamicControl = new DynamicControl<any>({ name: testControlName });
         testDynamicForm = new DynamicForm([testDynamicControl], testMessage);
@@ -36,7 +37,7 @@ describe('DynamicFormsService', () => {
         });
 
         it('Calls Http.get',
-            inject([DynamicFormsService, Http], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
+            inject([DynamicFormsService, HttpService], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
                 let getSpy = spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testResponse));
 
                 dynamicFormsService.
@@ -45,7 +46,7 @@ describe('DynamicFormsService', () => {
 
                 expect(stubHttpService.get).toHaveBeenCalledTimes(1);
                 let args = getSpy.calls.first().args;
-                expect(args[0]).toBe(`${environment.apiUrl}DynamicForms/GetDynamicForm`);
+                expect(args[0]).toBe(`DynamicForms/GetDynamicForm`);
                 let requestOptions = args[1] as RequestOptionsArgs;
                 let urlSearchParams = requestOptions.search as URLSearchParams;
                 expect(urlSearchParams.get(`formModelName`)).toBe(testFormModelName);
@@ -53,7 +54,7 @@ describe('DynamicFormsService', () => {
         );
 
         it(`Maps response to a DynamicForm if Http.get succeeds`,
-            inject([DynamicFormsService, Http], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
+            inject([DynamicFormsService, HttpService], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
                 spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testResponse));
                 let result: DynamicForm;
 
@@ -66,7 +67,7 @@ describe('DynamicFormsService', () => {
         );
 
         it(`Calls ErrorHandlerService.handleUnexpectedError and calls neither next observer nor error observer if Http.get fails`,
-            inject([ErrorHandlerService, DynamicFormsService, Http], (errorHandlerService: ErrorHandlerService,
+            inject([ErrorHandlerService, DynamicFormsService, HttpService], (errorHandlerService: ErrorHandlerService,
                 dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
                 let observer = {
                     next: (dynamicForm: DynamicForm) => null,
@@ -103,25 +104,23 @@ describe('DynamicFormsService', () => {
             );
         });
 
-        it(`Calls Http.post`, inject([DynamicFormsService, Http], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
+        it(`Calls Http.post`, inject([DynamicFormsService, HttpService], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
             let getSpy = spyOn(stubHttpService, `post`).and.returnValue(Observable.of(testResponse));
 
             dynamicFormsService.
-                submitDynamicForm(testUrl, testDynamicForm).
+                submitDynamicForm(testRelativeUrl, testDynamicForm).
                 subscribe(response => null);
 
             expect(stubHttpService.post).toHaveBeenCalledTimes(1);
             let args = getSpy.calls.first().args;
-            expect(args[0]).toBe(testUrl);
-            expect(args[1]).toBe(JSON.stringify(testDynamicForm.value));
-            let requestOptions = args[2] as RequestOptionsArgs;
-            expect(requestOptions.headers.get(`Content-Type`)).toBe(`application/json`);
+            expect(args[0]).toBe(testRelativeUrl);
+            expect(args[1]).toEqual(testDynamicForm.value);
         })
         );
 
         it(`Calls error observer with modelState as error object if Http.post fails and returns a bad 
             request response with a json body that has modelState as a key`,
-            inject([ErrorHandlerService, DynamicFormsService, Http], (errorHandlerService: ErrorHandlerService,
+            inject([ErrorHandlerService, DynamicFormsService, HttpService], (errorHandlerService: ErrorHandlerService,
                 dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
                 let response = new Response(
                     new ResponseOptions({
@@ -133,7 +132,7 @@ describe('DynamicFormsService', () => {
                 let errorSpy = spyOn(observer, `error`);
 
                 dynamicFormsService.
-                    submitDynamicForm(testUrl, testDynamicForm).
+                    submitDynamicForm(testRelativeUrl, testDynamicForm).
                     subscribe(observer);
 
                 expect(observer.error).toHaveBeenCalledWith(modelState);
@@ -142,7 +141,7 @@ describe('DynamicFormsService', () => {
 
         it(`Calls ErrorHandlerService.handleUnexpectedError and calls neither next observer nor error observer if Http.post fails
             and error object is not a response`,
-            inject([ErrorHandlerService, DynamicFormsService, Http], (errorHandlerService: ErrorHandlerService,
+            inject([ErrorHandlerService, DynamicFormsService, HttpService], (errorHandlerService: ErrorHandlerService,
                 dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
 
                 spyOn(stubHttpService, `post`).and.returnValue(Observable.throw(null));
@@ -151,7 +150,7 @@ describe('DynamicFormsService', () => {
                 spyOn(observer, `error`);
 
                 dynamicFormsService.
-                    submitDynamicForm(testUrl, testDynamicForm).
+                    submitDynamicForm(testRelativeUrl, testDynamicForm).
                     subscribe(observer);
 
                 expect(errorHandlerService.handleUnexpectedError).toHaveBeenCalledTimes(1);
@@ -162,7 +161,7 @@ describe('DynamicFormsService', () => {
 
         it(`Calls ErrorHandlerService.handleUnexpectedError and calls neither next observer nor error observer if Http.post fails
             and error object is a response with status code != 400`,
-            inject([ErrorHandlerService, DynamicFormsService, Http], (errorHandlerService: ErrorHandlerService,
+            inject([ErrorHandlerService, DynamicFormsService, HttpService], (errorHandlerService: ErrorHandlerService,
                 dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
 
                 let response = new Response(
@@ -177,7 +176,7 @@ describe('DynamicFormsService', () => {
                 spyOn(observer, `error`);
 
                 dynamicFormsService.
-                    submitDynamicForm(testUrl, testDynamicForm).
+                    submitDynamicForm(testRelativeUrl, testDynamicForm).
                     subscribe(observer);
 
                 expect(errorHandlerService.handleUnexpectedError).toHaveBeenCalledTimes(1);
@@ -188,7 +187,7 @@ describe('DynamicFormsService', () => {
 
         it(`Calls ErrorHandlerService.handleUnexpectedError and calls neither next observer nor error observer if Http.post fails
             and error object has no body`,
-            inject([ErrorHandlerService, DynamicFormsService, Http], (errorHandlerService: ErrorHandlerService,
+            inject([ErrorHandlerService, DynamicFormsService, HttpService], (errorHandlerService: ErrorHandlerService,
                 dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
                 let response = new Response(
                     new ResponseOptions({
@@ -201,7 +200,7 @@ describe('DynamicFormsService', () => {
                 spyOn(observer, `error`);
 
                 dynamicFormsService.
-                    submitDynamicForm(testUrl, testDynamicForm).
+                    submitDynamicForm(testRelativeUrl, testDynamicForm).
                     subscribe(observer);
 
                 expect(errorHandlerService.handleUnexpectedError).toHaveBeenCalledTimes(1);
@@ -212,7 +211,7 @@ describe('DynamicFormsService', () => {
 
         it(`Calls ErrorHandlerService.handleUnexpectedError and calls neither next observer nor error observer if Http.post fails
             and error object body has no modelState key`,
-            inject([ErrorHandlerService, DynamicFormsService, Http], (errorHandlerService: ErrorHandlerService,
+            inject([ErrorHandlerService, DynamicFormsService, HttpService], (errorHandlerService: ErrorHandlerService,
                 dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
                 let response = new Response(
                     new ResponseOptions({
@@ -226,7 +225,7 @@ describe('DynamicFormsService', () => {
                 spyOn(observer, `error`);
 
                 dynamicFormsService.
-                    submitDynamicForm(testUrl, testDynamicForm).
+                    submitDynamicForm(testRelativeUrl, testDynamicForm).
                     subscribe(observer);
 
                 expect(errorHandlerService.handleUnexpectedError).toHaveBeenCalledTimes(1);
@@ -246,16 +245,16 @@ describe('DynamicFormsService', () => {
         });
 
         it('Calls Http.get',
-            inject([DynamicFormsService, Http], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
+            inject([DynamicFormsService, HttpService], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
                 let getSpy = spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testResponse));
 
                 dynamicFormsService.
-                    validateValue(testUrl, testValue).
+                    validateValue(testRelativeUrl, testValue).
                     subscribe(validity => null);
 
                 expect(stubHttpService.get).toHaveBeenCalledTimes(1);
                 let args = getSpy.calls.first().args;
-                expect(args[0]).toBe(testUrl);
+                expect(args[0]).toBe(testRelativeUrl);
                 let requestOptions = args[1] as RequestOptionsArgs;
                 let urlSearchParams = requestOptions.search as URLSearchParams;
                 expect(urlSearchParams.get(`value`)).toBe(testValue);
@@ -263,7 +262,7 @@ describe('DynamicFormsService', () => {
         );
 
         it(`Maps response to a Validity value if Http.get succeeds`,
-            inject([DynamicFormsService, Http], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
+            inject([DynamicFormsService, HttpService], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
                 testResponse = new Response(
                     new ResponseOptions({
                         body: JSON.stringify({ valid: true })
@@ -273,7 +272,7 @@ describe('DynamicFormsService', () => {
                 let result: Validity;
 
                 dynamicFormsService.
-                    validateValue(testUrl, testValue).
+                    validateValue(testRelativeUrl, testValue).
                     subscribe(validity => result = validity);
 
                 expect(result).toBe(Validity.valid);
@@ -281,7 +280,7 @@ describe('DynamicFormsService', () => {
         );
 
         it(`Returns Validity.valid if an error occurs. Calls next observer and does not call error observer.`,
-            inject([ErrorHandlerService, DynamicFormsService, Http], (errorHandlerService: ErrorHandlerService,
+            inject([ErrorHandlerService, DynamicFormsService, HttpService], (errorHandlerService: ErrorHandlerService,
                 dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
                 let observer = {
                     next: (validity: Validity) => null,
@@ -292,7 +291,7 @@ describe('DynamicFormsService', () => {
                 spyOn(observer, `error`);
 
                 dynamicFormsService.
-                    validateValue(testUrl, testValue).
+                    validateValue(testRelativeUrl, testValue).
                     subscribe(observer);
 
                 expect(observer.next).toHaveBeenCalledWith(Validity.valid);
@@ -308,11 +307,11 @@ class StubErrorHandlerService {
 }
 
 class StubHttpService {
-    get(url: string, options?: RequestOptionsArgs): Observable<Response> {
+    get(url: string, options?: RequestOptionsArgs, domain?: string): Observable<Response> {
         return Observable.of(testResponse);
     };
 
-    post(url: string, body: string, options?: RequestOptionsArgs): Observable<Response> {
+    post(url: string, body: string, options?: RequestOptionsArgs, domain?: string): Observable<Response> {
         return Observable.of(testResponse);
     };
 }

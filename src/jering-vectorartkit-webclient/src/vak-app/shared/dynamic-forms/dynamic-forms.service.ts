@@ -1,10 +1,11 @@
 ﻿import { Injectable } from '@angular/core';
-import { Http, Response, URLSearchParams, Headers, RequestOptions } from '@angular/http';
+import { Response, URLSearchParams, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
 import { environment } from '../../../environments/environment';
+import { HttpService } from '../http.service';
 import { ErrorHandlerService } from '../utility/error-handler.service';
 import { DynamicForm } from './dynamic-form/dynamic-form';
 import { DynamicFormData } from './dynamic-form/dynamic-form-data';
@@ -16,9 +17,9 @@ import { Validity } from './validity';
  */
 @Injectable()
 export class DynamicFormsService {
-    private _dynamicFormsUrl = `${environment.apiUrl}DynamicForms/GetDynamicForm`;
+    private _dynamicFormsRelativeUrl = `DynamicForms/GetDynamicForm`;
 
-    constructor(private _http: Http, private _errorHandlerService: ErrorHandlerService) { }
+    constructor(private _httpService: HttpService, private _errorHandlerService: ErrorHandlerService) { }
 
     /**
      * Sends get request to retrieve data for a DynamicForm.
@@ -34,8 +35,8 @@ export class DynamicFormsService {
         urlSearchParams.set(`formModelName`, formModelName);
         let requestOptions = new RequestOptions({withCredentials: true, search: urlSearchParams });
 
-        return this._http.
-            get(this._dynamicFormsUrl, requestOptions).
+        return this._httpService.
+            get(this._dynamicFormsRelativeUrl, requestOptions).
             map(this.dynamicFormFromData, this).
             catch(error => {
                 this._errorHandlerService.handleUnexpectedError(error);
@@ -73,13 +74,10 @@ export class DynamicFormsService {
      *   Note that Http calls error observer if a response has status code >= 300 (Rx calls catch when error
      *   observer is called to allow error handling).
      */
-    submitDynamicForm(url: string, dynamicForm: DynamicForm): Observable<Response> {
-        let headers = new Headers({ 'Content-Type': 'application/json' });
-        let requestOptions = new RequestOptions({ withCredentials: true, headers: headers });
-
+    submitDynamicForm(relativeUrl: string, dynamicForm: DynamicForm): Observable<Response> {
         return this.
-            _http.
-            post(url, JSON.stringify(dynamicForm.value), requestOptions).
+            _httpService.
+            post(relativeUrl, dynamicForm.value).
             map(response => response.json()).
             catch(error => {
                 return this.handleSubmitDynamicFormError(error);
@@ -117,13 +115,13 @@ export class DynamicFormsService {
      * - Observable<Validity> with value Validity.valid if value is valid and value Validity.invalid otherwise.
      * - Observable<Validity> with value Validity.valid if get request fails for user convenience.
      */
-    validateValue(url: string, value: string): Observable<Validity> {
+    validateValue(relativeUrl: string, value: string): Observable<Validity> {
         let urlSearchParams = new URLSearchParams();
         urlSearchParams.set(`value`, value);
-        let requestOptions = new RequestOptions({ withCredentials: true, search: urlSearchParams });
+        let requestOptions = new RequestOptions({ search: urlSearchParams });
 
-        return this._http.
-            get(url, requestOptions).
+        return this._httpService.
+            get(relativeUrl, requestOptions).
             map(this.validityFromData).
             catch(error => {
                 return Observable.of(Validity.valid);
