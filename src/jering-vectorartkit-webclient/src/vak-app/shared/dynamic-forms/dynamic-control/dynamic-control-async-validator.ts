@@ -5,7 +5,6 @@ import { DynamicControlValidator } from './dynamic-control-validator';
 import { DynamicControlValidatorData } from './dynamic-control-validator-data';
 import { DynamicControl } from './dynamic-control';
 import { Validity } from '../validity';
-import { environment } from '../../../../environments/environment';
 import { DynamicControlValidatorResult } from './dynamic-control-validator-result';
 import { Check } from '../../utility/check';
 
@@ -31,7 +30,7 @@ export class DynamicControlAsyncValidator {
             debounceTime(200).
             map((value: string) => {
                 return dynamicFormsService.
-                    validateValue(`${environment.apiUrl}${validatorData.options[`RelativeUrl`]}`, value);
+                    validateValue(validatorData.options[`RelativeUrl`], value);
             }).
             switch();
 
