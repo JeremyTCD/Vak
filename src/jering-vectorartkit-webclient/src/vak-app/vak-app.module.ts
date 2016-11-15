@@ -10,6 +10,7 @@ import { HomeModule } from './home/home.module';
 import { ErrorModule } from './error/error.module';
 import { UserService } from './shared/user.service';
 import { StorageService } from './shared/storage.service';
+import { HttpService } from './shared/http.service';
 
 @NgModule({
     imports: [
@@ -22,7 +23,8 @@ import { StorageService } from './shared/storage.service';
     ],
     declarations: [VakAppComponent],
     providers: [UserService,
-                StorageService],
+        StorageService,
+        HttpService],
     bootstrap: [VakAppComponent]
 })
 export class VakAppModule { }
