@@ -2,7 +2,6 @@
 import { DynamicControlValidator } from './dynamic-control-validator';
 import { DynamicControlAsyncValidator } from './dynamic-control-async-validator';
 import { DynamicControlValidatorResult } from './dynamic-control-validator-result';
-import { DynamicControlValidatorData } from './dynamic-control-validator-data';
 import { DynamicForm } from '../dynamic-form/dynamic-form';
 import { Validity } from '../validity';
 import { StubDomEvent, StubDomElement } from '../../../../testing/dom-stubs';

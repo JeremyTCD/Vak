@@ -3,7 +3,6 @@
 import { DynamicControlValidators } from './dynamic-control-validators';
 import { DynamicControlValidator } from './dynamic-control-validator';
 import { DynamicControlAsyncValidator } from './dynamic-control-async-validator';
-import { DynamicControlValidatorData } from './dynamic-control-validator-data';
 import { DynamicControlValidatorResult } from './dynamic-control-validator-result';
 import { DynamicControl } from './dynamic-control';
 import { DynamicForm } from '../dynamic-form/dynamic-form';
