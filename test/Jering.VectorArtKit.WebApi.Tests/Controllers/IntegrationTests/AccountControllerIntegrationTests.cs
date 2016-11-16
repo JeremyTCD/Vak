@@ -1,8 +1,10 @@
 ﻿using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Controllers;
 using Jering.VectorArtKit.WebApi.Resources;
+using Jering.VectorArtKit.WebApi.ResponseModels.Account;
+using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -39,7 +41,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_Returns400BadRequestWithModelStateIfModelStateIsInvalid()
+        public async Task SignUpPost_Returns400BadRequestWithErrorResponseModelIfModelStateIsInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -48,15 +50,16 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await SignUp("test", "test1", "test2");
 
             // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.modelState.Email[0], Strings.ErrorMessage_Email_Invalid);
-            Assert.Equal(body.modelState.Password[0], Strings.ErrorMessage_Password_TooSimple);
-            Assert.Equal(body.modelState.ConfirmPassword[0], Strings.ErrorMessage_ConfirmPassword_Differs);
+            Assert.True(body.ExpectedError);
+            Assert.Equal((body.ModelState["Email"] as JArray)[0], Strings.ErrorMessage_Email_Invalid);
+            Assert.Equal((body.ModelState["Password"] as JArray)[0], Strings.ErrorMessage_Password_TooSimple);
+            Assert.Equal((body.ModelState["ConfirmPassword"] as JArray)[0], Strings.ErrorMessage_ConfirmPassword_Differs);
         }
 
         [Fact]
-        public async Task SignUpPost_Returns400BadRequestWithModelStateIfEmailInUse()
+        public async Task SignUpPost_Returns400BadRequestWithErrorResponseModelIfEmailInUse()
         {
             // Arrange
             await _resetAccountsTable();
@@ -66,13 +69,14 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await SignUp(_testEmail, _testPassword, _testPassword);
 
             // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.modelState.Email[0], Strings.ErrorMessage_Email_InUse);
+            Assert.True(body.ExpectedError);
+            Assert.Equal((body.ModelState["Email"] as JArray)[0], Strings.ErrorMessage_Email_InUse);
         }
 
         [Fact]
-        public async Task SignUpPost_Returns400BadRequestWithDefaultBodyIfAntiForgeryCredentialsAreInvalid()
+        public async Task SignUpPost_Returns400BadRequestWithErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -89,13 +93,14 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
             // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.errorMessage, Strings.ErrorMessage_UnexpectedError);
+            Assert.False(body.ExpectedError);
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
-        public async Task SignUpPost_Returns200OkWithUsernameApplicationCookieAndSendEmailVerificationEmailIfRegistrationSucceeds()
+        public async Task SignUpPost_Returns200OkWithSignUpResponseModelApplicationCookieAndSendEmailVerificationEmailIfRegistrationSucceeds()
         {
             // Arrange
             await _resetAccountsTable();
@@ -108,8 +113,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
             Assert.Equal(_applicationCookieName, cookies.Keys.First());
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal(_testEmail, body.username);
+            SignUpResponseModel body = JsonConvert.DeserializeObject<SignUpResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_testEmail, body.Username);
             string emailVerificationEmail = File.ReadAllText(_tempEmailFile);
             Assert.Contains(Strings.Email_EmailVerification_Subject, emailVerificationEmail);
             Assert.Contains(_testEmail, emailVerificationEmail);
@@ -117,7 +122,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LoginPost_ReturnsBadRequestWithDefaultBodyIfAntiForgeryCredentialsAreInvalid()
+        public async Task LoginPost_ReturnsBadRequestWithErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
@@ -131,13 +136,14 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
             // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.errorMessage, Strings.ErrorMessage_UnexpectedError);
+            Assert.False(body.ExpectedError);
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
-        public async Task LoginPost_Returns400BadRequestWithModelStateIfModelStateIsInvalid()
+        public async Task LoginPost_Returns400BadRequestWithErrorResponseModelIfModelStateIsInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -146,14 +152,15 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await LogIn("", "");
 
             // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.modelState.Email[0], Strings.ErrorMessage_Email_Required);
-            Assert.Equal(body.modelState.Password[0], Strings.ErrorMessage_Password_Required);
+            Assert.True(body.ExpectedError);
+            Assert.Equal((body.ModelState["Email"] as JArray)[0], Strings.ErrorMessage_Email_Required);
+            Assert.Equal((body.ModelState["Password"] as JArray)[0], Strings.ErrorMessage_Password_Required);
         }
 
         [Fact]
-        public async Task LoginPost_Returns400BadRequestWithModelStateIfCredentialsAreInvalid()
+        public async Task LoginPost_Returns400BadRequestWithErrorResponseModelIfCredentialsAreInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -162,13 +169,14 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
 
             // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.modelState.DynamicForm[0], Strings.ErrorMessage_LogIn_Failed);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_LogIn_Failed);
         }
 
         [Fact]
-        public async Task LoginPost_Returns200OkWithUsernameAndApplicationCookieIfLoginSucceeds()
+        public async Task LoginPost_Returns200OkWithLoginResponseModelAndApplicationCookieIfLoginSucceeds()
         {
             // Arrange
             await _resetAccountsTable();
@@ -181,12 +189,14 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
             Assert.Equal(_applicationCookieName, cookies.Keys.First());
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal(_testEmail, body.username);
+            LogInResponseModel body = JsonConvert.DeserializeObject<LogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_testEmail, body.Username);
+            Assert.False(body.TwoFactorRequired);
+            Assert.False(body.IsPersistent);
         }
 
         [Fact]
-        public async Task LoginPost_Returns200OkWithIsPersistentTwoFactorCookieAndSendsTwoFactorEmailIfTwoFactorAuthenticationIsRequired()
+        public async Task LoginPost_Returns200OkWithLoginResponseModelTwoFactorCookieAndSendsTwoFactorEmailIfTwoFactorAuthenticationIsRequired()
         {
             // Arrange
             await _resetAccountsTable();
@@ -204,8 +214,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Contains(Strings.TwoFactorEmail_Subject, twoFactorEmail);
             Assert.Contains(_testEmail, twoFactorEmail);
             Assert.Matches(Strings.TwoFactorEmail_Message.Replace("{0}", @"\d{6,6}"), twoFactorEmail);
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.False(body.isPersistent);
+            LogInResponseModel body = JsonConvert.DeserializeObject<LogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(null, body.Username);
+            Assert.True(body.TwoFactorRequired);
+            Assert.False(body.IsPersistent);
         }
 
         [Fact]
@@ -235,7 +247,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LogOffPost_Returns401UnauthorizedWithDefaultBodyIfAuthenticationFails()
+        public async Task LogOffPost_Returns401UnauthorizedWithErrorResponseModelIfAuthenticationFails()
         {
             //Arrange
             await _resetAccountsTable();

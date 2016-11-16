@@ -2,8 +2,9 @@
 using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Controllers;
 using Jering.VectorArtKit.WebApi.Resources;
+using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForms;
+using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
@@ -21,6 +22,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         private VakAccountRepository _vakAccountRepository { get; }
         private Func<Task> _resetAccountsTable { get; }
         private string _dynamicFormsControllerName = nameof(DynamicFormsController).Replace("Controller", "");
+        private string _notFound { get; } = "NotFound";
+        private string _badRequest { get; } = "BadRequest";
+        private string _ok { get; } = "OK";
+
         public DynamicFormsControllerIntegrationTests(ControllersFixture controllersFixture)
         {
             _httpClient = controllersFixture.HttpClient;     
@@ -29,7 +34,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task GetDynamicForm_Returns200OkWithJsonRepresentationOfDynamicFormAndValidationForgeryCookiesIfFormModelNameIsTheNameOfAnExistingFormModel()
+        public async Task GetDynamicForm_Returns200OkWithGetDynamicFormModelAndAntiForgeryCookiesIfFormModelNameIsTheNameOfAnExistingFormModel()
         {
             //Arrange
             string testFormModel = "SignUp";
@@ -40,11 +45,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
             // Assert
-            Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            string json = await httpResponseMessage.Content.ReadAsStringAsync();
-            DynamicFormData dynamicForm = JsonConvert.DeserializeObject<DynamicFormData>(json);
-            Assert.NotNull(dynamicForm);
-            Assert.Equal(3, dynamicForm.DynamicControlDatas.Count);
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            DynamicFormResponseModel body = JsonConvert.DeserializeObject<DynamicFormResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.NotNull(body);
+            Assert.Equal(3, body.DynamicControlResponseModels.Count);
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
             Assert.Equal(2, cookies.Count());
             Assert.True(cookies.Keys.Contains("AF-TOKEN"));
@@ -52,7 +56,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task GetDynamicForm_Returns404NotFoundIfFormModelNameIsNotTheNameOfAnExistingFormModel()
+        public async Task GetDynamicForm_Returns404NotFoundWithErrorResponseModelIfFormModelNameIsNotTheNameOfAnExistingFormModel()
         {
             // Arrange
             string testFormModel = "Dummy";
@@ -63,13 +67,14 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
             // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal("NotFound", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.errorMessage, Strings.ErrorMessage_UnexpectedError);
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_notFound, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
-        public async Task ValidateEmailNotInUse_Returns400BadRequestIfValueIsNull()
+        public async Task ValidateEmailNotInUse_Returns400BadRequestWithErrorResponseModelIfValueIsNull()
         {
             // Arrange
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/{nameof(DynamicFormsController.ValidateEmailNotInUse)}", HttpMethod.Get);
@@ -78,13 +83,14 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
             // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal("BadRequest", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.errorMessage, Strings.ErrorMessage_UnexpectedError);
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
-        public async Task ValidateEmailNotInUse_Returns200OkWithJsonBodyWithValidPropertySetToFalseIfEmailIsInUse()
+        public async Task ValidateEmailNotInUse_Returns200OkWithValidateResponseModelWithValidPropertySetToFalseIfEmailIsInUse()
         {
             // Arrange
             string testEmail = "test@email.com";
@@ -96,13 +102,13 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
             // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.False(body.valid);
+            ValidateResponseModel body = JsonConvert.DeserializeObject<ValidateResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.Valid);
         }
 
         [Fact]
-        public async Task ValidateEmailNotInUse_Returns200OkWithJsonBodyWithValidPropertySetToTrueIfEmailIsNotInUse()
+        public async Task ValidateEmailNotInUse_Returns200OkWithValidateResponseModelWithValidPropertySetToTrueIfEmailIsNotInUse()
         {
             // Arrange
             await _resetAccountsTable();
@@ -112,9 +118,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
             // Assert
-            dynamic body = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
-            Assert.True(body.valid);
+            ValidateResponseModel body = JsonConvert.DeserializeObject<ValidateResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            Assert.True(body.Valid);
         }
     }
 }

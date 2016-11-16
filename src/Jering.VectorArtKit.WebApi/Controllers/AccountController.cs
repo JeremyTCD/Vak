@@ -1,11 +1,12 @@
 ﻿using Jering.AccountManagement.DatabaseInterface;
 using Jering.AccountManagement.Security;
-using Jering.DynamicForms;
 using Jering.Mail;
 using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Filters;
 using Jering.VectorArtKit.WebApi.FormModels;
 using Jering.VectorArtKit.WebApi.Resources;
+using Jering.VectorArtKit.WebApi.ResponseModels.Account;
+using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
@@ -42,10 +43,10 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns>
-        /// 400 bad request with default body if anti-forgery credentials are invalid.
-        /// 400 bad request with model state if model state is invalid. 
-        /// 400 bad request with model state if email in use. 
-        /// 200 okay with username, application cookie and sends email verification email if account is created successfully.
+        /// 400 BadRequest with <see cref="ErrorResponseModel"/>  if anti-forgery credentials are invalid.
+        /// 400 BadRequest with <see cref="ErrorResponseModel"/> if model state is invalid. 
+        /// 400 BadRequest with <see cref="ErrorResponseModel"/> if email in use.
+        /// 200 OK with <see cref="SignUpResponseModel"/>, application cookie and sends email verification email if account is created successfully.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -60,13 +61,17 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 {
                     await SendEmailVerificationEmail(createAccountResult.Account);
 
-                    return Ok(new { username = createAccountResult.Account.Email });
+                    return Ok( new SignUpResponseModel(){Username = createAccountResult.Account.Email });
                 }
 
                 ModelState.AddModelError(nameof(SignUpFormModel.Email), Strings.ErrorMessage_Email_InUse);
             }
 
-            return BadRequest(new { modelState = new SerializableError(ModelState) });
+            return BadRequest(new ErrorResponseModel()
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
         }
 
         /// <summary>
@@ -75,11 +80,11 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// <param name="model"></param>
         /// <param name="returnUrl"></param>
         /// <returns>
-        /// 400 bad request with default body if anti-forgery credentials are invalid.
-        /// 400 bad request with model state if model state is invalid. 
-        /// 400 bad request with model state if credentials are invalid. 
-        /// 200 okay with username and application cookie if login succeeds.
-        /// 200 okay with isPersistent, two factor cookie and sends two factor email if two factor authentication is required. 
+        /// 400 BadRequest with <see cref="ErrorResponseModel"/>  if anti-forgery credentials are invalid.
+        /// 400 BadRequest with <see cref="ErrorResponseModel"> if model state is invalid. 
+        /// 400 BadRequest with <see cref="ErrorResponseModel"> if credentials are invalid. 
+        /// 200 OK with <see cref="LogInResponseModel"/>  and application cookie if login succeeds.
+        /// 200 OK with <see cref="LogInResponseModel"/>, two factor cookie and sends two factor email if two factor authentication is required. 
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -97,17 +102,27 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     await _accountSecurityService.CreateTwoFactorCookieAsync(passwordSignInResult.Account);
                     await SendTwoFactorEmail(passwordSignInResult.Account);
 
-                    return Ok(new { isPersistent = model.RememberMe });
+                    return Ok(new LogInResponseModel() {
+                            TwoFactorRequired = true,
+                            IsPersistent = model.RememberMe
+                        });
                 }
                 if (passwordSignInResult.Succeeded)
                 {
-                    return Ok(new { username = model.Email });
+                    return Ok(new LogInResponseModel() {
+                            TwoFactorRequired = false,
+                            Username = model.Email,
+                            IsPersistent = model.RememberMe
+                        });
                 }
-
-                ModelState.AddModelError(DynamicFormsService.DynamicFormName, Strings.ErrorMessage_LogIn_Failed);
             }
 
-            return BadRequest(new { modelState = new SerializableError(ModelState) });
+            return BadRequest(new ErrorResponseModel()
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState),
+                ErrorMessage = Strings.ErrorMessage_LogIn_Failed
+            });
         }
 
         /// <summary>
@@ -116,8 +131,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// logs you out of all google accounts. This means google does not consider logout CSRF to be a threat.
         /// </summary>
         /// <returns>
-        /// 401 unauthorized if authentication fails.
-        /// 200 okay with two factor cookie and application cookie (with empty string values) if authentication succeeds. 
+        /// 401 Unauthorized with <see cref="ErrorResponseModel>"/>  if authentication fails.
+        /// 200 OK with two factor cookie and application cookie (with empty string values) if authentication succeeds. 
         /// </returns>
         [HttpPost]
         public async Task<IActionResult> LogOff()

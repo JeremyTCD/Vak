@@ -3,6 +3,7 @@ using Jering.AccountManagement.Security;
 using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Resources;
+using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
@@ -13,7 +14,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
@@ -23,6 +26,9 @@ namespace Jering.VectorArtKit.WebApi
     {
         private IConfigurationRoot _configurationRoot { get; }
         private IHostingEnvironment _hostingEnvironment { get; }
+        // Matches default resolver settings used by MVC
+        private JsonSerializerSettings _jsonSerializationSettings { get; } = 
+            new JsonSerializerSettings() { ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy() } };
 
         public Startup(IHostingEnvironment env)
         {
@@ -70,13 +76,18 @@ namespace Jering.VectorArtKit.WebApi
         {
             loggerFactory.AddConsole(_configurationRoot.GetSection("Logging"));
 
-            // Sets body to a general error message for all responses with no bodies and status code >= 400 or < 600. 
+            // Sets body to a general error message for all unexpected error responses with no bodies and status code >= 400 or < 600. 
             app.UseStatusCodePages(new StatusCodePagesOptions()
             {
                 HandleAsync = (StatusCodeContext context) =>
                 {
                     context.HttpContext.Response.ContentType = "application/json";
-                    return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(new { errorMessage = Strings.ErrorMessage_UnexpectedError }));
+                    ErrorResponseModel responseModel = new ErrorResponseModel()
+                    {
+                        ExpectedError = false,
+                        ErrorMessage = Strings.ErrorMessage_UnexpectedError
+                    }; 
+                    return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(responseModel, _jsonSerializationSettings));
                 }
             });
 
@@ -84,16 +95,22 @@ namespace Jering.VectorArtKit.WebApi
             {
                 app.UseExceptionHandler(new ExceptionHandlerOptions()
                 {
-                    ExceptionHandler = async (HttpContext context) => {
+                    ExceptionHandler = async (HttpContext context) =>
+                    {
                         context.Response.ContentType = "application/json";
                         Exception exception = context.Features.Get<IExceptionHandlerFeature>().Error;
                         if (exception != null)
                         {
-                            await context.Response.WriteAsync(JsonConvert.SerializeObject(exception));
+                            ErrorResponseModel responseModel = new ErrorResponseModel()
+                            {
+                                ExpectedError = false,
+                                ErrorMessage = exception.Message
+                            };
+                            await context.Response.WriteAsync(JsonConvert.SerializeObject(responseModel, _jsonSerializationSettings));
                         }
                     }
                 });
-                  
+
                 loggerFactory.AddDebug();
                 app.UseBrowserLink();
                 app.UseCors(builder => builder.
@@ -108,7 +125,8 @@ namespace Jering.VectorArtKit.WebApi
                 app.UseExceptionHandler(new ExceptionHandlerOptions()
                 {
                     // If not set, middleware will attempt to retry pipeline.
-                    ExceptionHandler = (HttpContext context) => {
+                    ExceptionHandler = (HttpContext context) =>
+                    {
                         // Do nothing
                         return Task.FromResult(0);
                     }
@@ -129,7 +147,7 @@ namespace Jering.VectorArtKit.WebApi
             {
                 routes.MapRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}");
+                    template: "{controller}/{action}");
             });
         }
     }

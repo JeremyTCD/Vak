@@ -2,32 +2,34 @@
 using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Filters;
+using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForms;
+using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApi.Controllers
 {
     public class DynamicFormsController : Controller
     {
-        private IDynamicFormsService _dynamicFormsService {get;set;}
+        private IDynamicFormsBuilder _dynamicFormsBuilder {get;set;}
         private IAccountRepository<VakAccount> _vakAccountRepository;
         public DynamicFormsController(IAccountRepository<VakAccount> vakAccountRepository, 
-            IDynamicFormsService dynamicFormsService)
+            IDynamicFormsBuilder dynamicFormsBuilder)
         {
             _vakAccountRepository = vakAccountRepository;
-            _dynamicFormsService = dynamicFormsService;
+            _dynamicFormsBuilder = dynamicFormsBuilder;
         }
 
         /// <summary>
-        /// Gets <see cref="DynamicFormData"/> for a form model.
+        /// Gets <see cref="DynamicFormResponseModel"/> for a form model.
         /// </summary>
         /// <param name="formModelName"></param>
         /// <returns>
-        /// 200 ok with json representation of <see cref="DynamicFormData"/> for <paramref name="formModelName"/> and validation forgery cookies if <paramref name="formModelName"/> is the name of an existing form model.
-        /// 404 not found if <paramref name="formModelName"/> is not the name of an existing form model.
+        /// 200 OK with <see cref="DynamicFormResponseModel"/> and anti-forgery cookies if <paramref name="formModelName"/> is the name of an existing form model.
+        /// 404 NotFound with <see cref="ErrorResponseModel"/> if <paramref name="formModelName"/> is not the name of an existing form model.
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
@@ -41,7 +43,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 return NotFound();
             }
 
-            return Ok(_dynamicFormsService.GetDynamicForm(type));
+            return Ok(_dynamicFormsBuilder.BuildDynamicFormResponseModel(type.GetTypeInfo()));
         }
 
         /// <summary>
@@ -49,8 +51,9 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="value"></param>
         /// <returns>
-        /// 200 ok with json representation of object with a single property. Property has key valid and value true if email is not in use, false otherwise.
-        /// 400 bad request if <paramref name="value"/> is null.
+        /// 200 OK with <see cref="ValidateResponseModel"/> with <see cref="ValidateResponseModel.Valid"/> set to true if email is not in use and set to false 
+        /// if email is in use. 
+        /// 400 BadRequest with <see cref="ErrorResponseModel"/> if <paramref name="value"/> is null.
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
@@ -61,7 +64,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 return BadRequest();
             }
                        
-            return Ok(JsonConvert.SerializeObject(new {valid = !await _vakAccountRepository.CheckEmailInUseAsync(value) }));
+            return Ok(new ValidateResponseModel(){Valid = !await _vakAccountRepository.CheckEmailInUseAsync(value) });
         }
     }
 }

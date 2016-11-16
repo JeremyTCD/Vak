@@ -13,10 +13,9 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System.Dynamic;
 using Jering.VectorArtKit.WebApi.Resources;
 using Microsoft.AspNetCore.Authorization;
+using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 
 namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Controllers.IntegrationTests
 {
@@ -25,6 +24,11 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
         private HttpClient _httpClient { get; set; }
         private TestServer _testServcer { get; set; }
 
+        private string _badRequest { get; } = "BadRequest";
+        private string _unauthorized { get; } = "Unauthorized";
+        private string _notFound { get; } = "NotFound";
+        private string _internalServerError { get; } = "InternalServerError";
+
         public ErrorHandlingIntegrationTests(ErrorHandlingFixture fixture)
         {
             _httpClient = fixture.HttpClient;
@@ -32,51 +36,54 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
         }
 
         [Fact]
-        public async Task ErrorHandling_StatusCodePages_AddsErrorMessageBodyTo500InternalServerErrorResponseWithNoBody()
+        public async Task ErrorHandling_StatusCodePages_AddsErrorResponseModelTo500InternalServerErrorResponseWithNoBody()
         {
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("ErrorHandlingTest/InternalServerError");
 
             // Assert
-            dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal("InternalServerError", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.errorMessage, Strings.ErrorMessage_UnexpectedError);
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_internalServerError, httpResponseMessage.StatusCode.ToString());
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
-        public async Task ErrorHandling_StatusCodePages_AddsErrorMessageBodyTo404NotFoundResponseWithNoBody()
+        public async Task ErrorHandling_StatusCodePages_AddsErrorResponseModelTo404NotFoundResponseWithNoBody()
         {
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("ErrorHandlingTest/NotFound");
 
             // Assert
-            dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal("NotFound", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.errorMessage, Strings.ErrorMessage_UnexpectedError);
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_notFound, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
-        public async Task ErrorHandling_StatusCodePages_AddsErrorMessageBodyTo401UnauthorizedResponseWithNoBody()
+        public async Task ErrorHandling_StatusCodePages_AddsErrorResponseModelTo401UnauthorizedResponseWithNoBody()
         {
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("ErrorHandlingTest/Authorize");
 
             // Assert
-            dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal("Unauthorized", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.errorMessage, Strings.ErrorMessage_UnexpectedError);
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
-        public async Task ErrorHandling_StatusCodePages_AddsErrorMessageBodyTo400BadRequestResponseWithNoBody()
+        public async Task ErrorHandling_StatusCodePages_AddsErrorResponseModelTo400BadRequestResponseWithNoBody()
         {
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("ErrorHandlingTest/ValidateAntiForgeryToken");
 
             // Assert
-            dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal("BadRequest", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.errorMessage, Strings.ErrorMessage_UnexpectedError);
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
         }
 
         [Fact]
@@ -86,9 +93,10 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("ErrorHandlingTest/Exception");
 
             // Assert
-            dynamic modelState = JsonConvert.DeserializeObject<ExpandoObject>(await httpResponseMessage.Content.ReadAsStringAsync(), new ExpandoObjectConverter());
-            Assert.Equal("InternalServerError", httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(modelState.errorMessage, Strings.ErrorMessage_UnexpectedError);
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_internalServerError, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
         }
     }
 
