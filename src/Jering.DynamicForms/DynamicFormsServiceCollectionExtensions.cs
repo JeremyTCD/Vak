@@ -17,7 +17,6 @@ namespace Jering.DynamicForms
         /// <param name="services"></param>
         public static void AddDynamicForms(this IServiceCollection services)
         {
-            services.AddScoped<IDynamicFormsService, DynamicFormsService>();
             services.AddScoped<IDynamicFormsBuilder, DynamicFormsBuilder>();
         }
     }

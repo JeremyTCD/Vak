@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Reflection;
+﻿using System.Collections.Generic;
 
 namespace Jering.DynamicForms
 {
     /// <summary>
-    /// Holds data that defines a control validator
+    /// Data that defines a control validator
     /// </summary>
-    public class DynamicControlValidatorData
+    public class ValidatorResponseModel
     {
         /// <summary>
         /// Validator name  

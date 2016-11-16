@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Jering.DynamicForms
 {
@@ -14,45 +13,62 @@ namespace Jering.DynamicForms
     public class DynamicFormsBuilder : IDynamicFormsBuilder
     {
         /// <summary>
-        /// Creates a <see cref="DynamicFormData"/> from <paramref name="dynamicFormAttribute"/>.
+        /// Creates a <see cref="DynamicFormResponseModel"/> from <paramref name="typeInfo"/>.
         /// </summary>
-        /// <param name="dynamicFormAttribute"></param>
+        /// <param name="typeInfo"></param>
         /// <returns>
-        /// <see cref="DynamicFormData"/> equivalent of <paramref name="dynamicFormAttribute"/>.
+        /// <see cref="DynamicFormResponseModel"/> equivalent of <paramref name="typeInfo"/> if <paramref name="typeInfo"/> contains <see cref="DynamicFormAttribute"/>.
         /// </returns>
-        public virtual DynamicFormData BuildDynamicFormData(DynamicFormAttribute dynamicFormAttribute)
+        /// <exception cref="ArgumentException">Thrown if <paramref name="typeInfo"/> does not have a <see cref="DynamicFormAttribute"/></exception>
+        public virtual DynamicFormResponseModel BuildDynamicFormResponseModel(TypeInfo typeInfo)
         {
+            DynamicFormAttribute dynamicFormAttribute = typeInfo.GetCustomAttribute<DynamicFormAttribute>();
+            if (dynamicFormAttribute == null)
+            {
+                throw new ArgumentException(nameof(typeInfo));
+            }
+
+            PropertyInfo[] propertyInfos = typeInfo.GetProperties();
+            List<DynamicControlResponseModel> dynamicControlResponseModels = new List<DynamicControlResponseModel>();
+
+            foreach (PropertyInfo propertyInfo in propertyInfos)
+            {
+                DynamicControlResponseModel controlResponseModel = BuildDynamicControlResponseModel(propertyInfo);
+                if (controlResponseModel != null)
+                    dynamicControlResponseModels.Add(controlResponseModel);
+            }
+
             string errorMessage = dynamicFormAttribute.ResourceType.GetProperty(dynamicFormAttribute.ErrorMessageResourceName).GetValue(null, null) as string;
 
-            return new DynamicFormData() { ErrorMessage = errorMessage };
+            return new DynamicFormResponseModel() { ErrorMessage = errorMessage, DynamicControlResponseModels = dynamicControlResponseModels };
         }
 
 
         /// <summary>
-        /// Creates a <see cref="DynamicControlData"/> from <paramref name="propertyInfo"/>.
+        /// Creates a <see cref="DynamicControlResponseModel"/> from <paramref name="propertyInfo"/>.
         /// </summary>
         /// <param name="propertyInfo"></param>
         /// <returns>
-        /// <see cref="DynamicControlData"/> equivalent of <paramref name="propertyInfo"/> if <paramref name="propertyInfo"/> contains <see cref="DynamicControlAttribute"/>.
+        /// <see cref="DynamicControlResponseModel"/> equivalent of <paramref name="propertyInfo"/> if <paramref name="propertyInfo"/> contains <see cref="DynamicControlAttribute"/>.
         /// Otherwise, null.
         /// </returns>
-        public virtual DynamicControlData BuildDynamicControlData(PropertyInfo propertyInfo)
+        public virtual DynamicControlResponseModel BuildDynamicControlResponseModel(PropertyInfo propertyInfo)
         {
             DynamicControlAttribute dynamicControlAttribute = propertyInfo.GetCustomAttribute(typeof(DynamicControlAttribute)) as DynamicControlAttribute;
 
             if (dynamicControlAttribute != null)
             {
-                // Validator data
+                // Validator responseModel
                 IEnumerable<ValidationAttribute> validationAttributes = propertyInfo.GetCustomAttributes<ValidationAttribute>();
-                List<DynamicControlValidatorData> validatorData = new List<DynamicControlValidatorData>();
-                DynamicControlValidatorData asyncValidatorData = null;
+                List<ValidatorResponseModel> validatorResponseModel = new List<ValidatorResponseModel>();
+                ValidatorResponseModel asyncValidatorResponseModel = null;
                 foreach (ValidationAttribute validationAttribute in validationAttributes)
                 {
                     if (validationAttribute is AsyncValidationAttribute)
                     { 
-                        if(asyncValidatorData == null)
+                        if(asyncValidatorResponseModel == null)
                         {
-                            asyncValidatorData = BuildDynamicControlValidatorData(validationAttribute);
+                            asyncValidatorResponseModel = BuildDynamicControlValidatorResponseModel(validationAttribute);
                         }else
                         {
                             throw new ArgumentException($"{nameof(propertyInfo)} cannot have more than 1 {nameof(AsyncValidationAttribute)}");
@@ -60,7 +76,7 @@ namespace Jering.DynamicForms
                     }
                     else
                     {
-                        validatorData.Add(BuildDynamicControlValidatorData(validationAttribute));
+                        validatorResponseModel.Add(BuildDynamicControlValidatorResponseModel(validationAttribute));
                     }
                 }
 
@@ -75,13 +91,13 @@ namespace Jering.DynamicForms
                     properties.Add(propertyAttribute.PropertyName, propertyValue);
                 }
 
-                return new DynamicControlData()
+                return new DynamicControlResponseModel()
                 {
                     Name = propertyInfo.Name,
                     Order = dynamicControlAttribute.Order,
                     TagName = dynamicControlAttribute.TagName,
-                    ValidatorData = validatorData,
-                    AsyncValidatorData = asyncValidatorData,
+                    ValidatorResponseModels = validatorResponseModel,
+                    AsyncValidatorResponseModel = asyncValidatorResponseModel,
                     DisplayName = dynamicControlAttribute.
                                     ResourceType.
                                     GetTypeInfo().
@@ -95,13 +111,13 @@ namespace Jering.DynamicForms
         }
 
         /// <summary>
-        /// Creates a <see cref="DynamicControlValidatorData"/> instance from <paramref name="validationAttribute"/>.
+        /// Creates a <see cref="ValidatorResponseModel"/> instance from <paramref name="validationAttribute"/>.
         /// </summary>
         /// <param name="validationAttribute"></param>
         /// <returns>
-        /// <see cref="DynamicControlValidatorData"/> equivlent of <paramref name="validationAttribute"/>.
+        /// <see cref="ValidatorResponseModel"/> equivlent of <paramref name="validationAttribute"/>.
         /// </returns>
-        public virtual DynamicControlValidatorData BuildDynamicControlValidatorData(ValidationAttribute validationAttribute)
+        public virtual ValidatorResponseModel BuildDynamicControlValidatorResponseModel(ValidationAttribute validationAttribute)
         {
             Type validationAttributeType = validationAttribute.GetType();
 
@@ -121,7 +137,7 @@ namespace Jering.DynamicForms
                 options.Add(propertyInfo.Name,
                     propertyInfo.GetValue(validationAttribute).ToString());
             }
-            return new DynamicControlValidatorData() {
+            return new ValidatorResponseModel() {
                 Name = name,
                 ErrorMessage = errorMessage,
                 Options = options

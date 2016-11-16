@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Reflection;
 
 namespace Jering.DynamicForms
 {
     /// <summary>
-    /// Defines a dynamic control. Corresponds to javascript dynamic control type.
+    /// Data that defines a dynamic control.
     /// </summary>
-    public class DynamicControlData
+    public class DynamicControlResponseModel
     {
         /// <summary>
         /// Control name
@@ -35,13 +33,13 @@ namespace Jering.DynamicForms
         public Dictionary<string, string> Properties { get; set; }
 
         /// <summary>
-        /// Control validators data
+        /// List of <see cref="ValidatorResponseModel"/>
         /// </summary>
-        public List<DynamicControlValidatorData> ValidatorData { get; set; }
+        public List<ValidatorResponseModel> ValidatorResponseModels { get; set; }
 
         /// <summary>
-        /// Control async validators data
+        /// Async validator <see cref="ValidatorResponseModel"/> 
         /// </summary>
-        public DynamicControlValidatorData AsyncValidatorData { get; set; }
+        public ValidatorResponseModel AsyncValidatorResponseModel { get; set; }
     }
 }

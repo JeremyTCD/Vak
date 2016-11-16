@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Jering.DynamicForms
 {
@@ -15,9 +12,9 @@ namespace Jering.DynamicForms
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="dynamicFormAttribute"></param>
+        /// <param name="typeInfo"></param>
         /// <returns></returns>
-        DynamicFormData BuildDynamicFormData(DynamicFormAttribute dynamicFormAttribute);
+        DynamicFormResponseModel BuildDynamicFormResponseModel(TypeInfo typeInfo);
 
 
         /// <summary>
@@ -25,13 +22,13 @@ namespace Jering.DynamicForms
         /// </summary>
         /// <param name="propertyInfo"></param>
         /// <returns></returns>
-        DynamicControlData BuildDynamicControlData(PropertyInfo propertyInfo);
+        DynamicControlResponseModel BuildDynamicControlResponseModel(PropertyInfo propertyInfo);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="validationAttribute"></param>
         /// <returns></returns>
-        DynamicControlValidatorData BuildDynamicControlValidatorData(ValidationAttribute validationAttribute);
+        ValidatorResponseModel BuildDynamicControlValidatorResponseModel(ValidationAttribute validationAttribute);
     }
 }
