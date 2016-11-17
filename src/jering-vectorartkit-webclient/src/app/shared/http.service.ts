@@ -18,7 +18,8 @@ export class HttpService {
      * Sends post request
      *
      * Returns
-     * - Observable<any>
+     * - Observable<ResponseModel> if request succeeds
+     * - ErrorObservable<ErrorResponseModel> or empty Observable if request fails
      */
     post(relativeUrl: string, body: any, options?: RequestOptionsArgs, domain?: string): Observable<any> {
         options = options || new RequestOptions();
@@ -33,7 +34,8 @@ export class HttpService {
      * Sends get request
      *
      * Returns
-     * - Observable<any>
+     * - Observable<ResponseModel> if request succeeds
+     * - ErrorObservable<ErrorResponseModel> or empty Observable if request fails
      */
     get(relativeUrl: string, options?: RequestOptionsArgs, domain?: string): Observable<any> {
         options = options || new RequestOptions();
@@ -46,7 +48,8 @@ export class HttpService {
      * Sends request of any method
      *
      * Returns
-     * - Observable<any>
+     * - Observable<ResponseModel> if request succeeds
+     * - ErrorObservable<ErrorResponseModel> or empty Observable if request fails
      */
     request(relativeUrl: string, options: RequestOptionsArgs, domain?: string): Observable<any> {
         if (!options.headers) {
@@ -61,6 +64,8 @@ export class HttpService {
         return this.
             _http.
             request(this.urlFromRelativeUrl(relativeUrl, domain), options).
+                    // retry if request fails and error is not expected
+            //retryWhen().
             map(response => response.json()).
             catch(error => this.handleRequestError(error));
     }
@@ -70,8 +75,7 @@ export class HttpService {
      * passes error to ErrorHandlerService.
      *
      * Returns
-     * - ErrorObservable if error is a Response with ErrorResponseModel as its body and
-     *   body.expectedError is true.
+     * - ErrorObservable<ErrorResponseModel> with expectedError set to true if error is expected
      * - Otherwise, empty Observable.   
      */
     private handleRequestError(error: any): Observable<any> {
