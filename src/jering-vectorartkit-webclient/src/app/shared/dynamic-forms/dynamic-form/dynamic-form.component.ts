@@ -51,7 +51,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
                 _dynamicFormsService.
                 submitDynamicForm(this.formSubmitRelativeUrl, this.dynamicForm).
                 subscribe(
-                    data => this.submitSuccess.emit(data),
+                    responseModel => this.submitSuccess.emit(responseModel),
                     this.handleSubmitDynamicFormError
                 );
         }
