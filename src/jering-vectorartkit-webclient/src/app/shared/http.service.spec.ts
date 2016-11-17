@@ -124,7 +124,7 @@ describe(`HttpService`, () => {
 
                     expect(nextOrErrorCalled).toBe(false);
                     expect(completeCalled).toBe(true);
-                    expect(errorHandlerService.handleUnexpectedError).toHaveBeenCalledWith(testResponse);
+                    expect(errorHandlerService.handleUnexpectedError).toHaveBeenCalledWith(errorResponseModel);
                 })
             );
 
