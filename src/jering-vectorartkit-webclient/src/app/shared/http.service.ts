@@ -96,7 +96,7 @@ export class HttpService {
         }
 
         // Pass unexpected errors on to ErrorHandlerService
-        this._errorHandlerService.handleUnexpectedError(error);
+        this._errorHandlerService.handleUnexpectedError(body || error);
         return Observable.empty();
     }
 
