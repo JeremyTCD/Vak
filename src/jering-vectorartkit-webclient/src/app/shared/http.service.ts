@@ -15,11 +15,13 @@ export class HttpService {
     constructor(private _http: Http, private _errorHandlerService: ErrorHandlerService) { }
 
     /**
-     * Sends post request
+     * Sends post request.
+     * Calls ErrorHandlerService.handleUnexpectedError if an unexpected error occurs.
      *
      * Returns
      * - Observable<ResponseModel> if request succeeds
-     * - ErrorObservable<ErrorResponseModel> or empty Observable if request fails
+     * - ErrorObservable<ErrorResponseModel> or empty Observable if expected error occurs
+     * - Empty Observable if unexpected error occurs
      */
     post(relativeUrl: string, body: any, options?: RequestOptionsArgs, domain?: string): Observable<any> {
         options = options || new RequestOptions();
@@ -32,10 +34,12 @@ export class HttpService {
 
     /**
      * Sends get request
+     * Calls ErrorHandlerService.handleUnexpectedError if an unexpected error occurs.
      *
      * Returns
      * - Observable<ResponseModel> if request succeeds
-     * - ErrorObservable<ErrorResponseModel> or empty Observable if request fails
+     * - ErrorObservable<ErrorResponseModel> or empty Observable if expected error occurs
+     * - Empty Observable if unexpected error occurs
      */
     get(relativeUrl: string, options?: RequestOptionsArgs, domain?: string): Observable<any> {
         options = options || new RequestOptions();
@@ -46,10 +50,12 @@ export class HttpService {
 
     /**
      * Sends request of any method
+     * Calls ErrorHandlerService.handleUnexpectedError if an unexpected error occurs.
      *
      * Returns
      * - Observable<ResponseModel> if request succeeds
-     * - ErrorObservable<ErrorResponseModel> or empty Observable if request fails
+     * - ErrorObservable<ErrorResponseModel> or empty Observable if expected error occurs
+     * - Empty Observable if unexpected error occurs
      */
     request(relativeUrl: string, options: RequestOptionsArgs, domain?: string): Observable<any> {
         if (!options.headers) {
