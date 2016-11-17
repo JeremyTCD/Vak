@@ -27,4 +27,4 @@ import { HttpService } from './shared/http.service';
         HttpService],
     bootstrap: [VakAppComponent]
 })
-export class VakAppModule { }
+export class AppModule { }

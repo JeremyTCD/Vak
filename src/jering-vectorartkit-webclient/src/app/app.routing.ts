@@ -10,5 +10,5 @@ const appRoutes: Routes = [
 
 export const appRoutingProviders: any[] = [];
 
-export const VakAppRouting: ModuleWithProviders = RouterModule.forRoot(appRoutes);
+export const AppRouting: ModuleWithProviders = RouterModule.forRoot(appRoutes);
 
