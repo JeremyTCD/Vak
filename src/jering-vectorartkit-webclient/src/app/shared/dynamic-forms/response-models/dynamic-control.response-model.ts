@@ -1,6 +1,6 @@
 import { ValidatorResponseModel } from './validator.response-model'; 
 
-export class DynamicControlResponseModel {
+export interface DynamicControlResponseModel {
 	name?: string;
 	tagName?: string;
 	order?: number;

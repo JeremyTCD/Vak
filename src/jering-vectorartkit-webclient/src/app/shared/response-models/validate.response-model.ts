@@ -1,5 +1,5 @@
  
 
-export class ValidateResponseModel {
+export interface ValidateResponseModel {
 	valid?: boolean;
 }

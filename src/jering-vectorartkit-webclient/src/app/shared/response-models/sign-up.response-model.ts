@@ -1,5 +1,5 @@
  
 
-export class SignUpResponseModel {
+export interface SignUpResponseModel {
 	username?: string;
 }

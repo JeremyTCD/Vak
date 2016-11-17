@@ -1,6 +1,6 @@
 import { DynamicControlResponseModel } from './dynamic-control.response-model'; 
 
-export class DynamicFormResponseModel {
+export interface DynamicFormResponseModel {
 	errorMessage?: string;
 	dynamicControlResponseModels?: DynamicControlResponseModel[];
 }

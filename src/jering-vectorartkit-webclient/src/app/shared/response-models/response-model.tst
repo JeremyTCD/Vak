@@ -42,6 +42,6 @@ ${
 	}
 }$Classes(*ResponseModel)[$Properties[$ImportInterface] 
 
-export class $Name {$Properties[
+export interface $Name {$Properties[
 	$name?: $Type;]
 }]
