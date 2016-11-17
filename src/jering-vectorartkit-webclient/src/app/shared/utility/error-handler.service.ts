@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Check } from './check';
 
 import { environment } from '../../../environments/environment';
+import { ErrorResponseModel } from '../response-models/error.response-model';
 
 /**
  * Provides error handling
@@ -26,11 +27,9 @@ export class ErrorHandlerService {
 
         // TODO should inserted string be escaped etc? read up on xss and angular2
         if (environment.production) {
-            if (error instanceof Response) {
-                // Web Api should send an error message with key `errorMessage`
-                 errorMessage = error.json().errorMessage;
-            }
+            errorMessage = (error as ErrorResponseModel).errorMessage
         } else {
+            // Print entire object
             for (let key in error) {
                 errorMessage += `${key}: ${error[key]} -- `;
             }
