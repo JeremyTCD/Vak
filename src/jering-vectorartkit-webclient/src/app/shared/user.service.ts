@@ -51,7 +51,7 @@ export class UserService {
         this.
             _httpService.
             post(this._logOffRelativeUrl, null).
-            subscribe(response => {
+            subscribe(responseModel => {
                 this._router.navigate([`/home`]);
             },
             undefined,
