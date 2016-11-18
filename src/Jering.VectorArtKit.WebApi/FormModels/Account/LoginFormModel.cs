@@ -21,6 +21,7 @@ namespace Jering.VectorArtKit.WebApi.FormModels
 
         [DynamicControl("input", nameof(Strings.DisplayName_RememberMe), typeof(Strings), 2)]
         [DynamicControlProperty("type", "checkbox")]
+        [DynamicControlProperty("value", "true")]
         public bool RememberMe { get; set; }
     }
 }
