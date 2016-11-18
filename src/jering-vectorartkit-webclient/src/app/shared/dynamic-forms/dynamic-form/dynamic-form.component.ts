@@ -5,8 +5,9 @@ import { Subscription } from 'rxjs';
 
 import { DynamicForm } from './dynamic-form';
 import { DynamicFormsService } from '../dynamic-forms.service';
-import { ErrorHandlerService } from '../../utility/error-handler.service';
+import { ErrorResponseModel } from '../../response-models/error.response-model';
 import { Validity } from '../validity';
+import { Check } from '../../check';
 
 @Component({
     selector: 'dynamic-form',
@@ -57,15 +58,22 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
         }
     }
 
-    private handleSubmitDynamicFormError = (error: { [key: string]: string[] }): void => {
-        for (let key of Object.keys(error)) {
-            let dynamicControl = this.dynamicForm.getDynamicControl(key);
-            if (dynamicControl) {
-                dynamicControl.messages = error[key];
-                dynamicControl.validity = Validity.invalid;
+    /**
+     * Handle failed validation
+     */
+    private handleSubmitDynamicFormError = (error: ErrorResponseModel): void => {
+        if (Check.isObject(error.modelState)) {
+            // Object.keys throws TypeError if its argument is not an object
+            for (let key of Object.keys(error.modelState)) {
+                let dynamicControl = this.dynamicForm.getDynamicControl(key);
+                if (dynamicControl) {
+                    dynamicControl.messages = error.modelState[key];
+                    dynamicControl.validity = Validity.invalid
+                }
             }
         }
-        this.dynamicForm.messages = [this.dynamicForm.message];
+
+        this.dynamicForm.messages = [error.errorMessage || this.dynamicForm.message];
         this.dynamicForm.validity = Validity.invalid;
     }
 

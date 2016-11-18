@@ -13,6 +13,7 @@ import { DynamicControl } from '../dynamic-control/dynamic-control';
 import { DynamicForm } from './dynamic-form';
 import { Validity } from '../validity';
 import { ErrorHandlerService } from '../../error-handler.service';
+import { ErrorResponseModel } from '../../response-models/error.response-model';
 import { StubDomEvent } from '../../../../testing/dom-stubs';
 import { StubRouter, StubActivatedRoute } from '../../../../testing/router-stubs';
 
@@ -141,8 +142,9 @@ describe('DynamicFormComponent', () => {
         it(`If DynamicFormServices.submitDynamicForm fails, for each child DynamicControl with errors, adds model state error messages 
             to DynamicControl.messages and sets DynamicControl.validity to Validity.invalid. Also adds DynamicForm.message to 
             DynamicFormmessages and sets DynamicFormvalidity to Validity.invalid.`, () => {
+                let testErrorResponseModel: ErrorResponseModel = { errorMessage: testMessage, modelState: { testControlName: [testMessage] } };
                 spyOn(testDynamicForm, `onSubmit`).and.returnValue(true);
-                spyOn(stubDynamicFormsService, `submitDynamicForm`).and.returnValue(Observable.throw({ testControlName: [testMessage] }));
+                spyOn(stubDynamicFormsService, `submitDynamicForm`).and.returnValue(Observable.throw(testErrorResponseModel));
 
                 dynamicFormComponent.onSubmit(testSubmitEvent);
 
