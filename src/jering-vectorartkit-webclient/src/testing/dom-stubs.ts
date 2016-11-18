@@ -11,4 +11,6 @@
 export class StubDomElement {
     constructor(public value?: any) {
     }
+
+    checked: boolean;
 } 
