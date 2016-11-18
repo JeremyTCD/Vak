@@ -49,7 +49,7 @@ describe('DynamicControlComponent', () => {
 
     it(`Renders and sets up control`, () => {
         dynamicControl.tagName = inputTagName;
-        dynamicControl.properties = { testProperty: `testPropertyValue` };
+        dynamicControl.properties = { type: `email`, testProperty: `testPropertyValue` };
 
         stubHostFixture.detectChanges();
 
