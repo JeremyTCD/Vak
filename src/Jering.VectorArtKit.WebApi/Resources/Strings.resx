@@ -276,4 +276,10 @@
   <data name="DisplayName_RememberMe" xml:space="preserve">
     <value>Remember me?</value>
   </data>
+  <data name="ButtonText_LogIn" xml:space="preserve">
+    <value>Log in</value>
+  </data>
+  <data name="ButtonText_SignUp" xml:space="preserve">
+    <value>Sign up</value>
+  </data>
 </root>

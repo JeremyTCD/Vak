@@ -60,6 +60,24 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Log in.
+        /// </summary>
+        public static string ButtonText_LogIn {
+            get {
+                return ResourceManager.GetString("ButtonText_LogIn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Sign up.
+        /// </summary>
+        public static string ButtonText_SignUp {
+            get {
+                return ResourceManager.GetString("ButtonText_SignUp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Alternative email address.
         /// </summary>
         public static string DisplayName_AlternativeEmail {
