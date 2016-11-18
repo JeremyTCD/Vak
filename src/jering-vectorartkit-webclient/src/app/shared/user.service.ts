@@ -14,7 +14,8 @@ export class UserService {
     private _logOffRelativeUrl = `Account/LogOff`;
     private _storageName = `vakUsername`;
 
-    username: string = null;
+    returnUrl: string;
+    username: string;
     loggedIn: boolean;
 
     constructor(private _storageService: StorageService,
@@ -62,3 +63,35 @@ export class UserService {
             });
     }
 }
+
+// Guard for checking if user is logged in before navigating to a page
+
+//import { Injectable } from '@angular/core';
+//import {
+//    CanActivate, Router,
+//    ActivatedRouteSnapshot,
+//    RouterStateSnapshot
+//} from '@angular/router';
+//import { AuthService } from './auth.service';
+
+//@Injectable()
+//export class AuthGuard implements CanActivate {
+//    constructor(private authService: AuthService, private router: Router) { }
+
+//    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+//        let url: string = state.url;
+
+//        return this.checkLogin(url);
+//    }
+
+//    checkLogin(url: string): boolean {
+//        if (this.authService.isLoggedIn) { return true; }
+
+//        // Store the attempted URL for redirecting
+//        this.authService.redirectUrl = url;
+
+//        // Navigate to the login page with extras
+//        this.router.navigate(['/login']);
+//        return false;
+//    }
+//}
