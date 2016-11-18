@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
 
 import { environment } from '../../environments/environment';
-import { ErrorHandlerService } from './utility/error-handler.service';
+import { ErrorHandlerService } from './error-handler.service';
 import { ErrorResponseModel } from './response-models/error.response-model';
 
 /**
@@ -72,7 +72,7 @@ export class HttpService {
             request(this.urlFromRelativeUrl(relativeUrl, domain), options).
                     // retry if request fails and error is not expected
             //retryWhen().
-            map(response => response.json()).
+            map(this.jsonFromResponse, this).
             catch(error => this.handleRequestError(error));
     }
 
@@ -88,7 +88,7 @@ export class HttpService {
         let body: ErrorResponseModel;
 
         if (error instanceof Response &&
-            (body = error.json()) &&
+            (body = this.jsonFromResponse(error)) &&
             body.expectedError) {
 
             // Pass expected errors on to error observer
@@ -102,5 +102,14 @@ export class HttpService {
 
     private urlFromRelativeUrl(relativeUrl: string, domain?: string): string {
         return `${domain ? domain : environment.apiDomain}${relativeUrl}`;
+    }
+
+    private jsonFromResponse(response: Response) {
+        try {
+            // Throws SyntaxError if body is not parsable json
+            return response.json();
+        } catch (error) {
+            return undefined;
+        }
     }
 }
