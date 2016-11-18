@@ -63,7 +63,7 @@ describe(`DynamicControl`, () => {
 
     describe(`tryValidateParent`, () => {
         it(`Calls parent.validate if parent is defined and parent.submitAttempted is true`, () => {
-            testDynamicForm = new DynamicForm(null, null);
+            testDynamicForm = new DynamicForm(null, null, null);
             testDynamicForm.submitAttempted = true;
             spyOn(testDynamicForm, `validate`);
             dynamicControl.parent = testDynamicForm;
@@ -74,7 +74,7 @@ describe(`DynamicControl`, () => {
         });
 
         it(`Does not call parent.validate if parent.submitAttempted is false`, () => {
-            testDynamicForm = new DynamicForm(null, null);
+            testDynamicForm = new DynamicForm(null, null, null);
             testDynamicForm.submitAttempted = false;
             spyOn(testDynamicForm, `validate`);
             dynamicControl.parent = testDynamicForm;
@@ -124,7 +124,7 @@ describe(`DynamicControl`, () => {
     it(`setupContext sets parent and registers with provider siblings`, () => {
         dynamicControl.providerSiblingsNames.push(testDynamicControlName);
         let testDynamicControl = new DynamicControl({ name: testDynamicControlName });
-        testDynamicForm = new DynamicForm([testDynamicControl], null);
+        testDynamicForm = new DynamicForm([testDynamicControl], null, null);
         spyOn(testDynamicForm, `getDynamicControl`).and.returnValue(testDynamicControl);
 
         dynamicControl.setupContext(testDynamicForm);
@@ -136,7 +136,7 @@ describe(`DynamicControl`, () => {
 
     it(`setupContext sets parent but throws error if sibling does not exist `, () => {
         dynamicControl.providerSiblingsNames.push(testDynamicControlName);
-        testDynamicForm = new DynamicForm([], null);
+        testDynamicForm = new DynamicForm([], null, null);
         spyOn(testDynamicForm, `getDynamicControl`).and.returnValue(null);
 
         expect(() => dynamicControl.setupContext(testDynamicForm)).toThrow(new RangeError(`No sibling with name ${testDynamicControlName} exists`));

@@ -184,7 +184,7 @@ describe(`validateDiffers`, () => {
         testErrorMessage = `Error message`;
         otherDynamicControl = new DynamicControl({});
         dynamicControl = new DynamicControl({});
-        dynamicForm = new DynamicForm([], ``);
+        dynamicForm = new DynamicForm([], ``, ``);
 
         spyOn(dynamicForm, `getDynamicControl`).and.returnValue(otherDynamicControl);
         dynamicControl.parent = dynamicForm;
@@ -390,7 +390,7 @@ describe(`validateMatches`, () => {
             }
         },
             dynamicControl);
-        dynamicForm = new DynamicForm([], ``);
+        dynamicForm = new DynamicForm([], ``, ``);
 
         spyOn(dynamicForm, `getDynamicControl`).and.returnValue(otherDynamicControl);
         dynamicControl.parent = dynamicForm;
