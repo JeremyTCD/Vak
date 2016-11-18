@@ -13,17 +13,14 @@ let testDynamicControlName = `testDynamicControlName`;
 let testValidatorMessage = `testValidatorMessage`;
 
 describe(`DynamicControl`, () => {
+    let stubInputEvent: StubDomEvent;
+
     beforeEach(() => {
         dynamicControl = new DynamicControl({});
+        stubInputEvent = new StubDomEvent(new StubDomElement(testValue));
     });
 
     describe(`onInput`, () => {
-        let stubInputEvent: StubDomEvent;
-
-        beforeEach(() => {
-            stubInputEvent = new StubDomEvent(new StubDomElement(testValue));
-        });
-
         it(`Sets value, sets dirty to true, calls validate and calls tryValidateParent if blurred is truthy`, () => {
             dynamicControl.blurred = true;
             spyOn(dynamicControl, `validate`);
@@ -48,6 +45,20 @@ describe(`DynamicControl`, () => {
             expect(dynamicControl.validate).not.toHaveBeenCalled();
             expect(dynamicControl.tryValidateParent).not.toHaveBeenCalled();
         });
+    });
+
+    it(`onChange sets value, sets dirty and blur to true, calls validate and calls tryValidateParent`, () => {
+        spyOn(dynamicControl, `validate`);
+        spyOn(dynamicControl, `tryValidateParent`);
+        stubInputEvent.target.checked = true;
+
+        dynamicControl.onChange(stubInputEvent);
+
+        expect(dynamicControl.value).toBe(true);
+        expect(dynamicControl.dirty).toBe(true);
+        expect(dynamicControl.blurred).toBe(true);
+        expect(dynamicControl.validate).toHaveBeenCalledTimes(1);
+        expect(dynamicControl.tryValidateParent).toHaveBeenCalledTimes(1);
     });
 
     describe(`tryValidateParent`, () => {
@@ -75,12 +86,6 @@ describe(`DynamicControl`, () => {
     });
 
     describe(`onBlur`, () => {
-        let stubInputEvent: StubDomEvent;
-
-        beforeEach(() => {
-            stubInputEvent = new StubDomEvent(new StubDomElement(testValue));
-        });
-
         it(`Sets blurred to true, calls validate and calls tryValidateParent if dirty is truthy and blurred is falsey`, () => {
             dynamicControl.dirty = true;
             spyOn(dynamicControl, `validate`);

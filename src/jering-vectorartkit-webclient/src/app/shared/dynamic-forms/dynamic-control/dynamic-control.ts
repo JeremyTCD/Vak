@@ -106,10 +106,16 @@ export class DynamicControl<T>{
     }
 
     /**
-     * Updates value, sets dirty and blurred to true.
+     * Updates value, sets dirty and blurred to true, calls validate
+     * and tryValidateParent.
      */
     onChange(event: any): void {
-        // TODO
+        this.value = event.target.checked;
+        this.blurred = true;
+        this.dirty = true;
+
+        this.validate();
+        this.tryValidateParent();
     }
 
     /**
