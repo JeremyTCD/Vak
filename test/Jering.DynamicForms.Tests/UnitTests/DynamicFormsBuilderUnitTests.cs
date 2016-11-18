@@ -77,6 +77,7 @@ namespace Jering.DynamicForms.Tests.UnitTests
             mockBuilder.VerifyAll();
             Assert.Equal(3, result.DynamicControlResponseModels.Count);
             Assert.Equal(DummyStrings.Dummy, result.ErrorMessage);
+            Assert.Equal(DummyStrings.Dummy, result.ButtonText);
         }
 
         [Fact]
@@ -129,7 +130,7 @@ namespace Jering.DynamicForms.Tests.UnitTests
 
         }
 
-        [DynamicForm(nameof(DummyStrings.Dummy), typeof(DummyStrings))]
+        [DynamicForm(nameof(DummyStrings.Dummy), nameof(DummyStrings.Dummy), typeof(DummyStrings))]
         private class DummyFormModel
         {
             [ValidateMatches("Password", nameof(DummyStrings.Dummy), typeof(DummyStrings))]

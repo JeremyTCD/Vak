@@ -39,8 +39,9 @@ namespace Jering.DynamicForms
             }
 
             string errorMessage = dynamicFormAttribute.ResourceType.GetProperty(dynamicFormAttribute.ErrorMessageResourceName).GetValue(null, null) as string;
+            string buttonText = dynamicFormAttribute.ResourceType.GetProperty(dynamicFormAttribute.ButtonTextResourceName).GetValue(null, null) as string;
 
-            return new DynamicFormResponseModel() { ErrorMessage = errorMessage, DynamicControlResponseModels = dynamicControlResponseModels };
+            return new DynamicFormResponseModel() { ButtonText = buttonText, ErrorMessage = errorMessage, DynamicControlResponseModels = dynamicControlResponseModels };
         }
 
 

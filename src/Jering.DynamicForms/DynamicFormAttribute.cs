@@ -14,6 +14,11 @@ namespace Jering.DynamicForms
         public string ErrorMessageResourceName { get; set; }
 
         /// <summary>
+        /// Submit button text
+        /// </summary>
+        public string ButtonTextResourceName { get; set; }
+
+        /// <summary>
         /// String resource class
         /// </summary>
         public Type ResourceType { get; set; }
@@ -22,11 +27,14 @@ namespace Jering.DynamicForms
         /// Constructor
         /// </summary>
         /// <param name="errorMessageResourceName"></param>
+        /// <param name="buttonTextResourceName"></param>
         /// <param name="resourceType"></param>
         public DynamicFormAttribute(
             string errorMessageResourceName,
+            string buttonTextResourceName,
             Type resourceType)
         {
+            ButtonTextResourceName = buttonTextResourceName;
             ErrorMessageResourceName = errorMessageResourceName;
             ResourceType = resourceType;
         }
