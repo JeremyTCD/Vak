@@ -74,6 +74,7 @@ export class DynamicForm {
                 dynamicControl.validity === Validity.pending) {
                 validity = Validity.invalid;
                 this.messages.push(this.message);
+                // Cannot break since some DynamicControls may need to be validated
             }
         }
         this.validity = validity;
