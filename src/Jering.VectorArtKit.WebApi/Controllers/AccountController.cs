@@ -115,13 +115,18 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                             IsPersistent = model.RememberMe
                         });
                 }
+
+                return BadRequest(new ErrorResponseModel()
+                {
+                    ExpectedError = true,
+                    ErrorMessage = Strings.ErrorMessage_LogIn_Failed
+                });
             }
 
             return BadRequest(new ErrorResponseModel()
             {
                 ExpectedError = true,
-                ModelState = new SerializableError(ModelState),
-                ErrorMessage = Strings.ErrorMessage_LogIn_Failed
+                ModelState = new SerializableError(ModelState)
             });
         }
 
