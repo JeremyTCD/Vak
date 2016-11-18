@@ -75,7 +75,7 @@ namespace Jering.DynamicForms.Tests.UnitTests
             // Assert
             Assert.NotNull(result);
             mockBuilder.VerifyAll();
-            Assert.Equal(result.DynamicControlResponseModels.Count, 2);
+            Assert.Equal(3, result.DynamicControlResponseModels.Count);
             Assert.Equal(DummyStrings.Dummy, result.ErrorMessage);
         }
 
