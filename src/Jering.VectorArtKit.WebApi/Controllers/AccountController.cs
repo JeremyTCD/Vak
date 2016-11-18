@@ -89,7 +89,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> LogIn([FromBody] LoginFormModel model)
+        public async Task<IActionResult> LogIn([FromBody] LogInFormModel model)
         {
             if (ModelState.IsValid)
             {
