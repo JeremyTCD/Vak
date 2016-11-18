@@ -14,6 +14,7 @@ import { HttpService } from '../http.service';
 let testFormModelName = `testFormModelName`;
 let testControlName = `testControlName`;
 let testMessage = `testMessage`;
+let testButtonText = `testButtonText`;
 let testRelativeUrl = `testRelativeUrl`;
 let testDynamicControl: DynamicControl<any>;
 let testDynamicForm: DynamicForm;
@@ -26,7 +27,7 @@ describe('DynamicFormsService', () => {
             providers: [DynamicFormsService, { provide: HttpService, useClass: StubHttpService }]
         });
         testDynamicControl = new DynamicControl<any>({ name: testControlName });
-        testDynamicForm = new DynamicForm([testDynamicControl], testMessage);
+        testDynamicForm = new DynamicForm([testDynamicControl], testMessage, testButtonText);
         testResponse = new Response(
             new ResponseOptions({})
         );
@@ -34,7 +35,7 @@ describe('DynamicFormsService', () => {
 
     describe(`getDynamicForm`, () => {
         beforeEach(() => {
-            testDynamicFormResponseModel = { dynamicControlResponseModels: [], errorMessage: testMessage};
+            testDynamicFormResponseModel = { dynamicControlResponseModels: [], errorMessage: testMessage, buttonText: testButtonText};
         });
 
         it('Calls Http.get',
@@ -66,6 +67,7 @@ describe('DynamicFormsService', () => {
                 expect(result instanceof DynamicForm).toBe(true);
                 expect(result.dynamicControls.length).toBe(0);
                 expect(result.message).toBe(testMessage);
+                expect(result.buttonText).toBe(testButtonText);
             })
         );
     });

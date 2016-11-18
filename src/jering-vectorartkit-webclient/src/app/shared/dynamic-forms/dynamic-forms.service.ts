@@ -52,7 +52,9 @@ export class DynamicFormsService {
             dynamicControls.push(new DynamicControl<any>(controlResponseModel, this));
         }
 
-        let dynamicForm = new DynamicForm(dynamicControls.sort((dynamicControl1, dynamicControl2) => dynamicControl1.order - dynamicControl2.order), formResponseModel.errorMessage);
+        let dynamicForm = new DynamicForm(dynamicControls.sort((dynamicControl1, dynamicControl2) => dynamicControl1.order - dynamicControl2.order),
+            formResponseModel.errorMessage,
+            formResponseModel.buttonText);
         dynamicForm.setupContext();
 
         return dynamicForm;
