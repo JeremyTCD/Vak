@@ -6,7 +6,7 @@ import { ValidatorResponseModel } from '../response-models/validator.response-mo
 import { DynamicControl } from './dynamic-control';
 import { Validity } from '../validity';
 import { DynamicControlValidatorResult } from './dynamic-control-validator-result';
-import { Check } from '../../utility/check';
+import { Check } from '../../check';
 
 export class DynamicControlAsyncValidator {
     subject = new Subject<string>();

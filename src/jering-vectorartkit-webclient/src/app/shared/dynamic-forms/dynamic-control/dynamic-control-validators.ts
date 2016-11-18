@@ -6,7 +6,7 @@ import 'rxjs/add/operator/switch';
 import 'rxjs/add/operator/do';
 
 import { environment } from '../../../../environments/environment';
-import { Check } from '../../utility/check';
+import { Check } from '../../check';
 import { ValidatorResponseModel } from '../response-models/validator.response-model';
 import { DynamicControlValidator } from './dynamic-control-validator';
 import { DynamicControlAsyncValidator } from './dynamic-control-async-validator';

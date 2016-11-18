@@ -12,7 +12,7 @@ import { DynamicFormsService } from '../dynamic-forms.service';
 import { DynamicControl } from '../dynamic-control/dynamic-control';
 import { DynamicForm } from './dynamic-form';
 import { Validity } from '../validity';
-import { ErrorHandlerService } from '../../utility/error-handler.service';
+import { ErrorHandlerService } from '../../error-handler.service';
 import { StubDomEvent } from '../../../../testing/dom-stubs';
 import { StubRouter, StubActivatedRoute } from '../../../../testing/router-stubs';
 

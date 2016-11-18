@@ -3,8 +3,8 @@ import { Response } from '@angular/http';
 import { Router } from '@angular/router';
 import { Check } from './check';
 
-import { environment } from '../../../environments/environment';
-import { ErrorResponseModel } from '../response-models/error.response-model';
+import { environment } from '../../environments/environment';
+import { ErrorResponseModel } from './response-models/error.response-model';
 
 /**
  * Provides error handling

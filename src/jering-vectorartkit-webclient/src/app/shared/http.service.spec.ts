@@ -3,7 +3,7 @@ import { TestBed, inject } from '@angular/core/testing';
 import { Observable } from 'rxjs';
 
 import { HttpService } from './http.service';
-import { ErrorHandlerService } from './utility/error-handler.service';
+import { ErrorHandlerService } from './error-handler.service';
 import { environment } from '../../environments/environment';
 import { ErrorResponseModel } from './response-models/error.response-model';
 

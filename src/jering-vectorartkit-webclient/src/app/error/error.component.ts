@@ -3,7 +3,7 @@ import { ActivatedRoute, Params } from '@angular/router';
 import { Subscription } from 'rxjs';
 import 'rxjs/add/operator/catch';
 
-import { Check } from '../shared/utility/check';
+import { Check } from '../shared/check';
 
 @Component({
     templateUrl: './error.component.html'
