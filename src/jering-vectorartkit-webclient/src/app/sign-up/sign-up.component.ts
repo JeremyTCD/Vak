@@ -13,6 +13,9 @@ export class SignUpComponent {
     static formModelName = `SignUp`;
     static formSubmitRelativeUrl = `Account/SignUp`;
 
+    // TODO: Fetch this for localization
+    termsAndConditions: string = `Agree with terms and conditions`;
+
     constructor(private _router: Router, private _userService: UserService) {
     }
 
