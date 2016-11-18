@@ -87,11 +87,8 @@ export class DynamicControl<T>{
     onInput(event: any): void {
         this.value = event.target.value;
         if (this.blurred) {
-            let initialValidity = this.validity;
             this.validate();
-            if (this.validity !== initialValidity) {
-                this.tryValidateParent();
-            }
+            this.tryValidateParent();
         }
         this.dirty = true;
     }
@@ -103,11 +100,8 @@ export class DynamicControl<T>{
     onBlur(event: any): void {
         if (this.dirty && !this.blurred) {
             this.blurred = true;
-            let initialValidity = this.validity;
             this.validate();
-            if (this.validity !== initialValidity) {
-                this.tryValidateParent();
-            }
+            this.tryValidateParent();
         }
     }
 
