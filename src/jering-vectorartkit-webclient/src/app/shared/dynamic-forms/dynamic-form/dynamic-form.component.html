@@ -3,7 +3,7 @@
         <dynamic-control [dynamicControl]="dynamicControl"></dynamic-control>
     </div>
     <div>
-        <button type="submit">Submit</button>
+        <button type="submit">{{dynamicForm.buttonText}}</button>
         <div>
             <span *ngFor="let message of dynamicForm.messages">{{message}}</span>
         </div>

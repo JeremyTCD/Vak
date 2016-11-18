@@ -18,7 +18,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     @Output() submitSuccess = new EventEmitter<Response>();
 
     // create resolve guard to this does not need to be initialized
-    dynamicForm: DynamicForm = new DynamicForm([], null);
+    dynamicForm: DynamicForm = new DynamicForm([], null, null);
 
     private _getDynamicFormSubscription: Subscription;
     private _submitDynamicFormSubscription: Subscription;

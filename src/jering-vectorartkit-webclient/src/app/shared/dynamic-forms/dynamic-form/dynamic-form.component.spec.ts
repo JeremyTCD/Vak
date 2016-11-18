@@ -30,6 +30,7 @@ let testControlName = `testControlName`;
 let testFormModelName = `testFormModelName`;
 let testSubmitUrl = `testSubmitUrl`;
 let testMessage = `testErrorMessage`;
+let testButtonText = `testButtonText`;
 let testDynamicControl: DynamicControl<any>;
 let testDynamicForm: DynamicForm;
 let testSubmitEvent: StubDomEvent;
@@ -55,7 +56,7 @@ describe('DynamicFormComponent', () => {
         stubErrorHandlerService = TestBed.get(ErrorHandlerService) as StubErrorHandlerService;
         stubActivatedRoute = TestBed.get(ActivatedRoute) as StubActivatedRoute;
         testDynamicControl = new DynamicControl<any>({ name: testControlName });
-        testDynamicForm = new DynamicForm([testDynamicControl], testMessage);
+        testDynamicForm = new DynamicForm([testDynamicControl], testMessage, testButtonText);
         testSubmitEvent = new StubDomEvent();
         testResponse = new Response(
             new ResponseOptions({
@@ -98,6 +99,13 @@ describe('DynamicFormComponent', () => {
 
         expect(hostDebugElement.query(By.css(`span`)).nativeElement.textContent).
             toBe(testMessage);
+    });
+
+    it(`Sets submit button text`, () => {
+        stubHostFixture.detectChanges();
+
+        expect(hostDebugElement.query(By.css(`button`)).nativeElement.textContent).
+            toBe(testButtonText);
     });
 
     it(`submit event calls onSubmit`, () => {
