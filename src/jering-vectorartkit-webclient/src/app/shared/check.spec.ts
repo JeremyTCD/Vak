@@ -220,3 +220,17 @@ describe('isNonAlphaNumeric', () => {
         expect(Check.isNonAlphaNumeric(undefined)).toBe(false);
     });
 });
+
+describe(`isObject`, () => {
+    it(`returns true if argument is a non-null object`, () => {
+        expect(Check.isObject({})).toBe(true);
+        expect(Check.isObject([])).toBe(true);
+    });
+
+    it(`returns false if argument is not a non-null object`, () => {
+        expect(Check.isObject(0)).toBe(false);
+        expect(Check.isObject(null)).toBe(false);
+        expect(Check.isObject(`test`)).toBe(false);
+        expect(Check.isObject(undefined)).toBe(false);
+    });
+});

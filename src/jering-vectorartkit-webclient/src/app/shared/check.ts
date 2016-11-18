@@ -62,4 +62,12 @@ export class Check {
     static isNonAlphaNumeric(char: string): boolean {
         return !this.isBlank(char) && char.trim().length === 1 && this.nonAlphaNumericChars.indexOf(char) > -1;
     }
+
+    /**
+     * If obj is a non-null object, returns true. Otherwise, returns false.
+     * Note that javascript considers arrays to be objects.
+     */
+    static isObject(obj: any): boolean {
+        return this.isValue(obj) && typeof obj === `object`;
+    }
 }
