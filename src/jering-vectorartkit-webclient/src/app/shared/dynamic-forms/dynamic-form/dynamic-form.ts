@@ -9,7 +9,7 @@ export class DynamicForm {
     messages: string[] = [];
     submitAttempted: boolean;
 
-    constructor(public dynamicControls: DynamicControl<any>[], public message: string) {
+    constructor(public dynamicControls: DynamicControl<any>[], public message: string, public buttonText: string) {
     }
 
     /**

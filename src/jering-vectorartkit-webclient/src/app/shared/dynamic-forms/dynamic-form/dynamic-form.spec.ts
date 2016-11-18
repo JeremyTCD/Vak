@@ -10,10 +10,10 @@ let testMessage = `testMessage`;
 let testValue = `testValue`;
 let testName = `testName`;
 
-describe('DynamicControl', () => {
+describe('DynamicForm', () => {
     beforeEach(() => {
         testDynamicControl = new DynamicControl({});
-        dynamicForm = new DynamicForm([testDynamicControl], testMessage);
+        dynamicForm = new DynamicForm([testDynamicControl], testMessage, null);
     });
 
     describe(`onSubmit`, () => {
