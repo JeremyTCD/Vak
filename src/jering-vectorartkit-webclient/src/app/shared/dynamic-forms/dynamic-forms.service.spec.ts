@@ -7,7 +7,6 @@ import { DynamicForm } from './dynamic-form/dynamic-form';
 import { DynamicFormResponseModel } from './response-models/dynamic-form.response-model';
 import { DynamicFormsService } from './dynamic-forms.service';
 import { ValidateResponseModel } from '../response-models/validate.response-model';
-import { ErrorHandlerService } from '../utility/error-handler.service';
 import { environment } from '../../../environments/environment';
 import { Validity } from './validity';
 import { HttpService } from '../http.service';
@@ -24,7 +23,7 @@ let testDynamicFormResponseModel: DynamicFormResponseModel;
 describe('DynamicFormsService', () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
-            providers: [DynamicFormsService, { provide: ErrorHandlerService, useClass: StubErrorHandlerService }, { provide: HttpService, useClass: StubHttpService }]
+            providers: [DynamicFormsService, { provide: HttpService, useClass: StubHttpService }]
         });
         testDynamicControl = new DynamicControl<any>({ name: testControlName });
         testDynamicForm = new DynamicForm([testDynamicControl], testMessage);
@@ -131,11 +130,6 @@ describe('DynamicFormsService', () => {
         );
     });
 });
-
-class StubErrorHandlerService {
-    handleUnexpectedError(error: any): void {
-    }
-}
 
 class StubHttpService {
     get(url: string, options?: RequestOptionsArgs, domain?: string): Observable<any> {
