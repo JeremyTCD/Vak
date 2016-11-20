@@ -6,7 +6,7 @@ import { DynamicFormsResolve } from '../shared/dynamic-forms/dynamic-forms-resol
 
 const signUpRoutes: Routes = [
     {
-        path: 'signup',
+        path: '',
         component: SignUpComponent,
         data: {
             formModelName: SignUpComponent.formModelName,

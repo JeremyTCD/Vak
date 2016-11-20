@@ -4,7 +4,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { ErrorComponent } from './error.component';
 
 const errorRoutes: Routes = [
-    { path: 'error', component: ErrorComponent }
+    { path: '', component: ErrorComponent }
 ];
 
 export const ErrorRouting: ModuleWithProviders = RouterModule.forChild(errorRoutes);

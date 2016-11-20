@@ -1,11 +1,14 @@
 ﻿import { ModuleWithProviders } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+import { HomeComponent } from './home/home.component';
 
 const appRoutes: Routes = [
-    { path: ``, pathMatch: `full`, redirectTo: `/home` },
-    { path: `home`, loadChildren: `vak-app/home/home.module#HomeModule` },
-    { path: `signup`, loadChildren: `vak-app/sign-up/sign-up.module#SignUpModule` },
-    { path: `error`, loadChildren: `vak-app/error/error.module#ErrorModule` }
+    { path: 'signup', loadChildren: 'app/sign-up/sign-up.module#SignUpModule' },
+    { path: 'login', loadChildren: 'app/log-in/log-in.module#LogInModule' },
+    { path: 'error', loadChildren: 'app/error/error.module#ErrorModule' },
+    { path: '', pathMatch: 'full', redirectTo: '/home' },
+    // TODO page does not exist component
+    { path: '**', redirectTo: '/home' }
 ];
 
 export const appRoutingProviders: any[] = [];
