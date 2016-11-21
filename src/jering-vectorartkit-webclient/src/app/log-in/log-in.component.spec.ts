@@ -15,7 +15,6 @@ let logInComponentFixture: ComponentFixture<LogInComponent>;
 let logInComponent: LogInComponent;
 let logInDebugElement: DebugElement;
 let testLogInResponseModel: LogInResponseModel;
-let stubDynamicFormComponent: StubDynamicFormComponent;
 let stubRouter: StubRouter;
 let stubUserService: StubUserService;
 let stubActivatedRoute: StubActivatedRoute;
