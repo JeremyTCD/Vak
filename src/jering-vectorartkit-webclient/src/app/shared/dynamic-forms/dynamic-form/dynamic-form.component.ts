@@ -20,7 +20,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     // create resolve guard to this does not need to be initialized
     dynamicForm: DynamicForm = new DynamicForm([], null, null);
 
-    private _getDynamicFormSubscription: Subscription;
+    private _dataSubscription: Subscription;
     private _submitDynamicFormSubscription: Subscription;
 
     constructor(private _dynamicFormsService: DynamicFormsService,
@@ -31,7 +31,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
      * Retrieves and sets dynamicForm
      */
     ngOnInit(): void {
-        this._getDynamicFormSubscription = this.
+        this._dataSubscription = this.
             _activatedRoute.
             data.
             subscribe((data: { dynamicForm: DynamicForm, formSubmitRelativeUrl: string }) => {
@@ -80,8 +80,8 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.submitSuccess.unsubscribe();
 
-        if (this._getDynamicFormSubscription) {
-            this._getDynamicFormSubscription.unsubscribe();
+        if (this._dataSubscription) {
+            this._dataSubscription.unsubscribe();
         }
 
         if (this._submitDynamicFormSubscription) {
