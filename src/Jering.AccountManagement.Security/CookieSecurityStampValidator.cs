@@ -37,18 +37,18 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Validates <see cref="ClaimsPrincipal"/> security stamp claim. Signs account out and rejects <see cref="ClaimsPrincipal"/>  if security stamp
+        /// Validates <see cref="ClaimsPrincipal"/> security stamp claim. Logs account out and rejects <see cref="ClaimsPrincipal"/>  if security stamp
         /// is invalid.
         /// </summary>
         /// <param name="context"></param>
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
             if (context.Principal != null) {
-                TAccount account = await _accountSecurityService.GetSignedInAccountAsync(context.Principal);
+                TAccount account = await _accountSecurityService.GetLoggedInAccountAsync(context.Principal);
 
                 if (account == null || account.SecurityStamp.ToString() != context.Principal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType)?.Value) {
                     context.RejectPrincipal();
-                    await _accountSecurityService.SignOutAsync();
+                    await _accountSecurityService.LogOffAsync();
                 }
             }
         }

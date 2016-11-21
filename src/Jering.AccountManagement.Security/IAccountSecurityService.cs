@@ -21,14 +21,14 @@ namespace Jering.AccountManagement.Security
         /// <param name="account"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns></returns>
-        Task SignInAsync(TAccount account, AuthenticationProperties authenticationProperties);
+        Task LogInAsync(TAccount account, AuthenticationProperties authenticationProperties);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="account"></param>
         /// <returns></returns>
-        Task RefreshSignInAsync(TAccount account);
+        Task RefreshLogInAsync(TAccount account);
 
         /// <summary>
         /// 
@@ -37,13 +37,13 @@ namespace Jering.AccountManagement.Security
         /// <param name="password"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns></returns>
-        Task<PasswordSignInResult<TAccount>> PasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties);
+        Task<PasswordLogInResult<TAccount>> PasswordLogInAsync(string email, string password, AuthenticationProperties authenticationProperties);
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        Task SignOutAsync();
+        Task LogOffAsync();
 
         /// <summary>
         /// 
@@ -73,7 +73,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="token"></param>
         /// <param name="isPersistent"></param>
         /// <returns></returns>
-        Task<TwoFactorSignInResult> TwoFactorSignInAsync(string token, bool isPersistent);
+        Task<TwoFactorLogInResult<TAccount>> TwoFactorLogInAsync(string token, bool isPersistent);
 
         /// <summary>
         /// 
@@ -101,14 +101,14 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <returns></returns>
-        Task<TAccount> GetSignedInAccountAsync();
+        Task<TAccount> GetLoggedInAccountAsync();
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="claimsPrincipal"></param>
         /// <returns></returns>
-        Task<TAccount> GetSignedInAccountAsync(ClaimsPrincipal claimsPrincipal);
+        Task<TAccount> GetLoggedInAccountAsync(ClaimsPrincipal claimsPrincipal);
 
         /// <summary>
         /// 
@@ -124,7 +124,7 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <returns></returns>
-        string GetSignedInAccountEmail();
+        string GetLoggedInAccountEmail();
 
         /// <summary>
         /// 

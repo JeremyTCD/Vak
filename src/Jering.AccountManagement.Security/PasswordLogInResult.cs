@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityService{TAccount}.PasswordSignInAsync"/>.
+    /// Results for <see cref="IAccountSecurityService{TAccount}.PasswordLogInAsync"/>.
     /// </summary>
-    public class PasswordSignInResult<TAccount> where TAccount : IAccount
+    public class PasswordLogInResult<TAccount> where TAccount : IAccount
     {
         /// <summary>
         /// 
@@ -32,18 +32,18 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <returns></returns>
-        public static PasswordSignInResult<TAccount> GetSucceededResult()
+        public static PasswordLogInResult<TAccount> GetSucceededResult()
         {
-            return new PasswordSignInResult<TAccount>() { Succeeded = true };
+            return new PasswordLogInResult<TAccount>() { Succeeded = true };
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static PasswordSignInResult<TAccount> GetFailedResult()
+        public static PasswordLogInResult<TAccount> GetFailedResult()
         {
-            return new PasswordSignInResult<TAccount>() { Failed = true };
+            return new PasswordLogInResult<TAccount>() { Failed = true };
         }
 
         /// <summary>
@@ -51,9 +51,9 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="account"></param>
         /// <returns></returns>
-        public static PasswordSignInResult<TAccount> GetTwoFactorRequiredResult(TAccount account)
+        public static PasswordLogInResult<TAccount> GetTwoFactorRequiredResult(TAccount account)
         {
-            return new PasswordSignInResult<TAccount>() { TwoFactorRequired = true, Account = account };
+            return new PasswordLogInResult<TAccount>() { TwoFactorRequired = true, Account = account };
         }
     }
 }
