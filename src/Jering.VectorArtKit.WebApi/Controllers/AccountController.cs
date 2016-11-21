@@ -93,21 +93,21 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         {
             if (ModelState.IsValid)
             {
-                PasswordSignInResult<VakAccount> passwordSignInResult = await _accountSecurityService.PasswordSignInAsync(model.Email,
+                PasswordLogInResult<VakAccount> result = await _accountSecurityService.PasswordLogInAsync(model.Email,
                     model.Password,
                     new AuthenticationProperties() { IsPersistent = model.RememberMe });
 
-                if (passwordSignInResult.TwoFactorRequired)
+                if (result.TwoFactorRequired)
                 {
-                    await _accountSecurityService.CreateTwoFactorCookieAsync(passwordSignInResult.Account);
-                    await SendTwoFactorEmail(passwordSignInResult.Account);
+                    await _accountSecurityService.CreateTwoFactorCookieAsync(result.Account);
+                    await SendTwoFactorEmail(result.Account);
 
                     return Ok(new LogInResponseModel() {
                             TwoFactorRequired = true,
                             IsPersistent = model.RememberMe
                         });
                 }
-                if (passwordSignInResult.Succeeded)
+                if (result.Succeeded)
                 {
                     return Ok(new LogInResponseModel() {
                             TwoFactorRequired = false,
@@ -142,64 +142,47 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         [HttpPost]
         public async Task<IActionResult> LogOff()
         {
-            await _accountSecurityService.SignOutAsync();
+            await _accountSecurityService.LogOffAsync();
             return Ok();
         }
 
-        ///// <summary>
-        ///// GET: /Account/VerifyTwoFactorCode
-        ///// </summary>
-        ///// <param name="isPersistent"></param>
-        ///// <param name="returnUrl"></param>
-        ///// <returns>
-        ///// Error view if two factor cookie does not exist or is invalid.
-        ///// VerifyTwoFactorCode view with anti-forgery token and cookie if two factor cookie is valid.
-        ///// </returns>
-        //[HttpGet]
-        //[AllowAnonymous]
-        //public async Task<IActionResult> VerifyTwoFactorCode(bool isPersistent, string returnUrl = null)
-        //{
-        //    VakAccount vakAccount = await _accountSecurityService.GetTwoFactorAccountAsync();
-        //    if (vakAccount == null)
-        //    {
-        //        return View("Error");
-        //    }
+        /// <summary>
+        /// POST: /Account/TwoFactorLogIn
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// 400 BadRequest with <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 400 BadRequest with <see cref="ErrorResponseModel"> if model state is invalid. 
+        /// 400 BadRequest with <see cref="ErrorResponseModel"> if code is invalid. 
+        /// 200 OK with <see cref="TwoFactorLogInResponseModel"/>, two factor cookie and application cookie if login succeeds.
+        /// </returns>
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TwoFactorLogIn([FromBody] TwoFactorLogInFormModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                TwoFactorLogInResult<VakAccount> result = await _accountSecurityService.TwoFactorLogInAsync(model.Code, model.IsPersistent);
 
-        //    ViewData["ReturnUrl"] = returnUrl;
+                if (result.Succeeded)
+                {
+                    return Ok(new TwoFactorLogInResponseModel()
+                    {
+                        Username = result.Account.Email,
+                        IsPersistent = model.IsPersistent
+                    });
+                }
 
-        //    return View();
-        //}
+                ModelState.AddModelError(nameof(TwoFactorLogInFormModel.Code), Strings.ErrorMessage_TwoFactorCode_Invalid);
+            }
 
-        ///// <summary>
-        ///// POST: /Account/VerifyTwoFactorCode
-        ///// </summary>
-        ///// <param name="model"></param>
-        ///// <param name="returnUrl"></param>
-        ///// <returns>
-        ///// VerifyTwoFactorCode view with error message if model state or code is invalid. 
-        ///// Home index view or return Url view with an application cookie if code is valid.
-        ///// BadRequest if anti-forgery credentials are invalid.
-        ///// </returns>
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        //[SetSignedInAccount]
-        //public async Task<IActionResult> VerifyTwoFactorCode(VerifyTwoFactorCodeFormModel model, string returnUrl = null)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        TwoFactorSignInResult twoFactorSignInResult = await _accountSecurityService.TwoFactorSignInAsync(model.Code, model.IsPersistent);
-
-        //        if (twoFactorSignInResult.Succeeded)
-        //        {
-        //            return RedirectToLocal(returnUrl);
-        //        }
-
-        //        ModelState.AddModelError(nameof(VerifyTwoFactorCodeFormModel.Code), Strings.ErrorMessage_TwoFactorCode_Invalid);
-        //    }
-
-        //    return View(model);
-        //}
+            return BadRequest(new ErrorResponseModel()
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
+        }
 
         ///// <summary>
         ///// GET: /Account/ForgotPassword

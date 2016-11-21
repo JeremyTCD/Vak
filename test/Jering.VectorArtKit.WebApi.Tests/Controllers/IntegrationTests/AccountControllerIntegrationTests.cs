@@ -11,6 +11,7 @@ using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -122,7 +123,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LoginPost_ReturnsBadRequestWithErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
+        public async Task LoginPost_Returns400BadRequestWithErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
@@ -260,104 +261,94 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
         }
 
-        //[Fact]
-        //public async Task VerifyTwoFactorCodeGet_ReturnsVerifyTwoFactorCodeViewWithAntiForgeryTokenAndCookieIfTwoFactorCookieIsValid()
-        //{
-        //    // Arrange
-        //    string email = "Email1@test.com";
-        //    string password = "Password1@";
+        [Fact]
+        public async Task TwoFactorLogInPost_200OkWithTwoFactorLogInResponseModelTwoFactorCookieAndApplicationCookieIfLoginSucceeds()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            await CreateAccount(_testEmail, _testPassword, true);
+            HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
+            string twoFactorEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
+            Regex codeMatch = new Regex(@" (\d{6,6})");
+            string code = codeMatch.Match(twoFactorEmail).Groups[1].Value;
 
-        //    await _resetAccountsTable();
-        //    await CreateAccount(email, password, true);
-        //    HttpResponseMessage loginPostResponse = await LogIn(email, password);
-        //    HttpRequestMessage VerifyTwoFactorCodeGetRequest = RequestHelper.CreateWithCookiesFromResponse(loginPostResponse.Headers.Location.ToString(), HttpMethod.Get, null, loginPostResponse);
+            // Act
+            httpResponseMessage = await TwoFactorLogIn(CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage), code);
 
-        //    // Act
-        //    HttpResponseMessage VerifyTwoFactorCodeGetResponse = await _httpClient.SendAsync(VerifyTwoFactorCodeGetRequest);
+            // Assert
+            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
+            Assert.Equal(2, cookies.Count);
+            Assert.Contains(_applicationCookieName, cookies.Keys);
+            Assert.Contains(_twoFactorCookieName, cookies.Keys);
+            Assert.Equal("", cookies[_twoFactorCookieName]);
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            TwoFactorLogInResponseModel body = JsonConvert.DeserializeObject<TwoFactorLogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_testEmail, body.Username);
+            Assert.False(body.IsPersistent);
+        }
 
-        //    // Assert
-        //    string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(VerifyTwoFactorCodeGetResponse);
-        //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(VerifyTwoFactorCodeGetResponse);
-        //    string html = await VerifyTwoFactorCodeGetResponse.Content.ReadAsStringAsync();
-        //    Assert.Equal("OK", VerifyTwoFactorCodeGetResponse.StatusCode.ToString());
+        [Fact]
+        public async Task TwoFactorLogInPost_Returns400BadRequestWithErrorResponseModelIfModelStateIsInvalid()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            await CreateAccount(_testEmail, _testPassword, true);
+            HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
+            string twoFactorEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
+            Regex codeMatch = new Regex(@" (\d{6,6})");
+            string code = codeMatch.Match(twoFactorEmail).Groups[1].Value;
 
-        //    Assert.True(html.Contains(Strings.ViewTitle_VerifyTwoFactorCode));
-        //    Assert.NotNull(antiForgeryToken);
-        //    Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
-        //}
+            // Act
+            httpResponseMessage = await TwoFactorLogIn(CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage), "");
 
-        //[Fact]
-        //public async Task VerifyTwoFactorCodeGet_ReturnsErrorViewIfTwoFactorCookieIsInvalid()
-        //{
-        //    // Arrange
-        //    HttpResponseMessage VerifyTwoFactorCodeGetResponse = await _httpClient.GetAsync("Account/VerifyTwoFactorCode");
+            // Assert
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.True(body.ExpectedError);
+            Assert.Equal((body.ModelState["Code"] as JArray)[0], Strings.ErrorMessage_TwoFactorCode_Required);
+        }
 
-        //    // Assert
-        //    string html = await VerifyTwoFactorCodeGetResponse.Content.ReadAsStringAsync();
-        //    Assert.Equal("OK", VerifyTwoFactorCodeGetResponse.StatusCode.ToString());
-        //    Assert.True(html.Contains(Strings.ViewTitle_Error));
-        //}
+        [Fact]
+        public async Task TwoFactorLogInPost_Returns400BadRequestWithErrorResponseModelIfCodeIsInvalid()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            await CreateAccount(_testEmail, _testPassword, true);
+            HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
+            string twoFactorEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
+            Regex codeMatch = new Regex(@" (\d{6,6})");
+            string code = codeMatch.Match(twoFactorEmail).Groups[1].Value;
+            string testCode = "000000" == code ? "111111" : "000000";
 
-        //[Fact]
-        //public async Task VerifyTwoFactorCodePost_RedirectsToHomeIndexViewWithApplicationCookieAndRemovesTwoFactorCookieIfCodeIsValid()
-        //{
-        //    // Arrange
-        //    string email = "Email1@test.com", password = "Password1@";
+            // Act
+            httpResponseMessage = await TwoFactorLogIn(CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage), testCode);
 
-        //    await _resetAccountsTable();
-        //    await CreateAccount(email, password, true);
-        //    HttpResponseMessage loginPostResponse = await LogIn(email, password);
-        //    string twoFactorEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
-        //    Regex codeMatch = new Regex(@" (\d{6,6})");
-        //    string code = codeMatch.Match(twoFactorEmail).Groups[1].Value;
+            // Assert
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.True(body.ExpectedError);
+            Assert.Equal((body.ModelState["Code"] as JArray)[0], Strings.ErrorMessage_TwoFactorCode_Invalid);
+        }
 
-        //    // Act
-        //    HttpResponseMessage VerifyTwoFactorCodePostResponse = await VerifyTwoFactorCode(CookiesHelper.ExtractCookiesFromResponse(loginPostResponse), code);
+        [Fact]
+        public async Task TwoFactorLogInPost_Returns400BadRequestWithErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
+        {
+            // Arrange
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                { "Code", "000000"}
+            };
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.TwoFactorLogIn)}", HttpMethod.Post, formPostBodyData);
 
-        //    // Assert
-        //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(VerifyTwoFactorCodePostResponse);
-        //    Assert.Contains(_applicationCookieName, cookies.Keys);
-        //    Assert.Contains("Jering.TwoFactor", cookies.Keys);
-        //    Assert.Equal("", cookies["Jering.TwoFactor"]);
-        //    Assert.Equal("Redirect", VerifyTwoFactorCodePostResponse.StatusCode.ToString());
-        //    Assert.Equal("/", VerifyTwoFactorCodePostResponse.Headers.Location.ToString());
-        //}
+            // Act
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
 
-        //[Theory]
-        //[MemberData(nameof(VerifyTwoFactorCodePostData))]
-        //public async Task VerifyTwoFactorCodePost_ReturnsVerifyTwoFactorCodeViewWithErrorMessageIfModelStateOrCodeIsInvalid(string code)
-        //{
-        //    // Arrange
-        //    string email = "Email1@test.com", password = "Password1@";
-
-        //    await _resetAccountsTable();
-        //    await CreateAccount(email, password, true);
-        //    HttpResponseMessage loginPostResponse = await LogIn(email, password);
-        //    string twoFactorEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
-        //    Regex codeMatch = new Regex(@" (\d{6,6})");
-        //    string actualCode = codeMatch.Match(twoFactorEmail).Groups[1].Value;
-        //    // low probability of this but avoid anyway
-        //    if (code == actualCode)
-        //    {
-        //        code = "654321";
-        //    }
-
-        //    // Act
-        //    HttpResponseMessage VerifyTwoFactorCodePostResponse = await VerifyTwoFactorCode(CookiesHelper.ExtractCookiesFromResponse(loginPostResponse), code);
-
-        //    // Assert
-        //    Assert.Equal("OK", VerifyTwoFactorCodePostResponse.StatusCode.ToString());
-        //    string html = await VerifyTwoFactorCodePostResponse.Content.ReadAsStringAsync();
-
-        //    Assert.True(html.Contains(Strings.ViewTitle_VerifyTwoFactorCode));
-        //    Assert.True(html.Contains(Strings.ErrorMessage_TwoFactorCode_Invalid));
-        //}
-
-        //public static IEnumerable<object[]> VerifyTwoFactorCodePostData()
-        //{
-        //    yield return new object[] { "x" };
-        //    yield return new object[] { "123456" };
-        //}
+            // Assert
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
+        }
 
         //[Fact]
         //public async Task ForgotPasswordGet_ReturnsForgotPasswordViewWithAntiForgeryTokenAndCookie()
@@ -2349,31 +2340,32 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //    return await _httpClient.SendAsync(RequestHelper.CreateWithCookiesFromResponse("Account/ResetPassword", HttpMethod.Post, formPostBodyData, resetPasswordGetResponse));
         //}
 
-        //public async Task<HttpResponseMessage> VerifyTwoFactorCode(IDictionary<string, string> twoFactorCookie, string code)
-        //{
-        //    HttpRequestMessage VerifyTwoFactorCodeGetRequest = RequestHelper.Create("/Account/VerifyTwoFactorCode?IsPersistent=true", HttpMethod.Get, null);
-        //    CookiesHelper.PutCookiesOnRequest(VerifyTwoFactorCodeGetRequest, twoFactorCookie);
-        //    HttpResponseMessage VerifyTwoFactorCodeGetResponse = await _httpClient.SendAsync(VerifyTwoFactorCodeGetRequest);
-        //    string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(VerifyTwoFactorCodeGetResponse);
-        //    IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
-        //        {
-        //            { "Code",  code},
-        //            { "__RequestVerificationToken", antiForgeryToken }
-        //        };
-        //    HttpRequestMessage VerifyTwoFactorCodePostRequest = RequestHelper.Create("Account/VerifyTwoFactorCode", HttpMethod.Post, formPostBodyData);
-        //    CookiesHelper.PutCookiesOnRequest(VerifyTwoFactorCodePostRequest, twoFactorCookie);
-        //    CookiesHelper.CopyCookiesFromResponse(VerifyTwoFactorCodePostRequest, VerifyTwoFactorCodeGetResponse);
+        public async Task<HttpResponseMessage> TwoFactorLogIn(IDictionary<string, string> twoFactorCookie, string code)
+        {
+            HttpRequestMessage getDynamicFormGetRequest = RequestHelper.Create($"{nameof(DynamicFormsController).Replace("Controller", "")}/" +
+                $"{nameof(DynamicFormsController.GetDynamicForm)}?formModelName=TwoFactorLogIn", HttpMethod.Get);
+            HttpResponseMessage getDynamicFormGetResponse = await _httpClient.SendAsync(getDynamicFormGetRequest);
+            IDictionary<string, string> antiForgeryCookies = CookiesHelper.ExtractCookiesFromResponse(getDynamicFormGetResponse);
 
-        //    // Act
-        //    return await _httpClient.SendAsync(VerifyTwoFactorCodePostRequest);
-        //}
+            IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
+            {
+                { "Code", code},
+            };
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.TwoFactorLogIn)}", HttpMethod.Post, formPostBodyData);
+            httpRequestMessage.Headers.Add("X-XSRF-TOKEN", antiForgeryCookies["XSRF-TOKEN"]);
+            CookiesHelper.PutCookiesOnRequest(httpRequestMessage, twoFactorCookie);
+            CookiesHelper.PutCookiesOnRequest(httpRequestMessage, antiForgeryCookies);
+
+            // Act
+            return await _httpClient.SendAsync(httpRequestMessage);
+        }
 
         public async Task<HttpResponseMessage> SignUp(string email, string password, string confirmPassword)
         {
             HttpRequestMessage getDynamicFormGetRequest = RequestHelper.Create($"{nameof(DynamicFormsController).Replace("Controller", "")}/" +
                 $"{nameof(DynamicFormsController.GetDynamicForm)}?formModelName=SignUp", HttpMethod.Get);
             HttpResponseMessage getDynamicFormGetResponse = await _httpClient.SendAsync(getDynamicFormGetRequest);
-            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(getDynamicFormGetResponse);
+            IDictionary<string, string> antiForgeryCookies = CookiesHelper.ExtractCookiesFromResponse(getDynamicFormGetResponse);
 
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
@@ -2382,8 +2374,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
                 { "ConfirmPassword",  confirmPassword}
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.SignUp)}", HttpMethod.Post, formPostBodyData);
-            httpRequestMessage.Headers.Add("X-XSRF-TOKEN", cookies["XSRF-TOKEN"]);
-            CookiesHelper.PutCookiesOnRequest(httpRequestMessage, cookies);
+            httpRequestMessage.Headers.Add("X-XSRF-TOKEN", antiForgeryCookies["XSRF-TOKEN"]);
+            CookiesHelper.PutCookiesOnRequest(httpRequestMessage, antiForgeryCookies);
 
             return await _httpClient.SendAsync(httpRequestMessage);
         }
@@ -2393,7 +2385,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             HttpRequestMessage getDynamicFormGetRequest = RequestHelper.Create($"{nameof(DynamicFormsController).Replace("Controller", "")}/" +
                 $"{nameof(DynamicFormsController.GetDynamicForm)}?formModelName=LogIn", HttpMethod.Get);
             HttpResponseMessage getDynamicFormGetResponse = await _httpClient.SendAsync(getDynamicFormGetRequest);
-            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(getDynamicFormGetResponse);
+            IDictionary<string, string> antiForgeryCookies = CookiesHelper.ExtractCookiesFromResponse(getDynamicFormGetResponse);
 
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
@@ -2401,8 +2393,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
                 { "Password", password}
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.LogIn)}", HttpMethod.Post, formPostBodyData);
-            httpRequestMessage.Headers.Add("X-XSRF-TOKEN", cookies["XSRF-TOKEN"]);
-            CookiesHelper.PutCookiesOnRequest(httpRequestMessage, cookies);
+            httpRequestMessage.Headers.Add("X-XSRF-TOKEN", antiForgeryCookies["XSRF-TOKEN"]);
+            CookiesHelper.PutCookiesOnRequest(httpRequestMessage, antiForgeryCookies);
 
             return await _httpClient.SendAsync(httpRequestMessage);
         }
