@@ -67,12 +67,20 @@ describe('DynamicControlComponent', () => {
         expect(hostDebugElement.query(By.css(`span`)).nativeElement.textContent).toBe(testMessage);
     });
 
-    it(`Renders label`, () => {
+    it(`Renders label if display name is defined`, () => {
         dynamicControl.displayName = testDisplayName;
 
         stubHostFixture.detectChanges();
 
         expect(hostDebugElement.query(By.css(`label`)).nativeElement.textContent).toBe(testDisplayName);
+    });
+
+    it(`Does not render label if display name is not defined`, () => {
+        dynamicControl.displayName = undefined;
+
+        stubHostFixture.detectChanges();
+
+        expect(hostDebugElement.query(By.css(`label`))).toBe(null);
     });
 
     it(`Renders pending notification`, () => {
