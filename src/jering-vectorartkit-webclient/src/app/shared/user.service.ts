@@ -14,7 +14,6 @@ export class UserService {
     private _logOffRelativeUrl = `Account/LogOff`;
     private _storageName = `vakUsername`;
 
-    returnUrl: string;
     username: string;
     loggedIn: boolean;
 
