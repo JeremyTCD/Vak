@@ -12,12 +12,13 @@ namespace Jering.VectorArtKit.WebApi.FormModels
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_Submit), typeof(Strings))]
     public class TwoFactorLogInFormModel
     {
-        [ValidateLength(6, nameof(Strings.ErrorMessage_TwoFactorCode_Invalid), typeof(Strings))]
         [ValidateRequired(nameof(Strings.ErrorMessage_TwoFactorCode_Required), typeof(Strings))]
-        [DynamicControl("input", nameof(Strings.DisplayName_TwoFactorCode), typeof(Strings), 1)]
+        [DynamicControl("input", nameof(Strings.DisplayName_TwoFactorCode), typeof(Strings), 0)]
         [DynamicControlProperty("type", "text")]
         public string Code { get; set; }
 
+        [DynamicControl("input", order: 1)]
+        [DynamicControlProperty("type", "hidden")]
         public bool IsPersistent { get; set; }
     }
 }
