@@ -1,5 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
-import { Router } from '@angular/router/index';
+import { Router, ActivatedRoute, ActivatedRouteSnapshot } from '@angular/router/index';
 import { Response } from '@angular/http';
 
 import { UserService } from '../shared/user.service';
@@ -12,17 +12,17 @@ export class LogInComponent {
     static formModelName = `LogIn`;
     static formSubmitRelativeUrl = `Account/LogIn`;
 
-    constructor(private _router: Router, private _userService: UserService) {
+    constructor(private _router: Router, private _userService: UserService,
+        private _activatedRoute: ActivatedRoute) {
     }
 
     onSubmitSuccess(responseModel: LogInResponseModel): void {
+        let returnUrl = this._activatedRoute.snapshot.params[`returnUrl`];
+
         if (responseModel.twoFactorRequired) {
-            this._router.navigate([`/login/twofactor`]);
+            this._router.navigate([`/login/twofactorlogin`, { isPersistent: responseModel.isPersistent, returnUrl: returnUrl }]);
         }
         this._userService.logIn(responseModel.username, responseModel.isPersistent);
-        // navigate to return url or to home
-        let returnUrl = this._userService.returnUrl;
-        this._userService.returnUrl = null;
         this._router.navigate([returnUrl ? returnUrl : `/home`]);
     }
 }

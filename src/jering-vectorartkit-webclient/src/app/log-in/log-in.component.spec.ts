@@ -2,11 +2,11 @@
 import { Response } from '@angular/http';
 import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
-import { Router } from '@angular/router/index';
+import { Router, ActivatedRoute } from '@angular/router/index';
 
 import { LogInResponseModel } from '../shared/response-models/log-in.response-model';
 import { LogInComponent } from './log-in.component';
-import { StubRouter } from '../../testing/router-stubs';
+import { StubRouter, StubActivatedRoute } from '../../testing/router-stubs';
 import { UserService } from '../shared/user.service';
 
 let testUsername = `testUsername`;
@@ -18,13 +18,15 @@ let testLogInResponseModel: LogInResponseModel;
 let stubDynamicFormComponent: StubDynamicFormComponent;
 let stubRouter: StubRouter;
 let stubUserService: StubUserService;
+let stubActivatedRoute: StubActivatedRoute;
 
 describe('LogInComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [LogInComponent, StubDynamicFormComponent],
             providers: [{ provide: Router, useClass: StubRouter },
-            { provide: UserService, useClass: StubUserService }]
+                { provide: UserService, useClass: StubUserService },
+                { provide: ActivatedRoute, useClass: StubActivatedRoute }]
         }).compileComponents();
     }));
 
@@ -34,6 +36,7 @@ describe('LogInComponent', () => {
         logInDebugElement = logInComponentFixture.debugElement;
         stubRouter = TestBed.get(Router) as StubRouter;
         stubUserService = TestBed.get(UserService) as StubUserService;
+        stubActivatedRoute = TestBed.get(ActivatedRoute) as StubActivatedRoute;
     });
 
     it(`Listens to child DynamicFormComponent output`, () => {
@@ -47,13 +50,17 @@ describe('LogInComponent', () => {
     });
 
     describe(`onSubmitSuccess`, () => {
-        it(`Navigates to /Login/twofactor if two factor authentication is required`, () => {
-            testLogInResponseModel = { twoFactorRequired: true };
+        beforeEach(() => {
+            stubActivatedRoute.testParams = { returnUrl: testReturnUrl };
+        });
+
+        it(`Navigates to /Login/twofactorlogin if two factor authentication is required`, () => {
+            testLogInResponseModel = { twoFactorRequired: true, isPersistent: false };
             spyOn(stubRouter, `navigate`);
 
             logInComponent.onSubmitSuccess(testLogInResponseModel);
 
-            expect(stubRouter.navigate).toHaveBeenCalledWith([`/login/twofactor`]);
+            expect(stubRouter.navigate).toHaveBeenCalledWith([`/login/twofactorlogin`, { isPersistent: false, returnUrl: testReturnUrl }]);
         });
 
         describe(`If two factor authentication is not required`, () => {
@@ -66,9 +73,9 @@ describe('LogInComponent', () => {
                 expect(stubUserService.logIn).toHaveBeenCalledWith(testUsername, true);
             });
 
-            it(`Navigates to home if UserService.returnUrl is null`, () => {
+            it(`Navigates to home if ActivatedRoute.snapshot.params.returnUrl is null`, () => {
+                stubActivatedRoute.testParams = { returnUrl: null };
                 testLogInResponseModel = { twoFactorRequired: false};
-                stubUserService.returnUrl = null;
                 spyOn(stubRouter, `navigate`);
                 spyOn(stubUserService, `logIn`);
 
@@ -77,9 +84,8 @@ describe('LogInComponent', () => {
                 expect(stubRouter.navigate).toHaveBeenCalledWith([`/home`]);
             });
 
-            it(`Navigates to return url if UserService.returnUrl is defined`, () => {
+            it(`Navigates to return url if ActivatedRoute.snapshot.params.returnUrl is defined`, () => {
                 testLogInResponseModel = { twoFactorRequired: false };
-                stubUserService.returnUrl = testReturnUrl;
                 spyOn(stubRouter, `navigate`);
                 spyOn(stubUserService, `logIn`);
 
