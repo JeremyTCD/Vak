@@ -99,11 +99,11 @@ namespace Jering.DynamicForms
                     TagName = dynamicControlAttribute.TagName,
                     ValidatorResponseModels = validatorResponseModel,
                     AsyncValidatorResponseModel = asyncValidatorResponseModel,
-                    DisplayName = dynamicControlAttribute.
+                    DisplayName = dynamicControlAttribute.DisplayNameResourceName != null ? dynamicControlAttribute.
                                     ResourceType.
                                     GetTypeInfo().
                                     GetDeclaredProperty(dynamicControlAttribute.DisplayNameResourceName).
-                                    GetValue(null) as string,
+                                    GetValue(null) as string : null,
                     Properties = properties
                 };
             }

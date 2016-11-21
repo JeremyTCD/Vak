@@ -38,8 +38,8 @@ namespace Jering.DynamicForms
         /// <param name="order"></param>
         public DynamicControlAttribute(
             string tagName,
-            string displayNameResourceName,
-            Type resourceType,
+            string displayNameResourceName = null,
+            Type resourceType = null,
             int order = 0)
         {
             TagName = tagName;
