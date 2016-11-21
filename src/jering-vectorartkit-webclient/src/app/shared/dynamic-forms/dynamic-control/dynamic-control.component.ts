@@ -26,7 +26,8 @@ export class DynamicControlComponent implements AfterViewInit {
         let type = this.dynamicControl.properties[`type`];
         if (this.dynamicControl.tagName === `input`) {
             if (type === `email` ||
-                type === `password`) {
+                type === `password` ||
+                type === `text`) {
                 // onInput called with no this context?
                 this._renderer.listen(this.control.nativeElement, `input`, (event) => this.dynamicControl.onInput(event));
                 this._renderer.listen(this.control.nativeElement, `blur`, (event) => this.dynamicControl.onBlur(event));
