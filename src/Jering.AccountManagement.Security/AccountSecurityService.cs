@@ -76,12 +76,12 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Signs in specified <paramref name="account"/> using specified <paramref name="authenticationProperties"/>.
+        /// Logs in specified <paramref name="account"/> using specified <paramref name="authenticationProperties"/>.
         /// </summary>
         /// <param name="account"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns></returns>
-        public virtual async Task SignInAsync(TAccount account, AuthenticationProperties authenticationProperties)
+        public virtual async Task LogInAsync(TAccount account, AuthenticationProperties authenticationProperties)
         {
             ClaimsPrincipal claimsPrincipal = await _claimsPrincipalService.CreateClaimsPrincipalAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme, authenticationProperties);
             authenticationProperties.AllowRefresh = true;
@@ -93,11 +93,11 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Refreshes sign in for <paramref name="account"/>.
+        /// Refreshes log in for <paramref name="account"/>.
         /// </summary>
         /// <param name="account"></param>
         /// <returns></returns>
-        public virtual async Task RefreshSignInAsync(TAccount account)
+        public virtual async Task RefreshLogInAsync(TAccount account)
         {
             _claimsPrincipalService.UpdateClaimsPrincipal(account, _httpContext.User);
 
@@ -110,76 +110,76 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Signs in account with specified <paramref name="email"/> and <paramref name="password"/> using 
+        /// Logs in account with specified <paramref name="email"/> and <paramref name="password"/> using 
         /// specified <paramref name="authenticationProperties"/>.
         /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns>
-        /// <see cref="PasswordSignInResult{TAccount}"/> with <see cref="PasswordSignInResult{TAccount}.Failed"/> set to true if credentials are invalid. 
-        /// <see cref="PasswordSignInResult{TAccount}"/> with <see cref="PasswordSignInResult{TAccount}.TwoFactorRequired"/> set to true if two factor is required. 
-        /// <see cref="PasswordSignInResult{TAccount}"/> with <see cref="PasswordSignInResult{TAccount}.Succeeded"/> set to true if application sign in is complete. 
+        /// <see cref="PasswordLogInResult{TAccount}"/> with <see cref="PasswordLogInResult{TAccount}.Failed"/> set to true if credentials are invalid. 
+        /// <see cref="PasswordLogInResult{TAccount}"/> with <see cref="PasswordLogInResult{TAccount}.TwoFactorRequired"/> set to true if two factor is required. 
+        /// <see cref="PasswordLogInResult{TAccount}"/> with <see cref="PasswordLogInResult{TAccount}.Succeeded"/> set to true if application sign in is complete. 
         /// </returns>
-        public virtual async Task<PasswordSignInResult<TAccount>> PasswordSignInAsync(string email, string password, AuthenticationProperties authenticationProperties)
+        public virtual async Task<PasswordLogInResult<TAccount>> PasswordLogInAsync(string email, string password, AuthenticationProperties authenticationProperties)
         {
             TAccount account = await _accountRepository.GetAccountByEmailAndPasswordAsync(email, password);
             if (account != null)
             {
                 if (account.TwoFactorEnabled)
                 {
-                    return PasswordSignInResult<TAccount>.GetTwoFactorRequiredResult(account);
+                    return PasswordLogInResult<TAccount>.GetTwoFactorRequiredResult(account);
                 }
 
-                await SignInAsync(account, authenticationProperties);
-                return PasswordSignInResult<TAccount>.GetSucceededResult();
+                await LogInAsync(account, authenticationProperties);
+                return PasswordLogInResult<TAccount>.GetSucceededResult();
             }
 
-            return PasswordSignInResult<TAccount>.GetFailedResult();
+            return PasswordLogInResult<TAccount>.GetFailedResult();
         }
 
         /// <summary>
-        /// Signs out account that sent request. 
+        /// Logs off account that sent request. 
         /// </summary>
         /// <returns>A <see cref="Task"/>.</returns>
-        public virtual async Task SignOutAsync()
+        public virtual async Task LogOffAsync()
         {
             await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
             await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
         }
 
         /// <summary>
-        /// Gets email account of signed in account using <see cref="HttpContext.User"/> .
+        /// Gets email account of logged in account using <see cref="HttpContext.User"/> .
         /// </summary>
         /// <returns>
         /// Email account if it exists, null otherwise.
         /// </returns>
-        public virtual string GetSignedInAccountEmail()
+        public virtual string GetLoggedInAccountEmail()
         {
             return _httpContext.User.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType)?.Value;
         }
 
         /// <summary>
-        /// Gets signed in account for <see cref="HttpContext.User"/>.
+        /// Gets logged in account for <see cref="HttpContext.User"/>.
         /// </summary>
         /// <returns>
-        /// An account if there is a signed in account.
+        /// An account if there is a logged in account.
         /// Null otherwise.
         /// </returns>
-        public virtual async Task<TAccount> GetSignedInAccountAsync()
+        public virtual async Task<TAccount> GetLoggedInAccountAsync()
         {
-            return await GetSignedInAccountAsync(_httpContext.User);
+            return await GetLoggedInAccountAsync(_httpContext.User);
         }
 
         /// <summary>
-        /// Gets signed in account for <param name="claimsPrincipal"></param>. This overload must be used if <see cref="HttpContext.User"/> 
+        /// Gets logged in account for <param name="claimsPrincipal"></param>. This overload must be used if <see cref="HttpContext.User"/> 
         /// has not been set, for example before authentication is complete.
         /// </summary>
         /// <returns>
-        /// An account if there is a signed in account.
+        /// An account if there is a logged in account.
         /// Null otherwise.
         /// </returns>
-        public virtual async Task<TAccount> GetSignedInAccountAsync(ClaimsPrincipal claimsPrincipal)
+        public virtual async Task<TAccount> GetLoggedInAccountAsync(ClaimsPrincipal claimsPrincipal)
         {
             if (claimsPrincipal?.Identity?.AuthenticationType == _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme)
             {
@@ -197,14 +197,14 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="token"></param>
         /// <returns>
-        /// <see cref="ConfirmEmailResult.Failed"/> if there is no signed in account.
+        /// <see cref="ConfirmEmailResult.Failed"/> if there is no logged in account.
         /// <see cref="ConfirmEmailResult.InvalidToken"/> if token is invalid.
         /// <see cref="ConfirmEmailResult.Failed"/> if unable to update account email confirmed. 
         /// <see cref="ConfirmEmailResult.Succeeded"/> if <paramref name="token"/> is valid and EmailConfirmed updates successfully.
         /// </returns>
         public virtual async Task<ConfirmEmailResult> ConfirmEmailAsync(string token)
         {
-            TAccount account = await GetSignedInAccountAsync();
+            TAccount account = await GetLoggedInAccountAsync();
 
             if (account == null)
             {
@@ -295,16 +295,16 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Validates two factor token. If valid, peforms application sign for user specified by two factor cookie.
+        /// Validates two factor token. If valid, peforms application log in for user specified by two factor cookie.
         /// </summary>
         /// <param name="token"></param>
         /// <param name="isPersistent"></param>
         /// <returns>
-        /// <see cref="TwoFactorSignInResult"/> with <see cref="TwoFactorSignInResult.Failed"/> set to true if unable to retrieve two factor account 
+        /// <see cref="TwoFactorLogInResult{TAccount}"/> with <see cref="TwoFactorLogInResult{TAccount}.Failed"/> set to true if unable to retrieve two factor account 
         /// or <paramref name="token"/> is invalid.
-        /// <see cref="TwoFactorSignInResult"/> with <see cref="TwoFactorSignInResult.Succeeded"/> set to true if <paramref name="token"/> is valid. 
+        /// <see cref="TwoFactorLogInResult{TAccount}"/> with <see cref="TwoFactorLogInResult{TAccount}.Succeeded"/> set to true if <paramref name="token"/> is valid. 
         /// </returns>
-        public virtual async Task<TwoFactorSignInResult> TwoFactorSignInAsync(string token, bool isPersistent)
+        public virtual async Task<TwoFactorLogInResult<TAccount>> TwoFactorLogInAsync(string token, bool isPersistent)
         {
             TAccount account = await GetTwoFactorAccountAsync();
             if (account != null)
@@ -313,17 +313,17 @@ namespace Jering.AccountManagement.Security
                 {
                     // Cleanup two factor cookie
                     await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
-                    await SignInAsync(account, new AuthenticationProperties() { IsPersistent = isPersistent });
+                    await LogInAsync(account, new AuthenticationProperties() { IsPersistent = isPersistent });
 
-                    return TwoFactorSignInResult.GetSucceededResult();
+                    return TwoFactorLogInResult<TAccount>.GetSucceededResult(account);
                 }
             }
 
-            return TwoFactorSignInResult.GetFailedResult();
+            return TwoFactorLogInResult<TAccount>.GetFailedResult();
         }
 
         /// <summary>
-        /// Creates an account with the specified <paramref name="email"/> and <paramref name="password"/>. If successful, signs in account and sends
+        /// Creates an account with the specified <paramref name="email"/> and <paramref name="password"/>. If successful, logs in account and sends
         /// confirmation email.
         /// </summary>
         /// <param name="email"></param>
@@ -342,7 +342,7 @@ namespace Jering.AccountManagement.Security
                     throw new NullReferenceException(nameof(account));
                 }
 
-                await SignInAsync(account, new AuthenticationProperties { IsPersistent = true });
+                await LogInAsync(account, new AuthenticationProperties { IsPersistent = true });
 
                 return CreateAccountResult<TAccount>.GetSucceededResult(account);
             }

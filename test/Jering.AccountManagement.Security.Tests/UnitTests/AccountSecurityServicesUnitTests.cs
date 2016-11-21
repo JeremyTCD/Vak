@@ -15,7 +15,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
     public class AccountSecurityServiceUnitTests
     {
         [Fact]
-        public async Task ApplicationPasswordSignInAsync_ReturnsApplicationSignInResultFailedIfCredentialsAreInvalid()
+        public async Task ApplicationPasswordLogInAsync_ReturnsApplicationLogInResultFailedIfCredentialsAreInvalid()
         {
             // Arrange
             Mock<IAccountRepository<IAccount>> mockAccountRepository = new Mock<IAccountRepository<IAccount>>();
@@ -23,46 +23,46 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityService<IAccount> accountSecurityService = new AccountSecurityService<IAccount>(null, null, null, mockAccountRepository.Object, null);
 
             // Act
-            PasswordSignInResult<IAccount> applicationSignInResult = await accountSecurityService.PasswordSignInAsync("", "", null);
+            PasswordLogInResult<IAccount> applicationLogInResult = await accountSecurityService.PasswordLogInAsync("", "", null);
 
             // Assert
-            Assert.True(applicationSignInResult.Failed);
+            Assert.True(applicationLogInResult.Failed);
             mockAccountRepository.VerifyAll();
         }
 
         [Fact]
-        public async Task ApplicationPasswordSignInAsync_ReturnsApplicationSignInResultSucceededIfSignInSucceeds()
+        public async Task ApplicationPasswordLogInAsync_ReturnsApplicationLogInResultSucceededIfLogInSucceeds()
         {
             // Arrange
             Account account = new Account() { EmailVerified = true, TwoFactorEnabled = false };
             Mock<IAccountRepository<IAccount>> mockAccountRepository = new Mock<IAccountRepository<IAccount>>();
             mockAccountRepository.Setup(a => a.GetAccountByEmailAndPasswordAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(account);
             Mock<AccountSecurityService<IAccount>> mockAccountSecurityService = new Mock<AccountSecurityService<IAccount>>(null, null, null, mockAccountRepository.Object, null);
-            mockAccountSecurityService.Setup(a => a.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), null)).CallBase();
+            mockAccountSecurityService.Setup(a => a.PasswordLogInAsync(It.IsAny<string>(), It.IsAny<string>(), null)).CallBase();
 
             // Act
-            PasswordSignInResult<IAccount> applicationSignInResult = await mockAccountSecurityService.Object.PasswordSignInAsync("", "", null);
+            PasswordLogInResult<IAccount> applicationLogInResult = await mockAccountSecurityService.Object.PasswordLogInAsync("", "", null);
 
             // Assert
-            Assert.True(applicationSignInResult.Succeeded);
+            Assert.True(applicationLogInResult.Succeeded);
             mockAccountRepository.VerifyAll();
         }
 
         [Fact]
-        public async Task ApplicationPasswordSignInAsync_ReturnsApplicationSignInResultTwoFactorRequiredIfTwoFactorIsRequired()
+        public async Task ApplicationPasswordLogInAsync_ReturnsApplicationLogInResultTwoFactorRequiredIfTwoFactorIsRequired()
         {
             // Arrange
             Account account = new Account() { EmailVerified = true, TwoFactorEnabled = true };
             Mock<IAccountRepository<IAccount>> mockAccountRepository = new Mock<IAccountRepository<IAccount>>();
             mockAccountRepository.Setup(a => a.GetAccountByEmailAndPasswordAsync(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(account);
             Mock<AccountSecurityService<IAccount>> mockAccountSecurityService = new Mock<AccountSecurityService<IAccount>>(null, null, null, mockAccountRepository.Object, null);
-            mockAccountSecurityService.Setup(a => a.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), null)).CallBase();
+            mockAccountSecurityService.Setup(a => a.PasswordLogInAsync(It.IsAny<string>(), It.IsAny<string>(), null)).CallBase();
 
             // Act
-            PasswordSignInResult<IAccount> applicationSignInResult = await mockAccountSecurityService.Object.PasswordSignInAsync("", "", null);
+            PasswordLogInResult<IAccount> applicationLogInResult = await mockAccountSecurityService.Object.PasswordLogInAsync("", "", null);
 
             // Assert
-            Assert.True(applicationSignInResult.TwoFactorRequired);
+            Assert.True(applicationLogInResult.TwoFactorRequired);
             mockAccountRepository.VerifyAll();
         }
 
@@ -180,7 +180,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         }
 
         [Fact]
-        public async Task TwoFactorSignInAsync_ReturnsTwoFactorSignInResultFailedIfUnableToRetrieveTwoFactorAccount()
+        public async Task TwoFactorLogInAsync_ReturnsTwoFactorLogInResultFailedIfUnableToRetrieveTwoFactorAccount()
         {
             // Arrange
             Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null, null, null, null, null);
@@ -188,15 +188,15 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockAccountSecurityService.CallBase = true;
 
             // Act
-            TwoFactorSignInResult twoFactorSignInResult = await mockAccountSecurityService.Object.TwoFactorSignInAsync(null, false);
+            TwoFactorLogInResult<Account> twoFactorLogInResult = await mockAccountSecurityService.Object.TwoFactorLogInAsync(null, false);
 
             // Assert
-            Assert.True(twoFactorSignInResult.Failed);
+            Assert.True(twoFactorLogInResult.Failed);
             mockAccountSecurityService.VerifyAll();
         }
 
         [Fact]
-        public async Task TwoFactorSignInAsync_ReturnsTwoFactorSignInResultSucceededIfTokenIsValid()
+        public async Task TwoFactorLogInAsync_ReturnsTwoFactorLogInResultSucceededIfTokenIsValid()
         {
             // Arrange           
             Mock<TotpTokenService<Account>> mockTotpTokenService = new Mock<TotpTokenService<Account>>();
@@ -221,14 +221,14 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 null);
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Setup(a => a.GetTwoFactorAccountAsync()).ReturnsAsync(new Account());
-            mockAccountSecurityService.Setup(a => a.SignInAsync(It.IsAny<Account>(), It.IsAny<AuthenticationProperties>())).Returns(Task.CompletedTask);
+            mockAccountSecurityService.Setup(a => a.LogInAsync(It.IsAny<Account>(), It.IsAny<AuthenticationProperties>())).Returns(Task.CompletedTask);
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.TotpTokenService, mockTotpTokenService.Object);
 
             // Act
-            TwoFactorSignInResult twoFactorSignInResult = await mockAccountSecurityService.Object.TwoFactorSignInAsync("", false);
+            TwoFactorLogInResult<Account> twoFactorLogInResult = await mockAccountSecurityService.Object.TwoFactorLogInAsync("", false);
 
             // Assert
-            Assert.True(twoFactorSignInResult.Succeeded);
+            Assert.True(twoFactorLogInResult.Succeeded);
             mockAccountSecurityService.VerifyAll();
             mockHttpContextAccessor.VerifyAll();
             mockHttpContext.VerifyAll();
@@ -238,7 +238,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         }
 
         [Fact]
-        public async Task TwoFactorSignInAsync_ReturnsTwoFactorSignInResultFailedIfTokenIsInvalid()
+        public async Task TwoFactorLogInAsync_ReturnsTwoFactorLogInResultFailedIfTokenIsInvalid()
         {
             // Arrange           
             Mock<TotpTokenService<Account>> mockTotpTokenService = new Mock<TotpTokenService<Account>>();
@@ -255,10 +255,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.TotpTokenService, mockTotpTokenService.Object);
 
             // Act
-            TwoFactorSignInResult twoFactorSignInResult = await mockAccountSecurityService.Object.TwoFactorSignInAsync("", false);
+            TwoFactorLogInResult<Account> twoFactorLogInResult = await mockAccountSecurityService.Object.TwoFactorLogInAsync("", false);
 
             // Assert
-            Assert.True(twoFactorSignInResult.Failed);
+            Assert.True(twoFactorLogInResult.Failed);
             mockAccountSecurityService.VerifyAll();
             mockTotpTokenService.VerifyAll();
         }
@@ -268,7 +268,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         {
             // Arrange
             Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null, null, null, null, null);
-            mockAccountSecurityService.Setup(a => a.GetSignedInAccountAsync()).ReturnsAsync(null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountAsync()).ReturnsAsync(null);
             mockAccountSecurityService.CallBase = true;
 
             // Act
@@ -287,7 +287,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockTokenService.Setup(t => t.ValidateTokenAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Account>())).ReturnsAsync(false);
 
             Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null, null, null, null, null);
-            mockAccountSecurityService.Setup(a => a.GetSignedInAccountAsync()).ReturnsAsync(new Account());
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountAsync()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.DataProtectionTokenService, mockTokenService.Object);
 
@@ -318,7 +318,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 mockOptions.Object,
                 mockAccountRepository.Object,
                 null);
-            mockAccountSecurityService.Setup(a => a.GetSignedInAccountAsync()).ReturnsAsync(new Account());
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountAsync()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.DataProtectionTokenService, mockTokenService.Object);
 
@@ -351,7 +351,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 mockOptions.Object,
                 mockAccountRepository.Object,
                 null);
-            mockAccountSecurityService.Setup(a => a.GetSignedInAccountAsync()).ReturnsAsync(new Account());
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountAsync()).ReturnsAsync(new Account());
             mockAccountSecurityService.CallBase = true;
             mockAccountSecurityService.Object.RegisterTokenProvider(TokenServiceOptions.DataProtectionTokenService, mockTokenService.Object);
 
