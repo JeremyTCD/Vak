@@ -1,8 +1,10 @@
-<label [attr.for]="dynamicControl.name">{{dynamicControl.displayName}}</label>
+<div *ngIf="dynamicControl.displayName">
+    <label [attr.for]="dynamicControl.name">{{dynamicControl.displayName}}</label>
+</div>
 <div [ngSwitch]="dynamicControl.tagName">
     <input #control *ngSwitchCase="'input'">
-    <!--TODO incomplete-->
     <select #control *ngSwitchCase="'select'">
+        <!-- TODO incomplete -->
         <option *ngFor="let opt of dynamicControl.options"></option>
     </select>
 </div>
