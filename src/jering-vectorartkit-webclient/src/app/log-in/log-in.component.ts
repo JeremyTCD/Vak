@@ -2,7 +2,6 @@ import { Component, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router/index';
 import { Response } from '@angular/http';
 
-import { environment } from '../../environments/environment';
 import { UserService } from '../shared/user.service';
 import { LogInResponseModel} from '../shared/response-models/log-in.response-model';
 
