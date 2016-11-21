@@ -78,6 +78,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Submit.
+        /// </summary>
+        public static string ButtonText_Submit {
+            get {
+                return ResourceManager.GetString("ButtonText_Submit", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Alternative email address.
         /// </summary>
         public static string DisplayName_AlternativeEmail {
@@ -137,6 +146,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         public static string DisplayName_TwoFactor {
             get {
                 return ResourceManager.GetString("DisplayName_TwoFactor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Code.
+        /// </summary>
+        public static string DisplayName_TwoFactorCode {
+            get {
+                return ResourceManager.GetString("DisplayName_TwoFactorCode", resourceCulture);
             }
         }
         
@@ -344,6 +362,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         public static string ErrorMessage_TwoFactorCode_Invalid {
             get {
                 return ResourceManager.GetString("ErrorMessage_TwoFactorCode_Invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Code is required..
+        /// </summary>
+        public static string ErrorMessage_TwoFactorCode_Required {
+            get {
+                return ResourceManager.GetString("ErrorMessage_TwoFactorCode_Required", resourceCulture);
             }
         }
         

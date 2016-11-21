@@ -282,4 +282,13 @@
   <data name="ButtonText_SignUp" xml:space="preserve">
     <value>Sign up</value>
   </data>
+  <data name="ButtonText_Submit" xml:space="preserve">
+    <value>Submit</value>
+  </data>
+  <data name="DisplayName_TwoFactorCode" xml:space="preserve">
+    <value>Code</value>
+  </data>
+  <data name="ErrorMessage_TwoFactorCode_Required" xml:space="preserve">
+    <value>Code is required.</value>
+  </data>
 </root>
