@@ -368,6 +368,18 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
+        public async Task SendResetPasswordEmail_Returns200OkIfEmailIsInvalid()
+        {
+            await _resetAccountsTable();
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SendResetPasswordEmail(_testEmail);
+
+            // Assert
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+        }
+
+        [Fact]
         public async Task SendResetPasswordEmail_Returns400BadRequestWithErrorResponseModelIfModelStateIsInvalid()
         {
             // Arrange
@@ -406,21 +418,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             Assert.False(body.ExpectedError);
             Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
-        }
-
-        [Fact]
-        public async Task SendResetPasswordEmail_Returns400BadRequestWithErrorResponseModelIfEmailIsInvalid()
-        {
-            await _resetAccountsTable();
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SendResetPasswordEmail(_testEmail);
-
-            // Assert
-            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.True(body.ExpectedError);
-            Assert.Equal((body.ModelState["Email"] as JArray)[0], Strings.ErrorMessage_Email_Invalid);
         }
 
         //[Fact]

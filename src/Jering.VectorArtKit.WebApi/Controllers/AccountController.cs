@@ -196,8 +196,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// <returns>
         /// 400 BadRequest with <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 400 BadRequest with <see cref="ErrorResponseModel"> if model state is invalid. 
-        /// 400 BadRequest with <see cref="ErrorResponseModel"> if email is invalid. 
         /// 200 OK and sends reset password email if email is valid.
+        /// 200 OK if email is invalid.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -210,11 +210,9 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 if (account != null)
                 {
                     await SendResetPasswordEmail(account);
-
-                    return Ok();
                 }
 
-                ModelState.AddModelError(nameof(SendResetPasswordEmailFormModel.Email), Strings.ErrorMessage_Email_Invalid);
+                return Ok();
             }
 
             return BadRequest(new ErrorResponseModel()
