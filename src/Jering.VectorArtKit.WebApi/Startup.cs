@@ -2,6 +2,7 @@
 using Jering.AccountManagement.Security;
 using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.BusinessModels;
+using Jering.VectorArtKit.WebApi.Options;
 using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Microsoft.AspNetCore.Antiforgery;
@@ -62,12 +63,21 @@ namespace Jering.VectorArtKit.WebApi
             {
                 services.AddScoped(_ => new SqlConnection(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
                 services.AddDevelopmentEmailSender();
+                services.Configure<UrlOptions>(options =>
+                {
+                    options.ClientUrl = "http://localhost:4200/";
+                });
             }
             else
             {
                 // TODO different connection string for release
                 services.AddScoped(_ => new SqlConnection(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
                 services.AddEmailSender();
+                services.Configure<UrlOptions>(options =>
+                {
+                    // TODO
+                    options.ClientUrl = "http://localhost:4200/";
+                });
             }
         }
 
