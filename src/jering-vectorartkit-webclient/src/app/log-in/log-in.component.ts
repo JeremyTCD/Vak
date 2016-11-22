@@ -20,7 +20,7 @@ export class LogInComponent {
         let returnUrl = this._activatedRoute.snapshot.params[`returnUrl`];
 
         if (responseModel.twoFactorRequired) {
-            this._router.navigate([`/login/twofactorlogin`, { isPersistent: responseModel.isPersistent, returnUrl: returnUrl }]);
+            this._router.navigate([`/login/twofactorauth`, { isPersistent: responseModel.isPersistent, returnUrl: returnUrl }]);
         }
         this._userService.logIn(responseModel.username, responseModel.isPersistent);
         this._router.navigate([returnUrl ? returnUrl : `/home`]);

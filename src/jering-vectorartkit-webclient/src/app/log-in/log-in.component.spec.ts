@@ -53,13 +53,13 @@ describe('LogInComponent', () => {
             stubActivatedRoute.testParams = { returnUrl: testReturnUrl };
         });
 
-        it(`Navigates to /Login/twofactorlogin if two factor authentication is required`, () => {
+        it(`Navigates to /Login/TwoFactorAuth if two factor authentication is required`, () => {
             testLogInResponseModel = { twoFactorRequired: true, isPersistent: false };
             spyOn(stubRouter, `navigate`);
 
             logInComponent.onSubmitSuccess(testLogInResponseModel);
 
-            expect(stubRouter.navigate).toHaveBeenCalledWith([`/login/twofactorlogin`, { isPersistent: false, returnUrl: testReturnUrl }]);
+            expect(stubRouter.navigate).toHaveBeenCalledWith([`/login/twofactorauth`, { isPersistent: false, returnUrl: testReturnUrl }]);
         });
 
         describe(`If two factor authentication is not required`, () => {
