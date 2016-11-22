@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace Jering.VectorArtKit.WebApi.FormModels
 {
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_LogIn), typeof(Strings))]
-    public class ForgotPasswordFormModel
+    public class SendResetPasswordEmailFormModel
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_Email_Required), typeof(Strings))]
         [ValidateEmailAddress(nameof(Strings.ErrorMessage_Email_Invalid), typeof(Strings))]
