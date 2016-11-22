@@ -2,7 +2,8 @@
 import { Routes, RouterModule } from '@angular/router';
 
 import { LogInComponent } from './log-in.component';
-import { TwoFactorLogInComponent } from './two-factor-log-in/two-factor-log-in.component';
+import { TwoFactorAuthComponent } from './two-factor-auth/two-factor-auth.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { DynamicFormsResolve } from '../shared/dynamic-forms/dynamic-forms-resolve';
 
 const logInRoutes: Routes = [
@@ -18,11 +19,22 @@ const logInRoutes: Routes = [
         }
     },
     {
-        path: 'twofactorlogin',
-        component: TwoFactorLogInComponent,
+        path: 'twofactorauth',
+        component: TwoFactorAuthComponent,
         data: {
-            formModelName: TwoFactorLogInComponent.formModelName,
-            formSubmitRelativeUrl: TwoFactorLogInComponent.formSubmitRelativeUrl
+            formModelName: TwoFactorAuthComponent.formModelName,
+            formSubmitRelativeUrl: TwoFactorAuthComponent.formSubmitRelativeUrl
+        },
+        resolve: {
+            dynamicForm: DynamicFormsResolve
+        }
+    },
+    {
+        path: 'forgotpassword',
+        component: ForgotPasswordComponent,
+        data: {
+            formModelName: ForgotPasswordComponent.formModelName,
+            formSubmitRelativeUrl: ForgotPasswordComponent.formSubmitRelativeUrl
         },
         resolve: {
             dynamicForm: DynamicFormsResolve
