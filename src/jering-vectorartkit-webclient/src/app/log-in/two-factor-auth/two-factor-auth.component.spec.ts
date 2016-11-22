@@ -5,7 +5,7 @@ import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { Router, ActivatedRoute } from '@angular/router/index';
 
 import { TwoFactorLogInResponseModel } from '../../shared/response-models/two-factor-log-in.response-model';
-import { TwoFactorLogInComponent } from './two-factor-log-in.component';
+import { TwoFactorAuthComponent } from './two-factor-auth.component';
 import { StubRouter, StubActivatedRoute } from '../../../testing/router-stubs';
 import { UserService } from '../../shared/user.service';
 import { DynamicForm } from '../../shared/dynamic-forms/dynamic-form/dynamic-form';
@@ -13,20 +13,20 @@ import { DynamicForm } from '../../shared/dynamic-forms/dynamic-form/dynamic-for
 let testIsPersistent = true;
 let testUsername = `testUsername`;
 let testReturnUrl = `testReturnUrl`;
-let twoFactorLogInComponentFixture: ComponentFixture<TwoFactorLogInComponent>;
-let twoFactorLogInComponent: TwoFactorLogInComponent;
-let twoFactorLogInDebugElement: DebugElement;
-let testTwoFactorLogInResponseModel: TwoFactorLogInResponseModel;
+let twoFactorAuthComponentFixture: ComponentFixture<TwoFactorAuthComponent>;
+let twoFactorAuthComponent: TwoFactorAuthComponent;
+let twoFactorAuthDebugElement: DebugElement;
+let testTwoFactorAuthResponseModel: TwoFactorLogInResponseModel;
 let stubDynamicControl: StubDynamicControl;
 let stubDynamicFormComponent: StubDynamicFormComponent;
 let stubRouter: StubRouter;
 let stubUserService: StubUserService;
 let stubActivatedRoute: StubActivatedRoute;
 
-describe('TwoFactorLogInComponent', () => {
+describe('TwoFactorAuthComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [TwoFactorLogInComponent, StubDynamicFormComponent],
+            declarations: [TwoFactorAuthComponent, StubDynamicFormComponent],
             providers: [{ provide: Router, useClass: StubRouter },
                 { provide: UserService, useClass: StubUserService },
                 { provide: ActivatedRoute, useClass: StubActivatedRoute }]
@@ -34,44 +34,44 @@ describe('TwoFactorLogInComponent', () => {
     }));
 
     beforeEach(() => {
-        twoFactorLogInComponentFixture = TestBed.createComponent(TwoFactorLogInComponent);
-        twoFactorLogInComponent = twoFactorLogInComponentFixture.componentInstance;
-        twoFactorLogInDebugElement = twoFactorLogInComponentFixture.debugElement;
+        twoFactorAuthComponentFixture = TestBed.createComponent(TwoFactorAuthComponent);
+        twoFactorAuthComponent = twoFactorAuthComponentFixture.componentInstance;
+        twoFactorAuthDebugElement = twoFactorAuthComponentFixture.debugElement;
         stubRouter = TestBed.get(Router) as StubRouter;
         stubUserService = TestBed.get(UserService) as StubUserService;
         stubActivatedRoute = TestBed.get(ActivatedRoute) as StubActivatedRoute;
         stubActivatedRoute.testParams = { returnUrl: testReturnUrl, isPersistent: testIsPersistent };
-        stubDynamicFormComponent = twoFactorLogInComponent.dynamicFormComponent;
+        stubDynamicFormComponent = twoFactorAuthComponent.dynamicFormComponent;
         stubDynamicControl = { value: null };
         spyOn(stubDynamicFormComponent.dynamicForm, `getDynamicControl`).and.returnValue(stubDynamicControl);
     });
 
     it(`Uses ViewChild to retrieve child DynamicFormsComponent and sets its IsPersistent DynamicControl's value`, () => {
-        twoFactorLogInComponentFixture.detectChanges();
+        twoFactorAuthComponentFixture.detectChanges();
         expect(stubDynamicFormComponent).toBeDefined();
         expect(stubDynamicFormComponent.dynamicForm.getDynamicControl).toHaveBeenCalledWith(`IsPersistent`);
         expect(stubDynamicControl.value).toBe(testIsPersistent);
     });
 
     it(`Listens to child DynamicFormComponent output`, () => {
-        spyOn(twoFactorLogInComponent, `onSubmitSuccess`);
-        twoFactorLogInComponentFixture.detectChanges();
-        let anchorDebugElement = twoFactorLogInDebugElement.query(By.css(`a`));
+        spyOn(twoFactorAuthComponent, `onSubmitSuccess`);
+        twoFactorAuthComponentFixture.detectChanges();
+        let anchorDebugElement = twoFactorAuthDebugElement.query(By.css(`a`));
 
         anchorDebugElement.triggerEventHandler('click', null);
 
-        expect(twoFactorLogInComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
+        expect(twoFactorAuthComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
     });
 
     describe(`onSubmitSuccess`, () => {
         beforeEach(() => {
-            testTwoFactorLogInResponseModel = { username: testUsername, isPersistent: testIsPersistent }
+            testTwoFactorAuthResponseModel = { username: testUsername, isPersistent: testIsPersistent }
         });
 
         it(`Calls UseService.login`, () => {
             spyOn(stubUserService, `logIn`);
 
-            twoFactorLogInComponent.onSubmitSuccess(testTwoFactorLogInResponseModel);
+            twoFactorAuthComponent.onSubmitSuccess(testTwoFactorAuthResponseModel);
 
             expect(stubUserService.logIn).toHaveBeenCalledWith(testUsername, testIsPersistent);
         });
@@ -81,7 +81,7 @@ describe('TwoFactorLogInComponent', () => {
             spyOn(stubRouter, `navigate`);
             spyOn(stubUserService, `logIn`);
 
-            twoFactorLogInComponent.onSubmitSuccess(testTwoFactorLogInResponseModel);
+            twoFactorAuthComponent.onSubmitSuccess(testTwoFactorAuthResponseModel);
 
             expect(stubRouter.navigate).toHaveBeenCalledWith([`/home`]);
         });
@@ -90,7 +90,7 @@ describe('TwoFactorLogInComponent', () => {
             spyOn(stubRouter, `navigate`);
             spyOn(stubUserService, `logIn`);
 
-            twoFactorLogInComponent.onSubmitSuccess(testTwoFactorLogInResponseModel);
+            twoFactorAuthComponent.onSubmitSuccess(testTwoFactorAuthResponseModel);
 
             expect(stubRouter.navigate).toHaveBeenCalledWith([testReturnUrl]);
         });

@@ -8,9 +8,9 @@ import { TwoFactorLogInResponseModel } from '../../shared/response-models/two-fa
 import { DynamicFormComponent } from '../../shared/dynamic-forms/dynamic-form/dynamic-form.component';
 
 @Component({
-    templateUrl: './two-factor-log-in.component.html'
+    templateUrl: './two-factor-auth.component.html'
 })
-export class TwoFactorLogInComponent implements AfterViewInit {
+export class TwoFactorAuthComponent implements AfterViewInit {
     static formModelName = `TwoFactorLogIn`;
     static formSubmitRelativeUrl = `Account/TwoFactorLogIn`;
 
