@@ -15,7 +15,7 @@ import { Check } from '../../check';
 })
 export class DynamicFormComponent implements OnInit, OnDestroy {
     formSubmitRelativeUrl: string;
-    @Output() submitSuccess = new EventEmitter<Response>();
+    @Output() submitSuccess = new EventEmitter<any>();
 
     // create resolve guard to this does not need to be initialized
     dynamicForm: DynamicForm = new DynamicForm([], null, null);

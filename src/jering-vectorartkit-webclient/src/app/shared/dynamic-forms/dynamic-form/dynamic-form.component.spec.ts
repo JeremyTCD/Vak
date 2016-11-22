@@ -85,14 +85,14 @@ describe('DynamicFormComponent', () => {
         expect(dynamicFormComponent.dynamicForm).toBe(testDynamicForm);
     });
 
-    it(`Displays DynamicForm DynamicControls`, () => {
+    it(`Renders DynamicForm DynamicControls`, () => {
         stubHostFixture.detectChanges();
 
         expect(hostDebugElement.query(By.css(`dynamic-control`)).nativeElement.textContent).
             toBe(testControlName);
     });
 
-    it(`Displays DynamicForm messages`, () => {
+    it(`Renders DynamicForm messages`, () => {
         testDynamicForm.messages.push(testDynamicForm.message);
 
         stubHostFixture.detectChanges();
