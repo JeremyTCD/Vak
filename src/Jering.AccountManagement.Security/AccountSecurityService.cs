@@ -114,7 +114,7 @@ namespace Jering.AccountManagement.Security
         /// <returns>
         /// Token
         /// </returns>
-        public virtual async Task<string> GetTokenAsync(string tokenService, string purpose, TAccount account)
+        public virtual string GetToken(string tokenService, string purpose, TAccount account)
         {
             if (tokenService == null)
             {
@@ -129,7 +129,7 @@ namespace Jering.AccountManagement.Security
                 throw new ArgumentNullException(nameof(account));
             }
 
-            return await TokenServices[tokenService].GenerateTokenAsync(purpose, account);
+            return TokenServices[tokenService].GenerateToken(purpose, account);
         }
 
         /// <summary>
@@ -729,7 +729,7 @@ namespace Jering.AccountManagement.Security
                 throw new ArgumentNullException(nameof(linkDomain));
             }
 
-            string token = await GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, ResetPasswordTokenPurpose, account);
+            string token = GetToken(TokenServiceOptions.DataProtectionTokenService, ResetPasswordTokenPurpose, account);
 
             MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
                 subject,
@@ -766,7 +766,7 @@ namespace Jering.AccountManagement.Security
                 throw new ArgumentNullException(nameof(linkDomain));
             }
 
-            string token = await GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, ConfirmEmailTokenPurpose, account);
+            string token = GetToken(TokenServiceOptions.DataProtectionTokenService, ConfirmEmailTokenPurpose, account);
 
             MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
                 subject,
@@ -803,7 +803,7 @@ namespace Jering.AccountManagement.Security
                 throw new ArgumentNullException(nameof(linkDomain));
             }
 
-            string token = await GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, ConfirmAlternativeEmailTokenPurpose, account);
+            string token = GetToken(TokenServiceOptions.DataProtectionTokenService, ConfirmAlternativeEmailTokenPurpose, account);
 
             MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
                 subject,
@@ -834,7 +834,7 @@ namespace Jering.AccountManagement.Security
                 throw new ArgumentNullException(nameof(messageFormat));
             }
 
-            string token = await GetTokenAsync(TokenServiceOptions.TotpTokenService, TwoFactorTokenPurpose, account);
+            string token = GetToken(TokenServiceOptions.TotpTokenService, TwoFactorTokenPurpose, account);
 
             MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
                 subject,

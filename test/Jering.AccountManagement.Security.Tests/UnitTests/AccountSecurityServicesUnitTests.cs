@@ -925,10 +925,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 null);
 
             mockAccountSecurityServices.
-                Setup(a => a.GetTokenAsync(It.Is<string>(s => s == TokenServiceOptions.DataProtectionTokenService),
+                Setup(a => a.GetToken(It.Is<string>(s => s == TokenServiceOptions.DataProtectionTokenService),
                     It.Is<string>(s => s == _testAccountSecurityService.ResetPasswordTokenPurpose),
                     It.Is<Account>(acc => acc == _testAccount))).
-                ReturnsAsync(_testToken);
+                Returns(_testToken);
             mockAccountSecurityServices.CallBase = true;
 
             // Act
@@ -960,10 +960,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 null);
 
             mockAccountSecurityServices.
-                Setup(a => a.GetTokenAsync(It.Is<string>(s => s == TokenServiceOptions.DataProtectionTokenService),
+                Setup(a => a.GetToken(It.Is<string>(s => s == TokenServiceOptions.DataProtectionTokenService),
                     It.Is<string>(s => s == _testAccountSecurityService.ConfirmEmailTokenPurpose),
                     It.Is<Account>(acc => acc == _testAccount))).
-                ReturnsAsync(_testToken);
+                Returns(_testToken);
             mockAccountSecurityServices.CallBase = true;
 
             // Act
@@ -995,10 +995,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 null);
 
             mockAccountSecurityServices.
-                Setup(a => a.GetTokenAsync(It.Is<string>(s => s == TokenServiceOptions.DataProtectionTokenService),
+                Setup(a => a.GetToken(It.Is<string>(s => s == TokenServiceOptions.DataProtectionTokenService),
                     It.Is<string>(s => s == _testAccountSecurityService.ConfirmAlternativeEmailTokenPurpose),
                     It.Is<Account>(acc => acc == _testAccount))).
-                ReturnsAsync(_testToken);
+                Returns(_testToken);
             mockAccountSecurityServices.CallBase = true;
 
             // Act
@@ -1029,10 +1029,10 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 null);
 
             mockAccountSecurityServices.
-                Setup(a => a.GetTokenAsync(It.Is<string>(s => s == TokenServiceOptions.TotpTokenService),
+                Setup(a => a.GetToken(It.Is<string>(s => s == TokenServiceOptions.TotpTokenService),
                     It.Is<string>(s => s == _testAccountSecurityService.TwoFactorTokenPurpose),
                     It.Is<Account>(acc => acc == _testAccount))).
-                ReturnsAsync(_testToken);
+                Returns(_testToken);
             mockAccountSecurityServices.CallBase = true;
 
             // Act

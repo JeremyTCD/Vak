@@ -84,7 +84,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="purpose"></param>
         /// <param name="account"></param>
         /// <returns></returns>
-        Task<string> GetTokenAsync(string tokenService, string purpose, TAccount account);
+        string GetToken(string tokenService, string purpose, TAccount account);
 
         /// <summary>
         /// 
