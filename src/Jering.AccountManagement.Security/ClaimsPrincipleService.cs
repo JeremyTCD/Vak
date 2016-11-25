@@ -37,18 +37,26 @@ namespace Jering.AccountManagement.Security
         /// <param name="account"></param>
         /// <param name="authenticationScheme"></param>
         /// <param name="authenticationProperties"></param>
-        /// <returns></returns>
         public virtual async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(TAccount account, string authenticationScheme, AuthenticationProperties authenticationProperties)
         {
+            if(account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+            if(account.Email == null)
+            {
+                throw new ArgumentException(nameof(account.Email));
+            }
+            if(authenticationScheme == null)
+            {
+                throw new ArgumentNullException(nameof(authenticationScheme));
+            }
+          
+
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
                 authenticationScheme,
                 _securityOptions.ClaimsOptions.UsernameClaimType,
                 _securityOptions.ClaimsOptions.RoleClaimType);
-
-            if (account?.Email == null || account.SecurityStamp == default(Guid) || account.AccountId == default(int))
-            {
-                throw new ArgumentException(nameof(account));
-            }
 
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.AccountIdClaimType, account.AccountId.ToString()));
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.UsernameClaimType, account.Email));
@@ -73,14 +81,23 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="account"></param>
         /// <param name="claimsPrincipal"></param>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="claimsPrincipal"/> is not valid</exception>
         public virtual void UpdateClaimsPrincipal(TAccount account, ClaimsPrincipal claimsPrincipal)
         {
-            ClaimsIdentity claimsIdentity = claimsPrincipal?.Identity as ClaimsIdentity;
-
-            if(claimsIdentity == null)
+            if(account == null)
             {
-                throw new ArgumentException(nameof(claimsPrincipal));
+                throw new ArgumentNullException(nameof(account));
             }
+            if(claimsPrincipal == null)
+            {
+                throw new ArgumentNullException(nameof(claimsPrincipal));
+            }
+            if(claimsPrincipal.Identity == null)
+            {
+                throw new ArgumentException(nameof(claimsPrincipal.Identity));
+            }
+
+            ClaimsIdentity claimsIdentity = claimsPrincipal.Identity as ClaimsIdentity;
 
             System.Security.Claims.Claim accountIdClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
             System.Security.Claims.Claim usernameClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType);
@@ -113,6 +130,15 @@ namespace Jering.AccountManagement.Security
         /// <returns></returns>
         public virtual ClaimsPrincipal CreateClaimsPrincipal(int accountId, string authenticationScheme)
         {
+            if(accountId == null)
+            {
+                throw new ArgumentNullException(nameof(accountId));
+            }
+            if(authenticationScheme == null)
+            {
+                throw new ArgumentNullException(nameof(authenticationScheme));
+            }
+
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(authenticationScheme);
 
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.AccountIdClaimType, accountId.ToString()));
