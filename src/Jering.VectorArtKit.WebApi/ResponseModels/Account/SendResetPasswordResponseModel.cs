@@ -4,9 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
 {
-    public class SignUpResponseModel: IErrorResponseModel, IActionResponseModel
+    public class SendResetPasswordResponseModel: IErrorResponseModel, IActionResponseModel
     {
-        public string Username { get; set; }
         public SerializableError ModelState { get; set; }
 
         public bool ExpectedError { get; set; }

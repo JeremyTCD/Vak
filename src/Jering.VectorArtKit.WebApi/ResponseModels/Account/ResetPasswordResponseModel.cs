@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
 {
-    public class SignUpResponseModel: IErrorResponseModel, IActionResponseModel
+    public class ResetPasswordResponseModel: IErrorResponseModel, IActionResponseModel
     {
-        public string Username { get; set; }
         public SerializableError ModelState { get; set; }
-
+        public bool LinkExpiredOrInvalid { get; set; }
         public bool ExpectedError { get; set; }
 
         public string ErrorMessage { get; set; }
+        public string Email { get; set; }
     }
 }
