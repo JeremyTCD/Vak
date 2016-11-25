@@ -8,9 +8,15 @@ using System;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using MimeKit;
+using Jering.Mail;
 
 namespace Jering.AccountManagement.Security
 {
+    // TODO there are some repository methods that return true/false (such as UpdateAccountEmailAsync) 
+    // the underlying stored procedures should throw exceptions directly instead (right at the source of the issue)
+    // to enable handling/debugging at repository and stored procedure levels.
+
     /// <summary>
     /// Provides an API for managing Account security.
     /// </summary>
@@ -20,16 +26,32 @@ namespace Jering.AccountManagement.Security
         private IAccountRepository<TAccount> _accountRepository { get; }
         private HttpContext _httpContext { get; }
         private AccountSecurityOptions _securityOptions { get; }
-        private Dictionary<string, ITokenService<TAccount>> _tokenServices { get; } = new Dictionary<string, ITokenService<TAccount>>();
+        private IEmailService _emailService { get; }
 
-        /// <summary>
-        /// The data protection purpose used for email confirmation related methods.
-        /// </summary>
-        protected const string _confirmEmailTokenPurpose = "EmailConfirmation";
         /// <summary>
         /// 
         /// </summary>
-        protected const string _twoFactorTokenPurpose = "TwoFactor";
+        public Dictionary<string, ITokenService<TAccount>> TokenServices { get; } = new Dictionary<string, ITokenService<TAccount>>();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ConfirmEmailTokenPurpose { get; } = "EmailConfirmation";
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string TwoFactorTokenPurpose { get; } = "TwoFactor";
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ResetPasswordTokenPurpose { get; } = "ResetPassword";
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public string ConfirmAlternativeEmailTokenPurpose { get; } = "ConfirmAlternativeEmail";
 
         /// <summary>
         /// Constructs a new instance of <see cref="AccountSecurityService{TAccount}"/>.
@@ -38,13 +60,16 @@ namespace Jering.AccountManagement.Security
         /// <param name="httpContextAccessor"></param>
         /// <param name="securityOptionsAccessor"></param>
         /// <param name="accountRepository"></param>
+        /// <param name="emailService"></param>
         /// <param name="serviceProvider"></param>
         public AccountSecurityService(ClaimsPrincipalService<TAccount> claimsPrincipalService,
             IHttpContextAccessor httpContextAccessor,
             IOptions<AccountSecurityOptions> securityOptionsAccessor,
             IAccountRepository<TAccount> accountRepository,
+            IEmailService emailService,
             IServiceProvider serviceProvider)
         {
+            _emailService = emailService;
             _claimsPrincipalService = claimsPrincipalService;
             _httpContext = httpContextAccessor?.HttpContext;
             _securityOptions = securityOptionsAccessor?.Value;
@@ -62,27 +87,96 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// 
+        /// Adds <paramref name="tokenService"/> to <see cref="TokenServices"/> 
         /// </summary>
         /// <param name="tokenServiceName"></param>
         /// <param name="tokenService"></param>
         public virtual void RegisterTokenProvider(string tokenServiceName, ITokenService<TAccount> tokenService)
         {
+            if (tokenServiceName == null)
+            {
+                throw new ArgumentNullException(nameof(tokenServiceName));
+            }
             if (tokenService == null)
             {
                 throw new ArgumentNullException(nameof(tokenService));
             }
-            _tokenServices[tokenServiceName] = tokenService;
+
+            TokenServices[tokenServiceName] = tokenService;
         }
 
         /// <summary>
-        /// Logs in specified <paramref name="account"/> using specified <paramref name="authenticationProperties"/>.
+        /// Generates a token using specified <paramref name="tokenService"/>
+        /// </summary>
+        /// <param name="tokenService"></param>
+        /// <param name="purpose"></param>
+        /// <param name="account"></param>
+        /// <returns>
+        /// Token
+        /// </returns>
+        public virtual async Task<string> GetTokenAsync(string tokenService, string purpose, TAccount account)
+        {
+            if (tokenService == null)
+            {
+                throw new ArgumentNullException(nameof(tokenService));
+            }
+            if (purpose == null)
+            {
+                throw new ArgumentNullException(nameof(purpose));
+            }
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+
+            return await TokenServices[tokenService].GenerateTokenAsync(purpose, account);
+        }
+
+        /// <summary>
+        /// Validates <paramref name="token"/> 
+        /// </summary>
+        /// <param name="tokenService"></param>
+        /// <param name="purpose"></param>
+        /// <param name="account"></param>
+        /// <param name="token"></param>
+        /// <returns>
+        /// <see cref="ValidateTokenResult"/> returned by <see cref="ITokenService{TAccount}.ValidateToken(string, string, TAccount)"/>.
+        /// </returns>
+        public virtual ValidateTokenResult ValidateToken(string tokenService, string purpose, TAccount account,
+            string token)
+        {
+            if (tokenService == null)
+            {
+                throw new ArgumentNullException(nameof(tokenService));
+            }
+            if (purpose == null)
+            {
+                throw new ArgumentNullException(nameof(purpose));
+            }
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
+            return TokenServices[tokenService].ValidateToken(purpose, token, account);
+        }
+
+        /// <summary>
+        /// Logs in <paramref name="account"/> using specified <paramref name="authenticationProperties"/>.
         /// </summary>
         /// <param name="account"></param>
         /// <param name="authenticationProperties"></param>
-        /// <returns></returns>
         public virtual async Task LogInAsync(TAccount account, AuthenticationProperties authenticationProperties)
         {
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+
             ClaimsPrincipal claimsPrincipal = await _claimsPrincipalService.CreateClaimsPrincipalAsync(account, _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme, authenticationProperties);
             authenticationProperties.AllowRefresh = true;
 
@@ -96,9 +190,13 @@ namespace Jering.AccountManagement.Security
         /// Refreshes log in for <paramref name="account"/>.
         /// </summary>
         /// <param name="account"></param>
-        /// <returns></returns>
         public virtual async Task RefreshLogInAsync(TAccount account)
         {
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+
             _claimsPrincipalService.UpdateClaimsPrincipal(account, _httpContext.User);
 
             bool isPersistent = Convert.ToBoolean(_httpContext.User.FindFirst(_securityOptions.ClaimsOptions.IsPersistenClaimType).Value);
@@ -110,19 +208,29 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Logs in account with specified <paramref name="email"/> and <paramref name="password"/> using 
+        /// Logs in account with credentials <paramref name="email"/> and <paramref name="password"/> using 
         /// specified <paramref name="authenticationProperties"/>.
         /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns>
-        /// <see cref="PasswordLogInResult{TAccount}"/> with <see cref="PasswordLogInResult{TAccount}.Failed"/> set to true if credentials are invalid. 
+        /// <see cref="PasswordLogInResult{TAccount}"/> with <see cref="PasswordLogInResult{TAccount}.InvalidCredentials"/> set to true if credentials are invalid. 
         /// <see cref="PasswordLogInResult{TAccount}"/> with <see cref="PasswordLogInResult{TAccount}.TwoFactorRequired"/> set to true if two factor is required. 
         /// <see cref="PasswordLogInResult{TAccount}"/> with <see cref="PasswordLogInResult{TAccount}.Succeeded"/> set to true if application sign in is complete. 
         /// </returns>
-        public virtual async Task<PasswordLogInResult<TAccount>> PasswordLogInAsync(string email, string password, AuthenticationProperties authenticationProperties)
+        public virtual async Task<PasswordLogInResult<TAccount>> PasswordLogInAsync(string email, string password,
+            AuthenticationProperties authenticationProperties)
         {
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
             TAccount account = await _accountRepository.GetAccountByEmailAndPasswordAsync(email, password);
             if (account != null)
             {
@@ -135,7 +243,7 @@ namespace Jering.AccountManagement.Security
                 return PasswordLogInResult<TAccount>.GetSucceededResult();
             }
 
-            return PasswordLogInResult<TAccount>.GetFailedResult();
+            return PasswordLogInResult<TAccount>.GetInvalidCredentialsResult();
         }
 
         /// <summary>
@@ -152,11 +260,12 @@ namespace Jering.AccountManagement.Security
         /// Gets email account of logged in account using <see cref="HttpContext.User"/> .
         /// </summary>
         /// <returns>
-        /// Email account if it exists, null otherwise.
+        /// Email if it exists. 
+        /// Null otherwise.
         /// </returns>
         public virtual string GetLoggedInAccountEmail()
         {
-            return _httpContext.User.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType)?.Value;
+            return _httpContext.User?.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType)?.Value;
         }
 
         /// <summary>
@@ -168,6 +277,11 @@ namespace Jering.AccountManagement.Security
         /// </returns>
         public virtual async Task<TAccount> GetLoggedInAccountAsync()
         {
+            if (_httpContext.User == null)
+            {
+                return default(TAccount);
+            }
+
             return await GetLoggedInAccountAsync(_httpContext.User);
         }
 
@@ -181,7 +295,12 @@ namespace Jering.AccountManagement.Security
         /// </returns>
         public virtual async Task<TAccount> GetLoggedInAccountAsync(ClaimsPrincipal claimsPrincipal)
         {
-            if (claimsPrincipal?.Identity?.AuthenticationType == _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme)
+            if (claimsPrincipal == null)
+            {
+                throw new ArgumentNullException(nameof(claimsPrincipal));
+            }
+
+            if (claimsPrincipal.Identity?.AuthenticationType == _securityOptions.CookieOptions.ApplicationCookieOptions.AuthenticationScheme)
             {
                 System.Security.Claims.Claim accountIdClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
                 if (accountIdClaim != null)
@@ -189,6 +308,7 @@ namespace Jering.AccountManagement.Security
                     return await _accountRepository.GetAccountAsync(Convert.ToInt32(accountIdClaim.Value));
                 }
             }
+
             return default(TAccount);
         }
 
@@ -197,79 +317,68 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="token"></param>
         /// <returns>
-        /// <see cref="ConfirmEmailResult.Failed"/> if there is no logged in account.
-        /// <see cref="ConfirmEmailResult.InvalidToken"/> if token is invalid.
-        /// <see cref="ConfirmEmailResult.Failed"/> if unable to update account email confirmed. 
-        /// <see cref="ConfirmEmailResult.Succeeded"/> if <paramref name="token"/> is valid and EmailConfirmed updates successfully.
+        /// <see cref="ConfirmEmailResult"/> with <see cref="ConfirmEmailResult.ExpiredToken"/> set to true if token has expired.
+        /// <see cref="ConfirmEmailResult"/> with <see cref="ConfirmEmailResult.NotLoggedIn"/> set to true if there is not logged in account.
+        /// <see cref="ConfirmEmailResult"/> with <see cref="ConfirmEmailResult.InvalidToken"/> set to true if <paramref name="token"/> is invalid. 
+        /// <see cref="ConfirmEmailResult"/> with <see cref="ConfirmEmailResult.Succeeded"/> set to true if <paramref name="token"/> is valid and database update succeeds. 
         /// </returns>
+        /// <exception cref="Exception">Thrown if database update fails</exception>
         public virtual async Task<ConfirmEmailResult> ConfirmEmailAsync(string token)
         {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+
             TAccount account = await GetLoggedInAccountAsync();
 
             if (account == null)
             {
-                return ConfirmEmailResult.Failed;
+                return ConfirmEmailResult.GetNotLoggedInResult();
             }
 
-            if (!await _tokenServices[TokenServiceOptions.DataProtectionTokenService].ValidateTokenAsync(_confirmEmailTokenPurpose, token, account))
+            ValidateTokenResult result = TokenServices[TokenServiceOptions.DataProtectionTokenService].
+               ValidateToken(ConfirmEmailTokenPurpose, token, account);
+
+            if (result.Invalid)
             {
-                return ConfirmEmailResult.InvalidToken;
+                return ConfirmEmailResult.GetInvalidTokenResult();
+            }
+
+            if (result.Expired)
+            {
+                return ConfirmEmailResult.GetExpiredTokenResult();
             }
 
             if (!await _accountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true))
             {
-                return ConfirmEmailResult.Failed;
+                throw new Exception();
             }
 
-            return ConfirmEmailResult.Succeeded;
+            return ConfirmEmailResult.GetSucceededResult();
         }
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="tokenService"></param>
-        /// <param name="purpose"></param>
-        /// <param name="account"></param>
-        /// <returns></returns>
-        public virtual async Task<string> GetTokenAsync(string tokenService, string purpose, TAccount account)
-        {
-            return await _tokenServices[tokenService].GenerateTokenAsync(purpose, account);
-        }
-
-        /// <summary>
-        /// Validates <paramref name="token"/> created by <paramref name="tokenService"/>.
-        /// 
-        /// </summary>
-        /// <param name="tokenService"></param>
-        /// <param name="purpose"></param>
-        /// <param name="account"></param>
-        /// <param name="token"></param>
-        /// <returns>
-        /// True if token is valid, false otherwise.
-        /// </returns>
-        public virtual async Task<bool> ValidateTokenAsync(string tokenService, string purpose, TAccount account, string token)
-        {
-            return await _tokenServices[tokenService].ValidateTokenAsync(purpose, token, account);
-        }
-
-        /// <summary>
-        /// Gets account using two factor cookie's account Id value. 
+        /// Gets account using two factor cookie's account id value. 
         /// </summary>
         /// <returns>
         /// Null if two factor cookie is invalid.
-        /// Null if two factor cookie does not have an account Id value.
-        /// An account if two factor cookie's account Id value exists.
+        /// Null if two factor cookie does not have an account id value.
+        /// An account if two factor cookie exists and has account id claim.
         /// </returns>
         public virtual async Task<TAccount> GetTwoFactorAccountAsync()
         {
-            ClaimsPrincipal claimsPrincipal = await _httpContext.Authentication.AuthenticateAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
+            ClaimsPrincipal claimsPrincipal = await _httpContext.
+                Authentication.
+                AuthenticateAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
 
             if (claimsPrincipal == null)
             {
                 return default(TAccount);
             }
 
-            System.Security.Claims.Claim accountIdClaim = claimsPrincipal.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
+            System.Security.Claims.Claim accountIdClaim = claimsPrincipal.
+                FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
 
             if (accountIdClaim == null)
             {
@@ -287,7 +396,13 @@ namespace Jering.AccountManagement.Security
         /// <param name="account"></param>
         public virtual async Task CreateTwoFactorCookieAsync(TAccount account)
         {
-            ClaimsPrincipal claimsPrincipal = _claimsPrincipalService.CreateClaimsPrincipal(account.AccountId, _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+
+            ClaimsPrincipal claimsPrincipal = _claimsPrincipalService.
+                CreateClaimsPrincipal(account.AccountId, _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
 
             await _httpContext.Authentication.SignInAsync(
                 _securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme,
@@ -295,44 +410,65 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Validates two factor token. If valid, peforms application log in for user specified by two factor cookie.
+        /// Validates <paramref name="token"/>. If valid, peforms application log in for user specified by two factor cookie.
         /// </summary>
         /// <param name="token"></param>
         /// <param name="isPersistent"></param>
         /// <returns>
-        /// <see cref="TwoFactorLogInResult{TAccount}"/> with <see cref="TwoFactorLogInResult{TAccount}.Failed"/> set to true if unable to retrieve two factor account 
-        /// or <paramref name="token"/> is invalid.
+        /// <see cref="TwoFactorLogInResult{TAccount}"/> with <see cref="TwoFactorLogInResult{TAccount}.InvalidToken"/> set to true if <paramref name="token"/> is invalid.
         /// <see cref="TwoFactorLogInResult{TAccount}"/> with <see cref="TwoFactorLogInResult{TAccount}.Succeeded"/> set to true if <paramref name="token"/> is valid. 
+        /// <see cref="TwoFactorLogInResult{TAccount}"/> with <see cref="TwoFactorLogInResult{TAccount}.NotLoggedIn"/> set to true if unable to retrieve two factor account.
         /// </returns>
         public virtual async Task<TwoFactorLogInResult<TAccount>> TwoFactorLogInAsync(string token, bool isPersistent)
         {
-            TAccount account = await GetTwoFactorAccountAsync();
-            if (account != null)
+            if (token == null)
             {
-                if (await _tokenServices[TokenServiceOptions.TotpTokenService].ValidateTokenAsync(_twoFactorTokenPurpose, token, account))
-                {
-                    // Cleanup two factor cookie
-                    await _httpContext.Authentication.SignOutAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
-                    await LogInAsync(account, new AuthenticationProperties() { IsPersistent = isPersistent });
-
-                    return TwoFactorLogInResult<TAccount>.GetSucceededResult(account);
-                }
+                throw new ArgumentNullException(nameof(token));
             }
 
-            return TwoFactorLogInResult<TAccount>.GetFailedResult();
+            TAccount account = await GetTwoFactorAccountAsync();
+            if (account == null)
+            {
+                return TwoFactorLogInResult<TAccount>.GetNotLoggedInResult();
+            }
+
+            ValidateTokenResult result = TokenServices[TokenServiceOptions.TotpTokenService].
+                    ValidateToken(TwoFactorTokenPurpose, token, account);
+
+            if (result.Valid)
+            {
+                // Cleanup two factor cookie
+                await _httpContext.Authentication.
+                    SignOutAsync(_securityOptions.CookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
+                await LogInAsync(account, new AuthenticationProperties() { IsPersistent = isPersistent });
+
+                return TwoFactorLogInResult<TAccount>.GetSucceededResult(account);
+            }
+
+            return TwoFactorLogInResult<TAccount>.GetInvalidTokenResult();
         }
 
         /// <summary>
-        /// Creates an account with the specified <paramref name="email"/> and <paramref name="password"/>. If successful, logs in account and sends
-        /// confirmation email.
+        /// Creates an account with the credentials <paramref name="email"/> and <paramref name="password"/>. If successful, logs in to account.
         /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
         /// <returns>
-        /// <see cref="CreateAccountResult{TAccount}"/>. 
+        /// <see cref="CreateAccountResult{TAccount}"/> with <see cref="CreateAccountResult{TAccount}.InvalidEmail"/> set to true if <paramref name="email"/> is in use.
+        /// <see cref="CreateAccountResult{TAccount}"/> with <see cref="CreateAccountResult{TAccount}.Succeeded"/> set to true if accountis created successfully. 
         /// </returns>
+        /// <exception cref="NullReferenceException">Throws exception if account creation fails unexpectedly</exception>
         public virtual async Task<CreateAccountResult<TAccount>> CreateAccountAsync(string email, string password)
         {
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+
             try
             {
                 TAccount account = await _accountRepository.CreateAccountAsync(email, password);
@@ -360,38 +496,99 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
+        /// Sets password of account with email <paramref name="email"/> to <paramref name="newPassword"/> if <paramref name="token"/> is valid.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="email"></param>
+        /// <param name="newPassword"></param>
+        /// <returns>
+        /// <see cref="ResetPasswordResult"/> with <see cref="ResetPasswordResult.InvalidEmail"/> set to true if 
+        /// <paramref name="email"/> is not associated with any account.
+        /// <see cref="ResetPasswordResult"/> with <see cref="ResetPasswordResult.Succeeded"/> set to true if 
+        /// password reset succeeds.
+        /// <see cref="ResetPasswordResult"/> with <see cref="ResetPasswordResult.InvalidToken"/> set to true if
+        /// <paramref name="token"/> is invalid.
+        /// </returns>
+        /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
+        public virtual async Task<ResetPasswordResult> ResetPasswordAsync(string token, string email, string newPassword)
+        {
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+            if (email == null)
+            {
+                throw new ArgumentNullException(nameof(email));
+            }
+            if (newPassword == null)
+            {
+                throw new ArgumentNullException(nameof(newPassword));
+            }
+
+            TAccount account = await _accountRepository.GetAccountByEmailOrAlternativeEmailAsync(email);
+            if (account == null)
+            {
+                return ResetPasswordResult.GetInvalidEmailResult();
+            }
+
+            ValidateTokenResult result = ValidateToken(TokenServiceOptions.DataProtectionTokenService,
+                ResetPasswordTokenPurpose,
+                account,
+                token);
+
+            if (result.Invalid)
+            {
+                return ResetPasswordResult.GetInvalidTokenResult();
+            }
+
+            if(result.Expired)
+            {
+                return ResetPasswordResult.GetExpiredTokenResult();
+            }
+
+            if (!await _accountRepository.UpdateAccountPasswordHashAsync(account.AccountId, newPassword))
+            {
+                throw new Exception();
+            }
+
+            return ResetPasswordResult.GetSucceededResult();
+        }
+
+        /// <summary>
         /// Sets email of account with id <paramref name="accountId"/> to <paramref name="newEmail"/>.
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="newEmail"></param>
         /// <returns>
-        /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.Failed"/> set to true if update fails unexpectedly.
-        /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.Succeeded"/> set to true if update succeeds.
-        /// <see cref="UpdateAccountEmailResult"/> with <see cref="UpdateAccountEmailResult.EmailInUse"/> set to true if new email is already in use.
+        /// <see cref="UpdateEmailResult"/> with <see cref="UpdateEmailResult.Succeeded"/> set to true if update succeeds.
+        /// <see cref="UpdateEmailResult"/> with <see cref="UpdateEmailResult.InvalidEmail"/> set to true if new email is in use.
         /// </returns>
-        public virtual async Task<UpdateAccountEmailResult> UpdateAccountEmailAsync(int accountId, string newEmail)
+        /// <exception cref="Exception">Thrown if account email update fails unexpectedly</exception>
+        public virtual async Task<UpdateEmailResult> UpdateEmailAsync(int accountId, string newEmail)
         {
+            if(newEmail == null)
+            {
+                throw new ArgumentNullException(nameof(newEmail));
+            }
+
             try
             {
                 if (!await _accountRepository.UpdateAccountEmailAsync(accountId, newEmail))
                 {
-                    return UpdateAccountEmailResult.GetFailedResult();
+                    // TODO the underlying stored procedure should throw a sql exception if update fails
+                    throw new Exception();
                 }
-                else
-                {
-                    return UpdateAccountEmailResult.GetSucceededResult();
-                }
+
+                return UpdateEmailResult.GetSucceededResult();
             }
             catch (SqlException sqlException)
             {
                 if (sqlException.Number == 51000)
                 {
-                    return UpdateAccountEmailResult.GetEmailInUseResult();
+                    return UpdateEmailResult.GetInvalidEmailResult();
                 }
-                else
-                {
-                    throw;
-                }
+
+                throw;
             }
         }
 
@@ -400,91 +597,93 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="newPassword"></param>
-        /// <returns>
-        /// <see cref="UpdateAccountPasswordHashResult"/> with <see cref="UpdateAccountPasswordHashResult.Failed"/> set to true if update fails unexpectedly.
-        /// <see cref="UpdateAccountPasswordHashResult"/> with <see cref="UpdateAccountPasswordHashResult.Succeeded"/> set to true if update succeeds.
-        /// </returns>
-        public virtual async Task<UpdateAccountPasswordHashResult> UpdateAccountPasswordHashAsync(int accountId, string newPassword)
+        /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
+        public virtual async Task UpdatePasswordHashAsync(int accountId, string newPassword)
         {
+            if(newPassword == null)
+            {
+                throw new ArgumentNullException(nameof(newPassword));
+            }
+
             if (!await _accountRepository.UpdateAccountPasswordHashAsync(accountId, newPassword))
             {
-                return UpdateAccountPasswordHashResult.GetFailedResult();
-            }
-            else
-            {
-                return UpdateAccountPasswordHashResult.GetSucceededResult();
+                throw new Exception();
             }
         }
 
         /// <summary>
-        /// Sets AlternativeEmail of account with id <paramref name="accountId"/> to <paramref name="alternativeEmail"/>.
+        /// Sets AlternativeEmail of account with id <paramref name="accountId"/> to <paramref name="newAlternativeEmail"/>.
         /// </summary>
         /// <param name="accountId"></param>
-        /// <param name="alternativeEmail"></param>
+        /// <param name="newAlternativeEmail"></param>
         /// <returns>
-        /// <see cref="UpdateAccountAlternativeEmailResult"/> with <see cref="UpdateAccountAlternativeEmailResult.Failed"/> set to true if update fails unexpectedly.
-        /// <see cref="UpdateAccountAlternativeEmailResult"/> with <see cref="UpdateAccountAlternativeEmailResult.Succeeded"/> set to true if update succeeds.
-        /// <see cref="UpdateAccountAlternativeEmailResult"/> with <see cref="UpdateAccountAlternativeEmailResult.AlternativeEmailInUse"/> set to true if alternative email is in use.
+        /// <see cref="UpdateAlternativeEmailResult"/> with <see cref="UpdateAlternativeEmailResult.Succeeded"/> set to true if update succeeds.
+        /// <see cref="UpdateAlternativeEmailResult"/> with <see cref="UpdateAlternativeEmailResult.InvalidAlternativeEmail"/> set to true if alternative email is in use.
         /// </returns>
-        public virtual async Task<UpdateAccountAlternativeEmailResult> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail)
+        /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
+        public virtual async Task<UpdateAlternativeEmailResult> UpdateAlternativeEmailAsync(int accountId, 
+            string newAlternativeEmail)
         {
+            if(newAlternativeEmail == null)
+            {
+                throw new ArgumentNullException(nameof(newAlternativeEmail));
+            }
+
             try
             {
-                if (!await _accountRepository.UpdateAccountAlternativeEmailAsync(accountId, alternativeEmail))
+                if (!await _accountRepository.UpdateAccountAlternativeEmailAsync(accountId, newAlternativeEmail))
                 {
-                    return UpdateAccountAlternativeEmailResult.GetFailedResult();
+                    throw new Exception();
                 }
-                else
-                {
-                    return UpdateAccountAlternativeEmailResult.GetSucceededResult();
-                }
+
+                return UpdateAlternativeEmailResult.GetSucceededResult();
             }
             catch (SqlException sqlException)
             {
                 if (sqlException.Number == 51000)
                 {
-                    return UpdateAccountAlternativeEmailResult.GetAlternativeEmailInUseResult();
+                    return UpdateAlternativeEmailResult.GetInvalidAlternativeEmailResult();
                 }
-                else
-                {
-                    throw;
-                }
+
+                throw;
             }
         }
 
         /// <summary>
-        /// Sets DisplayName of account with id <paramref name="accountId"/> to <paramref name="displayName"/>.
+        /// Sets DisplayName of account with id <paramref name="accountId"/> to <paramref name="newDisplayName"/>.
         /// </summary>
         /// <param name="accountId"></param>
-        /// <param name="displayName"></param>
+        /// <param name="newDisplayName"></param>
         /// <returns>
-        /// <see cref="UpdateAccountDisplayNameResult"/> with <see cref="UpdateAccountDisplayNameResult.Failed"/> set to true if update fails unexpectedly.
-        /// <see cref="UpdateAccountDisplayNameResult"/> with <see cref="UpdateAccountDisplayNameResult.Succeeded"/> set to true if update succeeds.
-        /// <see cref="UpdateAccountDisplayNameResult"/> with <see cref="UpdateAccountDisplayNameResult.DisplayNameInUse"/> set to true if display name is in use.
+        /// <see cref="UpdateDisplayNameResult"/> with <see cref="UpdateDisplayNameResult.Succeeded"/> set to true if update succeeds.
+        /// <see cref="UpdateDisplayNameResult"/> with <see cref="UpdateDisplayNameResult.InvalidDisplayName"/> set to true if display name is in use.
         /// </returns>
-        public virtual async Task<UpdateAccountDisplayNameResult> UpdateAccountDisplayNameAsync(int accountId, string displayName)
+        /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
+        public virtual async Task<UpdateDisplayNameResult> UpdateDisplayNameAsync(int accountId, 
+            string newDisplayName)
         {
+            if(newDisplayName == null)
+            {
+                throw new ArgumentNullException(nameof(newDisplayName));
+            }
+
             try
             {
-                if (!await _accountRepository.UpdateAccountDisplayNameAsync(accountId, displayName))
+                if (!await _accountRepository.UpdateAccountDisplayNameAsync(accountId, newDisplayName))
                 {
-                    return UpdateAccountDisplayNameResult.GetFailedResult();
+                    throw new Exception();
                 }
-                else
-                {
-                    return UpdateAccountDisplayNameResult.GetSucceededResult();
-                }
+
+                return UpdateDisplayNameResult.GetSucceededResult();
             }
             catch (SqlException sqlException)
             {
                 if (sqlException.Number == 51000)
                 {
-                    return UpdateAccountDisplayNameResult.GetDisplayNameInUseResult();
+                    return UpdateDisplayNameResult.GetInvalidDisplayNameResult();
                 }
-                else
-                {
-                    throw;
-                }
+
+                throw;
             }
         }
 
@@ -493,20 +692,155 @@ namespace Jering.AccountManagement.Security
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="twoFactorEnabled"></param>
-        /// <returns>
-        /// <see cref="UpdateAccountTwoFactorEnabledResult"/> with <see cref="UpdateAccountTwoFactorEnabledResult.Failed"/> set to true if update fails unexpectedly.
-        /// <see cref="UpdateAccountTwoFactorEnabledResult"/> with <see cref="UpdateAccountTwoFactorEnabledResult.Succeeded"/> set to true if update succeeds.
-        /// </returns>
-        public virtual async Task<UpdateAccountTwoFactorEnabledResult> UpdateAccountTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled)
+        /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
+        public virtual async Task UpdateTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled)
         {
             if (!await _accountRepository.UpdateAccountTwoFactorEnabledAsync(accountId, twoFactorEnabled))
             {
-                return UpdateAccountTwoFactorEnabledResult.GetFailedResult();
+                throw new Exception();
             }
-            else
+        }
+
+        /// <summary>
+        /// Sends reset password email. Inserts <paramref name="linkDomain"/>, token and account email into <paramref name="messageFormat"/>
+        /// to form email message.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="subject"></param>
+        /// <param name="messageFormat"></param>
+        /// <param name="linkDomain"></param>
+        public virtual async Task SendResetPasswordEmailAsync(TAccount account, string subject, 
+            string messageFormat, string linkDomain)
+        {
+            if (account == null)
             {
-                return UpdateAccountTwoFactorEnabledResult.GetSucceededResult();
+                throw new ArgumentNullException(nameof(account));
             }
+            if (subject == null)
+            {
+                throw new ArgumentNullException(nameof(subject));
+            }
+            if (messageFormat == null)
+            {
+                throw new ArgumentNullException(nameof(messageFormat));
+            }
+            if (linkDomain == null)
+            {
+                throw new ArgumentNullException(nameof(linkDomain));
+            }
+
+            string token = await GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, ResetPasswordTokenPurpose, account);
+
+            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
+                subject,
+                string.Format(messageFormat, linkDomain, token, account.Email));
+
+            await _emailService.SendEmailAsync(mimeMessage);
+        }
+
+        /// <summary>
+        /// Sends email verification email. Inserts <paramref name="linkDomain"/>, token and account id into <paramref name="messageFormat"/>
+        /// to form email message.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="subject"></param>
+        /// <param name="messageFormat"></param>
+        /// <param name="linkDomain"></param>
+        public virtual async Task SendEmailVerificationEmailAsync(TAccount account, string subject, 
+            string messageFormat, string linkDomain)
+        {
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+            if (subject == null)
+            {
+                throw new ArgumentNullException(nameof(subject));
+            }
+            if (messageFormat == null)
+            {
+                throw new ArgumentNullException(nameof(messageFormat));
+            }
+            if (linkDomain == null)
+            {
+                throw new ArgumentNullException(nameof(linkDomain));
+            }
+
+            string token = await GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, ConfirmEmailTokenPurpose, account);
+
+            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
+                subject,
+                string.Format(messageFormat, linkDomain, token, account.AccountId));
+
+            await _emailService.SendEmailAsync(mimeMessage);
+        }
+
+        /// <summary>
+        /// Sends alternative email verification email. Inserts <paramref name="linkDomain"/>, token and account id into <paramref name="messageFormat"/>
+        /// to form email message.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="subject"></param>
+        /// <param name="messageFormat"></param>
+        /// <param name="linkDomain"></param>
+        public virtual async Task SendAlternativeEmailVerificationEmailAsync(TAccount account, string subject, 
+            string messageFormat, string linkDomain)
+        {
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+            if (subject == null)
+            {
+                throw new ArgumentNullException(nameof(subject));
+            }
+            if (messageFormat == null)
+            {
+                throw new ArgumentNullException(nameof(messageFormat));
+            }
+            if (linkDomain == null)
+            {
+                throw new ArgumentNullException(nameof(linkDomain));
+            }
+
+            string token = await GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, ConfirmAlternativeEmailTokenPurpose, account);
+
+            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
+                subject,
+                string.Format(messageFormat, linkDomain, token, account.AccountId));
+
+            await _emailService.SendEmailAsync(mimeMessage);
+        }
+
+        /// <summary>
+        /// Sends two factor code email. Inserts token into <paramref name="messageFormat"/>
+        /// to form email message.
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="subject"></param>
+        /// <param name="messageFormat"></param>
+        public virtual async Task SendTwoFactorCodeEmailAsync(TAccount account, string subject, string messageFormat)
+        {
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+            if (subject == null)
+            {
+                throw new ArgumentNullException(nameof(subject));
+            }
+            if (messageFormat == null)
+            {
+                throw new ArgumentNullException(nameof(messageFormat));
+            }
+
+            string token = await GetTokenAsync(TokenServiceOptions.TotpTokenService, TwoFactorTokenPurpose, account);
+
+            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
+                subject,
+                string.Format(messageFormat, token));
+
+            await _emailService.SendEmailAsync(mimeMessage);
         }
     }
 }

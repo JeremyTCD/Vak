@@ -18,6 +18,31 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
+        Dictionary<string, ITokenService<TAccount>> TokenServices { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        string ConfirmEmailTokenPurpose { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        string TwoFactorTokenPurpose { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        string ResetPasswordTokenPurpose { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        string ConfirmAlternativeEmailTokenPurpose { get; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="account"></param>
         /// <param name="authenticationProperties"></param>
         /// <returns></returns>
@@ -118,7 +143,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="account"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        Task<bool> ValidateTokenAsync(string tokenService, string purpose, TAccount account, string token);
+        ValidateTokenResult ValidateToken(string tokenService, string purpose, TAccount account, string token);
 
         /// <summary>
         /// 
@@ -132,15 +157,14 @@ namespace Jering.AccountManagement.Security
         /// <param name="accountId"></param>
         /// <param name="newEmail"></param>
         /// <returns></returns>
-        Task<UpdateAccountEmailResult> UpdateAccountEmailAsync(int accountId, string newEmail);
+        Task<UpdateEmailResult> UpdateEmailAsync(int accountId, string newEmail);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="newPassword"></param>
-        /// <returns></returns>
-        Task<UpdateAccountPasswordHashResult> UpdateAccountPasswordHashAsync(int accountId, string newPassword);
+        Task UpdatePasswordHashAsync(int accountId, string newPassword);
 
         /// <summary>
         /// 
@@ -148,7 +172,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="accountId"></param>
         /// <param name="alternativeEmail"></param>
         /// <returns></returns>
-        Task<UpdateAccountAlternativeEmailResult> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail);
+        Task<UpdateAlternativeEmailResult> UpdateAlternativeEmailAsync(int accountId, string alternativeEmail);
 
         /// <summary>
         /// 
@@ -156,14 +180,61 @@ namespace Jering.AccountManagement.Security
         /// <param name="accountId"></param>
         /// <param name="displayName"></param>
         /// <returns></returns>
-        Task<UpdateAccountDisplayNameResult> UpdateAccountDisplayNameAsync(int accountId, string displayName);
+        Task<UpdateDisplayNameResult> UpdateDisplayNameAsync(int accountId, string displayName);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="twoFactorEnabled"></param>
+        Task UpdateTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="email"></param>
+        /// <param name="newPassword"></param>
         /// <returns></returns>
-        Task<UpdateAccountTwoFactorEnabledResult> UpdateAccountTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled);
+        Task<ResetPasswordResult> ResetPasswordAsync(string token, string email, string newPassword);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="linkDomain"></param>
+        /// <param name="subject"></param>
+        /// <param name="messageFormat"></param>
+        /// <returns></returns>
+        Task SendResetPasswordEmailAsync(TAccount account, string linkDomain, string subject, string messageFormat);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="subject"></param>
+        /// <param name="messageFormat"></param>
+        /// <param name="linkDomain"></param>
+        /// <returns></returns>
+        Task SendEmailVerificationEmailAsync(TAccount account, string subject, string messageFormat, string linkDomain);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="subject"></param>
+        /// <param name="messageFormat"></param>
+        /// <param name="linkDomain"></param>
+        /// <returns></returns>
+        Task SendAlternativeEmailVerificationEmailAsync(TAccount account, string subject, string messageFormat, string linkDomain);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="subject"></param>
+        /// <param name="messageFormat"></param>
+        /// <returns></returns>
+        Task SendTwoFactorCodeEmailAsync(TAccount account, string subject, string messageFormat);
     }
 }
