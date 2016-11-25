@@ -25,10 +25,6 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         private IAccountRepository<VakAccount> _vakAccountRepository;
         private IEmailService _emailService;
         private UrlOptions _urlOptions;
-        private string _confirmEmailPurpose = "ConfirmEmail";
-        private string _confirmAlternativeEmailPurpose = "ConfirmAlternativeEmail";
-        private string _resetPasswordPurpose = "ResetPassword";
-        private string _twoFactorPurpose = "TwoFactor";
 
         public AccountController(
             IAccountRepository<VakAccount> vakAccountRepository,
@@ -48,31 +44,35 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns>
-        /// 400 BadRequest with <see cref="ErrorResponseModel"/>  if anti-forgery credentials are invalid.
-        /// 400 BadRequest with <see cref="ErrorResponseModel"/> if model state is invalid. 
-        /// 400 BadRequest with <see cref="ErrorResponseModel"/> if email in use.
-        /// 200 OK with <see cref="SignUpResponseModel"/>, application cookie and sends email verification email if account is created successfully.
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 400 BadRequest and <see cref="SignUpResponseModel"/> if model state is invalid. 
+        /// 400 BadRequest and <see cref="SignUpResponseModel"/> if email in use.
+        /// 200 OK, <see cref="SignUpResponseModel"/>, application cookie and sends email verification 
+        /// email if account is created successfully.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SignUp([FromBody] SignUpFormModel model)
-        {
+        {  
             if (ModelState.IsValid)
             {
                 CreateAccountResult<VakAccount> createAccountResult = await _accountSecurityService.CreateAccountAsync(model.Email, model.Password);
 
                 if (createAccountResult.Succeeded)
                 {
-                    await SendEmailVerificationEmail(createAccountResult.Account);
+                    await _accountSecurityService.SendEmailVerificationEmailAsync(createAccountResult.Account, 
+                        Strings.Email_Subject_EmailVerification, 
+                        Strings.Email_Message_EmailVerification, 
+                        _urlOptions.ClientDomain);
 
-                    return Ok(new SignUpResponseModel() { Username = createAccountResult.Account.Email });
+                    return Ok(new SignUpResponseModel { Username = createAccountResult.Account.Email });
                 }
 
                 ModelState.AddModelError(nameof(SignUpFormModel.Email), Strings.ErrorMessage_Email_InUse);
             }
 
-            return BadRequest(new ErrorResponseModel()
+            return BadRequest(new SignUpResponseModel
             {
                 ExpectedError = true,
                 ModelState = new SerializableError(ModelState)
@@ -85,11 +85,12 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// <param name="model"></param>
         /// <param name="returnUrl"></param>
         /// <returns>
-        /// 400 BadRequest with <see cref="ErrorResponseModel"/>  if anti-forgery credentials are invalid.
-        /// 400 BadRequest with <see cref="ErrorResponseModel"> if model state is invalid. 
-        /// 400 BadRequest with <see cref="ErrorResponseModel"> if credentials are invalid. 
-        /// 200 OK with <see cref="LogInResponseModel"/>  and application cookie if login succeeds.
-        /// 200 OK with <see cref="LogInResponseModel"/>, two factor cookie and sends two factor email if two factor authentication is required. 
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 400 BadRequest and <see cref="LogInResponseModel"> if model state is invalid. 
+        /// 400 BadRequest and <see cref="LogInResponseModel"> if credentials are invalid. 
+        /// 200 OK, <see cref="LogInResponseModel"/> and application cookie if login succeeds.
+        /// 200 OK, <see cref="LogInResponseModel"/>, two factor cookie and sends two factor email 
+        /// if two factor authentication is required. 
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -100,35 +101,39 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             {
                 PasswordLogInResult<VakAccount> result = await _accountSecurityService.PasswordLogInAsync(model.Email,
                     model.Password,
-                    new AuthenticationProperties() { IsPersistent = model.RememberMe });
+                    new AuthenticationProperties { IsPersistent = model.RememberMe });
 
                 if (result.TwoFactorRequired)
                 {
                     await _accountSecurityService.CreateTwoFactorCookieAsync(result.Account);
-                    await SendTwoFactorEmail(result.Account);
+                    await _accountSecurityService.SendTwoFactorCodeEmailAsync(result.Account,
+                        Strings.Email_Subject_TwoFactorCode,
+                        Strings.Email_Message_TwoFactorCode);
 
-                    return Ok(new LogInResponseModel() {
+                    return Ok(new LogInResponseModel
+                    {
                         TwoFactorRequired = true,
                         IsPersistent = model.RememberMe
                     });
                 }
                 if (result.Succeeded)
                 {
-                    return Ok(new LogInResponseModel() {
+                    return Ok(new LogInResponseModel
+                    {
                         TwoFactorRequired = false,
                         Username = model.Email,
                         IsPersistent = model.RememberMe
                     });
                 }
 
-                return BadRequest(new ErrorResponseModel()
+                return BadRequest(new LogInResponseModel
                 {
                     ExpectedError = true,
                     ErrorMessage = Strings.ErrorMessage_LogIn_Failed
                 });
             }
 
-            return BadRequest(new ErrorResponseModel()
+            return BadRequest(new LogInResponseModel
             {
                 ExpectedError = true,
                 ModelState = new SerializableError(ModelState)
@@ -141,8 +146,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// logs you out of all google accounts. This means google does not consider logout CSRF to be a threat.
         /// </summary>
         /// <returns>
-        /// 401 Unauthorized with <see cref="ErrorResponseModel>"/>  if authentication fails.
-        /// 200 OK with two factor cookie and application cookie (with empty string values) if authentication succeeds. 
+        /// 401 Unauthorized with <see cref="ErrorResponseModel>"/> if authentication fails.
+        /// 200 OK and two factor cookie and application cookie (with empty string values) if authentication succeeds. 
         /// </returns>
         [HttpPost]
         public async Task<IActionResult> LogOff()
@@ -156,10 +161,11 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns>
-        /// 400 BadRequest with <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
-        /// 400 BadRequest with <see cref="ErrorResponseModel"> if model state is invalid. 
-        /// 400 BadRequest with <see cref="ErrorResponseModel"> if code is invalid. 
-        /// 200 OK with <see cref="TwoFactorLogInResponseModel"/>, two factor cookie and application cookie if login succeeds.
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 400 BadRequest and <see cref="TwoFactorLogInResponseModel"/> if model state is invalid. 
+        /// 400 BadRequest and <see cref="TwoFactorLogInResponseModel"/> if code is invalid. 
+        /// 200 OK, <see cref="TwoFactorLogInResponseModel"/>, two factor cookie and application 
+        /// cookie if login succeeds.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -172,17 +178,17 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
                 if (result.Succeeded)
                 {
-                    return Ok(new TwoFactorLogInResponseModel()
+                    return Ok(new TwoFactorLogInResponseModel
                     {
                         Username = result.Account.Email,
                         IsPersistent = model.IsPersistent
                     });
                 }
 
-                ModelState.AddModelError(nameof(TwoFactorLogInFormModel.Code), Strings.ErrorMessage_TwoFactorCode_Invalid);
+                ModelState.AddModelError(nameof(TwoFactorLogInFormModel.Code), Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired);
             }
 
-            return BadRequest(new ErrorResponseModel()
+            return BadRequest(new TwoFactorLogInResponseModel
             {
                 ExpectedError = true,
                 ModelState = new SerializableError(ModelState)
@@ -194,8 +200,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="model"></param>
         /// <returns>
-        /// 400 BadRequest with <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
-        /// 400 BadRequest with <see cref="ErrorResponseModel"> if model state is invalid. 
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 400 BadRequest and <see cref="SendResetPasswordResponseModel"> if model state is invalid. 
         /// 200 OK and sends reset password email if email is valid.
         /// 200 OK if email is invalid.
         /// </returns>
@@ -209,86 +215,65 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 VakAccount account = await _vakAccountRepository.GetAccountByEmailOrAlternativeEmailAsync(model.Email);
                 if (account != null)
                 {
-                    await SendResetPasswordEmail(account);
+                    await _accountSecurityService.SendResetPasswordEmailAsync(account,
+                        Strings.Email_Subject_ResetPassword,
+                        Strings.Email_Message_ResetPassword,
+                        _urlOptions.ClientDomain);
                 }
 
                 return Ok();
             }
 
-            return BadRequest(new ErrorResponseModel()
+            return BadRequest(new SendResetPasswordResponseModel
             {
                 ExpectedError = true,
                 ModelState = new SerializableError(ModelState)
             });
         }
 
-        ///// <summary>
-        ///// GET: /Account/ResetPassword
-        ///// </summary>
-        ///// <returns>
-        ///// ResetPassword view with anti-forgery token and cookie.
-        ///// </returns>
-        //[HttpGet]
-        //[AllowAnonymous]
-        //public IActionResult ResetPassword(string token, string email)
-        //{
-        //    if (token == null || email == null)
-        //    {
-        //        return View("Error");
-        //    }
+        /// <summary>
+        /// POST: /Account/ResetPassword
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 400 BadRequest and <see cref="ResetPasswordResponseModel"/> if model state is invalid. 
+        /// 400 BadRequest and <see cref="ResetPasswordResponseModel"/> if token is invalid or expired. 
+        /// 200 OK and <see cref="ResetPasswordResponseModel"/>  password reset succeeds.
+        /// </returns>
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordFormModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                ResetPasswordResult result = await _accountSecurityService.ResetPasswordAsync(model.Token, model.Email, model.NewPassword);
 
-        //    return View(new ResetPasswordFormModel { Email = email });
-        //}
+                if (result.Succeeded)
+                {
+                    return Ok(new ResetPasswordResponseModel
+                    {
+                        Email = model.Email
+                    });
+                }
 
-        ///// <summary>
-        ///// POST: /Account/ResetPassword
-        ///// </summary>
-        ///// <param name="model"></param>
-        ///// <returns>
-        ///// ResetPassword view with error message if model state is invalid.
-        ///// Redirects to ResetPasswordConfirmation view and updates password if email, token and model state are valid.
-        ///// Error view if token or email is invalid.
-        ///// BadRequest if anti-forgery credentials are invalid.
-        ///// </returns>
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> ResetPassword(ResetPasswordFormModel model)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        VakAccount account = model.Email == null ? null : await _vakAccountRepository.GetAccountByEmailOrAlternativeEmailAsync(model.Email);
-        //        if (account == null || model.Token == null ||
-        //            !await _accountSecurityService.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account, model.Token) ||
-        //            !await _vakAccountRepository.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword))
-        //        {
-        //            return View("Error");
-        //        }
+                if(result.InvalidToken || result.ExpiredToken)
+                {
+                    return BadRequest(new ResetPasswordResponseModel
+                    {
+                        ExpectedError = true,
+                        LinkExpiredOrInvalid = true
+                    });
+                }
+            }
 
-        //        return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), new { Email = account.Email });
-        //    }
-        //    else if (ModelState.ContainsKey(nameof(ResetPasswordFormModel.NewPassword)))
-        //    {
-        //        ModelState.Remove(nameof(ResetPasswordFormModel.NewPassword));
-        //        // Broke the following error message up 
-        //        //ModelState.AddModelError(nameof(ResetPasswordFormModel.NewPassword), Strings.ErrorMessage_Password_FormatInvalid);
-        //    }
-
-        //    return View(model);
-        //}
-
-        ///// <summary>
-        ///// GET: /Account/ResetPasswordConfirmation
-        ///// </summary>
-        ///// <returns>
-        ///// ResetPasswordConfirmation view.
-        ///// </returns>
-        //[HttpGet]
-        //[AllowAnonymous]
-        //public IActionResult ResetPasswordConfirmation(string email)
-        //{
-        //    return View(model: email);
-        //}
+            return BadRequest(new ResetPasswordResponseModel
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
+        }
 
         ///// <summary>
         ///// Get: /Account/ManageAccount
@@ -778,20 +763,40 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// Error view if token or email or model state are invalid.
         /// </returns>
         [HttpGet]
-        [AllowAnonymous]
+        [AllowAnonymous]  
         public async Task<IActionResult> EmailVerificationConfirmation(EmailVerificationConfirmationFormModel model)
         {
             if (ModelState.IsValid)
             {
                 VakAccount account = await _vakAccountRepository.GetAccountAsync(model.AccountId);
 
-                if (account != null &&
-                    await _accountSecurityService.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account, model.Token) &&
-                    await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true))
+                if(account == null)
                 {
-                    // TODO redirect to confirmation view
-                    return Ok();
+                    // unexpected error, there is no recovering from this
                 }
+
+                ValidateTokenResult result = _accountSecurityService.ValidateToken(TokenServiceOptions.DataProtectionTokenService,
+                    _accountSecurityService.ConfirmEmailTokenPurpose,
+                    account,
+                    model.Token);
+
+                if (result.Expired)
+                {
+                    // link expired, try again
+                }
+
+                if (result.Invalid)
+                {
+                    // no recovering form this
+                }
+                
+                if(!await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true))
+                {
+                    // TODO repo method's underlying sp shld throw exception
+                    throw new Exception();
+                }
+
+                return Ok();
             }
 
             return BadRequest();
@@ -809,103 +814,20 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> AlternativeEmailVerificationConfirmation(AlternativeEmailVerificationConfirmationFormModel model)
         {
-            if (ModelState.IsValid)
-            {
-                VakAccount account = await _vakAccountRepository.GetAccountAsync(model.AccountId);
+            //if (ModelState.IsValid)
+            //{
+            //    VakAccount account = await _vakAccountRepository.GetAccountAsync(model.AccountId);
 
-                if (account != null &&
-                    await _accountSecurityService.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmAlternativeEmailPurpose, account, model.Token) &&
-                    await _vakAccountRepository.UpdateAccountAlternativeEmailVerifiedAsync(account.AccountId, true))
-                {
-                    // TODO redirect to confirmation view
-                    return Ok();
-                }
-            }
+            //    if (account != null &&
+            //        await _accountSecurityService.ValidateTokenAsync(TokenServiceOptions.DataProtectionTokenService, _accountSecurityService.ConfirmAlternativeEmailTokenPurpose, account, model.Token) &&
+            //        await _vakAccountRepository.UpdateAccountAlternativeEmailVerifiedAsync(account.AccountId, true))
+            //    {
+            //        // TODO redirect to confirmation view
+            //        return Ok();
+            //    }
+            //}
 
             return BadRequest();
         }
-
-        #region Helpers
-        [NonAction]
-        private async Task SendResetPasswordEmail(VakAccount account)
-        {
-            string token = await _accountSecurityService.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _resetPasswordPurpose, account);
-
-            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
-                Strings.ResetPasswordEmail_Subject,
-                string.Format(Strings.ResetPasswordEmail_Message,
-                $"{ _urlOptions.ClientUrl}resetpassword?Token={token}&Email={account.Email}"));
-            await _emailService.SendEmailAsync(mimeMessage);
-        }
-
-        // TODO url should not point to action
-        [NonAction]
-        private async Task SendEmailVerificationEmail(VakAccount account)
-        {
-            if(account.Email == null)
-            {
-                throw new ArgumentNullException();
-            }            
-
-            string token = await _accountSecurityService.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService, _confirmEmailPurpose, account);
-            string callbackUrl = Url.Action(
-                nameof(AccountController.EmailVerificationConfirmation),
-                nameof(AccountController).Replace("Controller", ""),
-                new { Token = token, AccountId = account.AccountId },
-                protocol: HttpContext.Request.Scheme);
-
-            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email, 
-                Strings.Email_EmailVerification_Subject, 
-                string.Format(Strings.Email_EmailVerification_Message, 
-                callbackUrl));
-            await _emailService.SendEmailAsync(mimeMessage);
-        }
-
-        // TODO url should not point to action
-        [NonAction]
-        private async Task SendAlternativeEmailVerificationEmail(VakAccount account)
-        {
-            if (account.AlternativeEmail == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            string token = await _accountSecurityService.GetTokenAsync(TokenServiceOptions.DataProtectionTokenService,_confirmAlternativeEmailPurpose, account);
-            string callbackUrl = Url.Action(
-                nameof(AccountController.AlternativeEmailVerificationConfirmation),
-                nameof(AccountController).Replace("Controller", ""),
-                new { Token = token, AccountId = account.AccountId },
-                protocol: HttpContext.Request.Scheme);
-
-            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.AlternativeEmail,
-                Strings.Email_EmailVerification_Subject,
-                string.Format(Strings.Email_EmailVerification_Message,
-                callbackUrl));
-            await _emailService.SendEmailAsync(mimeMessage);
-        }
-
-        // TODO url should not point to action
-        [NonAction]
-        private async Task SendTwoFactorEmail(VakAccount account)
-        {
-            string token = await _accountSecurityService.GetTokenAsync(TokenServiceOptions.TotpTokenService, _twoFactorPurpose, account);
-            MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email, Strings.TwoFactorEmail_Subject, string.Format(Strings.TwoFactorEmail_Message, token));
-            await _emailService.SendEmailAsync(mimeMessage);
-        }
-        //[NonAction]
-        //private IActionResult RedirectToLocal(string returnUrl)
-        //{
-        //    // This prevents open redirection attacks - http://www.asp.net/mvc/overview/security/preventing-open-redirection-attacks
-        //    if (Url.IsLocalUrl(returnUrl))
-        //    {
-        //        return Redirect(returnUrl);
-        //    }
-        //    else
-        //    {
-        //        return RedirectToAction(nameof(HomeController.Index), "Home");
-        //    }
-        //}
-
-        #endregion
     }
 }
