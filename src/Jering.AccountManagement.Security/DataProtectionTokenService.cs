@@ -1,4 +1,5 @@
 ﻿using Jering.AccountManagement.DatabaseInterface;
+using Jering.Utilities;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 using System;
@@ -19,15 +20,21 @@ namespace Jering.AccountManagement.Security
 
         private IDataProtector _dataProtector { get; }
 
+        private ITimeService _timeService { get; }
+
         /// <summary>
         /// Constructs an instance of <see cref="DataProtectionTokenService{TAccount}"/> 
         /// </summary>
         /// <param name="dataProtectionProvider"></param>
         /// <param name="securityOptionsAccessor"></param>
-        public DataProtectionTokenService(IDataProtectionProvider dataProtectionProvider, IOptions<AccountSecurityOptions> securityOptionsAccessor)
+        /// <param name="timeService"></param>
+        public DataProtectionTokenService(IDataProtectionProvider dataProtectionProvider,
+            IOptions<AccountSecurityOptions> securityOptionsAccessor,
+            ITimeService timeService)
         {
             _securityOptions = securityOptionsAccessor.Value;
             _dataProtector = dataProtectionProvider.CreateProtector(nameof(DataProtectionTokenService<TAccount>));
+            _timeService = timeService;
         }
 
         /// <summary>
@@ -36,21 +43,27 @@ namespace Jering.AccountManagement.Security
         /// <param name="purpose"></param>
         /// <param name="account"></param>
         /// <returns>A string representation of the generated token.</returns>
-        public virtual Task<string> GenerateTokenAsync(string purpose, TAccount account)
+        public virtual string GenerateToken(string purpose, TAccount account)
         {
-            return Task.Factory.StartNew(() =>
+            if (purpose == null)
             {
-                MemoryStream memoryStream = new MemoryStream();
-                using (BinaryWriter binaryWriter = memoryStream.CreateWriter())
-                {
-                    binaryWriter.Write(DateTimeOffset.UtcNow);
-                    binaryWriter.Write(account.AccountId);
-                    binaryWriter.Write(purpose);
-                    binaryWriter.Write(account.SecurityStamp.ToString());
-                }
-                byte[] protectedBytes = _dataProtector.Protect(memoryStream.ToArray());
-                return Convert.ToBase64String(protectedBytes);
-            });
+                throw new ArgumentNullException(nameof(purpose));
+            }
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+
+            MemoryStream memoryStream = new MemoryStream();
+            using (BinaryWriter binaryWriter = memoryStream.CreateWriter())
+            {
+                binaryWriter.Write(_timeService.UtcNow);
+                binaryWriter.Write(account.AccountId);
+                binaryWriter.Write(purpose);
+                binaryWriter.Write(account.SecurityStamp.ToString());
+            }
+            byte[] protectedBytes = _dataProtector.Protect(memoryStream.ToArray());
+            return Convert.ToBase64String(protectedBytes);
         }
 
         /// <summary>
@@ -60,52 +73,56 @@ namespace Jering.AccountManagement.Security
         /// <param name="token"></param>
         /// <param name="account"></param>
         /// <returns>
-        /// True if <paramref name="token"/> is valid, false otherwise.
+        /// <see cref="ValidateTokenResult"/> with <see cref="ValidateTokenResult.Valid"/> set to true if token is valid.
+        /// <see cref="ValidateTokenResult"/> with <see cref="ValidateTokenResult.Invalid"/> set to true if token is invalid.
+        /// <see cref="ValidateTokenResult"/> with <see cref="ValidateTokenResult.Expired"/> set to true if token is expired.
         /// </returns>
-        public virtual Task<bool> ValidateTokenAsync(string purpose, string token, TAccount account)
+        public virtual ValidateTokenResult ValidateToken(string purpose, string token, TAccount account)
         {
-            return Task.Factory.StartNew(() =>
+            if (purpose == null)
             {
-                try
+                throw new ArgumentNullException(nameof(purpose));
+            }
+            if (token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+            if (account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+
+            byte[] unprotectedBytes = _dataProtector.Unprotect(Convert.FromBase64String(token));
+            MemoryStream memoryStream = new MemoryStream(unprotectedBytes);
+            using (BinaryReader binaryReader = memoryStream.CreateReader())
+            {
+                DateTimeOffset extractedCreationTime = binaryReader.ReadDateTimeOffset();
+                DateTimeOffset expirationTime = extractedCreationTime + _securityOptions.TokenServiceOptions.DataProtectionTokenLifespan;
+                if (expirationTime < _timeService.UtcNow)
                 {
-                    byte[] unprotectedBytes = _dataProtector.Unprotect(Convert.FromBase64String(token));
-                    MemoryStream memoryStream = new MemoryStream(unprotectedBytes);
-                    using (BinaryReader binaryReader = memoryStream.CreateReader())
-                    {
-                        DateTimeOffset extractedCreationTime = binaryReader.ReadDateTimeOffset();
-                        DateTimeOffset expirationTime = extractedCreationTime + _securityOptions.TokenServiceOptions.DataProtectionTokenLifespan;
-                        if (expirationTime < DateTimeOffset.UtcNow)
-                        {
-                            return false;
-                        }
-
-                        int extractedAccountId = binaryReader.ReadInt32();
-                        if (extractedAccountId != account.AccountId)
-                        {
-                            return false;
-                        }
-
-                        string extractedPurpose = binaryReader.ReadString();
-                        if (extractedPurpose != purpose)
-                        {
-                            return false;
-                        }
-
-                        string extractedSecurityStamp = binaryReader.ReadString();
-                        if (binaryReader.PeekChar() != -1 || extractedSecurityStamp != account.SecurityStamp.ToString())
-                        {
-                            return false;
-                        }
-
-                        return true;
-                    }
+                    return ValidateTokenResult.GetExpiredResult();
                 }
-                catch
+
+                int extractedAccountId = binaryReader.ReadInt32();
+                if (extractedAccountId != account.AccountId)
                 {
-                    // Do not leak exception
+                    return ValidateTokenResult.GetInvalidResult();
                 }
-                return false;
-            });
+
+                string extractedPurpose = binaryReader.ReadString();
+                if (extractedPurpose != purpose)
+                {
+                    return ValidateTokenResult.GetInvalidResult();
+                }
+
+                string extractedSecurityStamp = binaryReader.ReadString();
+                if (binaryReader.PeekChar() != -1 || extractedSecurityStamp != account.SecurityStamp.ToString())
+                {
+                    return ValidateTokenResult.GetInvalidResult();
+                }
+
+                return ValidateTokenResult.GetValidResult();
+            }
         }
     }
 

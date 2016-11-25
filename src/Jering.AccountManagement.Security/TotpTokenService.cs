@@ -21,14 +21,20 @@ namespace Jering.AccountManagement.Security
         /// <param name="purpose"></param>
         /// <param name="account"></param>
         /// <returns>A string representation of the generated token.</returns>
-        public virtual Task<string> GenerateTokenAsync(string purpose, TAccount account)
+        public virtual string GenerateToken(string purpose, TAccount account)
         {
-            return Task.Factory.StartNew(() =>
+            if(purpose == null)
             {
-                string modifier = GetTokenModifier(purpose, account);
+                throw new ArgumentNullException(nameof(purpose));
+            }
+            if(account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
 
-                return GenerateTotp(account.SecurityStamp.ToByteArray(), modifier).ToString("D6", CultureInfo.InvariantCulture);
-            });
+            string modifier = GetTokenModifier(purpose, account);
+
+            return GenerateTotp(account.SecurityStamp.ToByteArray(), modifier).ToString("D6", CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -38,22 +44,35 @@ namespace Jering.AccountManagement.Security
         /// <param name="token"></param>
         /// <param name="account"></param>
         /// <returns>
-        /// True if <paramref name="token"/> is valid, false otherwise.
+        /// <see cref="ValidateTokenResult"/> with <see cref="ValidateTokenResult.Valid"/> set to true if token is valid.
+        /// <see cref="ValidateTokenResult"/> with <see cref="ValidateTokenResult.Invalid"/> set to true if token is invalid.
         /// </returns>
-        public virtual Task<bool> ValidateTokenAsync(string purpose, string token, TAccount account)
+        public virtual ValidateTokenResult ValidateToken(string purpose, string token, TAccount account)
         {
-            return Task.Factory.StartNew(() => 
+            if(purpose == null)
             {
-                int totp;
-                if (!int.TryParse(token, out totp))
-                {
-                    return false;
-                }
+                throw new ArgumentNullException(nameof(purpose));
+            }
+            if(token == null)
+            {
+                throw new ArgumentNullException(nameof(token));
+            }
+            if(account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
 
-                string modifier = GetTokenModifier(purpose, account);
+            int totp;
+            if (!int.TryParse(token, out totp))
+            {
+                return ValidateTokenResult.GetInvalidResult();
+            }
 
-                return ValidateTotp(account.SecurityStamp.ToByteArray(), totp, modifier);
-            });
+            string modifier = GetTokenModifier(purpose, account);
+
+            return ValidateTotp(account.SecurityStamp.ToByteArray(), totp, modifier) ?
+                ValidateTokenResult.GetValidResult() :
+                ValidateTokenResult.GetInvalidResult();
         }
 
         /// <summary>

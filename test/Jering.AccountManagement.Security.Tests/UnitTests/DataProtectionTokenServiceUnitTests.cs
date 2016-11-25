@@ -6,13 +6,29 @@ using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 using Jering.AccountManagement.DatabaseInterface;
+using Jering.Utilities;
 
 namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
     public class DataProtectionTokenServiceUnitTests
     {
+        private string _validPurpose = "validPurpose";
+        private string _invalidPurpose = "invalidPurpose";
+        private int _testAccountId = 1;
+        private Account _testAccount;
+        private TimeService _testTimeService = new TimeService();
+
+        public DataProtectionTokenServiceUnitTests()
+        {
+            _testAccount = new Account()
+            {
+                AccountId = _testAccountId,
+                SecurityStamp = Guid.Empty
+            };
+        }
+
         [Fact]
-        public async Task GenerateToken_GeneratesTokenTest()
+        public void GenerateToken_GeneratesTokenTest()
         {
             // Arrange
             string keyStoreFolder = Path.Combine(
@@ -22,24 +38,20 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             IDataProtectionProvider dataProtectionProvider = DataProtectionProvider.Create(
                 new DirectoryInfo(keyStoreFolder));
 
-            Mock<Account> mockAccount = new Mock<Account>();
-            mockAccount.SetupGet(a => a.AccountId).Returns(1);
-            mockAccount.SetupGet(a => a.SecurityStamp).Returns(Guid.Empty);
-
             Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
 
-            DataProtectionTokenService<Account> dataProtectionTokenService = new DataProtectionTokenService<Account>(dataProtectionProvider, mockOptions.Object);
+            DataProtectionTokenService<Account> dataProtectionTokenService = 
+                new DataProtectionTokenService<Account>(dataProtectionProvider, mockOptions.Object, _testTimeService);
 
             // Act
-            string token = await dataProtectionTokenService.GenerateTokenAsync("", mockAccount.Object);
+            string token = dataProtectionTokenService.GenerateToken(_validPurpose, _testAccount);
 
             // Assert
             Assert.NotEqual(null, token);
-            mockAccount.VerifyAll();
         }
 
         [Fact]
-        public async Task ValidateToken_ReturnsTrueIfTokenIsValidTest()
+        public void ValidateToken_ReturnsValidateTokenResultValidIfTokenIsValidTest()
         {
             // Arrange
             string keyStoreFolder = Path.Combine(
@@ -53,25 +65,20 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityOptions dataProtectionServiceOptions = new AccountSecurityOptions();
             mockOptions.Setup(o => o.Value).Returns(dataProtectionServiceOptions);
 
-            DataProtectionTokenService<Account> dataProtectionTokenService = new DataProtectionTokenService<Account>(dataProtectionProvider, mockOptions.Object);
+            DataProtectionTokenService<Account> dataProtectionTokenService = 
+                new DataProtectionTokenService<Account>(dataProtectionProvider, mockOptions.Object, _testTimeService);
 
-            Account account = new Account() { AccountId = 1, SecurityStamp = Guid.Empty };
-            string token = await dataProtectionTokenService.GenerateTokenAsync("", account);
-
-            Mock<Account> mockAccount = new Mock<Account>();
-            mockAccount.SetupGet(a => a.AccountId).Returns(account.AccountId);
-            mockAccount.SetupGet(a => a.SecurityStamp).Returns(account.SecurityStamp);
+            string token = dataProtectionTokenService.GenerateToken(_validPurpose, _testAccount);
 
             // Act
-            bool result = await dataProtectionTokenService.ValidateTokenAsync("", token, mockAccount.Object);
+            ValidateTokenResult result = dataProtectionTokenService.ValidateToken(_validPurpose, token, _testAccount);
 
             // Assert
-            Assert.True(result);
-            mockAccount.VerifyAll();
+            Assert.True(result.Valid);
         }
 
         [Fact]
-        public async Task ValidateToken_ReturnsFalseIfTokenIsInvalidTest()
+        public void ValidateToken_ReturnsValidateTokenResultInvalidIfTokenIsInvalidTest()
         {
             // Arrange
             string keyStoreFolder = Path.Combine(
@@ -85,20 +92,53 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             AccountSecurityOptions dataProtectionServiceOptions = new AccountSecurityOptions();
             mockOptions.Setup(o => o.Value).Returns(dataProtectionServiceOptions);
 
-            DataProtectionTokenService<Account> dataProtectionTokenService = new DataProtectionTokenService<Account>(dataProtectionProvider, mockOptions.Object);
+            DataProtectionTokenService<Account> dataProtectionTokenService = 
+                new DataProtectionTokenService<Account>(dataProtectionProvider, mockOptions.Object, _testTimeService);
 
-            Account account = new Account() { AccountId = 1, SecurityStamp = Guid.Empty };
-            Mock<Account> mockAccount = new Mock<Account>();
-            mockAccount.SetupGet(a => a.AccountId).Returns(account.AccountId);
-            mockAccount.SetupGet(a => a.SecurityStamp).Returns(Guid.NewGuid());
+            string token = dataProtectionTokenService.GenerateToken(_invalidPurpose, _testAccount);
 
             // Act
-            string token = await dataProtectionTokenService.GenerateTokenAsync("", account);
-            bool result = await dataProtectionTokenService.ValidateTokenAsync("", token, mockAccount.Object);
+            ValidateTokenResult result = dataProtectionTokenService.ValidateToken(_validPurpose, token, _testAccount);
 
             // Assert
-            Assert.False(result);
-            mockAccount.VerifyAll();
+            Assert.True(result.Invalid);
+        }
+
+        [Fact]
+        public void ValidateToken_ReturnsValidateTokenResultExpiredIfTokenIsExpiredTest()
+        {
+            // Arrange
+            string keyStoreFolder = Path.Combine(
+                Environment.GetEnvironmentVariable("LOCALAPPDATA"),
+                "DataProtectionTokenServiceTestKeys");
+
+            IDataProtectionProvider dataProtectionProvider = DataProtectionProvider.Create(
+                new DirectoryInfo(keyStoreFolder));
+
+            Mock<IOptions<AccountSecurityOptions>> mockOptions = new Mock<IOptions<AccountSecurityOptions>>();
+            AccountSecurityOptions dataProtectionServiceOptions = new AccountSecurityOptions();
+            mockOptions.Setup(o => o.Value).Returns(dataProtectionServiceOptions);
+
+            Mock<ITimeService> mockTimeService = new Mock<ITimeService>();
+            mockTimeService.Setup(t => t.UtcNow).Returns(DateTimeOffset.MinValue);
+
+            DataProtectionTokenService<Account> dataProtectionTokenService =
+                new DataProtectionTokenService<Account>(dataProtectionProvider, 
+                    mockOptions.Object, 
+                    mockTimeService.Object);
+
+            string token = dataProtectionTokenService.GenerateToken(_invalidPurpose, _testAccount);
+
+            dataProtectionTokenService =
+                new DataProtectionTokenService<Account>(dataProtectionProvider,
+                    mockOptions.Object,
+                    _testTimeService);
+
+            // Act
+            ValidateTokenResult result = dataProtectionTokenService.ValidateToken(_validPurpose, token, _testAccount);
+
+            // Assert
+            Assert.True(result.Expired);
         }
     }
 }

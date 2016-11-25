@@ -11,65 +11,62 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
 {
     public class TotpTokenServiceUnitTests
     {
+        private string _validPurpose = "validPurpose";
+        private string _invalidPurpose = "invalidPurpose";
+        private string _testEmail = "testEmail";
+        private Account _testAccount;
+
+        public TotpTokenServiceUnitTests()
+        {
+            _testAccount = new Account()
+            {
+                Email = _testEmail,
+                SecurityStamp = Guid.Empty
+            };
+        }
 
         [Fact]
-        public async Task GenerateToken_GeneratesTokenTest()
+        public void GenerateToken_GeneratesTokenTest()
         {
             // Arrange
-            Mock<Account> mockAccount = new Mock<Account>();
-            mockAccount.SetupGet(a => a.Email).Returns("Email");
-            mockAccount.SetupGet(a => a.SecurityStamp).Returns(Guid.Empty);
-
             TotpTokenService<Account> totpTokenService = new TotpTokenService<Account>();
 
             // Act
-            string token = await totpTokenService.GenerateTokenAsync("", mockAccount.Object);
+            string token = totpTokenService.GenerateToken(_validPurpose, _testAccount);
 
             // Assert
             Assert.NotEqual(null, token);
             Assert.Equal(6, token.Length);
             int num;
             Assert.True(int.TryParse(token, out num));
-            mockAccount.VerifyAll();
         }
 
         [Fact]
-        public async Task ValidateToken_ReturnsTrueIfTokenIsValidTest()
+        public void ValidateToken_ReturnsValidateTokenResultValidIfTokenIsValid()
         {
             // Arrange
             TotpTokenService<Account> totpTokenService = new TotpTokenService<Account>();
-            Account account = new Account() { Email = "Email", SecurityStamp = Guid.Empty };
-            string token = await totpTokenService.GenerateTokenAsync("", account);
-
-            Mock<Account> mockAccount = new Mock<Account>();
-            mockAccount.SetupGet(a => a.Email).Returns(account.Email);
-            mockAccount.SetupGet(a => a.SecurityStamp).Returns(account.SecurityStamp);
+            string token = totpTokenService.GenerateToken(_validPurpose, _testAccount);
 
             // Act
-            bool result = await totpTokenService.ValidateTokenAsync("", token, mockAccount.Object);
+            ValidateTokenResult result = totpTokenService.ValidateToken(_validPurpose, token, _testAccount);
 
             // Assert
-            Assert.True(result);
-            mockAccount.VerifyAll();
+            Assert.True(result.Valid);
         }
 
         [Fact]
-        public async Task ValidateToken_ReturnsFalseIfTokenIsInvalidTest()
+        public void ValidateToken_ReturnsFalseIfTokenIsInvalidTest()
         {
             // Arrange
             TotpTokenService<Account> totpTokenService = new TotpTokenService<Account>();
-            Account account = new Account() { Email = "Email", SecurityStamp = Guid.Empty };
-
-            Mock<Account> mockAccount = new Mock<Account>();
-            mockAccount.SetupGet(a => a.Email).Returns(account.Email);
-            mockAccount.SetupGet(a => a.SecurityStamp).Returns(account.SecurityStamp);
+            string token = totpTokenService.GenerateToken(_invalidPurpose, _testAccount);
 
             // Act
-            string token = await totpTokenService.GenerateTokenAsync("invalid", account);
-            bool result = await totpTokenService.ValidateTokenAsync("", token, mockAccount.Object);
+            ValidateTokenResult result = totpTokenService.ValidateToken(_validPurpose, token, _testAccount);
 
             // Assert
-            Assert.False(result);
+            Assert.True(result.Invalid);
         }
     }
 }
