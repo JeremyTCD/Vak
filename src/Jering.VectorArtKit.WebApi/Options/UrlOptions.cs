@@ -7,6 +7,6 @@ namespace Jering.VectorArtKit.WebApi.Options
 {
     public class UrlOptions
     {
-        public string ClientUrl { get; set; }
+        public string ClientDomain { get; set; }
     }
 }

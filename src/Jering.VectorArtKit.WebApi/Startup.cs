@@ -65,7 +65,7 @@ namespace Jering.VectorArtKit.WebApi
                 services.AddDevelopmentEmailSender();
                 services.Configure<UrlOptions>(options =>
                 {
-                    options.ClientUrl = "http://localhost:4200/";
+                    options.ClientDomain = "http://localhost:4200/";
                 });
             }
             else
@@ -76,7 +76,7 @@ namespace Jering.VectorArtKit.WebApi
                 services.Configure<UrlOptions>(options =>
                 {
                     // TODO
-                    options.ClientUrl = "http://localhost:4200/";
+                    options.ClientDomain = "http://localhost:4200/";
                 });
             }
         }
