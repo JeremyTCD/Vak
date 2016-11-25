@@ -46,7 +46,8 @@ namespace Jering.AccountManagement.Security
             if (context.Principal != null) {
                 TAccount account = await _accountSecurityService.GetLoggedInAccountAsync(context.Principal);
 
-                if (account == null || account.SecurityStamp.ToString() != context.Principal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType)?.Value) {
+                if (account == null || 
+                    account.SecurityStamp.ToString() != context.Principal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType)?.Value) {
                     context.RejectPrincipal();
                     await _accountSecurityService.LogOffAsync();
                 }
