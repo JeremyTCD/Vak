@@ -120,7 +120,9 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             mockOptions.Setup(o => o.Value).Returns(dataProtectionServiceOptions);
 
             Mock<ITimeService> mockTimeService = new Mock<ITimeService>();
-            mockTimeService.Setup(t => t.UtcNow).Returns(DateTimeOffset.MinValue);
+            mockTimeService.SetupSequence(t => t.UtcNow).
+                Returns(DateTimeOffset.MinValue).
+                Returns(DateTimeOffset.UtcNow);
 
             DataProtectionTokenService<Account> dataProtectionTokenService =
                 new DataProtectionTokenService<Account>(dataProtectionProvider, 
@@ -128,11 +130,6 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                     mockTimeService.Object);
 
             string token = dataProtectionTokenService.GenerateToken(_invalidPurpose, _testAccount);
-
-            dataProtectionTokenService =
-                new DataProtectionTokenService<Account>(dataProtectionProvider,
-                    mockOptions.Object,
-                    _testTimeService);
 
             // Act
             ValidateTokenResult result = dataProtectionTokenService.ValidateToken(_validPurpose, token, _testAccount);
