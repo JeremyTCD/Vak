@@ -2,6 +2,7 @@
 using Jering.AccountManagement.DatabaseInterface.Dapper;
 using Jering.AccountManagement.Security;
 using Jering.Mail;
+using Jering.Utilities;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -28,6 +29,7 @@ namespace Jering.AccountManagement.Extensions
             services.AddScoped<IAccountSecurityService<TAccount>, AccountSecurityService<TAccount>>();
             services.AddScoped<IRoleRepository, DapperRoleRepository>();
             services.AddScoped<IClaimRepository, DapperClaimRepository>();
+            services.AddScoped<ITimeService, TimeService>();
 
             return new AccountManagementBuilder(typeof(TAccount), services);
         }
