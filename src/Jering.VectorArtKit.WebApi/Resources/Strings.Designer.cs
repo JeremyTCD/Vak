@@ -123,6 +123,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to New password.
+        /// </summary>
+        public static string DisplayName_NewPassword {
+            get {
+                return ResourceManager.GetString("DisplayName_NewPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Password.
         /// </summary>
         public static string DisplayName_Password {
@@ -159,20 +168,56 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Please confirm your email by clicking this link: &lt;a href=&quot;{0}&quot;&gt;link&lt;/a&gt;.
+        ///    Looks up a localized string similar to Please confirm your email by clicking this link: &lt;a href=&quot;{0}/verifyemail;token={1};accountid={2}&quot;&gt;link&lt;/a&gt;.
         /// </summary>
-        public static string Email_EmailVerification_Message {
+        public static string Email_Message_EmailVerification {
             get {
-                return ResourceManager.GetString("Email_EmailVerification_Message", resourceCulture);
+                return ResourceManager.GetString("Email_Message_EmailVerification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Please reset your email at this link: &lt;a href=&quot;{0}/resetpassword;token={1};email={2}&quot;&gt;link&lt;/a&gt;.
+        /// </summary>
+        public static string Email_Message_ResetPassword {
+            get {
+                return ResourceManager.GetString("Email_Message_ResetPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Your code is: {0}.
+        /// </summary>
+        public static string Email_Message_TwoFactorCode {
+            get {
+                return ResourceManager.GetString("Email_Message_TwoFactorCode", resourceCulture);
             }
         }
         
         /// <summary>
         ///    Looks up a localized string similar to Confirm email.
         /// </summary>
-        public static string Email_EmailVerification_Subject {
+        public static string Email_Subject_EmailVerification {
             get {
-                return ResourceManager.GetString("Email_EmailVerification_Subject", resourceCulture);
+                return ResourceManager.GetString("Email_Subject_EmailVerification", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Reset password.
+        /// </summary>
+        public static string Email_Subject_ResetPassword {
+            get {
+                return ResourceManager.GetString("Email_Subject_ResetPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Two factor code.
+        /// </summary>
+        public static string Email_Subject_TwoFactorCode {
+            get {
+                return ResourceManager.GetString("Email_Subject_TwoFactorCode", resourceCulture);
             }
         }
         
@@ -384,47 +429,11 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Please reset your email at this link: &lt;a href=&quot;{0}&quot;&gt;link&lt;/a&gt;.
-        /// </summary>
-        public static string ResetPasswordEmail_Message {
-            get {
-                return ResourceManager.GetString("ResetPasswordEmail_Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Reset password.
-        /// </summary>
-        public static string ResetPasswordEmail_Subject {
-            get {
-                return ResourceManager.GetString("ResetPasswordEmail_Subject", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///    Looks up a localized string similar to An email has been sent to {0}..
         /// </summary>
         public static string SendTwoFactorCode_EmailSent {
             get {
                 return ResourceManager.GetString("SendTwoFactorCode_EmailSent", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Your code is: {0}.
-        /// </summary>
-        public static string TwoFactorEmail_Message {
-            get {
-                return ResourceManager.GetString("TwoFactorEmail_Message", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///    Looks up a localized string similar to Two factor code.
-        /// </summary>
-        public static string TwoFactorEmail_Subject {
-            get {
-                return ResourceManager.GetString("TwoFactorEmail_Subject", resourceCulture);
             }
         }
         

@@ -168,23 +168,23 @@
   <data name="ViewTitle_AlternativeEmailVerificationConfirmation" xml:space="preserve">
     <value>Alternative email verification confirmation</value>
   </data>
-  <data name="Email_EmailVerification_Subject" xml:space="preserve">
+  <data name="Email_Subject_EmailVerification" xml:space="preserve">
     <value>Confirm email</value>
   </data>
-  <data name="TwoFactorEmail_Subject" xml:space="preserve">
+  <data name="Email_Subject_TwoFactorCode" xml:space="preserve">
     <value>Two factor code</value>
   </data>
-  <data name="TwoFactorEmail_Message" xml:space="preserve">
+  <data name="Email_Message_TwoFactorCode" xml:space="preserve">
     <value>Your code is: {0}</value>
   </data>
   <data name="SendTwoFactorCode_EmailSent" xml:space="preserve">
     <value>An email has been sent to {0}.</value>
   </data>
-  <data name="ResetPasswordEmail_Subject" xml:space="preserve">
+  <data name="Email_Subject_ResetPassword" xml:space="preserve">
     <value>Reset password</value>
   </data>
-  <data name="ResetPasswordEmail_Message" xml:space="preserve">
-    <value>Please reset your email at this link: &lt;a href="{0}"&gt;link&lt;/a&gt;</value>
+  <data name="Email_Message_ResetPassword" xml:space="preserve">
+    <value>Please reset your email at this link: &lt;a href="{0}/resetpassword;token={1};email={2}"&gt;link&lt;/a&gt;</value>
   </data>
   <data name="ErrorMessage_Password_Invalid" xml:space="preserve">
     <value>Invalid password</value>
@@ -207,8 +207,8 @@
   <data name="ErrorMessage_TwoFactorCode_Invalid" xml:space="preserve">
     <value>Invalid code.</value>
   </data>
-  <data name="Email_EmailVerification_Message" xml:space="preserve">
-    <value>Please confirm your email by clicking this link: &lt;a href="{0}"&gt;link&lt;/a&gt;</value>
+  <data name="Email_Message_EmailVerification" xml:space="preserve">
+    <value>Please confirm your email by clicking this link: &lt;a href="{0}/verifyemail;token={1};accountid={2}"&gt;link&lt;/a&gt;</value>
   </data>
   <data name="ErrorMessage_CurrentPassword_Invalid" xml:space="preserve">
     <value>Invalid current password</value>
@@ -290,5 +290,8 @@
   </data>
   <data name="ErrorMessage_TwoFactorCode_Required" xml:space="preserve">
     <value>Code is required.</value>
+  </data>
+  <data name="DisplayName_NewPassword" xml:space="preserve">
+    <value>New password</value>
   </data>
 </root>
