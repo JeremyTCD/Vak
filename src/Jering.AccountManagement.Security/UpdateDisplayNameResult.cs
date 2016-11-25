@@ -3,9 +3,9 @@
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityService{TAccount}.UpdateAccountPasswordHashAsync"/>.
+    /// Results for <see cref="IAccountSecurityService{TAccount}.UpdateDisplayNameAsync"/>.
     /// </summary>
-    public class UpdateAccountPasswordHashResult
+    public class UpdateDisplayNameResult
     {
         /// <summary>
         /// 
@@ -14,24 +14,24 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
-        public bool Failed { get; set; }
+        public bool InvalidDisplayName { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static UpdateAccountPasswordHashResult GetSucceededResult()
+        public static UpdateDisplayNameResult GetSucceededResult()
         {
-            return new UpdateAccountPasswordHashResult() { Succeeded = true};
+            return new UpdateDisplayNameResult() { Succeeded = true};
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static UpdateAccountPasswordHashResult GetFailedResult()
+        public static UpdateDisplayNameResult GetInvalidDisplayNameResult()
         {
-            return new UpdateAccountPasswordHashResult() { Failed = true };
+            return new UpdateDisplayNameResult() { InvalidDisplayName = true };
         }
     }
 }

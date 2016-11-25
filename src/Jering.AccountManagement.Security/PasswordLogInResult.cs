@@ -22,7 +22,7 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
-        public bool Failed { get; set; }
+        public bool InvalidCredentials { get; set; }
         /// <summary>
         /// 
         /// </summary>
@@ -41,9 +41,9 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <returns></returns>
-        public static PasswordLogInResult<TAccount> GetFailedResult()
+        public static PasswordLogInResult<TAccount> GetInvalidCredentialsResult()
         {
-            return new PasswordLogInResult<TAccount>() { Failed = true };
+            return new PasswordLogInResult<TAccount>() { InvalidCredentials = true };
         }
 
         /// <summary>

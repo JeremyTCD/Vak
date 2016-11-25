@@ -18,11 +18,24 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
-        public bool Failed { get; set; }
+        public bool InvalidToken { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool NotLoggedIn { get; set; }
         /// <summary>
         /// 
         /// </summary>
         public TAccount Account { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static TwoFactorLogInResult<TAccount> GetNotLoggedInResult()
+        {
+            return new TwoFactorLogInResult<TAccount>() { NotLoggedIn = true };
+        }
 
         /// <summary>
         /// 
@@ -37,9 +50,9 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <returns></returns>
-        public static TwoFactorLogInResult<TAccount> GetFailedResult()
+        public static TwoFactorLogInResult<TAccount> GetInvalidTokenResult()
         {
-            return new TwoFactorLogInResult<TAccount>() { Failed = true };
+            return new TwoFactorLogInResult<TAccount>() { InvalidToken = true };
         }
     }
 }

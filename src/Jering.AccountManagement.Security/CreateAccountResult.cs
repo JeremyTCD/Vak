@@ -14,11 +14,7 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
-        public bool EmailInUse { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool Failed { get; set; }
+        public bool InvalidEmail { get; set; }
         /// <summary>
         /// 
         /// </summary>
@@ -40,7 +36,7 @@ namespace Jering.AccountManagement.Security
         /// <returns></returns>
         public static CreateAccountResult<TAccount> GetInvalidEmailResult()
         {
-            return new CreateAccountResult<TAccount>() { EmailInUse = true };
+            return new CreateAccountResult<TAccount>() { InvalidEmail = true };
         }
     }
 }

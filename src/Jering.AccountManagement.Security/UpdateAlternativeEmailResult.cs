@@ -3,9 +3,9 @@
 namespace Jering.AccountManagement.Security
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityService{TAccount}.UpdateAccountTwoFactorEnabledAsync"/>.
+    /// Results for <see cref="IAccountSecurityService{TAccount}.UpdateAlternativeEmailAsync"/>.
     /// </summary>
-    public class UpdateAccountTwoFactorEnabledResult
+    public class UpdateAlternativeEmailResult
     {
         /// <summary>
         /// 
@@ -14,24 +14,24 @@ namespace Jering.AccountManagement.Security
         /// <summary>
         /// 
         /// </summary>
-        public bool Failed { get; set; }
+        public bool InvalidAlternativeEmail { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static UpdateAccountTwoFactorEnabledResult GetSucceededResult()
+        public static UpdateAlternativeEmailResult GetSucceededResult()
         {
-            return new UpdateAccountTwoFactorEnabledResult() { Succeeded = true};
+            return new UpdateAlternativeEmailResult() { Succeeded = true};
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static UpdateAccountTwoFactorEnabledResult GetFailedResult()
+        public static UpdateAlternativeEmailResult GetInvalidAlternativeEmailResult()
         {
-            return new UpdateAccountTwoFactorEnabledResult() { Failed = true };
+            return new UpdateAlternativeEmailResult() { InvalidAlternativeEmail = true };
         }
     }
 }
