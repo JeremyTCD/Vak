@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
 {
-    public class LogInResponseModel: IErrorResponseModel, IActionResponseModel
+    public class LogInResponseModel: IErrorResponseModel
     {
         public bool TwoFactorRequired { get; set; }
         public string Username { get; set; }

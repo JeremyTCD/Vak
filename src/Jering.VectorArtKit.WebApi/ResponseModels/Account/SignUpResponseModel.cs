@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
 {
-    public class SignUpResponseModel: IErrorResponseModel, IActionResponseModel
+    public class SignUpResponseModel: IErrorResponseModel
     {
         public string Username { get; set; }
         public SerializableError ModelState { get; set; }

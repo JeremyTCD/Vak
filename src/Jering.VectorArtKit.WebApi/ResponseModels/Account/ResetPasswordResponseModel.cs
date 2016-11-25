@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
 {
-    public class ResetPasswordResponseModel: IErrorResponseModel, IActionResponseModel
+    public class ResetPasswordResponseModel: IErrorResponseModel
     {
         public SerializableError ModelState { get; set; }
         public bool LinkExpiredOrInvalid { get; set; }

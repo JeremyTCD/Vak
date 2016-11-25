@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Jering.VectorArtKit.WebApi.ResponseModels.Shared
 {
@@ -9,5 +6,6 @@ namespace Jering.VectorArtKit.WebApi.ResponseModels.Shared
     {
         bool ExpectedError { get; set; }
         string ErrorMessage { get; set; }
+        SerializableError ModelState { get; set; }
     }
 }
