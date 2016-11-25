@@ -402,11 +402,11 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Invalid code..
+        ///    Looks up a localized string similar to Invalid or expired code..
         /// </summary>
-        public static string ErrorMessage_TwoFactorCode_Invalid {
+        public static string ErrorMessage_TwoFactorCode_InvalidOrExpired {
             get {
-                return ResourceManager.GetString("ErrorMessage_TwoFactorCode_Invalid", resourceCulture);
+                return ResourceManager.GetString("ErrorMessage_TwoFactorCode_InvalidOrExpired", resourceCulture);
             }
         }
         
