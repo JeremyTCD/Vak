@@ -1,30 +1,30 @@
 ﻿using Jering.DataAnnotations;
+using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.Resources;
-using System.ComponentModel.DataAnnotations;
 
 namespace Jering.VectorArtKit.WebApi.FormModels
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_Submit), typeof(Strings))]
     public class ResetPasswordFormModel
     {
+        [DynamicControl("input", order: 0)]
+        [DynamicControlProperty("type", "hidden")]
         public string Email { get; set; }
 
+        [DynamicControl("input", order: 1)]
+        [DynamicControlProperty("type", "hidden")]
         public string Token { get; set; }
 
-        [Required]
-        [ValidateMinLength(8, nameof(Strings.ErrorMessage_Password_TooShort), typeof(Strings))]
-        [ValidateHasLowercase(nameof(Strings.ErrorMessage_Password_RequiresLowerCase), typeof(Strings))]
-        [ValidateHasUppercase(nameof(Strings.ErrorMessage_Password_RequiresUpperCase), typeof(Strings))]
-        [DataType(DataType.Password)]
-        [Display(Name = "New password")]
+        [ValidateRequired(nameof(Strings.ErrorMessage_Password_Required), typeof(Strings))]
+        [ValidateComplexity(nameof(Strings.ErrorMessage_Password_TooSimple), typeof(Strings))]
+        [DynamicControl("input", nameof(Strings.DisplayName_NewPassword), typeof(Strings), 2)]
+        [DynamicControlProperty("type", "password")]
         public string NewPassword { get; set; }
 
-        [Required]
+        [ValidateRequired(nameof(Strings.ErrorMessage_ConfirmPassword_Required), typeof(Strings))]
         [ValidateMatches(nameof(NewPassword), nameof(Strings.ErrorMessage_ConfirmPassword_Differs), typeof(Strings))]
-        [DataType(DataType.Password)]
-        [Display(Name = "Confirm new password")]
-        public string ConfirmNewPassword { get; set; }
+        [DynamicControl("input", nameof(Strings.DisplayName_ConfirmPassword), typeof(Strings), 3)]
+        [DynamicControlProperty("type", "password")]
+        public string ConfirmPassword { get; set; }
     }
 }
