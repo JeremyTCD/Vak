@@ -92,37 +92,46 @@ namespace Jering.AccountManagement.Security
                 throw new ArgumentNullException(nameof(account));
             }
 
-            byte[] unprotectedBytes = _dataProtector.Unprotect(Convert.FromBase64String(token));
-            MemoryStream memoryStream = new MemoryStream(unprotectedBytes);
-            using (BinaryReader binaryReader = memoryStream.CreateReader())
+            try
             {
-                DateTimeOffset extractedCreationTime = binaryReader.ReadDateTimeOffset();
-                DateTimeOffset expirationTime = extractedCreationTime + _securityOptions.TokenServiceOptions.DataProtectionTokenLifespan;
-                if (expirationTime < _timeService.UtcNow)
+                byte[] unprotectedBytes = _dataProtector.Unprotect(Convert.FromBase64String(token));
+                MemoryStream memoryStream = new MemoryStream(unprotectedBytes);
+                using (BinaryReader binaryReader = memoryStream.CreateReader())
                 {
-                    return ValidateTokenResult.GetExpiredResult();
-                }
+                    DateTimeOffset extractedCreationTime = binaryReader.ReadDateTimeOffset();
+                    DateTimeOffset expirationTime = extractedCreationTime + _securityOptions.TokenServiceOptions.DataProtectionTokenLifespan;
+                    if (expirationTime < _timeService.UtcNow)
+                    {
+                        return ValidateTokenResult.GetExpiredResult();
+                    }
 
-                int extractedAccountId = binaryReader.ReadInt32();
-                if (extractedAccountId != account.AccountId)
-                {
-                    return ValidateTokenResult.GetInvalidResult();
-                }
+                    int extractedAccountId = binaryReader.ReadInt32();
+                    if (extractedAccountId != account.AccountId)
+                    {
+                        return ValidateTokenResult.GetInvalidResult();
+                    }
 
-                string extractedPurpose = binaryReader.ReadString();
-                if (extractedPurpose != purpose)
-                {
-                    return ValidateTokenResult.GetInvalidResult();
-                }
+                    string extractedPurpose = binaryReader.ReadString();
+                    if (extractedPurpose != purpose)
+                    {
+                        return ValidateTokenResult.GetInvalidResult();
+                    }
 
-                string extractedSecurityStamp = binaryReader.ReadString();
-                if (binaryReader.PeekChar() != -1 || extractedSecurityStamp != account.SecurityStamp.ToString())
-                {
-                    return ValidateTokenResult.GetInvalidResult();
-                }
+                    string extractedSecurityStamp = binaryReader.ReadString();
+                    if (binaryReader.PeekChar() != -1 || extractedSecurityStamp != account.SecurityStamp.ToString())
+                    {
+                        return ValidateTokenResult.GetInvalidResult();
+                    }
 
-                return ValidateTokenResult.GetValidResult();
+                    return ValidateTokenResult.GetValidResult();
+                }
             }
+            catch
+            {
+
+            }
+
+            return ValidateTokenResult.GetInvalidResult();
         }
     }
 
