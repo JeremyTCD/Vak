@@ -1,0 +1,14 @@
+{
+  "version": "1.0.0",
+  "buildOptions": {
+    //"warningsAsErrors": true,
+    "xmlDoc": true
+  },
+  "dependencies": {
+    "System.Runtime": "4.1.0",
+    "System.Runtime.InteropServices": "4.1.0"
+  },
+  "frameworks": {
+    "netcoreapp1.0": {}
+  }
+}
