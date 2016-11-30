@@ -1,4 +1,6 @@
-﻿namespace Jering.Mail
+﻿using System.IO;
+
+namespace Jering.Mail
 {
     /// <summary>
     /// Specifies options for implementations of <see cref="IEmailService"/> .
@@ -28,7 +30,7 @@
         /// <summary>
         /// File to write emails to in development environment.
         /// </summary>
-        public string DevelopmentFile { get; set; } = "temp/SmtpTest.txt";
+        public string DevelopmentFile { get; set; } = $"{Path.GetTempPath()}SmtpTest.txt";
 
         // Authentication details should be stored somewhere safe
         /// <summary>
