@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using MimeKit;
 using Jering.Mail;
+using System.Net;
 
 namespace Jering.AccountManagement.Security
 {
@@ -733,7 +734,10 @@ namespace Jering.AccountManagement.Security
 
             MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
                 subject,
-                string.Format(messageFormat, linkDomain, token, account.Email));
+                string.Format(messageFormat, 
+                linkDomain, 
+                WebUtility.UrlEncode(token),
+                WebUtility.UrlEncode(account.Email)));
 
             await _emailService.SendEmailAsync(mimeMessage);
         }
