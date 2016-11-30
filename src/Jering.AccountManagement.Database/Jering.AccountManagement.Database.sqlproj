@@ -110,4 +110,7 @@
   <ItemGroup>
     <RefactorLog Include="Jering.ASP.NET.Identity.Dapper.Database.refactorlog" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Jering.AccountManagement.Database.publish.xml" />
+  </ItemGroup>
 </Project>
