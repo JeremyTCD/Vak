@@ -1,12 +1,12 @@
 ﻿import { Injectable } from '@angular/core';
-import { ReplaySubject, BehaviorSubject } from 'rxjs';
+import { ReplaySubject, BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable()
 export class StubActivatedRoute {
 
     // BehaviourSubject stores the last emitted value and emits it immediately to new subscribers
     private _subject = new BehaviorSubject(this.testParams);
-    public params = this._subject.asObservable();
+    public params: Observable<any> = this._subject.asObservable();
 
     // Test parameters
     private _testParams: {};
@@ -22,7 +22,7 @@ export class StubActivatedRoute {
     }
 
     private _data = new ReplaySubject(1);
-    public data = this._data.asObservable();
+    public data: Observable<any> = this._data.asObservable();
     private _testData: {};
     get testData() { return this._testData; }
     set testData(data: {}) {
