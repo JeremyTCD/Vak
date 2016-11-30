@@ -1,7 +1,7 @@
 {
   "Data": {
     "DefaultConnection": {
-      "ConnectionString": "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=Jering.AccountDatabase;Integrated Security=True;"
+      "ConnectionString": "Data Source=JEREMY-PC;Initial Catalog=Jering.VectorArtKit;Integrated Security=True;"
     }
   },
   "version": "1.0.0-*",
@@ -16,8 +16,7 @@
     "Microsoft.AspNetCore.TestHost": "1.0.0",
     "Jering.VectorArtKit.WebApi": "1.0.0",
     "dotnet-test-xunit": "2.2.0-preview2-build1029",
-    "Newtonsoft.Json": "9.0.2-beta1"
-  },
+    "Newtonsoft.Json": "9.0.2-beta1"  },
   "frameworks": {
     "netcoreapp1.0": {
     }

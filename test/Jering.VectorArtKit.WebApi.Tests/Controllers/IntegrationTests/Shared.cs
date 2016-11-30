@@ -60,6 +60,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             TestServer.Dispose();
             HttpClient.Dispose();
+            SqlConnection.Close();
         }
 
         public async Task ResetAccountsTable()

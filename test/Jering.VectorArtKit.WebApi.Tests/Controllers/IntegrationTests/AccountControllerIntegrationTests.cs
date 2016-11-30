@@ -30,7 +30,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         private string _badRequest { get; } = "BadRequest";
         private string _unauthorized { get; } = "Unauthorized";
         private string _ok { get; } = "OK";
-        private string _tempEmailFile { get; } = @"Temp\SmtpTest.txt";
+        private string _tempEmailFile { get; } = $"{Environment.GetEnvironmentVariable("TMP")}\\SmtpTest.txt";
         private string _applicationCookieName { get; } = "Jering.Application";
         private string _twoFactorCookieName { get; } = "Jering.TwoFactor";
         private string _testEmail { get; } = "test@email.com";
