@@ -1,7 +1,6 @@
  
 
-export interface SignUpResponseModel {
-	username?: string;
+export interface SendResetPasswordResponseModel {
 	modelState?: { [key: string]: any; };
 	expectedError?: boolean;
 	errorMessage?: string;
