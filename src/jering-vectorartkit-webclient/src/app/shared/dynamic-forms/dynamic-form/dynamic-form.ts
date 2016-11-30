@@ -64,7 +64,7 @@ export class DynamicForm {
         this.messages = [];
         for (let dynamicControl of this.dynamicControls) {
             // Force validation of controls that have never been validated
-            if (dynamicControl.validity === undefined) {
+            if (dynamicControl.validity === Validity.unknown) {
                 dynamicControl.validate();
             }
 

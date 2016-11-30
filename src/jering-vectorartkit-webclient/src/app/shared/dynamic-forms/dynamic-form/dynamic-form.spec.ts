@@ -67,7 +67,7 @@ describe('DynamicForm', () => {
     });
 
     describe(`validate`, () => {
-        it(`Calls DynamicControl.validate on child DynamicControls that have validate === undefined`, () => {
+        it(`Calls DynamicControl.validate on child DynamicControls that have validate === Validity.unknown`, () => {
             spyOn(testDynamicControl, `validate`);
 
             dynamicForm.validate();
@@ -75,7 +75,7 @@ describe('DynamicForm', () => {
             expect(testDynamicControl.validate).toHaveBeenCalledTimes(1);
         });
 
-        it(`Does not call DynamicControl.validate on child DynamicControls that have validate !== undefined`, () => {
+        it(`Does not call DynamicControl.validate on child DynamicControls that have validate !== Validity.unknown`, () => {
             testDynamicControl.validity = Validity.valid;
             spyOn(testDynamicControl, `validate`);
 
