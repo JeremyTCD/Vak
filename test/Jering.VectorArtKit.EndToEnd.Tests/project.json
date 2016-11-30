@@ -1,0 +1,25 @@
+{
+  "Data": {
+    "DefaultConnection": {
+      "ConnectionString": "Data Source=JEREMY-PC;Initial Catalog=Jering.VectorArtKit;Integrated Security=True;"
+    }
+  },
+  "version": "1.0.0-*",
+  "testRunner": "xunit",
+  "dependencies": {
+    "Selenium.WebDriver": "3.0.1",
+    "Selenium.Support": "3.0.1",
+    "xunit": "2.2.0-beta4-build3444",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "System.Data.SqlClient": "4.3.0",
+    "Microsoft.Extensions.Configuration": "1.0.0",
+    "Microsoft.Extensions.Configuration.FileExtensions": "1.0.0",
+    "Microsoft.Extensions.Configuration.Json": "1.0.0",
+    "Dapper": "1.50.*",
+    "Selenium.WebDriver.ChromeDriver": "2.25.0.8"
+  },
+  "frameworks": {
+    "net451": {
+    }
+  }
+}
