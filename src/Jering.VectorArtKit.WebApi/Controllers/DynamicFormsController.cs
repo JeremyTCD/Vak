@@ -3,7 +3,6 @@ using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Filters;
 using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForms;
-using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -63,7 +62,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             {
                 return BadRequest();
             }
-                       
+
             return Ok(new ValidateResponseModel(){Valid = !await _vakAccountRepository.CheckEmailInUseAsync(value) });
         }
     }

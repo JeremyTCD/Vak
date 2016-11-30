@@ -184,7 +184,7 @@
     <value>Reset password</value>
   </data>
   <data name="Email_Message_ResetPassword" xml:space="preserve">
-    <value>Please reset your email at this link: &lt;a href="{0}/resetpassword;token={1};email={2}"&gt;link&lt;/a&gt;</value>
+    <value>Please reset your email at this link: &lt;a href="{0}login/resetpassword;token={1};email={2}"&gt;link&lt;/a&gt;</value>
   </data>
   <data name="ErrorMessage_Password_Invalid" xml:space="preserve">
     <value>Invalid password</value>
@@ -208,7 +208,7 @@
     <value>Invalid or expired code.</value>
   </data>
   <data name="Email_Message_EmailVerification" xml:space="preserve">
-    <value>Please confirm your email by clicking this link: &lt;a href="{0}/verifyemail;token={1};accountid={2}"&gt;link&lt;/a&gt;</value>
+    <value>Please confirm your email by clicking this link: &lt;a href="{0}verifyemail;token={1};accountid={2}"&gt;link&lt;/a&gt;</value>
   </data>
   <data name="ErrorMessage_CurrentPassword_Invalid" xml:space="preserve">
     <value>Invalid current password</value>
