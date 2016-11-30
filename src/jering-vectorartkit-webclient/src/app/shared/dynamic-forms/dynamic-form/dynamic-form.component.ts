@@ -16,6 +16,7 @@ import { Check } from '../../check';
 export class DynamicFormComponent implements OnInit, OnDestroy {
     formSubmitRelativeUrl: string;
     @Output() submitSuccess = new EventEmitter<any>();
+    @Output() submitError = new EventEmitter<any>();
 
     // create resolve guard to this does not need to be initialized
     dynamicForm: DynamicForm = new DynamicForm([], null, null);
@@ -75,10 +76,13 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
 
         this.dynamicForm.messages = [error.errorMessage || this.dynamicForm.message];
         this.dynamicForm.validity = Validity.invalid;
+
+        this.submitError.emit(error);
     }
 
     ngOnDestroy(): void {
         this.submitSuccess.unsubscribe();
+        this.submitError.unsubscribe();
 
         if (this._dataSubscription) {
             this._dataSubscription.unsubscribe();

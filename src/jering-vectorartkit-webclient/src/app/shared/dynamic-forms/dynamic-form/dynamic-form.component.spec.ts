@@ -31,7 +31,7 @@ let testFormModelName = `testFormModelName`;
 let testSubmitUrl = `testSubmitUrl`;
 let testMessage = `testErrorMessage`;
 let testButtonText = `testButtonText`;
-let testDynamicControl: DynamicControl<any>;
+let testDynamicControl: DynamicControl;
 let testDynamicForm: DynamicForm;
 let testSubmitEvent: StubDomEvent;
 let testResponse: Response;
@@ -55,7 +55,7 @@ describe('DynamicFormComponent', () => {
         stubDynamicFormsService = TestBed.get(DynamicFormsService) as StubDynamicFormsService;
         stubErrorHandlerService = TestBed.get(ErrorHandlerService) as StubErrorHandlerService;
         stubActivatedRoute = TestBed.get(ActivatedRoute) as StubActivatedRoute;
-        testDynamicControl = new DynamicControl<any>({ name: testControlName });
+        testDynamicControl = new DynamicControl({ name: testControlName });
         testDynamicForm = new DynamicForm([testDynamicControl], testMessage, testButtonText);
         testSubmitEvent = new StubDomEvent();
         testResponse = new Response(
@@ -70,9 +70,12 @@ describe('DynamicFormComponent', () => {
         stubHostFixture.detectChanges();
 
         spyOn(stubHostComponent, `onSubmitSuccess`);
+        spyOn(stubHostComponent, `onSubmitError`);
 
         dynamicFormComponent.submitSuccess.emit(testResponse);
+        dynamicFormComponent.submitError.emit(testResponse);
 
+        expect(stubHostComponent.onSubmitError).toHaveBeenCalledWith(testResponse);
         expect(stubHostComponent.onSubmitSuccess).toHaveBeenCalledWith(testResponse);
     });
 
@@ -181,7 +184,7 @@ class StubDynamicFormsService {
 }
 
 @Component({
-    template: `<dynamic-form (submitSuccess)="onSubmitSuccess($event)"></dynamic-form>`
+    template: `<dynamic-form (submitSuccess)="onSubmitSuccess($event)" (submitError)="onSubmitError($event)"></dynamic-form>`
 })
 class StubHostComponent {
     @ViewChild(DynamicFormComponent) dynamicFormComponent: DynamicFormComponent;
@@ -198,5 +201,5 @@ class StubHostComponent {
     template: `{{dynamicControl.name}}`
 })
 class StubDynamicControlComponent {
-    @Input() dynamicControl: DynamicControl<any>;
+    @Input() dynamicControl: DynamicControl;
 }
