@@ -2,6 +2,7 @@ import { Component, Input, ElementRef, ViewChild, AfterViewInit } from '@angular
 import { Renderer } from '@angular/core/index';
 
 import { DynamicControl } from './dynamic-control';
+import { Validity } from '../validity';
 
 /**
  * Component for a single DynamicControl
@@ -11,7 +12,7 @@ import { DynamicControl } from './dynamic-control';
     templateUrl: 'dynamic-control.component.html'
 })
 export class DynamicControlComponent implements AfterViewInit {
-    @Input() dynamicControl: DynamicControl<any>;
+    @Input() dynamicControl: DynamicControl;
     @ViewChild(`control`) control: ElementRef;
 
     constructor(private _renderer: Renderer) { }
@@ -21,6 +22,7 @@ export class DynamicControlComponent implements AfterViewInit {
         for (let key of Object.keys(this.dynamicControl.properties)) {
             this._renderer.setElementProperty(this.control.nativeElement, key, this.dynamicControl.properties[key]);
         }
+        this._renderer.setElementProperty(this.control.nativeElement, `id`, this.dynamicControl.name);
 
         // Add listeners
         let type = this.dynamicControl.properties[`type`];
@@ -37,5 +39,9 @@ export class DynamicControlComponent implements AfterViewInit {
         } else if (this.dynamicControl.tagName === `select`) {
 
         }
+    }
+
+    getClasses(): string[] {
+        return [Validity[this.dynamicControl.validity]];
     }
 }

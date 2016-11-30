@@ -10,12 +10,13 @@ import { DynamicControl } from './dynamic-control';
 import { Validity } from '../validity';
 
 let dynamicControlComponent: DynamicControlComponent;
-let dynamicControl: DynamicControl<any>;
+let dynamicControl: DynamicControl;
 let stubHostComponent: StubHostComponent;
 let stubHostFixture: ComponentFixture<StubHostComponent>;
 let hostDebugElement: DebugElement;
 let nativeElement: HTMLElement;
 
+let testPropertyValue = `testPropertyValue`;
 let testControlName = `testControlName`;
 let testDisplayName = `testDisplayName`;
 let testMessage = `testMessage`;
@@ -37,6 +38,7 @@ describe('DynamicControlComponent', () => {
         stubHostFixture = TestBed.createComponent(StubHostComponent);
         stubHostComponent = stubHostFixture.componentInstance;
         dynamicControl = stubHostComponent.dynamicControl;
+        dynamicControl.tagName = inputTagName;
         dynamicControlComponent = stubHostComponent.dynamicControlComponent;
         hostDebugElement = stubHostFixture.debugElement;
     });
@@ -47,16 +49,18 @@ describe('DynamicControlComponent', () => {
         expect(dynamicControlComponent.dynamicControl).toBe(stubHostComponent.dynamicControl);
     });
 
-    it(`Renders and sets up control`, () => {
-        dynamicControl.tagName = inputTagName;
-        dynamicControl.properties = { type: `email`, testProperty: `testPropertyValue` };
+    it(`Renders control`, () => {
+        dynamicControl.properties = { type: `email`, testProperty: testPropertyValue };
+        dynamicControl.name = testControlName;
 
         stubHostFixture.detectChanges();
 
         let controlDebugElement = hostDebugElement.query(By.css(inputTagName));
         expect(controlDebugElement).not.toBeNull();
         expect(controlDebugElement.listeners.length).toBe(2);
-        expect(controlDebugElement.properties[`testProperty`]).toBe(`testPropertyValue`);
+        expect(controlDebugElement.properties[`testProperty`]).toBe(testPropertyValue);
+        expect(controlDebugElement.properties[`id`]).toBe(testControlName);
+        expect(controlDebugElement.classes[Validity[Validity.unknown]]).toBe(true);
     });
 
     it(`Renders messages`, () => {
@@ -103,6 +107,6 @@ describe('DynamicControlComponent', () => {
     template: `<dynamic-control [dynamicControl]="dynamicControl"></dynamic-control>`
 })
 class StubHostComponent {
-    dynamicControl = new DynamicControl<any>({});
+    dynamicControl = new DynamicControl({});
     @ViewChild(DynamicControlComponent) dynamicControlComponent: DynamicControlComponent;
 }
