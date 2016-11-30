@@ -5,11 +5,11 @@ import { Validity } from '../validity';
  * Represents a dynamically generated form.
  */
 export class DynamicForm {
-    validity: Validity;
+    validity: Validity = Validity.unknown;
     messages: string[] = [];
     submitAttempted: boolean;
 
-    constructor(public dynamicControls: DynamicControl<any>[], public message: string, public buttonText: string) {
+    constructor(public dynamicControls: DynamicControl[], public message: string, public buttonText: string) {
     }
 
     /**
@@ -52,7 +52,7 @@ export class DynamicForm {
      * Returns
      * - DynamicControl with specified name
      */
-    getDynamicControl(name: string): DynamicControl<any> {
+    getDynamicControl(name: string): DynamicControl {
         return this.dynamicControls.find(dynamicControl => dynamicControl.name === name);
     }
 

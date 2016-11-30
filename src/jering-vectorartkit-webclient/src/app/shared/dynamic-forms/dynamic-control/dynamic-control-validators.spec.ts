@@ -14,7 +14,7 @@ let testDisplayName = `testDisplayName`;
 let result: DynamicControlValidatorResult;
 
 describe(`validateAllDigits`, () => {
-    let dynamicControl: DynamicControl<any>;
+    let dynamicControl: DynamicControl;
     let validateAllDigitsValidator: DynamicControlValidator;
 
     beforeEach(() => {
@@ -91,7 +91,7 @@ describe(`validateAllDigits`, () => {
 });
 
 describe(`validateComplexity`, () => {
-    let dynamicControl: DynamicControl<any>;
+    let dynamicControl: DynamicControl;
     let validateComplexityValidator: DynamicControlValidator;
 
     beforeEach(() => {
@@ -168,9 +168,9 @@ describe(`validateComplexity`, () => {
 });
 
 describe(`validateDiffers`, () => {
-    let dynamicControl: DynamicControl<any>;
+    let dynamicControl: DynamicControl;
     let validateDiffersValidator: DynamicControlValidator;
-    let otherDynamicControl: DynamicControl<any>;
+    let otherDynamicControl: DynamicControl;
     let dynamicForm: DynamicForm;
 
     beforeEach(() => {
@@ -242,7 +242,7 @@ describe(`validateDiffers`, () => {
 });
 
 describe(`validateEmailAddress`, () => {
-    let dynamicControl: DynamicControl<any>;
+    let dynamicControl: DynamicControl;
     let validateEmailAddressValidator: DynamicControlValidator;
 
     beforeEach(() => {
@@ -319,7 +319,7 @@ describe(`validateEmailAddress`, () => {
 });
 
 describe(`validateLength`, () => {
-    let dynamicControl: DynamicControl<any>;
+    let dynamicControl: DynamicControl;
     let validateLengthValidator: DynamicControlValidator;
 
     beforeEach(() => {
@@ -374,9 +374,9 @@ describe(`validateLength`, () => {
 });
 
 describe(`validateMatches`, () => {
-    let dynamicControl: DynamicControl<any>;
+    let dynamicControl: DynamicControl;
     let validateMatchesValidator: DynamicControlValidator;
-    let otherDynamicControl: DynamicControl<any>;
+    let otherDynamicControl: DynamicControl;
     let dynamicForm: DynamicForm;
 
     beforeEach(() => {
@@ -448,7 +448,7 @@ describe(`validateMatches`, () => {
 });
 
 describe(`validateMinLength`, () => {
-    let dynamicControl: DynamicControl<any>;
+    let dynamicControl: DynamicControl;
     let validateMinLengthValidator: DynamicControlValidator;
 
     beforeEach(() => {
@@ -509,7 +509,7 @@ describe(`validateMinLength`, () => {
 });
 
 describe(`validateRequired`, () => {
-    let dynamicControl: DynamicControl<any>;
+    let dynamicControl: DynamicControl;
     let validateRequiredValidator: DynamicControlValidator;
 
     beforeEach(() => {

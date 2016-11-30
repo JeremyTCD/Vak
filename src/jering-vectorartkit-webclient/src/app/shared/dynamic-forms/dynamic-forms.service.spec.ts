@@ -16,7 +16,7 @@ let testControlName = `testControlName`;
 let testMessage = `testMessage`;
 let testButtonText = `testButtonText`;
 let testRelativeUrl = `testRelativeUrl`;
-let testDynamicControl: DynamicControl<any>;
+let testDynamicControl: DynamicControl;
 let testDynamicForm: DynamicForm;
 let testResponse: Response;
 let testDynamicFormResponseModel: DynamicFormResponseModel;
@@ -26,7 +26,7 @@ describe('DynamicFormsService', () => {
         TestBed.configureTestingModule({
             providers: [DynamicFormsService, { provide: HttpService, useClass: StubHttpService }]
         });
-        testDynamicControl = new DynamicControl<any>({ name: testControlName });
+        testDynamicControl = new DynamicControl({ name: testControlName });
         testDynamicForm = new DynamicForm([testDynamicControl], testMessage, testButtonText);
         testResponse = new Response(
             new ResponseOptions({})

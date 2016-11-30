@@ -1,5 +1,6 @@
 ﻿export enum Validity {
     invalid,
     pending,
-    valid
+    valid,
+    unknown
 }

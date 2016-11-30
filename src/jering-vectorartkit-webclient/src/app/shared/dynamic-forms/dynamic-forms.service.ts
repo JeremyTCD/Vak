@@ -46,10 +46,10 @@ export class DynamicFormsService {
      * - DynamicForm
      */
     private dynamicFormFromResponseModel(formResponseModel: DynamicFormResponseModel): DynamicForm {
-        let dynamicControls: DynamicControl<any>[] = [];
+        let dynamicControls: DynamicControl[] = [];
 
         for (let controlResponseModel of formResponseModel.dynamicControlResponseModels) {
-            dynamicControls.push(new DynamicControl<any>(controlResponseModel, this));
+            dynamicControls.push(new DynamicControl(controlResponseModel, this));
         }
 
         let dynamicForm = new DynamicForm(dynamicControls.sort((dynamicControl1, dynamicControl2) => dynamicControl1.order - dynamicControl2.order),

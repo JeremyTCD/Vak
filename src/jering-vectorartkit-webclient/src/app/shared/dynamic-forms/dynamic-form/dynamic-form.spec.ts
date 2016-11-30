@@ -4,7 +4,7 @@ import { Validity } from '../validity';
 import { StubDomEvent, StubDomElement } from '../../../../testing/dom-stubs';
 
 let dynamicForm: DynamicForm;
-let testDynamicControl: DynamicControl<any>;
+let testDynamicControl: DynamicControl;
 let testDynamicForm: DynamicForm;
 let testMessage = `testMessage`;
 let testValue = `testValue`;

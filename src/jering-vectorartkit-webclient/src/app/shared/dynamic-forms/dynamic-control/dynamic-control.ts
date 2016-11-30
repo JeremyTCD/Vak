@@ -10,7 +10,7 @@ import { Validity } from '../validity';
 /**
  * Dynamically generated control
  */
-export class DynamicControl<T>{
+export class DynamicControl{
     name: string;
     displayName: string;
     order: number;
@@ -25,8 +25,8 @@ export class DynamicControl<T>{
     dirty: boolean;
     blurred: boolean;
     providerSiblingsNames: string[] = [];
-    dependentSiblings: DynamicControl<any>[] = [];
-    validity: Validity;
+    dependentSiblings: DynamicControl[] = [];
+    validity: Validity = Validity.unknown;
 
     constructor(controlResponseModel: DynamicControlResponseModel, dynamicFormsService?: DynamicFormsService) {
         this.name = controlResponseModel.name || '';

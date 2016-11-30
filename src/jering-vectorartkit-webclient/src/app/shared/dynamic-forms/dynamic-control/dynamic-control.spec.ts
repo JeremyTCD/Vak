@@ -6,7 +6,7 @@ import { DynamicForm } from '../dynamic-form/dynamic-form';
 import { Validity } from '../validity';
 import { StubDomEvent, StubDomElement } from '../../../../testing/dom-stubs';
 
-let dynamicControl: DynamicControl<any>;
+let dynamicControl: DynamicControl;
 let testDynamicForm: DynamicForm;
 let testValue = `testValue`;
 let testDynamicControlName = `testDynamicControlName`;
@@ -187,7 +187,7 @@ describe(`DynamicControl`, () => {
 });
 
 function stubValidator(validity: Validity, message: string): DynamicControlValidator {
-    return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
+    return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
         return new DynamicControlValidatorResult(validity, message);
     }; 
 }

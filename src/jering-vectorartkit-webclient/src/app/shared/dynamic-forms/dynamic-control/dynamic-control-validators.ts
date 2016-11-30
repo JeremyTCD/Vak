@@ -34,7 +34,7 @@ export class DynamicControlValidators {
      *   if control value does not contain only digits
      */
     static validateAllDigits(validatorResponseModel: ValidatorResponseModel): DynamicControlValidator {
-        return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
+        return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             if (!Check.isValue(dynamicControl.value)) {
                 return new DynamicControlValidatorResult(Validity.valid);
             }
@@ -61,7 +61,7 @@ export class DynamicControlValidators {
      *   control value is not sufficiently complex
      */
     static validateComplexity(validatorResponseModel: ValidatorResponseModel): DynamicControlValidator {
-        return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
+        return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             if (!Check.isValue(dynamicControl.value)) {
                 return new DynamicControlValidatorResult(Validity.valid);
             }
@@ -113,7 +113,7 @@ export class DynamicControlValidators {
     static validateDiffers(validatorResponseModel: ValidatorResponseModel): DynamicControlValidator {
         let otherControlName = validatorResponseModel.options[`OtherProperty`];
 
-        return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
+        return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             let otherValue = dynamicControl.parent.getDynamicControl(otherControlName).value;
 
             if (!Check.isValue(dynamicControl.value) || !Check.isValue(otherValue) ||
@@ -134,7 +134,7 @@ export class DynamicControlValidators {
      * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value is not an email address
      */
     static validateEmailAddress(validatorResponseModel: ValidatorResponseModel): DynamicControlValidator {
-        return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
+        return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             if (!Check.isValue(dynamicControl.value)) {
                 return new DynamicControlValidatorResult(Validity.valid);
             }
@@ -167,7 +167,7 @@ export class DynamicControlValidators {
     static validateLength(validatorResponseModel: ValidatorResponseModel): DynamicControlValidator {
         let length = parseInt(validatorResponseModel.options[`Length`], 10);
 
-        return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
+        return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             if (!Check.isValue(dynamicControl.value) || dynamicControl.value.length === length) {
                 return new DynamicControlValidatorResult(Validity.valid);
             }
@@ -184,11 +184,11 @@ export class DynamicControlValidators {
      * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if control values match
      * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control values do not match
      */
-    static validateMatches(validatorResponseModel: ValidatorResponseModel, dynamicControl: DynamicControl<any>): DynamicControlValidator {
+    static validateMatches(validatorResponseModel: ValidatorResponseModel, dynamicControl: DynamicControl): DynamicControlValidator {
         let otherControlName = validatorResponseModel.options[`OtherProperty`];
         dynamicControl.providerSiblingsNames.push(otherControlName);
 
-        return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
+        return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             let otherControl = dynamicControl.parent.getDynamicControl(otherControlName);
 
             if (!Check.isValue(dynamicControl.value) || !Check.isValue(otherControl.value) || dynamicControl.value === otherControl.value) {
@@ -210,7 +210,7 @@ export class DynamicControlValidators {
     static validateMinLength(validatorResponseModel: ValidatorResponseModel): DynamicControlValidator {
         let length = parseInt(validatorResponseModel.options[`MinLength`], 10);
 
-        return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
+        return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             if (!Check.isValue(dynamicControl.value) || dynamicControl.value.length >= length) {
                 return new DynamicControlValidatorResult(Validity.valid);
             }
@@ -227,7 +227,7 @@ export class DynamicControlValidators {
      * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value is null, undefined or an empty string.
      */
     static validateRequired(validatorResponseModel: ValidatorResponseModel): DynamicControlValidator {
-        return (dynamicControl: DynamicControl<any>): DynamicControlValidatorResult => {
+        return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             return Check.isValue(dynamicControl.value) ?
                 new DynamicControlValidatorResult(Validity.valid) :
                 new DynamicControlValidatorResult(Validity.invalid, validatorResponseModel.errorMessage.replace(`{0}`, dynamicControl.displayName));

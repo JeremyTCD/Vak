@@ -23,7 +23,7 @@ export class DynamicControlAsyncValidator {
      * - Directly sets dynamicControl.validity to Validity.valid if query observable returns Validity.valid
      * - Otherwise, directly sets dynamicControl.validity to Validity.invalid
      */
-    constructor(validatorResponseModel: ValidatorResponseModel, dynamicControl: DynamicControl<any>,
+    constructor(validatorResponseModel: ValidatorResponseModel, dynamicControl: DynamicControl,
         dynamicFormsService: DynamicFormsService) {
 
         this.subjectAsObservable = this.subject.
@@ -68,7 +68,7 @@ export class DynamicControlAsyncValidator {
      * - DynamicControlValidatorResult with validity = Validity.valid and message = undefined if
      *   control value is null, undefined or an empty string
      */
-    validate(dynamicControl: DynamicControl<any>): DynamicControlValidatorResult {
+    validate(dynamicControl: DynamicControl): DynamicControlValidatorResult {
         if (dynamicControl.validity === Validity.invalid) {
             this.subscription.unsubscribe();
 

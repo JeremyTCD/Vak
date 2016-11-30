@@ -22,7 +22,7 @@ describe(`DynamicControlAsyncValidator`, () => {
     });
 
     describe(`validate`, () => {
-        let dynamicControl: DynamicControl<any>;
+        let dynamicControl: DynamicControl;
 
         beforeEach(() => {
             dynamicControl = new DynamicControl({ displayName: testDisplayName });
