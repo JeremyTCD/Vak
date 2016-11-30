@@ -41,20 +41,25 @@ describe('ForgotPasswordComponent', () => {
     it(`Renders reset password instructions and dynamic form if submitSuccessful is false`, () => {
         forgotPasswordComponentFixture.detectChanges();
 
-        expect(forgotPasswordDebugElement.query(By.css(`dynamic-form`))).toBeTruthy();
-        expect(forgotPasswordDebugElement.queryAll(By.css(`div`)).some(debugElement => debugElement.nativeElement.textContent.trim() === `Reset password instructions`)).toBe(true);
-        expect(forgotPasswordDebugElement.queryAll(By.css(`div`)).some(debugElement => debugElement.nativeElement.textContent.trim() === `Reset password link sent`)).toBe(false);
-        // 1 anchor from StubDynamicFormComponent
-        expect(forgotPasswordDebugElement.queryAll(By.css(`a`)).length).toBe(2);
+        expect(forgotPasswordDebugElement.queryAll(By.css(`dynamic-form`)).length).toBe(1);
+        let divs = forgotPasswordDebugElement.queryAll(By.css(`div`));
+        expect(divs.length).toBe(3);
+        expect(divs.
+            some(debugElement => debugElement.nativeElement.textContent.trim() === `Reset password instructions`)).toBe(true);
     });
 
-    xit(`Renders reset password instructions and dynamic form if submitSuccessful is false`, () => {
+    it(`Renders reset password link sent tip and did not recieve email tip if submitSuccessful is true`, () => {
+        forgotPasswordComponent.submitSuccessful = true;
+
         forgotPasswordComponentFixture.detectChanges();
 
-        expect(forgotPasswordDebugElement.queryAll(By.css(`a`)).length).toBe(3);
-        expect(forgotPasswordDebugElement.queryAll(By.css(`div`)).some(debugElement => debugElement.nativeElement.textContent.trim() === `Reset password link sent`)).toBe(true);
-        expect(forgotPasswordDebugElement.query(By.css(`dynamic-form`))).toBe(null);
-        expect(forgotPasswordDebugElement.queryAll(By.css(`div`)).some(debugElement => debugElement.nativeElement.textContent.trim() === `Reset password instructions`)).toBe(false);
+        let anchors = forgotPasswordDebugElement.queryAll(By.css(`a`));
+        expect(anchors.length).toBe(2);
+        expect(anchors.some(debugElement => debugElement.nativeElement.textContent.trim() === `Did not receive email help`)).toBe(true);
+        let divs = forgotPasswordDebugElement.queryAll(By.css(`div`));
+        expect(divs.length).toBe(3);
+        expect(divs.
+            some(debugElement => debugElement.nativeElement.textContent.trim() === `Reset password link sent`)).toBe(true);
     });
 });
 
