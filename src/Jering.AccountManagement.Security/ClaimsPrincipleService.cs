@@ -130,10 +130,6 @@ namespace Jering.AccountManagement.Security
         /// <returns></returns>
         public virtual ClaimsPrincipal CreateClaimsPrincipal(int accountId, string authenticationScheme)
         {
-            if(accountId == null)
-            {
-                throw new ArgumentNullException(nameof(accountId));
-            }
             if(authenticationScheme == null)
             {
                 throw new ArgumentNullException(nameof(authenticationScheme));
