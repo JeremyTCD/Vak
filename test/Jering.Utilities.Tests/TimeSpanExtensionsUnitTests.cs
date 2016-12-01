@@ -1,9 +1,8 @@
-﻿using Jering.VectorArtKit.WebApi.Extensions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Jering.VectorArtKit.WebApi.Controllers.IntegrationTests.Extensions
+namespace Jering.Utilities.Tests
 {
     public class TimeSpanExtensionsUnitTests
     {

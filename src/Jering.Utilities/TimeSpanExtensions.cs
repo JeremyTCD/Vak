@@ -1,16 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Jering.VectorArtKit.WebApi.Extensions
+namespace Jering.Utilities
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class TimeSpanExtensions
     {
         /// <summary>
         /// Creates a string describing time elapsed over <paramref name="elapsedDuration"/>.
         /// </summary>
-        /// <param name="dateTime"></param>
+        /// <param name="elapsedDuration"></param>
         /// <returns></returns>
         public static string ToElapsedDurationString(this TimeSpan elapsedDuration)
         {
