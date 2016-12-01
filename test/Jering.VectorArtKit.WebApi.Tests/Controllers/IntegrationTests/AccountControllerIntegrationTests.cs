@@ -46,7 +46,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_Returns400BadRequestAndSignUpResponseModelIfModelStateIsInvalid()
+        public async Task SignUp_Returns400BadRequestAndSignUpResponseModelIfModelStateIsInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -64,7 +64,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_Returns400BadRequestAndSignUpResponseModelIfEmailInUse()
+        public async Task SignUp_Returns400BadRequestAndSignUpResponseModelIfEmailInUse()
         {
             // Arrange
             await _resetAccountsTable();
@@ -81,7 +81,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
+        public async Task SignUp_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -105,7 +105,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUpPost_Returns200OkSignUpResponseModelApplicationCookieAndSendsEmailVerificationEmailIfRegistrationSucceeds()
+        public async Task SignUp_Returns200OkSignUpResponseModelApplicationCookieAndSendsEmailVerificationEmailIfRegistrationSucceeds()
         {
             // Arrange
             await _resetAccountsTable();
@@ -126,7 +126,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LoginPost_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
+        public async Task Login_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
@@ -147,7 +147,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LoginPost_Returns400BadRequestAndLogInResponseModelIfModelStateIsInvalid()
+        public async Task Login_Returns400BadRequestAndLogInResponseModelIfModelStateIsInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -164,7 +164,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LoginPost_Returns400BadRequestAndELogInResponseModelIfCredentialsAreInvalid()
+        public async Task Login_Returns400BadRequestAndELogInResponseModelIfCredentialsAreInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -180,7 +180,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LoginPost_Returns200OkLoginResponseModelAndApplicationCookieIfLoginSucceeds()
+        public async Task Login_Returns200OkLoginResponseModelAndApplicationCookieIfLoginSucceeds()
         {
             // Arrange
             await _resetAccountsTable();
@@ -200,7 +200,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LoginPost_Returns200OkLoginResponseModelTwoFactorCookieAndSendsTwoFactorEmailIfTwoFactorAuthenticationIsRequired()
+        public async Task Login_Returns200OkLoginResponseModelTwoFactorCookieAndSendsTwoFactorEmailIfTwoFactorAuthenticationIsRequired()
         {
             // Arrange
             await _resetAccountsTable();
@@ -224,7 +224,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LogOffPost_Returns200OkAndTwoFactorCookieAndApplicationCookieIfAuthenticationIsSuccessful()
+        public async Task LogOff_Returns200OkAndTwoFactorCookieAndApplicationCookieIfAuthenticationIsSuccessful()
         {
             //Arrange
             await _resetAccountsTable();
@@ -250,7 +250,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LogOffPost_Returns401UnauthorizedWithErrorResponseModelIfAuthenticationFails()
+        public async Task LogOff_Returns401UnauthorizedWithErrorResponseModelIfAuthenticationFails()
         {
             //Arrange
             await _resetAccountsTable();
@@ -264,7 +264,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task TwoFactorLogInPost_Returns200OkAndTwoFactorLogInResponseModelTwoFactorCookieAndApplicationCookieIfLoginSucceeds()
+        public async Task TwoFactorLogIn_Returns200OkAndTwoFactorLogInResponseModelTwoFactorCookieAndApplicationCookieIfLoginSucceeds()
         {
             // Arrange
             await _resetAccountsTable();
@@ -290,7 +290,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task TwoFactorLogInPost_Returns400BadRequestAndTwoFactorResponseModelIfCodeIsInvalid()
+        public async Task TwoFactorLogIn_Returns400BadRequestAndTwoFactorResponseModelIfCodeIsInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -312,7 +312,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task TwoFactorLogInPost_Returns400BadRequestAndTwoFactorLogInResponseModelIfModelStateIsInvalid()
+        public async Task TwoFactorLogIn_Returns400BadRequestAndTwoFactorLogInResponseModelIfModelStateIsInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -333,7 +333,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task TwoFactorLogInPost_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
+        public async Task TwoFactorLogIn_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
@@ -424,7 +424,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task ResetPasswordPost_Returns400BadRequestAndResetPasswordResponseModelIfModelStateIsInvalid()
+        public async Task ResetPassword_Returns400BadRequestAndResetPasswordResponseModelIfModelStateIsInvalid()
         {
             // Arrange
             await _resetAccountsTable();
@@ -446,7 +446,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task ResetPasswordPost_Returns400BadRequestAndResetPasswordResponseModelIfTokenIsInvalidOrExpired()
+        public async Task ResetPassword_Returns400BadRequestAndResetPasswordResponseModelIfTokenIsInvalidOrExpired()
         {
             // Arrange
             await _resetAccountsTable();
@@ -466,7 +466,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task ResetPasswordPost_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
+        public async Task ResetPassword_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
@@ -492,7 +492,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task ResetPasswordPost_Returns200OkIfPasswordResetSucceeds()
+        public async Task ResetPassword_Returns200OkIfPasswordResetSucceeds()
         {
             // Arrange
             await _resetAccountsTable();
@@ -512,56 +512,50 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_testEmail, body.Email);
         }
 
-        //[Fact]
-        //public async Task ResetPasswordConfirmationGet_ReturnsResetPasswordConfirmationView()
-        //{
-        //    // Act
-        //    HttpResponseMessage httpResponseMessage = await _httpClient.GetAsync("Account/ResetPasswordConfirmation?Email=test@test.com");
+        [Fact]
+        public async Task GetAccountDetails_Returns200OkAndGetAccountDetailsResponseModelIfAuthenticationSucceeds()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            await CreateAccount(_testEmail, _testPassword);
 
-        //    // Assert
-        //    string html = await httpResponseMessage.Content.ReadAsStringAsync();
-        //    Assert.Equal("OK", httpResponseMessage.StatusCode.ToString());
+            HttpResponseMessage httpResponseMessage = await LogIn(_testEmail, _testPassword);
+            HttpRequestMessage manageAccountGetRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.GetAccountDetails)}",
+                HttpMethod.Get,
+                null,
+                httpResponseMessage);
 
-        //    Assert.True(html.Contains(Strings.ViewTitle_ResetPasswordConfirmation));
-        //}
+            // Act
+            httpResponseMessage = await _httpClient.SendAsync(manageAccountGetRequest);
 
-        //[Fact]
-        //public async Task ManageAccountGet_ReturnsManageAccountViewIfAuthenticationIsSuccessful()
-        //{
-        //    // Arrange
-        //    string email = "email@email.com", password = "Password";
+            // Assert
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            GetAccountDetailsResponseModel body = JsonConvert.DeserializeObject<GetAccountDetailsResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Null(body.AlternativeEmail);
+            Assert.False(body.AlternativeEmailVerified);
+            Assert.Null(body.DisplayName);
+            Assert.NotNull(body.DurationSinceLastPasswordChange);
+            Assert.Equal(_testEmail, body.Email);
+            Assert.False(body.EmailVerified);
+            Assert.False(body.TwoFactorEnabled);
+        }
 
-        //    await _resetAccountsTable();
-        //    await CreateAccount(email, password);
+        [Fact]
+        public async Task GetAccountDetails_Returns401UnauthorizedWithErrorResponseModelIfAuthenticationFails()
+        {
+            //Arrange
+            await _resetAccountsTable();
 
-        //    HttpResponseMessage logInPostResponse = await LogIn(email, password);
-        //    HttpRequestMessage manageAccountGetRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.ManageAccount)}",
-        //        HttpMethod.Get,
-        //        null,
-        //        logInPostResponse);
+            // Act
+            HttpResponseMessage httpResponseMessage = await _httpClient.
+                SendAsync(RequestHelper.Create($"{ _accountControllerName}/{ nameof(AccountController.GetAccountDetails)}", HttpMethod.Get));
 
-        //    // Act
-        //    HttpResponseMessage manageAccountGetResponse = await _httpClient.SendAsync(manageAccountGetRequest);
-
-        //    // Assert
-        //    Assert.Equal("OK", manageAccountGetResponse.StatusCode.ToString());
-        //    string html = await manageAccountGetResponse.Content.ReadAsStringAsync();
-        //    Assert.Contains(Strings.ViewTitle_ManageAccount, html);
-        //}
-
-        //[Fact]
-        //public async Task ManageAccountGet_RedirectsToLoginViewIfAuthenticationFails()
-        //{
-        //    // Act
-        //    HttpResponseMessage manageAccountGetResponse = await _httpClient.GetAsync($"{_accountControllerName}/{nameof(AccountController.ManageAccount)}");
-
-        //    // Assert
-        //    Assert.Equal("Redirect", manageAccountGetResponse.StatusCode.ToString());
-        //    Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.LogIn)}", manageAccountGetResponse.Headers.Location.AbsolutePath);
-        //}
+            // Assert
+            Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
+        }
 
         //[Fact]
-        //public async Task ChangePasswordPost_RedirectsToManageAccountWithANewApplicationCookieAndUpdatesPasswordHashIfSuccessful()
+        //public async Task ChangePassword_RedirectsToManageAccountWithANewApplicationCookieAndUpdatesPasswordHashIfSuccessful()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newPassword = "passworD";
@@ -586,7 +580,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(ChangePasswordPostData))]
-        //public async Task ChangePasswordPost_ChangePasswordViewWithErrorMessagesIfModelStateOrCurrentPasswordIsInvalid(string currentPassword, string newPassword, string confirmNewPassword)
+        //public async Task ChangePassword_ChangePasswordViewWithErrorMessagesIfModelStateOrCurrentPasswordIsInvalid(string currentPassword, string newPassword, string confirmNewPassword)
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -627,7 +621,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangePasswordPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        //public async Task ChangePassword_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newPassword = "passworD";
@@ -656,7 +650,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangePasswordPost_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task ChangePassword_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newPassword = "passworD";
@@ -694,7 +688,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangePasswordGet_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task ChangePassword_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Act 
         //    HttpResponseMessage changePasswordGetResponse = await _httpClient.GetAsync($"{_accountControllerName}/{nameof(AccountController.ChangePassword)}");
@@ -705,7 +699,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangePasswordGet_ReturnsChangePasswordViewWithAntiForgeryCredentialsIfAuthenticationSucceeds()
+        //public async Task ChangePassword_ReturnsChangePasswordViewWithAntiForgeryCredentialsIfAuthenticationSucceeds()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -734,7 +728,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeEmailGet_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task ChangeEmail_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Act 
         //    HttpResponseMessage changeEmailGetResponse = await _httpClient.GetAsync($"{_accountControllerName}/{nameof(AccountController.ChangeEmail)}");
@@ -745,7 +739,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeEmailGet_ReturnsChangeEmailViewWithAntiForgeryCredentialsIfAuthenticationSucceeds()
+        //public async Task ChangeEmail_ReturnsChangeEmailViewWithAntiForgeryCredentialsIfAuthenticationSucceeds()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -774,7 +768,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeEmailPost_RedirectsToManageAccountWithNewApplicationCookieAndUpdatesEmailIfSuccessful()
+        //public async Task ChangeEmail_RedirectsToManageAccountWithNewApplicationCookieAndUpdatesEmailIfSuccessful()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newEmail = "new@email.com";
@@ -799,7 +793,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(ChangeEmailPostData))]
-        //public async Task ChangeEmailPost_ChangeEmailViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrEmailIsInUse(string _testPassword, string newEmail)
+        //public async Task ChangeEmail_ChangeEmailViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrEmailIsInUse(string _testPassword, string newEmail)
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -854,7 +848,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeEmailPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        //public async Task ChangeEmail_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newEmail = "new@email.com";
@@ -883,7 +877,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeEmailPost_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task ChangeEmail_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newEmail = "new@email.com";
@@ -921,7 +915,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeEmailPost_ReturnsErrorViewIfNewEmailDiffersFromCurrentEmailInValidationButNotInAction()
+        //public async Task ChangeEmail_ReturnsErrorViewIfNewEmailDiffersFromCurrentEmailInValidationButNotInAction()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newEmail = "email@email.com";
@@ -942,7 +936,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeAlternativeEmailGet_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task ChangeAlternativeEmail_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Act 
         //    HttpResponseMessage changeAlternativeEmailGetResponse = await _httpClient.GetAsync($"{_accountControllerName}/{nameof(AccountController.ChangeAlternativeEmail)}");
@@ -953,7 +947,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeAlternativeEmailGet_ReturnsChangeAlternativeEmailViewWithAntiForgeryCredentialsIfAuthenticationSucceeds()
+        //public async Task ChangeAlternativeEmail_ReturnsChangeAlternativeEmailViewWithAntiForgeryCredentialsIfAuthenticationSucceeds()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -983,7 +977,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
 
         //[Fact]
-        //public async Task ChangeAlternativeEmailPost_RedirectsToManageAccountAndUpdatesAlternativeEmailIfSuccessful()
+        //public async Task ChangeAlternativeEmail_RedirectsToManageAccountAndUpdatesAlternativeEmailIfSuccessful()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newAlternativeEmail = "new@email.com";
@@ -1006,7 +1000,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(ChangeAlternativeEmailPostData))]
-        //public async Task ChangeAlternativeEmailPost_ChangeAlternativeEmailViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrAlternativeEmailIsInUse(string _testPassword, string newAlternativeEmail)
+        //public async Task ChangeAlternativeEmail_ChangeAlternativeEmailViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrAlternativeEmailIsInUse(string _testPassword, string newAlternativeEmail)
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1064,7 +1058,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeAlternativeEmailPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        //public async Task ChangeAlternativeEmail_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newAlternativeEmail = "new@email.com";
@@ -1093,7 +1087,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeAlternativeEmailPost_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task ChangeAlternativeEmail_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newAlternativeEmail = "new@email.com";
@@ -1131,7 +1125,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeAlternativeEmailPost_ReturnsErrorViewIfNewAlternativeEmailDiffersFromCurrentAlternativeEmailInValidationButNotInAction()
+        //public async Task ChangeAlternativeEmail_ReturnsErrorViewIfNewAlternativeEmailDiffersFromCurrentAlternativeEmailInValidationButNotInAction()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newAlternativeEmail = "email1@email.com";
@@ -1153,7 +1147,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeDisplayNamePost_RedirectsToManageAccountAndUpdatesDisplayNameIfSuccessful()
+        //public async Task ChangeDisplayName_RedirectsToManageAccountAndUpdatesDisplayNameIfSuccessful()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newDisplayName = "testDisplayName";
@@ -1176,7 +1170,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(ChangeDisplayNamePostData))]
-        //public async Task ChangeDisplayNamePost_ChangeDisplayNameViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrDisplayNameIsInUse(string _testPassword, string newDisplayName)
+        //public async Task ChangeDisplayName_ChangeDisplayNameViewWithErrorMessagesIfModelStateOrPasswordIsInvalidOrDisplayNameIsInUse(string _testPassword, string newDisplayName)
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1229,7 +1223,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeDisplayNamePost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        //public async Task ChangeDisplayName_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newDisplayName = "new@email.com";
@@ -1258,7 +1252,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeDisplayNamePost_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task ChangeDisplayName_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newDisplayName = "new@email.com";
@@ -1296,7 +1290,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeDisplayNamePost_ReturnsErrorViewIfNewDisplayNameDiffersFromCurrentDisplayNameInValidationButNotInAction()
+        //public async Task ChangeDisplayName_ReturnsErrorViewIfNewDisplayNameDiffersFromCurrentDisplayNameInValidationButNotInAction()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", newDisplayName = "displayName";
@@ -1318,7 +1312,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeDisplayNameGet_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task ChangeDisplayName_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Act 
         //    HttpResponseMessage changeDisplayNameGetResponse = await _httpClient.GetAsync($"{_accountControllerName}/{nameof(AccountController.ChangeDisplayName)}");
@@ -1329,7 +1323,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task ChangeDisplayNameGet_ReturnsChangeDisplayNameViewWithAntiForgeryCredentialsIfAuthenticationSucceeds()
+        //public async Task ChangeDisplayName_ReturnsChangeDisplayNameViewWithAntiForgeryCredentialsIfAuthenticationSucceeds()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1359,7 +1353,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(EnableTwoFactorPostData))]
-        //public async Task EnableTwoFactorPost_RedirectsToManageAccountViewIfTwoFactorAlreadyEnabledOrIsSuccessfullyEnabled(bool alreadyEnabled)
+        //public async Task EnableTwoFactor_RedirectsToManageAccountViewIfTwoFactorAlreadyEnabledOrIsSuccessfullyEnabled(bool alreadyEnabled)
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1397,7 +1391,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task EnableTwoFactorPost_RedirectsToTestTwoFactorCodeViewAndSendsTwoFactorEmailIfEmailIsNotVerified()
+        //public async Task EnableTwoFactor_RedirectsToTestTwoFactorCodeViewAndSendsTwoFactorEmailIfEmailIsNotVerified()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1426,7 +1420,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task EnableTwoFactorPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        //public async Task EnableTwoFactor_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1449,7 +1443,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task EnableTwoFactorPost_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task EnableTwoFactor_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1486,7 +1480,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(DisableTwoFactorPostData))]
-        //public async Task DisableTwoFactorPost_RedirectsToManageAccountViewIfTwoFactorAlreadyDisabledOrIsSuccessfullyDisabled(bool alreadyDisabled)
+        //public async Task DisableTwoFactor_RedirectsToManageAccountViewIfTwoFactorAlreadyDisabledOrIsSuccessfullyDisabled(bool alreadyDisabled)
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1523,7 +1517,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task DisableTwoFactorPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        //public async Task DisableTwoFactor_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1546,7 +1540,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task DisableTwoFactorPost_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task DisableTwoFactor_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1582,7 +1576,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task TestTwoFactorGet_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task TestTwoFactor_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Act 
         //    HttpResponseMessage testTwoFactorGetResponse = await _httpClient.GetAsync($"{_accountControllerName}/{nameof(AccountController.TestTwoFactor)}");
@@ -1593,7 +1587,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task TestTwoFactorGet_ReturnsTestTwoFactorCodeViewWithAntiForgeryCredentialsIfAuthenticationSucceeds()
+        //public async Task TestTwoFactor_ReturnsTestTwoFactorCodeViewWithAntiForgeryCredentialsIfAuthenticationSucceeds()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1622,7 +1616,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task TestTwoFactorPost_RedirectsToManageAccountAndUpdatesEmailVerifiedAndTwoFactorEnabledIfSuccessful()
+        //public async Task TestTwoFactor_RedirectsToManageAccountAndUpdatesEmailVerifiedAndTwoFactorEnabledIfSuccessful()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1657,7 +1651,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(TestTwoFactorPostData))]
-        //public async Task TestTwoFactorPost_TestTwoFactorViewWithErrorMessageIfModelStateIsInvalidOrCodeIsInvalid(string code)
+        //public async Task TestTwoFactor_TestTwoFactorViewWithErrorMessageIfModelStateIsInvalidOrCodeIsInvalid(string code)
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1694,7 +1688,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task TestTwoFactorPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        //public async Task TestTwoFactor_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1721,7 +1715,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task TestTwoFactorPost_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task TestTwoFactor_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1757,7 +1751,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task SendEmailVerificationEmailPost_RedirectsToSendEmailVerificationEmailConfirmationViewAndSendsEmailVerificationEmailIfSuccessful()
+        //public async Task SendEmailVerificationEmail_RedirectsToSendEmailVerificationEmailConfirmationViewAndSendsEmailVerificationEmailIfSuccessful()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1786,7 +1780,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task SendEmailVerificationEmailPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        //public async Task SendEmailVerificationEmail_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1809,7 +1803,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task SendEmailVerificationEmailPost_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task SendEmailVerificationEmail_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1846,7 +1840,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(EmailVerificationConfirmationGetData))]
-        //public async Task EmailVerificationConfirmationGet_ReturnsErrorViewIfAccountIdTokenOrModelStateIsInvalid(string accountId, string token)
+        //public async Task EmailVerificationConfirmation_ReturnsErrorViewIfAccountIdTokenOrModelStateIsInvalid(string accountId, string token)
         //{
         //    // Arrange
         //    if (accountId == "1")
@@ -1872,7 +1866,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task EmailVerificationConfirmationGet_ReturnsEmailVerificationConfirmationViewIfEmailTokenAndModelStateAreValid()
+        //public async Task EmailVerificationConfirmation_ReturnsEmailVerificationConfirmationViewIfEmailTokenAndModelStateAreValid()
         //{
         //    // Arrange
         //    string email = "Email1@test.com", password = "Password";
@@ -1898,7 +1892,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task SendAlternativeEmailVerificationEmailPost_RedirectsToSendEmailVerificationEmailConfirmationViewAndSendsAlternativeEmailVerificationEmailIfSuccessful()
+        //public async Task SendAlternativeEmailVerificationEmail_RedirectsToSendEmailVerificationEmailConfirmationViewAndSendsAlternativeEmailVerificationEmailIfSuccessful()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password", alternativeEmail = "alt@email.com";
@@ -1928,7 +1922,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task SendAlternativeEmailVerificationEmailPost_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
+        //public async Task SendAlternativeEmailVerificationEmail_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1951,7 +1945,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task SendAlternativeEmailVerificationEmailPost_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task SendAlternativeEmailVerificationEmail_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Arrange
         //    string email = "email@email.com", password = "Password";
@@ -1988,7 +1982,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         //[Theory]
         //[MemberData(nameof(AlternativeEmailVerificationConfirmationGetData))]
-        //public async Task AlternativeEmailVerificationConfirmationGet_ReturnsErrorViewIfAccountIdTokenOrModelStateIsInvalid(string accountId, string token)
+        //public async Task AlternativeEmailVerificationConfirmation_ReturnsErrorViewIfAccountIdTokenOrModelStateIsInvalid(string accountId, string token)
         //{
         //    // Arrange
         //    if (accountId == "1")
@@ -2014,7 +2008,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task AlternativeEmailVerificationConfirmationGet_ReturnsAlternativeEmailVerificationConfirmationViewIfEmailTokenAndModelStateAreValid()
+        //public async Task AlternativeEmailVerificationConfirmation_ReturnsAlternativeEmailVerificationConfirmationViewIfEmailTokenAndModelStateAreValid()
         //{
         //    // Arrange
         //    string email = "Email1@test.com", password = "Password", alternativeEmail = "alt@email.com";
@@ -2048,7 +2042,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task SendEmailVerificationEmailConfirmationGet_ReturnsSendEmailVerificationEmailViewIfAuthenticationSucceeds()
+        //public async Task SendEmailVerificationEmailConfirmation_ReturnsSendEmailVerificationEmailViewIfAuthenticationSucceeds()
         //{
         //    // Arrange
         //    string email = "Email1@test.com", password = "Password";
@@ -2072,7 +2066,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         //}
 
         //[Fact]
-        //public async Task SendAlternativeEmailVerificationEmailConfirmationGet_RedirectsToLogInViewIfAuthenticationFails()
+        //public async Task SendAlternativeEmailVerificationEmailConfirmation_RedirectsToLogInViewIfAuthenticationFails()
         //{
         //    // Act
         //    HttpResponseMessage sendEmailVerificationEmailConfirmationGetResponse = await _httpClient.GetAsync($"{_accountControllerName}/{nameof(AccountController.SendEmailVerificationEmailConfirmation)}?Email=email@email.com");

@@ -1,6 +1,7 @@
 ﻿using Jering.AccountManagement.DatabaseInterface;
 using Jering.AccountManagement.Security;
 using Jering.Mail;
+using Jering.Utilities;
 using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Filters;
 using Jering.VectorArtKit.WebApi.FormModels;
@@ -258,7 +259,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     });
                 }
 
-                if(result.InvalidToken || result.ExpiredToken)
+                if(result.InvalidToken || result.ExpiredToken || result.InvalidEmail)
                 {
                     return BadRequest(new ResetPasswordResponseModel
                     {
@@ -275,19 +276,33 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             });
         }
 
-        ///// <summary>
-        ///// Get: /Account/ManageAccount
-        ///// </summary>
-        ///// <returns>
-        ///// ManageAccount view if authentication succeeds.
-        ///// Redirects to /Account/Login if authentication fails.
-        ///// </returns>
-        //[HttpGet]
-        //[SetSignedInAccount]
-        //public IActionResult ManageAccount()
-        //{
-        //    return View();
-        //}
+        /// <summary>
+        /// Get: /Account/GetAccountDetails
+        /// </summary>
+        /// <returns>
+        /// 401 Unauthorized with <see cref="ErrorResponseModel>"/> if authentication fails.
+        /// 200 OK and <see cref="GetAccountDetailsResponseModel"/> if authentication succeeds.
+        /// </returns>
+        [HttpGet]
+        public async Task<IActionResult> GetAccountDetails()
+        {
+            VakAccount account = await _accountSecurityService.GetLoggedInAccountAsync();
+
+            if(account == null)
+            {
+                // Unexpected error - logged in but unable to retrieve account
+                throw new NullReferenceException(nameof(account));
+            }
+
+            return Ok(new GetAccountDetailsResponseModel { AlternativeEmail = account.AlternativeEmail,
+                AlternativeEmailVerified = account.AlternativeEmailVerified,
+                DisplayName = account.DisplayName,
+                DurationSinceLastPasswordChange = (DateTime.UtcNow - account.PasswordLastChanged).ToElapsedDurationString(),
+                Email = account.Email,
+                EmailVerified = account.EmailVerified,
+                TwoFactorEnabled = account.TwoFactorEnabled
+            });
+        }
 
         ///// <summary>
         ///// Get: /Account/ChangePassword

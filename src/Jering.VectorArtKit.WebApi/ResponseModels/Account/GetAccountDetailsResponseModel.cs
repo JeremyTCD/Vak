@@ -1,0 +1,20 @@
+﻿using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
+{
+    public class GetAccountDetailsResponseModel: IErrorResponseModel
+    {
+        public string DurationSinceLastPasswordChange { get; set; }
+        public string DisplayName { get; set; }
+        public bool TwoFactorEnabled { get; set; }
+        public string Email { get; set; }
+        public bool EmailVerified { get; set; }
+        public string AlternativeEmail { get; set; }
+        public bool AlternativeEmailVerified { get; set; }
+        public SerializableError ModelState { get; set; }
+        public bool ExpectedError { get; set; }
+
+        public string ErrorMessage { get; set; }
+    }
+}
