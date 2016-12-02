@@ -168,7 +168,7 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Please confirm your email by clicking this link: &lt;a href=&quot;{0}verifyemail;token={1};accountid={2}&quot;&gt;link&lt;/a&gt;.
+        ///    Looks up a localized string similar to Please confirm your email by clicking this link: &lt;a href=&quot;{0}verify-email;token={1};accountid={2}&quot;&gt;link&lt;/a&gt;.
         /// </summary>
         public static string Email_Message_EmailVerification {
             get {
@@ -177,7 +177,7 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Please reset your email at this link: &lt;a href=&quot;{0}login/resetpassword;token={1};email={2}&quot;&gt;link&lt;/a&gt;.
+        ///    Looks up a localized string similar to Please reset your email at this link: &lt;a href=&quot;{0}log-in/reset-password;token={1};email={2}&quot;&gt;link&lt;/a&gt;.
         /// </summary>
         public static string Email_Message_ResetPassword {
             get {
