@@ -7,7 +7,7 @@ import { ForgotPasswordComponent } from './forgot-password/forgot-password.compo
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { LogInRouting } from './log-in.routing';
 import { DynamicFormsModule } from '../shared/dynamic-forms/dynamic-forms.module';
-import { DynamicFormsResolve } from '../shared/dynamic-forms/dynamic-forms-resolve';
+import { DynamicFormGuard } from '../shared/dynamic-forms/dynamic-form/dynamic-form.guard';
 
 @NgModule({
     imports: [
@@ -16,7 +16,7 @@ import { DynamicFormsResolve } from '../shared/dynamic-forms/dynamic-forms-resol
         CommonModule
     ],
     providers: [
-        DynamicFormsResolve
+        DynamicFormGuard
     ],
     declarations: [
         LogInComponent,

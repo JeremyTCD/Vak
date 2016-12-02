@@ -5,7 +5,7 @@ import { LogInComponent } from './log-in.component';
 import { TwoFactorAuthComponent } from './two-factor-auth/two-factor-auth.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
-import { DynamicFormsResolve } from '../shared/dynamic-forms/dynamic-forms-resolve';
+import { DynamicFormGuard } from '../shared/dynamic-forms/dynamic-form/dynamic-form.guard';
 
 const logInRoutes: Routes = [
     {
@@ -16,7 +16,7 @@ const logInRoutes: Routes = [
             formSubmitRelativeUrl: LogInComponent.formSubmitRelativeUrl
         },
         resolve: {
-            dynamicForm: DynamicFormsResolve
+            dynamicForm: DynamicFormGuard
         }
     },
     {
@@ -27,7 +27,7 @@ const logInRoutes: Routes = [
             formSubmitRelativeUrl: TwoFactorAuthComponent.formSubmitRelativeUrl
         },
         resolve: {
-            dynamicForm: DynamicFormsResolve
+            dynamicForm: DynamicFormGuard
         }
     },
     {
@@ -38,7 +38,7 @@ const logInRoutes: Routes = [
             formSubmitRelativeUrl: ForgotPasswordComponent.formSubmitRelativeUrl
         },
         resolve: {
-            dynamicForm: DynamicFormsResolve
+            dynamicForm: DynamicFormGuard
         }
     },
     {
@@ -49,7 +49,7 @@ const logInRoutes: Routes = [
             formSubmitRelativeUrl: ResetPasswordComponent.formSubmitRelativeUrl
         },
         resolve: {
-            dynamicForm: DynamicFormsResolve
+            dynamicForm: DynamicFormGuard
         }
     },
 ];

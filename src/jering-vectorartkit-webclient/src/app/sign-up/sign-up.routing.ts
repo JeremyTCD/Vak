@@ -2,7 +2,7 @@
 import { Routes, RouterModule } from '@angular/router';
 
 import { SignUpComponent } from './sign-up.component';
-import { DynamicFormsResolve } from '../shared/dynamic-forms/dynamic-forms-resolve';
+import { DynamicFormGuard } from '../shared/dynamic-forms/dynamic-form/dynamic-form.guard';
 
 const signUpRoutes: Routes = [
     {
@@ -13,7 +13,7 @@ const signUpRoutes: Routes = [
             formSubmitRelativeUrl: SignUpComponent.formSubmitRelativeUrl
         },
         resolve: {
-            dynamicForm: DynamicFormsResolve
+            dynamicForm: DynamicFormGuard
         }
     }
 ];
