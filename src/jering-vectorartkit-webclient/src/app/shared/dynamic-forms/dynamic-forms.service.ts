@@ -4,7 +4,6 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
-import { environment } from '../../../environments/environment';
 import { HttpService } from '../http.service';
 import { DynamicForm } from './dynamic-form/dynamic-form';
 import { DynamicFormResponseModel } from './response-models/dynamic-form.response-model';
