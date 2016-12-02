@@ -110,12 +110,12 @@ describe(`HttpService`, () => {
                 })
             );
 
-            it(`Calls ErrorHandlerService.handleUnexpectedError if error is unexpected. Calls complete
+            it(`Calls ErrorHandlerService.handleUnauthorizedError if error has status code 401. Calls complete
                 observer immediately, does not call next or error observer.`,
                 inject([HttpService, Http, ErrorHandlerService], (httpService: HttpService, http: StubHttp, errorHandlerService: StubErrorHandlerService) => {
                     errorResponseModel = { expectedError: false };
-                    testResponse = new Response(new ResponseOptions({ body: JSON.stringify(errorResponseModel) }));
-                    spyOn(errorHandlerService, `handleUnexpectedError`);
+                    testResponse = new Response(new ResponseOptions({ body: JSON.stringify(errorResponseModel), status: 401 }));
+                    spyOn(errorHandlerService, `handleUnauthorizedError`);
                     spyOn(http, `request`).and.returnValue(Observable.throw(testResponse));
 
                     httpService.
@@ -124,15 +124,33 @@ describe(`HttpService`, () => {
 
                     expect(nextOrErrorCalled).toBe(false);
                     expect(completeCalled).toBe(true);
-                    expect(errorHandlerService.handleUnexpectedError).toHaveBeenCalledWith(errorResponseModel);
+                    expect(errorHandlerService.handleUnauthorizedError).toHaveBeenCalledTimes(1);
                 })
             );
 
-            it(`Calls ErrorHandlerService.handleUnexpectedError if error is not a response. Calls complete
+            it(`Calls ErrorHandlerService.handleCriticalError if error is unexpected. Calls complete
+                observer immediately, does not call next or error observer.`,
+                inject([HttpService, Http, ErrorHandlerService], (httpService: HttpService, http: StubHttp, errorHandlerService: StubErrorHandlerService) => {
+                    errorResponseModel = { expectedError: false };
+                    testResponse = new Response(new ResponseOptions({ body: JSON.stringify(errorResponseModel) }));
+                    spyOn(errorHandlerService, `handleCriticalError`);
+                    spyOn(http, `request`).and.returnValue(Observable.throw(testResponse));
+
+                    httpService.
+                        request(testRelativeUrl, {}).
+                        subscribe(testObserver);
+
+                    expect(nextOrErrorCalled).toBe(false);
+                    expect(completeCalled).toBe(true);
+                    expect(errorHandlerService.handleCriticalError).toHaveBeenCalledWith(errorResponseModel);
+                })
+            );
+
+            it(`Calls ErrorHandlerService.handleCriticalError if error is not a response. Calls complete
                 observer immediately, does not call next or error observer.`,
                 inject([HttpService, Http, ErrorHandlerService], (httpService: HttpService, http: StubHttp, errorHandlerService: StubErrorHandlerService) => {
                     let testErrorObject = {};
-                    spyOn(errorHandlerService, `handleUnexpectedError`);
+                    spyOn(errorHandlerService, `handleCriticalError`);
                     spyOn(http, `request`).and.returnValue(Observable.throw(testErrorObject));
 
                     httpService.
@@ -141,15 +159,15 @@ describe(`HttpService`, () => {
 
                     expect(nextOrErrorCalled).toBe(false);
                     expect(completeCalled).toBe(true);
-                    expect(errorHandlerService.handleUnexpectedError).toHaveBeenCalledWith(testErrorObject );
+                    expect(errorHandlerService.handleCriticalError).toHaveBeenCalledWith(testErrorObject );
                 })
             );
 
-            it(`Calls ErrorHandlerService.handleUnexpectedError if error does not have a body in json format`,
+            it(`Calls ErrorHandlerService.handleCriticalError if error does not have a body in json format`,
                 inject([HttpService, Http, ErrorHandlerService], (httpService: HttpService, http: StubHttp, errorHandlerService: StubErrorHandlerService) => {
                     testResponse = new Response(new ResponseOptions({ body: null }));
                     spyOn(http, `request`).and.returnValue(Observable.throw(testResponse));
-                    spyOn(errorHandlerService, `handleUnexpectedError`);
+                    spyOn(errorHandlerService, `handleCriticalError`);
 
                     httpService.
                         request(testRelativeUrl, {}).
@@ -157,7 +175,7 @@ describe(`HttpService`, () => {
 
                     expect(nextOrErrorCalled).toBe(false);
                     expect(completeCalled).toBe(true);
-                    expect(errorHandlerService.handleUnexpectedError).toHaveBeenCalledWith(testResponse);
+                    expect(errorHandlerService.handleCriticalError).toHaveBeenCalledWith(testResponse);
                 })
             );
         });
@@ -169,7 +187,10 @@ interface StubResponseModel {
 }
 
 class StubErrorHandlerService {
-    handleUnexpectedError(error: any): void {
+    handleCriticalError(error: any): void {
+    }
+
+    handleUnauthorizedError(): void {
     }
 }
 

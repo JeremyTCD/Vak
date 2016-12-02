@@ -1,8 +1,9 @@
 ﻿import { Injectable } from '@angular/core';
 import { Response } from '@angular/http';
 import { Router } from '@angular/router';
-import { Check } from './check';
+import { Location } from '@angular/common';
 
+import { Check } from './check';
 import { environment } from '../../environments/environment';
 import { ErrorResponseModel } from './response-models/error.response-model';
 
@@ -11,9 +12,19 @@ import { ErrorResponseModel } from './response-models/error.response-model';
  */
 @Injectable()
 export class ErrorHandlerService {
-    constructor(private _router: Router) { }
+    constructor(private _router: Router, private _location: Location) { }
 
-    handleUnexpectedError(error: any): void {
+    /**
+     * Handle unauthorized errors by navigating to log in component
+     */
+    handleUnauthorizedError(): void {
+        this._router.navigate([`/log-in`, { returnUrl: this._location.path() }]);
+    }
+
+    /**
+     * Handle unexpected errors that cannot be recovered from
+     */
+    handleCriticalError(error: any): void {
         if (!Check.isValue(error)){
             this._router.navigate([`/error`]);
         }

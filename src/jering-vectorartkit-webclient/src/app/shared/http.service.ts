@@ -1,7 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { Http, Headers, RequestOptions, RequestOptionsArgs, Response, RequestMethod } from '@angular/http';
 import { Observable } from 'rxjs';
-import { Router } from '@angular/router';
 
 import { environment } from '../../environments/environment';
 import { ErrorHandlerService } from './error-handler.service';
@@ -87,16 +86,21 @@ export class HttpService {
     private handleRequestError(error: any): Observable<any> {
         let body: ErrorResponseModel;
 
-        if (error instanceof Response &&
-            (body = this.jsonFromResponse(error)) &&
-            body.expectedError) {
+        if (error instanceof Response) {
+            if ((body = this.jsonFromResponse(error)) &&
+                body.expectedError) {
 
-            // Pass expected errors on to error observer
-            return Observable.throw(body);
+                // Pass expected errors on to error observer
+                return Observable.throw(body);
+            } else if (error.status === 401) {
+                this._errorHandlerService.handleUnauthorizedError();
+
+                return Observable.empty();
+            }
         }
 
-        // Pass unexpected errors on to ErrorHandlerService
-        this._errorHandlerService.handleUnexpectedError(body || error);
+        this._errorHandlerService.handleCriticalError(body || error);
+
         return Observable.empty();
     }
 
