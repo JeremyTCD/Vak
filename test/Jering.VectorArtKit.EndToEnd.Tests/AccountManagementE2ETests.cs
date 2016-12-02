@@ -25,16 +25,17 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         private string _testNewPassword = "testNewPassword";
         private string _emailFileName = $"{Environment.GetEnvironmentVariable("TMP")}\\SmtpTest.txt";
         private string _homeRelativeUrl = "home";
-        private string _signUpRelativeUrl = "signup";
-        private string _logInRelativeUrl = "login";
-        private string _forgotPasswordRelativeUrl = "login/forgotpassword";
-        private string _resetPasswordRelativeUrl = "login/resetpassword";
+        private string _signUpRelativeUrl = "sign-up";
+        private string _logInRelativeUrl = "log-in";
+        private string _forgotPasswordRelativeUrl = "log-in/forgot-password";
+        private string _resetPasswordRelativeUrl = "log-in/reset-password";
+        private string _manageAccountRelativeUrl = "manage-account";
 
         private IWebDriver _webDriver { get; }
         private SqlConnection _sqlConnection { get; }
         private Action _resetAccountsTable { get; }
 
-        public AccountManagementE2ETests(E2EFixture fixture )
+        public AccountManagementE2ETests(E2EFixture fixture)
         {
             _webDriver = fixture.WebDriver;
             _sqlConnection = fixture.SqlConnection;
@@ -92,6 +93,13 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
             ResetPassword(_testNewPassword, resetPasswordUrl);
             LogIn(_testEmail, _testNewPassword, _baseUrl + _homeRelativeUrl);
+        }
+
+        [Fact]
+        public void ManageAccountDisplaysAccountDetails()
+        {
+            SignUp(_testEmail, _testPassword, _testPassword);
+            ManageAccount();
         }
 
         #region Helpers
@@ -166,6 +174,13 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
 
             _webDriver.Wait(wd => wd.FindElements(By.LinkText("Log in")).Count == 1, _waitTime);
+        }
+
+        public void ManageAccount()
+        {
+            _webDriver.Navigate().GoToUrl(_baseUrl + _manageAccountRelativeUrl);
+
+            _webDriver.Wait(wd => wd.FindElements(By.XPath("//h2[text()='Manage Account']")).Count == 1, _waitTime);
         }
 
         public void ResetAccountsTable()
