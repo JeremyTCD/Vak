@@ -20,7 +20,7 @@ const logInRoutes: Routes = [
         }
     },
     {
-        path: 'twofactorauth',
+        path: 'two-factor-auth',
         component: TwoFactorAuthComponent,
         data: {
             formModelName: TwoFactorAuthComponent.formModelName,
@@ -31,7 +31,7 @@ const logInRoutes: Routes = [
         }
     },
     {
-        path: 'forgotpassword',
+        path: 'forgot-password',
         component: ForgotPasswordComponent,
         data: {
             formModelName: ForgotPasswordComponent.formModelName,
@@ -42,7 +42,7 @@ const logInRoutes: Routes = [
         }
     },
     {
-        path: 'resetpassword',
+        path: 'reset-password',
         component: ResetPasswordComponent,
         data: {
             formModelName: ResetPasswordComponent.formModelName,
