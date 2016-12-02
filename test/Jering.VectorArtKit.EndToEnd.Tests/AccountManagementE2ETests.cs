@@ -31,7 +31,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         private string _resetPasswordRelativeUrl = "log-in/reset-password";
         private string _manageAccountRelativeUrl = "manage-account";
 
-        private IWebDriver _webDriver { get; }
+        private ReusableWebDriver _webDriver { get; }
         private SqlConnection _sqlConnection { get; }
         private Action _resetAccountsTable { get; }
 
@@ -100,6 +100,26 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             SignUp(_testEmail, _testPassword, _testPassword);
             ManageAccount();
+        }
+
+        [Fact]
+        public void HttpServiceRedirectsToLogInIfServerSendsUnauthorizedHttpResponse()
+        {
+            SignUp(_testEmail, _testPassword, _testPassword);
+            LogOff(_testEmail);
+            // mimic invalid cookie situation (authentication.guard passes but server returns 401)
+            _webDriver.ExecuteScript("window.localStorage.clear()");
+            _webDriver.ExecuteScript("window.localStorage['vakUsername'] = 'dummyUsername'");
+            ManageAccount_NotLoggedIn(_testEmail, _testPassword);
+        }
+
+        [Fact]
+        public void AuthenticationGuardRedirectsToLogInIfNotLoggedIn()
+        {
+            SignUp(_testEmail, _testPassword, _testPassword);
+            LogOff(_testEmail);
+
+            ManageAccount_NotLoggedIn(_testEmail, _testPassword);
         }
 
         #region Helpers
@@ -181,6 +201,23 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             _webDriver.Navigate().GoToUrl(_baseUrl + _manageAccountRelativeUrl);
 
             _webDriver.Wait(wd => wd.FindElements(By.XPath("//h2[text()='Manage Account']")).Count == 1, _waitTime);
+        }
+
+        public void ManageAccount_NotLoggedIn(string email, string password)
+        {
+            _webDriver.Navigate().GoToUrl(_baseUrl + _manageAccountRelativeUrl);
+
+            _webDriver.Wait(wd => wd.FindElements(By.Id("Email")).Count > 0, _waitTime);
+
+            _webDriver.FindElement(By.Id("Email")).SendKeys(email);
+            _webDriver.FindElement(By.Id("Password")).SendKeys(password);
+
+            _webDriver.Wait(wd => wd.FindElements(By.ClassName("valid")).Count == 1, _waitTime);
+
+            _webDriver.FindElement(By.XPath("//button[text()='Log in']")).Click();
+
+            _webDriver.Wait(wd => wd.Url.Contains(_manageAccountRelativeUrl) &&
+                wd.FindElements(By.LinkText($"Account:{email}")).Count == 1, _waitTime);
         }
 
         public void ResetAccountsTable()

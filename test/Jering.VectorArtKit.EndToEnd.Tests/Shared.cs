@@ -6,6 +6,9 @@ using Dapper;
 using Xunit;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using System.Diagnostics;
+using OpenQA.Selenium.Remote;
+using System.Threading;
 
 namespace Jering.VectorArtKit.EndToEnd.Tests
 {
@@ -19,7 +22,9 @@ namespace Jering.VectorArtKit.EndToEnd.Tests
     {
         public SqlConnection SqlConnection { get; }
         public IConfigurationRoot ConfigurationRoot { get; }
-        public IWebDriver WebDriver { get; }
+        public ReusableWebDriver WebDriver { get; }
+
+        private string Domain { get; } = "http://localhost:9515";
 
         public E2EFixture()
         {
@@ -28,12 +33,39 @@ namespace Jering.VectorArtKit.EndToEnd.Tests
                 AddJsonFile(Path.Combine(Directory.GetCurrentDirectory(), "../../../../project.json"));
             ConfigurationRoot = configurationBuilder.Build();
             SqlConnection = new SqlConnection(ConfigurationRoot["Data:DefaultConnection:ConnectionString"]);
-            WebDriver = new ChromeDriver();
+            WebDriver = GetWebDriver();
+        }
+
+        /// <summary>
+        /// Starts chromedriver process if there isn't already one running. Instantiates a <see cref="ReusableWebDriver"/> instance
+        /// that latches on to the existing chromedriver process and attempts to reuse last chrome session. If the last chrome session 
+        /// has ended, instantiates a <see cref="ReusableWebDriver"/> instance that starts a new chrome session.
+        /// </summary>
+        public ReusableWebDriver GetWebDriver()
+        {
+            Process[] processes = Process.GetProcessesByName("chromedriver");
+            if (processes.Length <= 0)
+            {
+                Process.Start("chromedriver.exe");
+            }
+
+            ReusableWebDriver.NewSession = false;
+            ReusableWebDriver webDriver = new ReusableWebDriver(new Uri(Domain), DesiredCapabilities.Chrome());
+
+            try
+            {
+                // Session may have been ended (chrome window may have been closed)
+                string test = webDriver.Url;
+                return webDriver;
+            }
+            catch { }
+
+            ReusableWebDriver.NewSession = true;
+            return new ReusableWebDriver(new Uri(Domain), DesiredCapabilities.Chrome());
         }
 
         public void Dispose()
         {
-            WebDriver.Close();
             SqlConnection.Close();
         }
 
