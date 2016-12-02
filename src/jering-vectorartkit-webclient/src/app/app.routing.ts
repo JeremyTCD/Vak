@@ -3,9 +3,10 @@ import { Routes, RouterModule } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 
 const appRoutes: Routes = [
-    { path: 'signup', loadChildren: 'app/sign-up/sign-up.module#SignUpModule' },
-    { path: 'login', loadChildren: 'app/log-in/log-in.module#LogInModule' },
+    { path: 'sign-up', loadChildren: 'app/sign-up/sign-up.module#SignUpModule' },
+    { path: 'log-in', loadChildren: 'app/log-in/log-in.module#LogInModule' },
     { path: 'error', loadChildren: 'app/error/error.module#ErrorModule' },
+    { path: 'manage-account', loadChildren: 'app/manage-account/manage-account.module#ManageAccountModule' },
     { path: '', pathMatch: 'full', redirectTo: '/home' },
     // TODO page does not exist component
     { path: '**', redirectTo: '/home' }
