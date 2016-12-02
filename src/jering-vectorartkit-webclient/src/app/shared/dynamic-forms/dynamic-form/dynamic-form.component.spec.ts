@@ -80,8 +80,6 @@ describe('DynamicFormComponent', () => {
     });
 
     it(`ngOnInit Sets dynamicForm and formSubmitRelativeUrl`, () => {
-        spyOn(stubDynamicFormsService, `getDynamicForm`).and.returnValue(Observable.of(testDynamicForm));
-
         stubHostFixture.detectChanges();
 
         expect(dynamicFormComponent.formSubmitRelativeUrl).toBe(testSubmitUrl);
