@@ -7,6 +7,9 @@ BEGIN
 	SET XACT_ABORT ON;
 
 	BEGIN TRY
+		IF EXISTS(SELECT * FROM [dbo].[Accounts] WHERE [DisplayName] = @DisplayName)
+		THROW 51000, 'EmailInUse', 1;
+
 		UPDATE [dbo].[Accounts]
 		SET [DisplayName] = @DisplayName
 		WHERE [AccountId] = @AccountId;
