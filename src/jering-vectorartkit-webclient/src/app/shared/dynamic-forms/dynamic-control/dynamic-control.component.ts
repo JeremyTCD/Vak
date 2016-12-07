@@ -9,7 +9,7 @@ import { Validity } from '../validity';
  */
 @Component({
     selector: 'dynamic-control',
-    templateUrl: 'dynamic-control.component.html'
+    templateUrl: './dynamic-control.component.html'
 })
 export class DynamicControlComponent implements AfterViewInit {
     @Input() dynamicControl: DynamicControl;

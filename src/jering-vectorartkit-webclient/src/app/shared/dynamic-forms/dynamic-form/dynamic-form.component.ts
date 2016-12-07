@@ -11,7 +11,7 @@ import { Check } from '../../check';
 
 @Component({
     selector: 'dynamic-form',
-    templateUrl: 'dynamic-form.component.html'
+    templateUrl: './dynamic-form.component.html'
 })
 export class DynamicFormComponent implements OnInit, OnDestroy {
     formSubmitRelativeUrl: string;
