@@ -6,18 +6,20 @@ import { Location } from '@angular/common';
 import { Check } from './check';
 import { environment } from '../../environments/environment';
 import { ErrorResponseModel } from './response-models/error.response-model';
+import { UserService } from './user.service';
 
 /**
  * Provides error handling
  */
 @Injectable()
 export class ErrorHandlerService {
-    constructor(private _router: Router, private _location: Location) { }
+    constructor(private _router: Router, private _location: Location, private _userService: UserService) { }
 
     /**
      * Handle unauthorized errors by navigating to log in component
      */
     handleUnauthorizedError(): void {
+        this._userService.logOff();
         this._router.navigate([`/log-in`, { returnUrl: this._location.path() }]);
     }
 
