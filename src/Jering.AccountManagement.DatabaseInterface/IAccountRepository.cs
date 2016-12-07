@@ -9,7 +9,7 @@ namespace Jering.AccountManagement.DatabaseInterface
     /// Functions with varying granularity are provided to avoid reading and writing contextually superfluous 
     /// information while minimizing round trips.
     /// </summary>
-    public interface IAccountRepository<TAccount> 
+    public interface IAccountRepository<TAccount>
         where TAccount : IAccount
     {
         /// <summary>
@@ -188,5 +188,12 @@ namespace Jering.AccountManagement.DatabaseInterface
         /// <param name="email"></param>
         /// <returns></returns>
         Task<bool> CheckEmailInUseAsync(string email);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="displayName"></param>
+        /// <returns></returns>
+        Task<bool> CheckDisplayNameInUseAsync(string displayName);
     }
 }
