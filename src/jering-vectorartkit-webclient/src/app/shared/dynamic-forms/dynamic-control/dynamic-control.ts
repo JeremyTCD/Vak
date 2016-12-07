@@ -155,9 +155,13 @@ export class DynamicControl{
         return this.validity === Validity.pending;
     }
 
-    dispose(): void {
+    unsubscribeAsyncValidator(): void {
         if (this.asyncValidator) {
             this.asyncValidator.subscription.unsubscribe();
         }
+    }
+
+    dispose(): void {
+        this.unsubscribeAsyncValidator()
     }
 }
