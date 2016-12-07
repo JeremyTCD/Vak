@@ -13,7 +13,7 @@
 <a>Help</a><br />
 <div *ngIf="userService.loggedIn">
     <a>Account:{{userService.username}}</a><br />
-    <a>Manage account</a><br />
+    <a routerLink="/manage-account">Manage account</a><br />
     <a (click)="logOff()">Log off</a>
 </div>
 <div>
