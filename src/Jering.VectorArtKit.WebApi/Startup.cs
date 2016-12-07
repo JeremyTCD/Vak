@@ -84,22 +84,23 @@ namespace Jering.VectorArtKit.WebApi
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole(_configurationRoot.GetSection("Logging"));
+            // TODO read up on logging
+            //loggerFactory.AddConsole(_configurationRoot.GetSection("Logging"));
 
-            // Sets body to a general error message for all unexpected error responses with no bodies and status code >= 400 or < 600. 
+            //Sets body to a general error message for all unexpected error responses with no bodies and status code >= 400 or < 600.
             app.UseStatusCodePages(new StatusCodePagesOptions()
-            {
-                HandleAsync = (StatusCodeContext context) =>
-                {
-                    context.HttpContext.Response.ContentType = "application/json";
-                    ErrorResponseModel responseModel = new ErrorResponseModel()
-                    {
-                        ExpectedError = false,
-                        ErrorMessage = Strings.ErrorMessage_UnexpectedError
-                    }; 
-                    return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(responseModel, _jsonSerializationSettings));
-                }
-            });
+           {
+               HandleAsync = (StatusCodeContext context) =>
+               {
+                   context.HttpContext.Response.ContentType = "application/json";
+                   ErrorResponseModel responseModel = new ErrorResponseModel()
+                   {
+                       ExpectedError = false,
+                       ErrorMessage = Strings.ErrorMessage_UnexpectedError
+                   };
+                   return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(responseModel, _jsonSerializationSettings));
+               }
+           });
 
             if (env.IsDevelopment())
             {
@@ -121,7 +122,7 @@ namespace Jering.VectorArtKit.WebApi
                     }
                 });
 
-                loggerFactory.AddDebug();
+                loggerFactory.AddDebug(LogLevel.Information);
                 app.UseBrowserLink();
                 app.UseCors(builder => builder.
                     AllowAnyOrigin().
