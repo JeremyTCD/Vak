@@ -383,7 +383,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         }
 
         /// <summary>
-        /// Checks whether <paramref name="email"/> is in use as a primary or secondary email of another account.
+        /// Checks whether <paramref name="email"/> is in use as a primary or secondary email of any account.
         /// </summary>
         /// <param name="email"></param>
         /// <returns>True if in use, false otherwise.</returns>
@@ -393,6 +393,21 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
                 new
                 {
                     Email = email
+                },
+                commandType: CommandType.StoredProcedure) == 1;
+        }
+
+        /// <summary>
+        /// Checks whether <paramref name="displayName"/> is in use by any account.
+        /// </summary>
+        /// <param name="displayName"></param>
+        /// <returns>True if in use, false otherwise.</returns>
+        public virtual async Task<bool> CheckDisplayNameInUseAsync(string displayName)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[CheckDisplayNameInUse]",
+                new
+                {
+                    DisplayName = displayName
                 },
                 commandType: CommandType.StoredProcedure) == 1;
         }
