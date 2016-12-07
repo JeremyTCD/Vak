@@ -16,8 +16,7 @@ BEGIN
 			--between these statements
 
 			UPDATE [dbo].[Accounts]
-			SET [SecurityStamp] = NEWID(), 
-				[AlternativeEmail] = @AlternativeEmail,
+			SET [AlternativeEmail] = @AlternativeEmail,
 				[AlternativeEmailVerified] = 0
 			WHERE AccountId = @AccountId;
 
