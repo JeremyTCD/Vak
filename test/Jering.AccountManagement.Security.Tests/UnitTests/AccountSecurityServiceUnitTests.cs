@@ -1276,25 +1276,25 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 It.Is<string>(s => s == _testEmailSubject),
                 It.Is<string>(s => s == string.Format(testMessageFormat, _testLinkDomain, _testToken, _testEmail))));
 
-            Mock<AccountSecurityService<Account>> mockAccountSecurityServices = new Mock<AccountSecurityService<Account>>(null,
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
                 null,
                 null,
                 null,
                 mockEmailService.Object,
                 null);
 
-            mockAccountSecurityServices.
+            mockAccountSecurityService.
                 Setup(a => a.GetToken(It.Is<string>(s => s == TokenServiceOptions.DataProtectionTokenService),
                     It.Is<string>(s => s == _testAccountSecurityService.ResetPasswordTokenPurpose),
                     It.Is<Account>(acc => acc == _testAccount))).
                 Returns(_testToken);
-            mockAccountSecurityServices.CallBase = true;
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            await mockAccountSecurityServices.Object.SendResetPasswordEmailAsync(_testAccount, _testEmailSubject, testMessageFormat, _testLinkDomain);
+            await mockAccountSecurityService.Object.SendResetPasswordEmailAsync(_testAccount, _testEmailSubject, testMessageFormat, _testLinkDomain);
 
             // Assert
-            mockAccountSecurityServices.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
             mockEmailService.VerifyAll();
         }
 
@@ -1311,25 +1311,25 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 It.Is<string>(s => s == _testEmailSubject),
                 It.Is<string>(s => s == string.Format(testMessageFormat, _testLinkDomain, _testToken, _testAccountId))));
 
-            Mock<AccountSecurityService<Account>> mockAccountSecurityServices = new Mock<AccountSecurityService<Account>>(null,
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
                 null,
                 null,
                 null,
                 mockEmailService.Object,
                 null);
 
-            mockAccountSecurityServices.
+            mockAccountSecurityService.
                 Setup(a => a.GetToken(It.Is<string>(s => s == TokenServiceOptions.DataProtectionTokenService),
                     It.Is<string>(s => s == _testAccountSecurityService.ConfirmEmailTokenPurpose),
                     It.Is<Account>(acc => acc == _testAccount))).
                 Returns(_testToken);
-            mockAccountSecurityServices.CallBase = true;
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            await mockAccountSecurityServices.Object.SendEmailVerificationEmailAsync(_testAccount, _testEmailSubject, testMessageFormat, _testLinkDomain);
+            await mockAccountSecurityService.Object.SendEmailVerificationEmailAsync(_testAccount, _testEmailSubject, testMessageFormat, _testLinkDomain);
 
             // Assert
-            mockAccountSecurityServices.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
             mockEmailService.VerifyAll();
         }
 
@@ -1346,25 +1346,25 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 It.Is<string>(s => s == _testEmailSubject),
                 It.Is<string>(s => s == string.Format(testMessageFormat, _testLinkDomain, _testToken, _testAccountId))));
 
-            Mock<AccountSecurityService<Account>> mockAccountSecurityServices = new Mock<AccountSecurityService<Account>>(null,
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
                 null,
                 null,
                 null,
                 mockEmailService.Object,
                 null);
 
-            mockAccountSecurityServices.
+            mockAccountSecurityService.
                 Setup(a => a.GetToken(It.Is<string>(s => s == TokenServiceOptions.DataProtectionTokenService),
                     It.Is<string>(s => s == _testAccountSecurityService.ConfirmAlternativeEmailTokenPurpose),
                     It.Is<Account>(acc => acc == _testAccount))).
                 Returns(_testToken);
-            mockAccountSecurityServices.CallBase = true;
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            await mockAccountSecurityServices.Object.SendAlternativeEmailVerificationEmailAsync(_testAccount, _testEmailSubject, testMessageFormat, _testLinkDomain);
+            await mockAccountSecurityService.Object.SendAlternativeEmailVerificationEmailAsync(_testAccount, _testEmailSubject, testMessageFormat, _testLinkDomain);
 
             // Assert
-            mockAccountSecurityServices.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
             mockEmailService.VerifyAll();
         }
 
@@ -1380,25 +1380,25 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
                 It.Is<string>(s => s == _testEmailSubject),
                 It.Is<string>(s => s == string.Format(_testToken))));
 
-            Mock<AccountSecurityService<Account>> mockAccountSecurityServices = new Mock<AccountSecurityService<Account>>(null,
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
                 null,
                 null,
                 null,
                 mockEmailService.Object,
                 null);
 
-            mockAccountSecurityServices.
+            mockAccountSecurityService.
                 Setup(a => a.GetToken(It.Is<string>(s => s == TokenServiceOptions.TotpTokenService),
                     It.Is<string>(s => s == _testAccountSecurityService.TwoFactorTokenPurpose),
                     It.Is<Account>(acc => acc == _testAccount))).
                 Returns(_testToken);
-            mockAccountSecurityServices.CallBase = true;
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            await mockAccountSecurityServices.Object.SendTwoFactorCodeEmailAsync(_testAccount, _testEmailSubject, testMessageFormat);
+            await mockAccountSecurityService.Object.SendTwoFactorCodeEmailAsync(_testAccount, _testEmailSubject, testMessageFormat);
 
             // Assert
-            mockAccountSecurityServices.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
             mockEmailService.VerifyAll();
         }
 
