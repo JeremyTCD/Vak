@@ -44,7 +44,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             // Assert
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_internalServerError, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
 
         [Fact]
@@ -57,7 +57,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_notFound, httpResponseMessage.StatusCode.ToString());
             Assert.False(body.ExpectedError);
-            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             Assert.False(body.ExpectedError);
-            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             Assert.False(body.ExpectedError);
-            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_internalServerError, httpResponseMessage.StatusCode.ToString());
             Assert.False(body.ExpectedError);
-            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
     }
 
