@@ -65,15 +65,9 @@ namespace Jering.DynamicForms
                 ValidatorResponseModel asyncValidatorResponseModel = null;
                 foreach (ValidationAttribute validationAttribute in validationAttributes)
                 {
-                    if (validationAttribute is AsyncValidationAttribute)
+                    if (validationAttribute is AsyncValidateAttribute)
                     { 
-                        if(asyncValidatorResponseModel == null)
-                        {
-                            asyncValidatorResponseModel = BuildDynamicControlValidatorResponseModel(validationAttribute);
-                        }else
-                        {
-                            throw new ArgumentException($"{nameof(propertyInfo)} cannot have more than 1 {nameof(AsyncValidationAttribute)}");
-                        }
+                        asyncValidatorResponseModel = BuildDynamicControlValidatorResponseModel(validationAttribute);
                     }
                     else
                     {
@@ -126,10 +120,6 @@ namespace Jering.DynamicForms
             string errorMessage = validationAttribute.ErrorMessageResourceType.GetProperty(validationAttribute.ErrorMessageResourceName).GetValue(null, null) as string;
 
             List<PropertyInfo> propertyInfos = validationAttributeType.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).ToList<PropertyInfo>();
-            if(validationAttribute is AsyncValidationAttribute)
-            {
-                propertyInfos.Add(validationAttributeType.GetProperty(nameof(AsyncValidationAttribute.RelativeUrl)));
-            }
 
             Dictionary<string, string> options = new Dictionary<string, string>();
             foreach (PropertyInfo propertyInfo in propertyInfos)

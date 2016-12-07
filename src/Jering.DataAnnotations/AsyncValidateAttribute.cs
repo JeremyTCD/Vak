@@ -7,9 +7,10 @@ using System.Threading.Tasks;
 namespace Jering.DataAnnotations
 {
     /// <summary>
-    /// Base class for asynchronous validation attributes.
+    /// Asynchronous validation attribute
     /// </summary>
-    public abstract class AsyncValidationAttribute : ValidationAttribute
+    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    public class AsyncValidateAttribute : ValidationAttribute
     {
         /// <summary>
         /// Web Api endpoint
@@ -23,11 +24,22 @@ namespace Jering.DataAnnotations
         /// <param name="action"></param>
         /// <param name="resourceName"></param>
         /// <param name="resourceType"></param>
-        protected AsyncValidationAttribute(string resourceName, Type resourceType, string controller, string action)
+        public AsyncValidateAttribute(string resourceName, Type resourceType, string controller, string action)
         {
             RelativeUrl = $"{controller.Replace("Controller", "")}/{action}";
             ErrorMessageResourceName = resourceName;
             ErrorMessageResourceType = resourceType;
+        }
+
+        /// <summary>
+        /// Do nothing
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="validationContext"></param>
+        /// <returns></returns>
+        protected override ValidationResult IsValid(object value, ValidationContext validationContext)
+        {
+            return ValidationResult.Success;
         }
     }
 }

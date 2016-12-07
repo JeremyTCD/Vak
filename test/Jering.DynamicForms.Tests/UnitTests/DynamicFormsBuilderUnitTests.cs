@@ -28,7 +28,7 @@ namespace Jering.DynamicForms.Tests.UnitTests
             Assert.Equal(result.ValidatorResponseModels.Count, 1);
             Assert.Equal("validateMatches", result.ValidatorResponseModels[0].Name);
             Assert.NotNull(result.AsyncValidatorResponseModel);
-            Assert.Equal("asyncValidateEmailNotInUse", result.AsyncValidatorResponseModel.Name);
+            Assert.Equal("asyncValidate", result.AsyncValidatorResponseModel.Name);
             Assert.Equal(DummyStrings.Dummy, result.DisplayName);
             Assert.NotNull(result.Properties);
             Assert.Equal(result.Properties["type"], "email");
@@ -47,17 +47,6 @@ namespace Jering.DynamicForms.Tests.UnitTests
 
             // Assert
             Assert.Null(result);
-        }
-
-        [Fact]
-        public void BuildDynamicControlResponseModel_ThrowsArgumentExceptionIfPropertyInfoHasMoreThanOneAsyncValidationAttributes()
-        {
-            // Arrange
-            DynamicFormsBuilder dynamicFormsBuilder = new DynamicFormsBuilder();
-            PropertyInfo propertyInfo = typeof(DummyFormModel).GetProperty(nameof(DummyFormModel.SecondaryEmail));
-
-            // Act and Assert
-            Assert.Throws<ArgumentException>(() => dynamicFormsBuilder.BuildDynamicControlResponseModel(propertyInfo));
         }
 
         [Fact]
@@ -113,16 +102,16 @@ namespace Jering.DynamicForms.Tests.UnitTests
         {
             // Arrange
             DynamicFormsBuilder dynamicFormsBuilder = new DynamicFormsBuilder();
-            DummyAsyncValidationAttribute dummyValidationAttribute = new DummyAsyncValidationAttribute(nameof(DummyStrings.Dummy), typeof(DummyStrings), "testController", "testAction");
+            AsyncValidateAttribute dummyValidationAttribute = new AsyncValidateAttribute(nameof(DummyStrings.Dummy), typeof(DummyStrings), "testController", "testAction");
 
             // Act
             ValidatorResponseModel result = dynamicFormsBuilder.BuildDynamicControlValidatorResponseModel(dummyValidationAttribute);
 
             // Assert
-            Assert.Equal("dummyAsyncValidation", result.Name);
+            Assert.Equal("asyncValidate", result.Name);
             Assert.Equal(DummyStrings.Dummy, result.ErrorMessage);
             Assert.Equal(1, result.Options.Count);
-            Assert.Equal(result.Options[nameof(AsyncValidationAttribute.RelativeUrl)], "test/testAction");
+            Assert.Equal(result.Options[nameof(AsyncValidateAttribute.RelativeUrl)], "test/testAction");
         }
 
         private class DummyFormModel_NoDynamicFormAttribute
@@ -134,14 +123,13 @@ namespace Jering.DynamicForms.Tests.UnitTests
         private class DummyFormModel
         {
             [ValidateMatches("Password", nameof(DummyStrings.Dummy), typeof(DummyStrings))]
-            [AsyncValidateEmailNotInUse(nameof(DummyStrings.Dummy), typeof(DummyStrings), "TestController", "TestAction")]
+            [AsyncValidate(nameof(DummyStrings.Dummy), typeof(DummyStrings), "TestController", "TestAction")]
             [DynamicControl("input", nameof(DummyStrings.Dummy), typeof(DummyStrings), 0)]
             [DynamicControlProperty("type", "email")]
             [DynamicControlProperty("placeholder", propertyValueResourceName: nameof(DummyStrings.Dummy), resourceType: typeof(DummyStrings))]
             public string Email { get; set; }
 
-            [AsyncValidateEmailNotInUse(nameof(DummyStrings.Dummy), typeof(DummyStrings), "TestController", "TestAction")]
-            [DummyAsyncValidationAttribute(nameof(DummyStrings.Dummy), typeof(DummyStrings), "TestController", "TestAction")]
+            [AsyncValidate(nameof(DummyStrings.Dummy), typeof(DummyStrings), "TestController", "TestAction")]
             [DynamicControl("input", nameof(DummyStrings.Dummy), typeof(DummyStrings), 0)]
             public string SecondaryEmail { get; set; }
 
@@ -164,20 +152,6 @@ namespace Jering.DynamicForms.Tests.UnitTests
                 DummyIntProperty = dummyIntProperty;
                 ErrorMessageResourceName = resourceName;
                 ErrorMessageResourceType = resourceType;
-            }
-        }
-
-        private class DummyAsyncValidationAttribute : AsyncValidationAttribute
-        {
-            /// <summary>
-            /// 
-            /// </summary>
-            /// <param name="resourceName"></param>
-            /// <param name="resourceType"></param>
-            /// <param name="controller"></param>
-            /// <param name="action"></param>
-            public DummyAsyncValidationAttribute(string resourceName, Type resourceType, string controller, string action) : base(resourceName, resourceType, controller, action)
-            {
             }
         }
     }
