@@ -7,8 +7,8 @@
         <!-- TODO incomplete -->
         <option *ngFor="let opt of dynamicControl.options"></option>
     </select>
+    <span *ngIf="dynamicControl.isValidityPending()">Pending</span>
 </div>
 <div>
     <span *ngFor="let message of dynamicControl.messages">{{message}}</span>
 </div>
-<div *ngIf="dynamicControl.isValidityPending()">Pending</div>
