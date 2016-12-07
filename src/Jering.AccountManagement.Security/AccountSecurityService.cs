@@ -542,7 +542,7 @@ namespace Jering.AccountManagement.Security
                 return ResetPasswordResult.GetInvalidTokenResult();
             }
 
-            if(result.Expired)
+            if (result.Expired)
             {
                 return ResetPasswordResult.GetExpiredTokenResult();
             }
@@ -556,136 +556,233 @@ namespace Jering.AccountManagement.Security
         }
 
         /// <summary>
-        /// Sets email of account with id <paramref name="accountId"/> to <paramref name="newEmail"/>.
+        /// Sets password of logged in account to <paramref name="newPassword"/> if <paramref name="currentPassword"/> is valid.
         /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="newEmail"></param>
-        /// <returns>
-        /// <see cref="UpdateEmailResult"/> with <see cref="UpdateEmailResult.Succeeded"/> set to true if update succeeds.
-        /// <see cref="UpdateEmailResult"/> with <see cref="UpdateEmailResult.InvalidEmail"/> set to true if new email is in use.
-        /// </returns>
-        /// <exception cref="Exception">Thrown if account email update fails unexpectedly</exception>
-        public virtual async Task<UpdateEmailResult> UpdateEmailAsync(int accountId, string newEmail)
-        {
-            if(newEmail == null)
-            {
-                throw new ArgumentNullException(nameof(newEmail));
-            }
-
-            try
-            {
-                if (!await _accountRepository.UpdateAccountEmailAsync(accountId, newEmail))
-                {
-                    // TODO the underlying stored procedure should throw a sql exception if update fails
-                    throw new Exception();
-                }
-
-                return UpdateEmailResult.GetSucceededResult();
-            }
-            catch (SqlException sqlException)
-            {
-                if (sqlException.Number == 51000)
-                {
-                    return UpdateEmailResult.GetInvalidEmailResult();
-                }
-
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Sets password hash of account with id <paramref name="accountId"/> using <paramref name="newPassword"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
+        /// <param name="currentPassword"></param>
         /// <param name="newPassword"></param>
+        /// <returns>
+        /// <see cref="ChangePasswordResult"/> with <see cref="ChangePasswordResult.NotLoggedIn"/> set to true if 
+        /// unable to retrieve logged in account.
+        /// <see cref="ChangePasswordResult"/> with <see cref="ChangePasswordResult.Succeeded"/> set to true if 
+        /// password change succeeds.
+        /// <see cref="ChangePasswordResult"/> with <see cref="ChangePasswordResult.InvalidCurrentPassword"/> set to true if
+        /// <paramref name="currentPassword"/> is invalid.
+        /// </returns>
         /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
-        public virtual async Task UpdatePasswordHashAsync(int accountId, string newPassword)
+        public virtual async Task<ChangePasswordResult> ChangePasswordAsync(string currentPassword, string newPassword)
         {
-            if(newPassword == null)
+            if (currentPassword == null)
+            {
+                throw new ArgumentNullException(nameof(currentPassword));
+            }
+            if (newPassword == null)
             {
                 throw new ArgumentNullException(nameof(newPassword));
             }
 
-            if (!await _accountRepository.UpdateAccountPasswordHashAsync(accountId, newPassword))
+            string email = GetLoggedInAccountEmail();
+            if (email == null)
+            {
+                return ChangePasswordResult.GetNotLoggedInResult();
+            }
+
+            TAccount account = await _accountRepository.GetAccountByEmailAndPasswordAsync(email, currentPassword);
+            if (account == null)
+            {
+                return ChangePasswordResult.GetInvalidCurrentPasswordResult();
+            }
+
+            if (!await _accountRepository.UpdateAccountPasswordHashAsync(account.AccountId, newPassword))
             {
                 throw new Exception();
             }
+
+            // Security stamp has changed
+            account = await _accountRepository.GetAccountAsync(account.AccountId);
+            await RefreshLogInAsync(account);
+
+            return ChangePasswordResult.GetSucceededResult();
         }
 
         /// <summary>
-        /// Sets AlternativeEmail of account with id <paramref name="accountId"/> to <paramref name="newAlternativeEmail"/>.
+        /// Sets email of logged in account to <paramref name="newEmail"/> if <paramref name="password"/> is valid.
         /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="newAlternativeEmail"></param>
+        /// <param name="password"></param>
+        /// <param name="newEmail"></param>
         /// <returns>
-        /// <see cref="UpdateAlternativeEmailResult"/> with <see cref="UpdateAlternativeEmailResult.Succeeded"/> set to true if update succeeds.
-        /// <see cref="UpdateAlternativeEmailResult"/> with <see cref="UpdateAlternativeEmailResult.InvalidAlternativeEmail"/> set to true if alternative email is in use.
+        /// <see cref="ChangeEmailResult"/> with <see cref="ChangeEmailResult.NotLoggedIn"/> set to true if 
+        /// unable to retrieve logged in account.
+        /// <see cref="ChangeEmailResult"/> with <see cref="ChangeEmailResult.Succeeded"/> set to true if 
+        /// email change succeeds.
+        /// <see cref="ChangeEmailResult"/> with <see cref="ChangeEmailResult.InvalidPassword"/> set to true if
+        /// <paramref name="password"/> is invalid.
+        /// <see cref="ChangeEmailResult"/> with <see cref="ChangeEmailResult.InvalidNewEmail"/> set to true if
+        /// <paramref name="newEmail"/> is in use.
         /// </returns>
         /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
-        public virtual async Task<UpdateAlternativeEmailResult> UpdateAlternativeEmailAsync(int accountId, 
-            string newAlternativeEmail)
+        public virtual async Task<ChangeEmailResult> ChangeEmailAsync(string password, string newEmail)
         {
-            if(newAlternativeEmail == null)
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+            if (newEmail == null)
+            {
+                throw new ArgumentNullException(nameof(newEmail));
+            }
+
+            string email = GetLoggedInAccountEmail();
+            if (email == null)
+            {
+                return ChangeEmailResult.GetNotLoggedInResult();
+            }
+
+            TAccount account = await _accountRepository.GetAccountByEmailAndPasswordAsync(email, password);
+            if (account == null)
+            {
+                return ChangeEmailResult.GetInvalidPasswordResult();
+            }
+
+            try
+            {
+                if (!await _accountRepository.UpdateAccountEmailAsync(account.AccountId, newEmail))
+                {// TODO the underlying stored procedure should throw a sql exception if update fails
+                    throw new Exception();
+                }
+            }
+            catch (SqlException sqlException)
+            {
+                if (sqlException.Number == 51000)
+                {
+                    return ChangeEmailResult.GetInvalidNewEmailResult();
+                }
+
+                throw;
+            }
+
+            // Security stamp and account email have changed
+            account = await _accountRepository.GetAccountAsync(account.AccountId);
+            await RefreshLogInAsync(account);
+
+            return ChangeEmailResult.GetSucceededResult();
+        }
+
+        /// <summary>
+        /// Sets alternative email of logged in account to <paramref name="newAlternativeEmail"/> if <paramref name="password"/> is valid.
+        /// </summary>
+        /// <param name="password"></param>
+        /// <param name="newAlternativeEmail"></param>
+        /// <returns>
+        /// <see cref="ChangeAlternativeEmailResult"/> with <see cref="ChangeAlternativeEmailResult.NotLoggedIn"/> set to true if 
+        /// unable to retrieve logged in account.
+        /// <see cref="ChangeAlternativeEmailResult"/> with <see cref="ChangeAlternativeEmailResult.Succeeded"/> set to true if 
+        /// alternative email change succeeds.
+        /// <see cref="ChangeAlternativeEmailResult"/> with <see cref="ChangeAlternativeEmailResult.InvalidPassword"/> set to true if
+        /// <paramref name="password"/> is invalid.
+        /// <see cref="ChangeAlternativeEmailResult"/> with <see cref="ChangeAlternativeEmailResult.InvalidNewAlternativeEmail"/> set to true if
+        /// <paramref name="newAlternativeEmail"/> is in use.
+        /// </returns>
+        /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
+        public virtual async Task<ChangeAlternativeEmailResult> ChangeAlternativeEmailAsync(string password, string newAlternativeEmail)
+        {
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+            if (newAlternativeEmail == null)
             {
                 throw new ArgumentNullException(nameof(newAlternativeEmail));
             }
 
+            string email = GetLoggedInAccountEmail();
+            if (email == null)
+            {
+                return ChangeAlternativeEmailResult.GetNotLoggedInResult();
+            }
+
+            TAccount account = await _accountRepository.GetAccountByEmailAndPasswordAsync(email, password);
+            if (account == null)
+            {
+                return ChangeAlternativeEmailResult.GetInvalidPasswordResult();
+            }
+
             try
             {
-                if (!await _accountRepository.UpdateAccountAlternativeEmailAsync(accountId, newAlternativeEmail))
-                {
+                if (!await _accountRepository.UpdateAccountAlternativeEmailAsync(account.AccountId, newAlternativeEmail))
+                {// TODO the underlying stored procedure should throw a sql exception if update fails
                     throw new Exception();
                 }
-
-                return UpdateAlternativeEmailResult.GetSucceededResult();
             }
             catch (SqlException sqlException)
             {
                 if (sqlException.Number == 51000)
                 {
-                    return UpdateAlternativeEmailResult.GetInvalidAlternativeEmailResult();
+                    return ChangeAlternativeEmailResult.GetInvalidNewAlternativeEmailResult();
                 }
 
                 throw;
             }
+
+            return ChangeAlternativeEmailResult.GetSucceededResult();
         }
 
         /// <summary>
-        /// Sets DisplayName of account with id <paramref name="accountId"/> to <paramref name="newDisplayName"/>.
+        /// Sets display name of logged in account to <paramref name="newDisplayName"/> if <paramref name="password"/> is valid.
         /// </summary>
-        /// <param name="accountId"></param>
+        /// <param name="password"></param>
         /// <param name="newDisplayName"></param>
         /// <returns>
-        /// <see cref="UpdateDisplayNameResult"/> with <see cref="UpdateDisplayNameResult.Succeeded"/> set to true if update succeeds.
-        /// <see cref="UpdateDisplayNameResult"/> with <see cref="UpdateDisplayNameResult.InvalidDisplayName"/> set to true if display name is in use.
+        /// <see cref="ChangeDisplayNameResult"/> with <see cref="ChangeDisplayNameResult.NotLoggedIn"/> set to true if 
+        /// unable to retrieve logged in account.
+        /// <see cref="ChangeDisplayNameResult"/> with <see cref="ChangeDisplayNameResult.Succeeded"/> set to true if 
+        /// display name change succeeds.
+        /// <see cref="ChangeDisplayNameResult"/> with <see cref="ChangeDisplayNameResult.InvalidPassword"/> set to true if
+        /// <paramref name="password"/> is invalid.
+        /// <see cref="ChangeDisplayNameResult"/> with <see cref="ChangeDisplayNameResult.InvalidNewDisplayName"/> set to true if
+        /// <paramref name="newDisplayName"/> is in use.
         /// </returns>
         /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
-        public virtual async Task<UpdateDisplayNameResult> UpdateDisplayNameAsync(int accountId, 
-            string newDisplayName)
+        public virtual async Task<ChangeDisplayNameResult> ChangeDisplayNameAsync(string password, string newDisplayName)
         {
-            if(newDisplayName == null)
+            if (password == null)
+            {
+                throw new ArgumentNullException(nameof(password));
+            }
+            if (newDisplayName == null)
             {
                 throw new ArgumentNullException(nameof(newDisplayName));
             }
 
+            string email = GetLoggedInAccountEmail();
+            if (email == null)
+            {
+                return ChangeDisplayNameResult.GetNotLoggedInResult();
+            }
+
+            TAccount account = await _accountRepository.GetAccountByEmailAndPasswordAsync(email, password);
+            if (account == null)
+            {
+                return ChangeDisplayNameResult.GetInvalidPasswordResult();
+            }
+
             try
             {
-                if (!await _accountRepository.UpdateAccountDisplayNameAsync(accountId, newDisplayName))
-                {
+                if (!await _accountRepository.UpdateAccountDisplayNameAsync(account.AccountId, newDisplayName))
+                {// TODO the underlying stored procedure should throw a sql exception if update fails
                     throw new Exception();
                 }
-
-                return UpdateDisplayNameResult.GetSucceededResult();
             }
             catch (SqlException sqlException)
             {
                 if (sqlException.Number == 51000)
                 {
-                    return UpdateDisplayNameResult.GetInvalidDisplayNameResult();
+                    return ChangeDisplayNameResult.GetInvalidNewDisplayNameResult();
                 }
 
                 throw;
             }
+
+            return ChangeDisplayNameResult.GetSucceededResult();
         }
 
         /// <summary>
@@ -710,7 +807,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="subject"></param>
         /// <param name="messageFormat"></param>
         /// <param name="linkDomain"></param>
-        public virtual async Task SendResetPasswordEmailAsync(TAccount account, string subject, 
+        public virtual async Task SendResetPasswordEmailAsync(TAccount account, string subject,
             string messageFormat, string linkDomain)
         {
             if (account == null)
@@ -734,8 +831,8 @@ namespace Jering.AccountManagement.Security
 
             MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
                 subject,
-                string.Format(messageFormat, 
-                linkDomain, 
+                string.Format(messageFormat,
+                linkDomain,
                 WebUtility.UrlEncode(token),
                 WebUtility.UrlEncode(account.Email)));
 
@@ -750,7 +847,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="subject"></param>
         /// <param name="messageFormat"></param>
         /// <param name="linkDomain"></param>
-        public virtual async Task SendEmailVerificationEmailAsync(TAccount account, string subject, 
+        public virtual async Task SendEmailVerificationEmailAsync(TAccount account, string subject,
             string messageFormat, string linkDomain)
         {
             if (account == null)
@@ -787,7 +884,7 @@ namespace Jering.AccountManagement.Security
         /// <param name="subject"></param>
         /// <param name="messageFormat"></param>
         /// <param name="linkDomain"></param>
-        public virtual async Task SendAlternativeEmailVerificationEmailAsync(TAccount account, string subject, 
+        public virtual async Task SendAlternativeEmailVerificationEmailAsync(TAccount account, string subject,
             string messageFormat, string linkDomain)
         {
             if (account == null)

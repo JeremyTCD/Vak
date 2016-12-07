@@ -21,9 +21,13 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
 
         private const string _testToken = "testToken";
         private const string _testEmail = "testEmail";
+        private const string _testNewEmail = "testNewEmail";
+        private const string _testNewAlternativeEmail = "testNewAlternativeEmail";
+        private const string _testNewDisplayName = "testNewDisplayName";
         private const string _testEmailSubject = "testEmailSubject";
         private const string _testLinkDomain = "testLinkDomain";
         private const string _testPassword = "testPassword";
+        private const string _testNewPassword = "testNewPassword";
         private const int _testAccountId = 1;
         private AccountSecurityOptions _testAccountSecurityOptions;
         private Account _testAccount;
@@ -634,250 +638,605 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
         }
 
         [Fact]
-        public async Task UpdateEmailAsync_ReturnsUpdateEmailResultInvalidEmailIfNewEmailIsInUse()
+        public async Task ChangePasswordAsync_ThrowsExceptionIfDatabaseUpdateFailsUnexpectedly()
+        {
+            // Arrange
+            _testAccount.AccountId = _testAccountId;
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
+            mockAccountRepository.
+                Setup(a => a.UpdateAccountPasswordHashAsync(It.Is<int>(i => i == _testAccountId),
+                    It.Is<string>(s => s == _testNewPassword))).
+                ReturnsAsync(false);
+
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            await Assert.ThrowsAsync<Exception>(async () => await mockAccountSecurityService.Object.
+                ChangePasswordAsync(_testPassword, _testNewPassword));
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_ReturnsChangePasswordResultSucceededIfPasswordChangeSucceeds()
+        {
+            // Arrange
+            _testAccount.AccountId = _testAccountId;
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
+            mockAccountRepository.
+                Setup(a => a.UpdateAccountPasswordHashAsync(It.Is<int>(i => i == _testAccountId),
+                    It.Is<string>(s => s == _testNewPassword))).
+                ReturnsAsync(true);
+            mockAccountRepository.
+                Setup(a => a.GetAccountAsync(It.Is<int>(i => i == _testAccountId))).
+                ReturnsAsync(_testAccount);
+
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.
+                Setup(a => a.RefreshLogInAsync(It.Is<Account>(acc => acc == _testAccount))).
+                Returns(Task.CompletedTask);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            ChangePasswordResult result = await mockAccountSecurityService.
+                Object.
+                ChangePasswordAsync(_testPassword, _testNewPassword);
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.Succeeded);
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_ReturnsChangePasswordResultNotLoggedInIfUnabletoRetrieveLoggedInAccount()
+        {
+            // Arrange
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                null,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns<Account>(null);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            ChangePasswordResult result = await mockAccountSecurityService.Object.ChangePasswordAsync(_testPassword, _testNewPassword);
+
+            // Assert
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.NotLoggedIn);
+        }
+
+        [Fact]
+        public async Task ChangePasswordAsync_ReturnsChangePasswordResultInvalidCurrentPasswordIfCurrentPasswordIsInvalid()
         {
             // Arrange
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(null);
+
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            ChangePasswordResult result = await mockAccountSecurityService.Object.ChangePasswordAsync(_testPassword, _testNewPassword);
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.InvalidCurrentPassword);
+        }
+
+        [Fact]
+        public async Task ChangeEmailAsync_ReturnsChangeEmailResultInvalidNewEmailIfNewEmailIsInUse()
+        {
+            // Arrange
+            _testAccount.AccountId = _testAccountId;
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
             mockAccountRepository.
                 Setup(a => a.UpdateAccountEmailAsync(It.Is<int>(i => i == _testAccountId),
-                    It.Is<string>(s => s == _testEmail))).
+                    It.Is<string>(s => s == _testNewEmail))).
                 Throws(GetSqlException(51000));
 
-            AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
                 null,
                 null,
                 mockAccountRepository.Object,
                 null,
                 null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            UpdateEmailResult result = await accountSecurityService.UpdateEmailAsync(_testAccountId, _testEmail);
+            ChangeEmailResult result = await mockAccountSecurityService.Object.ChangeEmailAsync(_testPassword, _testNewEmail);
 
             // Assert
             mockAccountRepository.VerifyAll();
-            Assert.True(result.InvalidEmail);
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.InvalidNewEmail);
         }
 
         [Fact]
-        public async Task UpdateEmailAsync_ThrowsExceptionIfDatabaseUpdateFailsUnexpectedly()
+        public async Task ChangeEmailAsync_ThrowsExceptionIfDatabaseUpdateFailsUnexpectedly()
         {
             // Arrange
+            _testAccount.AccountId = _testAccountId;
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountEmailAsync(It.Is<int>(i => i == _testAccountId), 
-                    It.Is<string>(s => s == _testEmail))).
-                ReturnsAsync(false);
-
-            AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
-                null,
-                null,
-                mockAccountRepository.Object,
-                null,
-                null);
-
-            // Act
-            await Assert.ThrowsAsync<Exception>(async () => await accountSecurityService.UpdateEmailAsync(_testAccountId, _testEmail));
-
-            // Assert
-            mockAccountRepository.VerifyAll();
-        }
-
-        [Fact]
-        public async Task UpdateEmailAsync_ReturnsUpdateEmailResultSucceededIfUpdateSucceeds()
-        {
-            // Arrange
-            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
             mockAccountRepository.
                 Setup(a => a.UpdateAccountEmailAsync(It.Is<int>(i => i == _testAccountId),
-                    It.Is<string>(s => s == _testEmail))).
-                ReturnsAsync(true);
+                    It.Is<string>(s => s == _testNewEmail))).
+                ReturnsAsync(false);
 
-            AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
-                 null,
-                 null,
-                 mockAccountRepository.Object,
-                 null,
-                 null);
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            UpdateEmailResult result = await accountSecurityService.UpdateEmailAsync(_testAccountId, _testEmail);
+            await Assert.ThrowsAsync<Exception>(async () => await mockAccountSecurityService.Object.
+                ChangeEmailAsync(_testPassword, _testNewEmail));
 
             // Assert
             mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+        }
+
+        [Fact]
+        public async Task ChangeEmailAsync_ReturnsChangeEmailResultSucceededIfEmailChangeSucceeds()
+        {
+            // Arrange
+            _testAccount.AccountId = _testAccountId;
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
+            mockAccountRepository.
+                Setup(a => a.UpdateAccountEmailAsync(It.Is<int>(i => i == _testAccountId),
+                    It.Is<string>(s => s == _testNewEmail))).
+                ReturnsAsync(true);
+            mockAccountRepository.
+                Setup(a => a.GetAccountAsync(It.Is<int>(i => i == _testAccountId))).
+                ReturnsAsync(_testAccount);
+
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.
+                Setup(a => a.RefreshLogInAsync(It.Is<Account>(acc => acc == _testAccount))).
+                Returns(Task.CompletedTask);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            ChangeEmailResult result = await mockAccountSecurityService.Object.ChangeEmailAsync(_testPassword, _testNewEmail);
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
             Assert.True(result.Succeeded);
         }
 
         [Fact]
-        public async Task UpdatePasswordHashAsync_ThrowsExceptionIfDatabaseUpdateFails()
+        public async Task ChangeEmailAsync_ReturnsChangeEmailResultNotLoggedInIfUnabletoRetrieveLoggedInAccount()
         {
             // Arrange
-            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
-            mockAccountRepository.
-                Setup(a => a.UpdateAccountPasswordHashAsync(It.Is<int>(i => i == _testAccountId), 
-                It.Is<string>(s => s == _testPassword))).
-                ReturnsAsync(false);
-
-            AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
-               null,
-               null,
-               mockAccountRepository.Object,
-               null,
-               null);
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                null,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns<Account>(null);
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            await Assert.ThrowsAsync<Exception>(async () => await accountSecurityService.UpdatePasswordHashAsync(_testAccountId, _testPassword));
+            ChangeEmailResult result = await mockAccountSecurityService.Object.ChangeEmailAsync(_testPassword, _testNewEmail);
 
             // Assert
-            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.NotLoggedIn);
         }
 
         [Fact]
-        public async Task UpdateAlternativeEmailAsync_ReturnsUpdateAlternativeEmailResultInvalidAlternativeEmailIfNewAlternativeEmailIsInUse()
+        public async Task ChangeEmailAsync_ReturnsChangeEmailResultInvalidPasswordIfPasswordIsInvalid()
         {
             // Arrange
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(null);
+
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            ChangeEmailResult result = await mockAccountSecurityService.Object.ChangeEmailAsync(_testPassword, _testNewEmail);
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.InvalidPassword);
+        }
+
+        [Fact]
+        public async Task ChangeAlternativeEmailAsync_ReturnsChangeAlternativeEmailResultInvalidNewAlternativeEmailIfNewAlternativeEmailIsInUse()
+        {
+            // Arrange
+            _testAccount.AccountId = _testAccountId;
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
+            mockAccountRepository.
                 Setup(a => a.UpdateAccountAlternativeEmailAsync(It.Is<int>(i => i == _testAccountId),
-                    It.Is<string>(s => s == _testEmail))).
+                    It.Is<string>(s => s == _testNewAlternativeEmail))).
                 Throws(GetSqlException(51000));
 
-            AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
                 null,
                 null,
                 mockAccountRepository.Object,
                 null,
                 null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            UpdateAlternativeEmailResult result = await accountSecurityService.UpdateAlternativeEmailAsync(_testAccountId, _testEmail);
+            ChangeAlternativeEmailResult result = await mockAccountSecurityService.Object.ChangeAlternativeEmailAsync(_testPassword, _testNewAlternativeEmail);
 
             // Assert
             mockAccountRepository.VerifyAll();
-            Assert.True(result.InvalidAlternativeEmail);
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.InvalidNewAlternativeEmail);
         }
 
         [Fact]
-        public async Task UpdateAlternativeEmailAsync_ThrowsExceptionIfDatabaseUpdateFailsUnexpectedly()
+        public async Task ChangeAlternativeEmailAsync_ThrowsExceptionIfDatabaseUpdateFailsUnexpectedly()
         {
             // Arrange
+            _testAccount.AccountId = _testAccountId;
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
+            mockAccountRepository.
                 Setup(a => a.UpdateAccountAlternativeEmailAsync(It.Is<int>(i => i == _testAccountId),
-                    It.Is<string>(s => s == _testEmail))).
+                    It.Is<string>(s => s == _testNewAlternativeEmail))).
                 ReturnsAsync(false);
 
-            AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
                 null,
                 null,
                 mockAccountRepository.Object,
                 null,
                 null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            await Assert.ThrowsAsync<Exception>(async () => await accountSecurityService.UpdateAlternativeEmailAsync(_testAccountId, _testEmail));
+            await Assert.ThrowsAsync<Exception>(async () => await mockAccountSecurityService.Object.
+                ChangeAlternativeEmailAsync(_testPassword, _testNewAlternativeEmail));
 
             // Assert
             mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
         }
 
         [Fact]
-        public async Task UpdateAlternativeEmailAsync_ReturnsUpdateAlternativeEmailResultSucceededIfUpdateSucceeds()
+        public async Task ChangeAlternativeEmailAsync_ReturnsChangeAlternativeEmailResultSucceededIfAlternativeEmailChangeSucceeds()
         {
             // Arrange
+            _testAccount.AccountId = _testAccountId;
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
+            mockAccountRepository.
                 Setup(a => a.UpdateAccountAlternativeEmailAsync(It.Is<int>(i => i == _testAccountId),
-                    It.Is<string>(s => s == _testEmail))).
+                    It.Is<string>(s => s == _testNewAlternativeEmail))).
                 ReturnsAsync(true);
 
-            AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
-                 null,
-                 null,
-                 mockAccountRepository.Object,
-                 null,
-                 null);
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            UpdateAlternativeEmailResult result = await accountSecurityService.UpdateAlternativeEmailAsync(_testAccountId, _testEmail);
+            ChangeAlternativeEmailResult result = await mockAccountSecurityService.Object.ChangeAlternativeEmailAsync(_testPassword, _testNewAlternativeEmail);
 
             // Assert
             mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
             Assert.True(result.Succeeded);
         }
 
         [Fact]
-        public async Task UpdateDisplayNameAsync_ReturnsUpdateDisplayNameResultInvalidDisplayNameIfNewDisplayNameIsInUse()
+        public async Task ChangeAlternativeEmailAsync_ReturnsChangeAlternativeEmailResultNotLoggedInIfUnabletoRetrieveLoggedInAccount()
+        {
+            // Arrange
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                null,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns<Account>(null);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            ChangeAlternativeEmailResult result = await mockAccountSecurityService.
+                Object.
+                ChangeAlternativeEmailAsync(_testPassword, _testNewAlternativeEmail);
+
+            // Assert
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.NotLoggedIn);
+        }
+
+        [Fact]
+        public async Task ChangeAlternativeEmailAsync_ReturnsChangeAlternativeEmailResultInvalidPasswordIfPasswordIsInvalid()
         {
             // Arrange
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(null);
+
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            ChangeAlternativeEmailResult result = await mockAccountSecurityService.Object.ChangeAlternativeEmailAsync(_testPassword, _testNewAlternativeEmail);
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.InvalidPassword);
+        }
+
+        [Fact]
+        public async Task ChangeDisplayNameAsync_ReturnsChangeDisplayNameResultInvalidNewDisplayNameIfNewDisplayNameIsInUse()
+        {
+            // Arrange
+            _testAccount.AccountId = _testAccountId;
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
+            mockAccountRepository.
                 Setup(a => a.UpdateAccountDisplayNameAsync(It.Is<int>(i => i == _testAccountId),
-                    It.Is<string>(s => s == _testEmail))).
+                    It.Is<string>(s => s == _testNewDisplayName))).
                 Throws(GetSqlException(51000));
 
-            AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
                 null,
                 null,
                 mockAccountRepository.Object,
                 null,
                 null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            UpdateDisplayNameResult result = await accountSecurityService.UpdateDisplayNameAsync(_testAccountId, _testEmail);
+            ChangeDisplayNameResult result = await mockAccountSecurityService.Object.ChangeDisplayNameAsync(_testPassword, _testNewDisplayName);
 
             // Assert
             mockAccountRepository.VerifyAll();
-            Assert.True(result.InvalidDisplayName);
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.InvalidNewDisplayName);
         }
 
         [Fact]
-        public async Task UpdateDisplayNameAsync_ThrowsExceptionIfDatabaseUpdateFailsUnexpectedly()
+        public async Task ChangeDisplayNameAsync_ThrowsExceptionIfDatabaseUpdateFailsUnexpectedly()
         {
             // Arrange
+            _testAccount.AccountId = _testAccountId;
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
+            mockAccountRepository.
                 Setup(a => a.UpdateAccountDisplayNameAsync(It.Is<int>(i => i == _testAccountId),
-                    It.Is<string>(s => s == _testEmail))).
+                    It.Is<string>(s => s == _testNewDisplayName))).
                 ReturnsAsync(false);
 
-            AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
                 null,
                 null,
                 mockAccountRepository.Object,
                 null,
                 null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            await Assert.ThrowsAsync<Exception>(async () => await accountSecurityService.UpdateDisplayNameAsync(_testAccountId, _testEmail));
+            await Assert.ThrowsAsync<Exception>(async () => await mockAccountSecurityService.Object.
+                ChangeDisplayNameAsync(_testPassword, _testNewDisplayName));
 
             // Assert
             mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
         }
 
         [Fact]
-        public async Task UpdateDisplayNameAsync_ReturnsUpdateDisplayNameResultSucceededIfUpdateSucceeds()
+        public async Task ChangeDisplayNameAsync_ReturnsChangeDisplayNameResultSucceededIfDisplayNameChangeSucceeds()
+        {
+            // Arrange
+            _testAccount.AccountId = _testAccountId;
+            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+            mockAccountRepository.
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(_testAccount);
+            mockAccountRepository.
+                Setup(a => a.UpdateAccountDisplayNameAsync(It.Is<int>(i => i == _testAccountId),
+                    It.Is<string>(s => s == _testNewDisplayName))).
+                ReturnsAsync(true);
+
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            ChangeDisplayNameResult result = await mockAccountSecurityService.Object.ChangeDisplayNameAsync(_testPassword, _testNewDisplayName);
+
+            // Assert
+            mockAccountRepository.VerifyAll();
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.Succeeded);
+        }
+
+        [Fact]
+        public async Task ChangeDisplayNameAsync_ReturnsChangeDisplayNameResultNotLoggedInIfUnabletoRetrieveLoggedInAccount()
+        {
+            // Arrange
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                null,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns<Account>(null);
+            mockAccountSecurityService.CallBase = true;
+
+            // Act
+            ChangeDisplayNameResult result = await mockAccountSecurityService.
+                Object.
+                ChangeDisplayNameAsync(_testPassword, _testNewDisplayName);
+
+            // Assert
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.NotLoggedIn);
+        }
+
+        [Fact]
+        public async Task ChangeDisplayNameAsync_ReturnsChangeDisplayNameResultInvalidPasswordIfPasswordIsInvalid()
         {
             // Arrange
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountDisplayNameAsync(It.Is<int>(i => i == _testAccountId),
-                    It.Is<string>(s => s == _testEmail))).
-                ReturnsAsync(true);
+                Setup(a => a.GetAccountByEmailAndPasswordAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<string>(s => s == _testPassword))).
+                ReturnsAsync(null);
 
-            AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
-                 null,
-                 null,
-                 mockAccountRepository.Object,
-                 null,
-                 null);
+            Mock<AccountSecurityService<Account>> mockAccountSecurityService = new Mock<AccountSecurityService<Account>>(null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null);
+            mockAccountSecurityService.Setup(a => a.GetLoggedInAccountEmail()).Returns(_testEmail);
+            mockAccountSecurityService.CallBase = true;
 
             // Act
-            UpdateDisplayNameResult result = await accountSecurityService.UpdateDisplayNameAsync(_testAccountId, _testEmail);
+            ChangeDisplayNameResult result = await mockAccountSecurityService.Object.ChangeDisplayNameAsync(_testPassword, _testNewDisplayName);
 
             // Assert
             mockAccountRepository.VerifyAll();
-            Assert.True(result.Succeeded);
+            mockAccountSecurityService.VerifyAll();
+            Assert.True(result.InvalidPassword);
         }
+
+        //[Fact]
+        //public async Task UpdatePasswordHashAsync_ThrowsExceptionIfDatabaseUpdateFails()
+        //{
+        //    // Arrange
+        //    Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
+        //    mockAccountRepository.
+        //        Setup(a => a.UpdateAccountPasswordHashAsync(It.Is<int>(i => i == _testAccountId), 
+        //        It.Is<string>(s => s == _testPassword))).
+        //        ReturnsAsync(false);
+
+        //    AccountSecurityService<Account> accountSecurityService = new AccountSecurityService<Account>(null,
+        //       null,
+        //       null,
+        //       mockAccountRepository.Object,
+        //       null,
+        //       null);
+
+        //    // Act
+        //    await Assert.ThrowsAsync<Exception>(async () => await accountSecurityService.UpdatePasswordHashAsync(_testAccountId, _testPassword));
+
+        //    // Assert
+        //    mockAccountRepository.VerifyAll();
+        //}
 
         [Fact]
         public async Task UpdateTwoFactorEnabledAsync_ThrowsExceptionIfDatabaseUpdateFails()

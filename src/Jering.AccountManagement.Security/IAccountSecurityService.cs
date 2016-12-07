@@ -155,37 +155,6 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         /// <param name="accountId"></param>
-        /// <param name="newEmail"></param>
-        /// <returns></returns>
-        Task<UpdateEmailResult> UpdateEmailAsync(int accountId, string newEmail);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="newPassword"></param>
-        Task UpdatePasswordHashAsync(int accountId, string newPassword);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="alternativeEmail"></param>
-        /// <returns></returns>
-        Task<UpdateAlternativeEmailResult> UpdateAlternativeEmailAsync(int accountId, string alternativeEmail);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="displayName"></param>
-        /// <returns></returns>
-        Task<UpdateDisplayNameResult> UpdateDisplayNameAsync(int accountId, string displayName);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
         /// <param name="twoFactorEnabled"></param>
         Task UpdateTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled);
 
@@ -197,6 +166,38 @@ namespace Jering.AccountManagement.Security
         /// <param name="newPassword"></param>
         /// <returns></returns>
         Task<ResetPasswordResult> ResetPasswordAsync(string token, string email, string newPassword);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="currentPassword"></param>
+        /// <param name="newPassword"></param>
+        /// <returns></returns>
+        Task<ChangePasswordResult> ChangePasswordAsync(string currentPassword, string newPassword);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="password"></param>
+        /// <param name="newEmail"></param>
+        /// <returns></returns>
+        Task<ChangeEmailResult> ChangeEmailAsync(string password, string newEmail);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="password"></param>
+        /// <param name="newAlternativeEmail"></param>
+        /// <returns></returns>
+        Task<ChangeAlternativeEmailResult> ChangeAlternativeEmailAsync(string password, string newAlternativeEmail);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="password"></param>
+        /// <param name="newDisplayName"></param>
+        /// <returns></returns>
+        Task<ChangeDisplayNameResult> ChangeDisplayNameAsync(string password, string newDisplayName);
 
         /// <summary>
         /// 
