@@ -44,12 +44,12 @@ describe('DynamicForm', () => {
             expect(dynamicForm.onSubmit()).toBe(false);
         });
 
-        it(`Returns false if validity is Validity.invalid`, () => {
+        it(`Returns true if validity is Validity.pending`, () => {
             spyOn(dynamicForm, `validate`).and.callFake(() => {
                 dynamicForm.validity = Validity.pending;
             });
 
-            expect(dynamicForm.onSubmit()).toBe(false);
+            expect(dynamicForm.onSubmit()).toBe(true);
         });
     });
 
@@ -84,8 +84,7 @@ describe('DynamicForm', () => {
             expect(testDynamicControl.validate).not.toHaveBeenCalled();
         });
 
-        it(`Sets validity to Validity.invalid and pushes message if any child DynamicControl has validity === Validity.invalid 
-            or validity === Validity.pending`, () => {
+        it(`Sets validity to Validity.invalid and pushes message if any child DynamicControl has validity === Validity.invalid`, () => {
                 testDynamicControl.validity = Validity.invalid;
 
                 dynamicForm.validate();
@@ -93,6 +92,17 @@ describe('DynamicForm', () => {
                 expect(dynamicForm.validity).toBe(Validity.invalid);
                 expect(dynamicForm.messages[0]).toBe(testMessage);
             });
+
+        it(`Sets validity to Validity.pending and clears messages if all child DynamicControls have validity !== Validity.valid 
+            and at least one has validity === Validity.pending`, () => {
+            testDynamicControl.validity = Validity.pending;
+            dynamicForm.messages[0] = testMessage;
+
+            dynamicForm.validate();
+
+            expect(dynamicForm.validity).toBe(Validity.pending);
+            expect(dynamicForm.messages.length).toBe(0);
+        });
 
         it(`Sets validity to Validity.valid and clears messages if all child DynamicControls have validity === Validity.valid`, () => {
             testDynamicControl.validity = Validity.valid;

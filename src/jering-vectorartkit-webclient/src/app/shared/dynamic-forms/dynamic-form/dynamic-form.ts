@@ -20,16 +20,32 @@ export class DynamicForm {
      * - True if DynamicForm is valid and can thus be submitted, false otherwise.
      */
     onSubmit(): boolean {
-        this.submitAttempted = true;  
+        if (!this.submitAttempted) {
+            this.submitAttempted = true;
 
-        for (let dynamicControl of this.dynamicControls) {
-            dynamicControl.dirty = true;
-            dynamicControl.blurred = true;
+            for (let dynamicControl of this.dynamicControls) {
+                dynamicControl.dirty = true;
+                dynamicControl.blurred = true;
+            }
         }
 
         this.validate();
 
-        return this.validity === Validity.valid;
+        if (this.validity === Validity.invalid) {
+            return false;
+        }
+
+        // Unsubscribe from async validators and set controls with validity pending to valid
+        if (this.validity === Validity.pending) {
+            for (let dynamicControl of this.dynamicControls) {
+                if (dynamicControl.isValidityPending()) {
+                    dynamicControl.unsubscribeAsyncValidator();
+                    dynamicControl.validity = Validity.valid;
+                }
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -57,27 +73,30 @@ export class DynamicForm {
     }
 
     /**
-     * Validates DynamicForm and its DynamicControls. Sets form validity to invalid if any of its DynamicControls are invalid or pending. Otherwise, sets form validity to valid.
+     * Validates DynamicForm and its DynamicControls. Sets validity to invalid if any
+     * DynamicControls are invalid. Sets validity to pending if no DynamicControls are
+     * invalid and at least one is pending. Otherwise, sets validity to valid.
      */
     validate(): void {
-        let validity = Validity.valid;
-        this.messages = [];
         for (let dynamicControl of this.dynamicControls) {
             // Force validation of controls that have never been validated
             if (dynamicControl.validity === Validity.unknown) {
                 dynamicControl.validate();
             }
-
-            // If any control is invalid, mark form as invalid
-            if (validity !== Validity.invalid &&
-                dynamicControl.validity === Validity.invalid ||
-                dynamicControl.validity === Validity.pending) {
-                validity = Validity.invalid;
-                this.messages.push(this.message);
-                // Cannot break since some DynamicControls may need to be validated
-            }
         }
-        this.validity = validity;
+
+        this.messages = [];
+
+        if (this.dynamicControls.some(dc => dc.validity === Validity.invalid)) {
+            // If any control is invalid, set validity to invalid
+            this.validity = Validity.invalid;
+            this.messages.push(this.message);
+        } else if (this.dynamicControls.some(dc => dc.validity === Validity.pending)) {
+            // If no control is invalid and at least one is pending, set validity to pending
+            this.validity = Validity.pending;
+        } else {
+            this.validity = Validity.valid;
+        }
     }
 
     /**
