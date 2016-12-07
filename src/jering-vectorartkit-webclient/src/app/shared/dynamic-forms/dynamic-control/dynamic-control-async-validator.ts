@@ -56,7 +56,7 @@ export class DynamicControlAsyncValidator {
     }
 
     /**
-     * Unsubscribes from subscription is invalid before function is called or if dynamicControl.value
+     * Unsubscribes from subscription if control is invalid before function is called or if dynamicControl.value
      * is not a value. Otherwise, subscribes to subjectAsObservable if subscription is closed and calls
      * subject.next.
      * 
