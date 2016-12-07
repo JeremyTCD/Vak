@@ -96,11 +96,29 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Confirm new password.
+        /// </summary>
+        public static string DisplayName_ConfirmNewPassword {
+            get {
+                return ResourceManager.GetString("DisplayName_ConfirmNewPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Confirm password.
         /// </summary>
         public static string DisplayName_ConfirmPassword {
             get {
                 return ResourceManager.GetString("DisplayName_ConfirmPassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Current password.
+        /// </summary>
+        public static string DisplayName_CurrentPassword {
+            get {
+                return ResourceManager.GetString("DisplayName_CurrentPassword", resourceCulture);
             }
         }
         
@@ -119,6 +137,33 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         public static string DisplayName_Email {
             get {
                 return ResourceManager.GetString("DisplayName_Email", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to New alternative email address.
+        /// </summary>
+        public static string DisplayName_NewAlternativeEmail {
+            get {
+                return ResourceManager.GetString("DisplayName_NewAlternativeEmail", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to New display name.
+        /// </summary>
+        public static string DisplayName_NewDisplayName {
+            get {
+                return ResourceManager.GetString("DisplayName_NewDisplayName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to New email address.
+        /// </summary>
+        public static string DisplayName_NewEmail {
+            get {
+                return ResourceManager.GetString("DisplayName_NewEmail", resourceCulture);
             }
         }
         
@@ -267,7 +312,7 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Email already in use by another account..
+        ///    Looks up a localized string similar to Email in use.
         /// </summary>
         public static string ErrorMessage_Email_InUse {
             get {
@@ -312,6 +357,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to New alternative email required.
+        /// </summary>
+        public static string ErrorMessage_NewAlternativeEmail_Required {
+            get {
+                return ResourceManager.GetString("ErrorMessage_NewAlternativeEmail_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to New display name cannot be the same as current display name..
         /// </summary>
         public static string ErrorMessage_NewDisplayName_MustDiffer {
@@ -321,11 +375,29 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to New display name required.
+        /// </summary>
+        public static string ErrorMessage_NewDisplayName_Required {
+            get {
+                return ResourceManager.GetString("ErrorMessage_NewDisplayName_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to New email cannot be the same as current email..
         /// </summary>
         public static string ErrorMessage_NewEmail_MustDiffer {
             get {
                 return ResourceManager.GetString("ErrorMessage_NewEmail_MustDiffer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to New email required.
+        /// </summary>
+        public static string ErrorMessage_NewEmail_Required {
+            get {
+                return ResourceManager.GetString("ErrorMessage_NewEmail_Required", resourceCulture);
             }
         }
         
@@ -344,6 +416,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         public static string ErrorMessage_NewPassword_MustDiffer {
             get {
                 return ResourceManager.GetString("ErrorMessage_NewPassword_MustDiffer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to New password required.
+        /// </summary>
+        public static string ErrorMessage_NewPassword_Required {
+            get {
+                return ResourceManager.GetString("ErrorMessage_NewPassword_Required", resourceCulture);
             }
         }
         

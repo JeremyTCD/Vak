@@ -199,7 +199,7 @@
     <value>Invalid email or password.</value>
   </data>
   <data name="ErrorMessage_Email_InUse" xml:space="preserve">
-    <value>Email already in use by another account.</value>
+    <value>Email in use</value>
   </data>
   <data name="ErrorMessage_DisplayName_InUse" xml:space="preserve">
     <value>Display name already in use by another account.</value>
@@ -293,5 +293,32 @@
   </data>
   <data name="DisplayName_NewPassword" xml:space="preserve">
     <value>New password</value>
+  </data>
+  <data name="DisplayName_CurrentPassword" xml:space="preserve">
+    <value>Current password</value>
+  </data>
+  <data name="DisplayName_NewAlternativeEmail" xml:space="preserve">
+    <value>New alternative email address</value>
+  </data>
+  <data name="DisplayName_NewEmail" xml:space="preserve">
+    <value>New email address</value>
+  </data>
+  <data name="DisplayName_NewDisplayName" xml:space="preserve">
+    <value>New display name</value>
+  </data>
+  <data name="ErrorMessage_NewPassword_Required" xml:space="preserve">
+    <value>New password required</value>
+  </data>
+  <data name="ErrorMessage_NewDisplayName_Required" xml:space="preserve">
+    <value>New display name required</value>
+  </data>
+  <data name="ErrorMessage_NewEmail_Required" xml:space="preserve">
+    <value>New email required</value>
+  </data>
+  <data name="ErrorMessage_NewAlternativeEmail_Required" xml:space="preserve">
+    <value>New alternative email required</value>
+  </data>
+  <data name="DisplayName_ConfirmNewPassword" xml:space="preserve">
+    <value>Confirm new password</value>
   </data>
 </root>

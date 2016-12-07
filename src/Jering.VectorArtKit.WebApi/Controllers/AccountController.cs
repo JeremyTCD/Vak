@@ -3,7 +3,6 @@ using Jering.AccountManagement.Security;
 using Jering.Mail;
 using Jering.Utilities;
 using Jering.VectorArtKit.WebApi.BusinessModels;
-using Jering.VectorArtKit.WebApi.Filters;
 using Jering.VectorArtKit.WebApi.FormModels;
 using Jering.VectorArtKit.WebApi.Options;
 using Jering.VectorArtKit.WebApi.Resources;
@@ -13,7 +12,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using MimeKit;
 using System;
 using System.Threading.Tasks;
 
@@ -283,6 +281,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 401 Unauthorized with <see cref="ErrorResponseModel>"/> if authentication fails.
         /// 200 OK and <see cref="GetAccountDetailsResponseModel"/> if authentication succeeds.
         /// </returns>
+        /// <exception cref="NullReferenceException">Thrown if unable to retrieve logged in account</exception>
         [HttpGet]
         public async Task<IActionResult> GetAccountDetails()
         {
@@ -304,270 +303,193 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             });
         }
 
-        ///// <summary>
-        ///// Get: /Account/ChangePassword
-        ///// </summary>
-        ///// <returns>
-        ///// ChangePassword view with anti-forgery token and cookie if authentication succeeds.
-        ///// Redirects to /Account/Login if authentication fails.
-        ///// </returns>
-        //[HttpGet]
-        //[SetSignedInAccount]
-        //public IActionResult ChangePassword()
-        //{
-        //    return View();
-        //}
+        /// <summary>
+        /// Post: /Account/ChangePassword
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 400 BadRequest and <see cref="ChangePasswordResponseModel"/> if model state is invalid. 
+        /// 400 BadRequest and <see cref="ChangePasswordResponseModel"/> if current password is invalid. 
+        /// 401 Unauthorized with <see cref="ErrorResponseModel>"/> if authentication fails.
+        /// 200 OK and application cookie if password change succeeds.
+        /// </returns>
+        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordFormModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                ChangePasswordResult result = await _accountSecurityService.ChangePasswordAsync(model.CurrentPassword, model.NewPassword);
 
-        ///// <summary>
-        ///// Post: /Account/ChangePassword
-        ///// </summary>
-        ///// <param name="model"></param>
-        ///// <returns>
-        ///// Error view if unable to update database.
-        ///// ChangePassword view with error messages if model state is invalid or current password is invalid.
-        ///// Redirects to /Account/ManageAccount with a new application cookie and updates password hash if successful.
-        ///// BadRequest if anti-forgery credentials are invalid.
-        ///// Redirects to /Account/Login if authentication fails.
-        ///// </returns>
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //[SetSignedInAccount]
-        //public async Task<IActionResult> ChangePassword(ChangePasswordFormModel model)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        string email = _accountSecurityService.GetSignedInAccountEmail();
-        //        VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(email, model.CurrentPassword);
-        //        if (account == null)
-        //        {
-        //            ModelState.AddModelError(nameof(ChangePasswordFormModel.CurrentPassword), Strings.ErrorMessage_CurrentPassword_Invalid);
-        //        }
-        //        else
-        //        {
-        //            UpdateAccountPasswordHashResult result = await _accountSecurityService.UpdateAccountPasswordHashAsync(account.AccountId, model.NewPassword);
+                if (result.NotLoggedIn)
+                {
+                    // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                    throw new Exception();
+                }
 
-        //            if (result.Failed)
-        //            {
-        //                return View("Error");
-        //            }
+                if (result.Succeeded)
+                {
+                    return Ok();
+                }
 
-        //            account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
-        //            await _accountSecurityService.RefreshSignInAsync(account);
+                ModelState.AddModelError(nameof(ChangePasswordFormModel.CurrentPassword), Strings.ErrorMessage_Password_Invalid);
+            }
 
-        //            return RedirectToAction(nameof(AccountController.ManageAccount));
-        //        }
-        //    }
-        //    else if (ModelState.ContainsKey(nameof(ChangePasswordFormModel.NewPassword)))
-        //    {
-        //        ModelState.Remove(nameof(ChangePasswordFormModel.NewPassword));
-        //        ModelState.AddModelError(nameof(ChangePasswordFormModel.NewPassword), Strings.ErrorMessage_NewPassword_FormatInvalid);
-        //    }
+            return BadRequest(new ChangePasswordResponseModel
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
+        }
 
-        //    return View(model);
-        //}
+        /// <summary>
+        /// Post: /Account/ChangeEmail
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 400 BadRequest and <see cref="ChangeEmailResponseModel"/> if model state is invalid. 
+        /// 400 BadRequest and <see cref="ChangeEmailResponseModel"/> if password is invalid. 
+        /// 400 BadRequest and <see cref="ChangeEmailResponseModel"/> if new email is in use. 
+        /// 401 Unauthorized with <see cref="ErrorResponseModel>"/> if authentication fails.
+        /// 200 OK and application cookie if email change succeeds.
+        /// </returns>
+        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeEmail([FromBody] ChangeEmailFormModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                ChangeEmailResult result = await _accountSecurityService.ChangeEmailAsync(model.Password, model.NewEmail);
 
-        ///// <summary>
-        ///// Get: /Account/ChangeEmail
-        ///// </summary>
-        ///// <returns>
-        ///// ChangeEmail view with anti-forgery token and cookie if authentication succeeds.
-        ///// Redirects to /Account/Login if authentication fails.
-        ///// </returns>
-        //[HttpGet]
-        //[SetSignedInAccount]
-        //public IActionResult ChangeEmail()
-        //{
-        //    return View();
-        //}
+                if (result.NotLoggedIn)
+                {
+                    // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                    throw new Exception();
+                }
 
-        ///// <summary>
-        ///// Post: /Account/ChangeEmail
-        ///// </summary>
-        ///// <param name="model"></param>
-        ///// <returns>
-        ///// Error view if unable to update database or new email is identical to current email.
-        ///// ChangeEmail view with error messages if model state is invalid, password is invalid, email is in use.
-        ///// Redirects to /Account/ManageAccount with a new application cookie and updates email if successful.
-        ///// BadRequest if anti-forgery credentials are invalid.
-        ///// Redirects to /Account/Login if authentication fails.
-        ///// </returns>
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //[SetSignedInAccount]
-        //public async Task<IActionResult> ChangeEmail(ChangeEmailFormModel model)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        string currentEmail = _accountSecurityService.GetSignedInAccountEmail();
-        //        if (currentEmail == model.NewEmail)
-        //        {
-        //            // If we get here something has gone wrong since model validation should ensure that current email and new email differ
-        //            return View("Error");
-        //        }
-        //        VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(currentEmail, model.Password);
-        //        if (account == null)
-        //        {
-        //            ModelState.AddModelError(nameof(ChangeEmailFormModel.Password), Strings.ErrorMessage_Password_Invalid);
-        //        }
-        //        else
-        //        {
-        //            UpdateAccountEmailResult result = await _accountSecurityService.UpdateAccountEmailAsync(account.AccountId, model.NewEmail);
+                if (result.Succeeded)
+                {
+                    return Ok();
+                }
 
-        //            if (result.Failed)
-        //            {
-        //                return View("Error");
-        //            }
+                if (result.InvalidNewEmail)
+                {
+                    ModelState.AddModelError(nameof(ChangeEmailFormModel.NewEmail), Strings.ErrorMessage_Email_InUse);
+                }
+                else if(result.InvalidPassword)
+                {
+                    ModelState.AddModelError(nameof(ChangeEmailFormModel.Password), Strings.ErrorMessage_Password_Invalid);
+                }
+            }
 
-        //            if (result.EmailInUse)
-        //            {
-        //                ModelState.AddModelError(nameof(ChangeEmailFormModel.NewEmail), Strings.ErrorMessage_EmailInUse);
-        //            }
-        //            else
-        //            {
-        //                account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
-        //                await _accountSecurityService.RefreshSignInAsync(account);
+            return BadRequest(new ChangeEmailResponseModel
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
+        }
 
-        //                return RedirectToAction(nameof(AccountController.ManageAccount));
-        //            }
-        //        }
-        //    }
+        /// <summary>
+        /// Post: /Account/ChangeAlternativeEmail
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 400 BadRequest and <see cref="ChangeAlternativeEmailResponseModel"/> if model state is invalid. 
+        /// 400 BadRequest and <see cref="ChangeAlternativeEmailResponseModel"/> if password is invalid. 
+        /// 400 BadRequest and <see cref="ChangeAlternativeEmailResponseModel"/> if new alternative email is in use. 
+        /// 401 Unauthorized with <see cref="ErrorResponseModel>"/> if authentication fails.
+        /// 200 OK if alternative email change succeeds.
+        /// </returns>
+        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeAlternativeEmail([FromBody] ChangeAlternativeEmailFormModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                ChangeAlternativeEmailResult result = await _accountSecurityService.ChangeAlternativeEmailAsync(model.Password, model.NewAlternativeEmail);
 
-        //    return View(model);
-        //}
+                if (result.NotLoggedIn)
+                {
+                    // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                    throw new Exception();
+                }
 
-        ///// <summary>
-        ///// Get: /Account/ChangeAlternativeEmail
-        ///// </summary>
-        ///// <returns>
-        ///// ChangeAlternativeEmail view with anti-forgery token and cookie if authentication succeeds.
-        ///// Redirects to /Account/Login if authentication fails.
-        ///// </returns>
-        //[HttpGet]
-        //[SetSignedInAccount]
-        //public IActionResult ChangeAlternativeEmail()
-        //{
-        //    return View();
-        //}
+                if (result.Succeeded)
+                {
+                    return Ok();
+                }
 
-        ///// <summary>
-        ///// Post: /Account/ChangeAlternativeEmail
-        ///// </summary>
-        ///// <param name="model"></param>
-        ///// <returns>
-        ///// Error view if unable to update database or new alternative email is identical to current alternative email.
-        ///// ChangeAlternativeEmail view with error messages if model state is invalid, password is invalid or alternative email is in use.
-        ///// Redirects to /Account/ManageAccount and updates alternative email if successful.
-        ///// BadRequest if anti-forgery credentials are invalid.
-        ///// Redirects to /Account/Login if authentication fails.
-        ///// </returns>
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //[SetSignedInAccount]
-        //public async Task<IActionResult> ChangeAlternativeEmail(ChangeAlternativeEmailFormModel model)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        string currentEmail = _accountSecurityService.GetSignedInAccountEmail();
-        //        VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(currentEmail, model.Password);
+                if (result.InvalidNewAlternativeEmail)
+                {
+                    ModelState.AddModelError(nameof(ChangeAlternativeEmailFormModel.NewAlternativeEmail), Strings.ErrorMessage_Email_InUse);
+                }
+                else if (result.InvalidPassword)
+                {
+                    ModelState.AddModelError(nameof(ChangeAlternativeEmailFormModel.Password), Strings.ErrorMessage_Password_Invalid);
+                }
+            }
 
-        //        if (account == null)
-        //        {
-        //            ModelState.AddModelError(nameof(ChangeAlternativeEmailFormModel.Password), Strings.ErrorMessage_Password_Invalid);
-        //        }
-        //        else if (account.AlternativeEmail == model.NewAlternativeEmail)
-        //        {
-        //            // If we get here something has gone wrong since model validation should ensure that current and new alternative emails differ
-        //            return View("Error");
-        //        }
-        //        else
-        //        {
-        //            UpdateAccountAlternativeEmailResult result = await _accountSecurityService.UpdateAccountAlternativeEmailAsync(account.AccountId, model.NewAlternativeEmail);
+            return BadRequest(new ChangeAlternativeEmailResponseModel
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
+        }
 
-        //            if (result.Failed)
-        //            {
-        //                return View("Error");
-        //            }
+        /// <summary>
+        /// Post: /Account/ChangeDisplayName
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 400 BadRequest and <see cref="ChangeDisplayNameResponseModel"/> if model state is invalid. 
+        /// 400 BadRequest and <see cref="ChangeDisplayNameResponseModel"/> if password is invalid. 
+        /// 400 BadRequest and <see cref="ChangeDisplayNameResponseModel"/> if new display name is in use. 
+        /// 401 Unauthorized with <see cref="ErrorResponseModel>"/> if authentication fails.
+        /// 200 OK if display name change succeeds.
+        /// </returns>
+        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeDisplayName([FromBody] ChangeDisplayNameFormModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                ChangeDisplayNameResult result = await _accountSecurityService.ChangeDisplayNameAsync(model.Password, model.NewDisplayName);
 
-        //            if (result.AlternativeEmailInUse)
-        //            {
-        //                ModelState.AddModelError(nameof(ChangeAlternativeEmailFormModel.NewAlternativeEmail), Strings.ErrorMessage_EmailInUse);
-        //            }
-        //            else
-        //            {
-        //                return RedirectToAction(nameof(AccountController.ManageAccount));
-        //            }
-        //        }
-        //    }
+                if (result.NotLoggedIn)
+                {
+                    // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                    throw new Exception();
+                }
 
-        //    return View(model);
-        //}
+                if (result.Succeeded)
+                {
+                    return Ok();
+                }
 
-        ///// <summary>
-        ///// Get: /Account/ChangeDisplayName
-        ///// </summary>
-        ///// <returns>
-        ///// ChangeDisplayName view with anti-forgery token and cookie if authentication succeeds.
-        ///// Redirects to /Account/Login if authentication fails.
-        ///// </returns>
-        //[HttpGet]
-        //[SetSignedInAccount]
-        //public IActionResult ChangeDisplayName()
-        //{
-        //    return View();
-        //}
+                if (result.InvalidNewDisplayName)
+                {
+                    ModelState.AddModelError(nameof(ChangeDisplayNameFormModel.NewDisplayName), Strings.ErrorMessage_DisplayName_InUse);
+                }
+                else if (result.InvalidPassword)
+                {
+                    ModelState.AddModelError(nameof(ChangeDisplayNameFormModel.Password), Strings.ErrorMessage_Password_Invalid);
+                }
+            }
 
-        ///// <summary>
-        ///// Post: /Account/ChangeDisplayName
-        ///// </summary>
-        ///// <param name="model"></param>
-        ///// <returns>
-        ///// Error view if unable to update database or new display name is identical to current display name.
-        ///// ChangeDisplayName view with error messages if model state is invalid, password is invalid or display name is in use.
-        ///// Redirects to /Account/ManageAccount and updates display name if successful.
-        ///// BadRequest if anti-forgery credentials are invalid.
-        ///// Redirects to /Account/Login if authentication fails.
-        ///// </returns>
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //[SetSignedInAccount]
-        //public async Task<IActionResult> ChangeDisplayName(ChangeDisplayNameFormModel model)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        string currentEmail = _accountSecurityService.GetSignedInAccountEmail();
-        //        VakAccount account = await _vakAccountRepository.GetAccountByEmailAndPasswordAsync(currentEmail, model.Password);
-
-        //        if (account == null)
-        //        {
-        //            ModelState.AddModelError(nameof(ChangeAlternativeEmailFormModel.Password), Strings.ErrorMessage_Password_Invalid);
-        //        }
-        //        else if (account.DisplayName == model.NewDisplayName)
-        //        {
-        //            // If we get here something has gone wrong since model validation should ensure that current and new display names differ
-        //            return View("Error");
-        //        }
-        //        else
-        //        {
-        //            UpdateAccountDisplayNameResult result = await _accountSecurityService.UpdateAccountDisplayNameAsync(account.AccountId, model.NewDisplayName);
-
-        //            if (result.Failed)
-        //            {
-        //                return View("Error");
-        //            }
-
-        //            if (result.DisplayNameInUse)
-        //            {
-        //                ModelState.AddModelError(nameof(ChangeDisplayNameFormModel.NewDisplayName), Strings.ErrorMessage_DisplayName_InUse);
-        //            }
-        //            else
-        //            {
-        //                return RedirectToAction(nameof(AccountController.ManageAccount));
-        //            }
-        //        }
-        //    }
-
-        //    return View(model);
-        //}
+            return BadRequest(new ChangeDisplayNameResponseModel
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
+        }
 
         ///// <summary>
         ///// Post: /Account/EnableTwoFactor
