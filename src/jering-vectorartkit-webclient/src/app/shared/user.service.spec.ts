@@ -1,12 +1,9 @@
 ﻿import { TestBed, inject } from '@angular/core/testing';
 import { RequestOptionsArgs, Response, ResponseOptions } from '@angular/http';
-import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
 import { UserService } from './user.service';
 import { StorageService } from './storage.service';
-import { HttpService } from './http.service';
-import { StubRouter } from '../../testing/router-stubs';
 
 let testUsername = `testUsername`;
 let testStorageName = `vakUsername`;
@@ -20,18 +17,16 @@ describe(`UserService`, () => {
     beforeEach(() => {
         TestBed.configureTestingModule({
             providers: [UserService,
-                { provide: StorageService, useClass: StubStorageService },
-                { provide: HttpService, useClass: StubHttpService },
-                { provide: Router, useClass: StubRouter }]
+                { provide: StorageService, useClass: StubStorageService }]
         });
     });
 
-    describe(`syncWithStorage`, () => {
+    describe(`init`, () => {
         it(`Sets username and sets loggedIn to true if username exists in storage`,
             inject([UserService, StorageService], (userService: UserService, stubStorageService: StubStorageService) => {
                 spyOn(stubStorageService, `getItem`).and.returnValue(testUsername);
 
-                userService.syncWithStorage();
+                userService.init();
 
                 expect(stubStorageService.getItem).toHaveBeenCalledWith(testStorageName);
                 expect(userService.loggedIn).toBe(true);
@@ -43,7 +38,7 @@ describe(`UserService`, () => {
             inject([UserService, StorageService], (userService: UserService, stubStorageService: StubStorageService) => {
                 spyOn(stubStorageService, `getItem`).and.returnValue(undefined);
 
-                userService.syncWithStorage();
+                userService.init();
 
                 expect(stubStorageService.getItem).toHaveBeenCalledWith(testStorageName);
                 expect(userService.loggedIn).toBe(false);
@@ -64,32 +59,19 @@ describe(`UserService`, () => {
         })
     );
 
-    it(`logOff sets username to null, sets loggedIn to false and removes username from storage. 
-        Sends post request to log off and navigates to home if log off is successful.`,
-        inject([UserService, StorageService, HttpService, Router], (userService: UserService,
-            stubStorageService: StubStorageService,
-            stubHttpService: StubHttpService,
-            stubRouter: StubRouter) => {
+    it(`logOff sets username to null, sets loggedIn to false and removes username from storage.`,
+        inject([UserService, StorageService], (userService: UserService,
+            stubStorageService: StubStorageService) => {
             spyOn(stubStorageService, `removeItem`);
-            spyOn(stubHttpService, `post`).and.returnValue(Observable.of(testResponse));
-            spyOn(stubRouter, `navigate`);
 
             userService.logOff();
 
             expect(stubStorageService.removeItem).toHaveBeenCalledWith(testStorageName);
             expect(userService.loggedIn).toBe(false);
             expect(userService.username).toBe(null);
-            expect(stubHttpService.post).toHaveBeenCalledWith(testLogOffRelativeUrl, null);
-            expect(stubRouter.navigate).toHaveBeenCalledWith([`/home`]);
         })
     );
 });
-
-class StubHttpService {
-    post(url: string, body: any, options?: RequestOptionsArgs): Observable<Response> {
-        return Observable.of(testResponse);
-    }
-}
 
 class StubStorageService {
     setItem(key: string, data: string, isPersistent: boolean): void {
