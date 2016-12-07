@@ -1,7 +1,9 @@
 ﻿using Jering.AccountManagement.DatabaseInterface;
+using Jering.DataAnnotations;
 using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Filters;
+using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForms;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -27,8 +29,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="formModelName"></param>
         /// <returns>
-        /// 200 OK with <see cref="DynamicFormResponseModel"/> and anti-forgery cookies if <paramref name="formModelName"/> is the name of an existing form model.
-        /// 404 NotFound with <see cref="ErrorResponseModel"/> if <paramref name="formModelName"/> is not the name of an existing form model.
+        /// 200 OK , <see cref="DynamicFormResponseModel"/> and anti-forgery cookies if <paramref name="formModelName"/> is the name of an existing form model.
+        /// 404 NotFound and <see cref="ErrorResponseModel"/> if <paramref name="formModelName"/> is not the name of an existing form model.
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
@@ -50,20 +52,40 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="value"></param>
         /// <returns>
-        /// 200 OK with <see cref="ValidateResponseModel"/> with <see cref="ValidateResponseModel.Valid"/> set to true if email is not in use and set to false 
-        /// if email is in use. 
-        /// 400 BadRequest with <see cref="ErrorResponseModel"/> if <paramref name="value"/> is null.
+        /// 200 OK and <see cref="ValidateResponseModel"/> if value is not null or an empty string.
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if <paramref name="value"/> is null or an empty string.
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
         public async Task<IActionResult> ValidateEmailNotInUse(string value)
         {
-            if(value == null)
+            if (string.IsNullOrEmpty(value))
             {
                 return BadRequest();
             }
 
             return Ok(new ValidateResponseModel(){Valid = !await _vakAccountRepository.CheckEmailInUseAsync(value) });
+        }
+
+
+        /// <summary>
+        /// Validates that a display name is not in use.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns>
+        /// 200 OK and <see cref="ValidateResponseModel"/> if <paramref name="value"/> is not null or an empty string.
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if <paramref name="value"/> is null or an empty string.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> ValidateDisplayNameNotInUse(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return BadRequest();
+            }
+
+            return Ok(new ValidateResponseModel() { Valid = !await _vakAccountRepository.CheckDisplayNameInUseAsync(value) });
         }
     }
 }

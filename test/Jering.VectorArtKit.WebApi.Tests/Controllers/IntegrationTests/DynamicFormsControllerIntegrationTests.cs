@@ -26,6 +26,11 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         private string _badRequest { get; } = "BadRequest";
         private string _ok { get; } = "OK";
 
+        private const string _testEmail = "test@email.com";
+        private const string _testPassword = "testPassword";
+        private const string _testDisplayName = "testDisplayName";
+        private const string _testFormModelName = "testFormModelName";
+
         public DynamicFormsControllerIntegrationTests(ControllersFixture controllersFixture)
         {
             _httpClient = controllersFixture.HttpClient;     
@@ -34,12 +39,12 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task GetDynamicForm_Returns200OkWithGetDynamicFormModelAndAntiForgeryCookiesIfFormModelNameIsTheNameOfAnExistingFormModel()
+        public async Task GetDynamicForm_Returns200OkGetDynamicFormModelAndAntiForgeryCookiesIfFormModelNameIsTheNameOfAnExistingFormModel()
         {
             //Arrange
-            string testFormModel = "SignUp";
+            string signUpFormModelName = "SignUp";
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/" + 
-                $"{nameof(DynamicFormsController.GetDynamicForm)}?formModelName={testFormModel}", HttpMethod.Get);
+                $"{nameof(DynamicFormsController.GetDynamicForm)}?formModelName={signUpFormModelName}", HttpMethod.Get);
 
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
@@ -56,12 +61,11 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task GetDynamicForm_Returns404NotFoundWithErrorResponseModelIfFormModelNameIsNotTheNameOfAnExistingFormModel()
+        public async Task GetDynamicForm_Returns404NotFoundAndErrorResponseModelIfFormModelNameIsNotTheNameOfAnExistingFormModel()
         {
             // Arrange
-            string testFormModel = "Dummy";
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/" +
-                $"{nameof(DynamicFormsController.GetDynamicForm)}?formModelName={testFormModel}", HttpMethod.Get);
+                $"{nameof(DynamicFormsController.GetDynamicForm)}?formModelName={_testFormModelName}", HttpMethod.Get);
 
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
@@ -70,11 +74,11 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_notFound, httpResponseMessage.StatusCode.ToString());
             Assert.False(body.ExpectedError);
-            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
 
         [Fact]
-        public async Task ValidateEmailNotInUse_Returns400BadRequestWithErrorResponseModelIfValueIsNull()
+        public async Task ValidateEmailNotInUse_Returns400BadRequestAndErrorResponseModelIfValueIsNull()
         {
             // Arrange
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/{nameof(DynamicFormsController.ValidateEmailNotInUse)}", HttpMethod.Get);
@@ -86,17 +90,16 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             Assert.False(body.ExpectedError);
-            Assert.Equal(body.ErrorMessage, Strings.ErrorMessage_UnexpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
 
         [Fact]
-        public async Task ValidateEmailNotInUse_Returns200OkWithValidateResponseModelWithValidPropertySetToFalseIfEmailIsInUse()
+        public async Task ValidateEmailNotInUse_Returns200OkAndValidateResponseModelIfEmailIsInUse()
         {
             // Arrange
-            string testEmail = "test@email.com";
             await _resetAccountsTable();
-            await _vakAccountRepository.CreateAccountAsync(testEmail, "testPassword");
-            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/{nameof(DynamicFormsController.ValidateEmailNotInUse)}?value={testEmail}", HttpMethod.Get);
+            await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/{nameof(DynamicFormsController.ValidateEmailNotInUse)}?value={_testEmail}", HttpMethod.Get);
 
             // Act 
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
@@ -108,11 +111,61 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task ValidateEmailNotInUse_Returns200OkWithValidateResponseModelWithValidPropertySetToTrueIfEmailIsNotInUse()
+        public async Task ValidateEmailNotInUse_Returns200OkAndValidateResponseModelIfEmailIsNotInUse()
         {
             // Arrange
             await _resetAccountsTable();
-            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/{nameof(DynamicFormsController.ValidateEmailNotInUse)}?value=test@email.com", HttpMethod.Get);
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/{nameof(DynamicFormsController.ValidateEmailNotInUse)}?value={_testEmail}", HttpMethod.Get);
+
+            // Act 
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+
+            // Assert
+            ValidateResponseModel body = JsonConvert.DeserializeObject<ValidateResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            Assert.True(body.Valid);
+        }
+
+        [Fact]
+        public async Task ValidateDisplayNameNotInUse_Returns400BadRequestAndErrorResponseModelIfValueIsNull()
+        {
+            // Arrange
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/{nameof(DynamicFormsController.ValidateDisplayNameNotInUse)}", HttpMethod.Get);
+
+            // Act 
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+
+            // Assert
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task ValidateDisplayNameNotInUse_Returns200OkAndValidateResponseModelIfDisplayNameIsInUse()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            VakAccount account = await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
+            await _vakAccountRepository.UpdateAccountDisplayNameAsync(account.AccountId, _testDisplayName);
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/{nameof(DynamicFormsController.ValidateDisplayNameNotInUse)}?value={_testDisplayName}", HttpMethod.Get);
+
+            // Act 
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+
+            // Assert
+            ValidateResponseModel body = JsonConvert.DeserializeObject<ValidateResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.Valid);
+        }
+
+        [Fact]
+        public async Task ValidateDisplayNameNotInUse_Returns200OkAndValidateResponseModelIfDisplayNameIsNotInUse()
+        {
+            // Arrange
+            await _resetAccountsTable();
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormsControllerName}/{nameof(DynamicFormsController.ValidateDisplayNameNotInUse)}?value={_testDisplayName}", HttpMethod.Get);
 
             // Act 
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
