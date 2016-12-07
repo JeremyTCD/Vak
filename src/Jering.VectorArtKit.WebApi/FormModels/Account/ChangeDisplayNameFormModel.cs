@@ -14,14 +14,14 @@ namespace Jering.VectorArtKit.WebApi.FormModels
     public class ChangeDisplayNameFormModel
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_Password_Required), typeof(Strings))]
-        [DynamicControl("input", nameof(Strings.DisplayName_CurrentPassword), typeof(Strings), 0)]
+        [DynamicControl("input", nameof(Strings.DisplayName_Password), typeof(Strings), 0)]
         [DynamicControlProperty("type", "password")]
         public string Password { get; set; }
 
         [ValidateRequired(nameof(Strings.ErrorMessage_NewDisplayName_Required), typeof(Strings))]
-        [AsyncValidate(nameof(Strings.ErrorMessage_DisplayName_InUse), 
-            typeof(Strings), 
-            nameof(DynamicFormsController), 
+        [AsyncValidate(nameof(Strings.ErrorMessage_DisplayName_InUse),
+            typeof(Strings),
+            nameof(DynamicFormsController),
             nameof(DynamicFormsController.ValidateDisplayNameNotInUse))]
         [DynamicControl("input", nameof(Strings.DisplayName_NewDisplayName), typeof(Strings), 1)]
         [DynamicControlProperty("type", "text")]

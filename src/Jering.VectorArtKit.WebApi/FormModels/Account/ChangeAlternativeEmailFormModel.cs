@@ -14,7 +14,7 @@ namespace Jering.VectorArtKit.WebApi.FormModels
     public class ChangeAlternativeEmailFormModel
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_Password_Required), typeof(Strings))]
-        [DynamicControl("input", nameof(Strings.DisplayName_CurrentPassword), typeof(Strings), 0)]
+        [DynamicControl("input", nameof(Strings.DisplayName_Password), typeof(Strings), 0)]
         [DynamicControlProperty("type", "password")]
         public string Password { get; set; }
 
