@@ -5,6 +5,7 @@ import { ManageAccountComponent } from './manage-account.component';
 import { ManageAccountRouting } from './manage-account.routing';
 import { ManageAccountGuard } from './manage-account.guard';
 import { ChangeAlternativeEmailComponent } from './change-alternative-email/change-alternative-email.component';
+import { ChangeEmailComponent } from './change-email/change-email.component';
 import { DynamicFormGuard } from '../shared/dynamic-forms/dynamic-form/dynamic-form.guard';
 import { DynamicFormsModule } from '../shared/dynamic-forms/dynamic-forms.module';
 
@@ -20,7 +21,8 @@ import { DynamicFormsModule } from '../shared/dynamic-forms/dynamic-forms.module
     ],
     declarations: [
         ManageAccountComponent,
-        ChangeAlternativeEmailComponent
+        ChangeAlternativeEmailComponent,
+        ChangeEmailComponent
     ]
 })
 export class ManageAccountModule { }

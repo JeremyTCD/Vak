@@ -1,11 +1,11 @@
 ﻿import { Injectable } from '@angular/core';
-import { CanActivate } from '@angular/router';
+import { CanActivate, CanActivateChild } from '@angular/router';
 
 import { ErrorHandlerService } from './error-handler.service';
 import { UserService } from './user.service';
 
 @Injectable()
-export class AuthenticationGuard implements CanActivate {
+export class AuthenticationGuard implements CanActivate, CanActivateChild {
     constructor(private _userService: UserService, private _errorHandlerService: ErrorHandlerService) { }
 
     canActivate(): boolean {
@@ -15,5 +15,9 @@ export class AuthenticationGuard implements CanActivate {
 
         this._errorHandlerService.handleUnauthorizedError();
         return false;
+    }
+
+    canActivateChild(): boolean {
+        return this.canActivate();
     }
 }
