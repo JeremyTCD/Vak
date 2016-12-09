@@ -1,5 +1,5 @@
 ﻿CREATE PROCEDURE [Website].[CreateAccount]
-	@Password NVARCHAR(256),  
+	@PasswordHash NVARCHAR(84),  
 	@Email NVARCHAR(256)
 AS
 BEGIN
@@ -14,11 +14,9 @@ BEGIN
 			--Need to ensure that isolation level prevents email from being written to an alt email 
 			--between these statements
 
-			DECLARE @Salt UNIQUEIDENTIFIER = NEWID();
-
-			INSERT INTO [dbo].[Accounts] ([PasswordHash], [Salt], [Email])
-			OUTPUT INSERTED.[AccountId], INSERTED.[PasswordLastChanged], INSERTED.[SecurityStamp], INSERTED.[Email] 
-			VALUES (HASHBYTES(N'SHA2_256', @Password + CONVERT(char(36), @Salt)), @Salt, @Email)
+			INSERT INTO [dbo].[Accounts] ([PasswordHash], [Email])
+			OUTPUT INSERTED.*
+			VALUES (@PasswordHash, @Email)
 		COMMIT
 	END TRY
     BEGIN CATCH

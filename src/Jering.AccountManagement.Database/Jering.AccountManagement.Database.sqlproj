@@ -89,14 +89,12 @@
     <Build Include="Website\Stored Procedures\Accounts\DeleteAccountClaim.sql" />
     <Build Include="Website\Stored Procedures\Accounts\GetAccount.sql" />
     <Build Include="Website\Stored Procedures\Accounts\GetAccountSecurityStamp.sql" />
-    <Build Include="Website\Stored Procedures\Accounts\GetAccountByEmailAndPassword.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountEmailVerified.sql" />
     <Build Include="Website\Stored Procedures\Accounts\GetAccountByEmail.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountPasswordHash.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountTwoFactorEnabled.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountEmail.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountAlternativeEmail.sql" />
-    <Build Include="Website\Stored Procedures\Accounts\CheckEmailAndPasswordExists.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountDisplayName.sql" />
     <Build Include="Website\Stored Procedures\Accounts\GetAccountByEmailOrAlternativeEmail.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountAlternativeEmailVerified.sql" />
