@@ -1,5 +1,5 @@
-﻿using Jering.AccountManagement.Security;
-using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Security;
+using Jering.Accounts.DatabaseInterface;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Jering.AccountManagement.Security.Tests.UnitTests
+namespace Jering.Security.Tests.UnitTests
 {
     public class TotpTokenServiceUnitTests
     {

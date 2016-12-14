@@ -8,7 +8,7 @@ using Xunit;
 using Moq;
 using System.Collections.Generic;
 
-namespace Jering.AccountManagement.Security.Tests.UnitTests
+namespace Jering.Security.Tests.UnitTests
 {
     public class PasswordServiceTest
     {
@@ -64,7 +64,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             string passwordHash = passwordService.HashPassword(_testPassword);
 
             // Assert
-            bool result = passwordService.VerifyPassword(passwordHash, _testPassword);
+            bool result = passwordService.ValidatePassword(passwordHash, _testPassword);
 
             Assert.True(result);
         }
@@ -77,7 +77,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             string passwordHash = passwordService.HashPassword(_testPassword);
 
             // Assert
-            bool result = passwordService.VerifyPassword(passwordHash, _testInvalidPassword);
+            bool result = passwordService.ValidatePassword(passwordHash, _testInvalidPassword);
 
             Assert.False(result);
         }
@@ -90,7 +90,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             PasswordService passwordService = new PasswordService(CreateMockPasswordServiceOptionsAccessor().Object);
 
             // Act
-            bool result = passwordService.VerifyPassword(passwordHash,_testPassword);
+            bool result = passwordService.ValidatePassword(passwordHash,_testPassword);
 
             // Assert
             Assert.True(result);
@@ -111,7 +111,7 @@ namespace Jering.AccountManagement.Security.Tests.UnitTests
             PasswordService passwordService = new PasswordService(CreateMockPasswordServiceOptionsAccessor().Object);
 
             // Act
-            bool result = passwordService.VerifyPassword(passwordHash, _testPassword);
+            bool result = passwordService.ValidatePassword(passwordHash, _testPassword);
 
             // Assert
             Assert.False(result);

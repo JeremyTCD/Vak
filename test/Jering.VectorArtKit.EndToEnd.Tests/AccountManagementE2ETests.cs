@@ -12,6 +12,7 @@ using System.Data;
 using Dapper;
 using System.Text.RegularExpressions;
 using System.Threading;
+using OpenQA.Selenium.Interactions;
 
 namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 {
@@ -19,17 +20,24 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
     public class AccountManagementE2ETests
     {
         private int _waitTime = 5000;
-        private string _baseUrl = "http://localhost:4200/";
-        private string _testEmail = "test@email.com";
-        private string _testPassword = "testPassword";
-        private string _testNewPassword = "testNewPassword";
+        private const string _baseUrl = "http://localhost:4200/";
+        private const string _testEmail = "test@email.com";
+        private const string _testNewEmail = "testNew@email.com";
+        private const string _testAltEmail = "testAlternative@email.com";
+        private const string _testPassword = "testPassword";
+        private const string _testNewPassword = "testNewPassword";
+        private const string _testNewDisplayName = "testNewDisplayName";
         private string _emailFileName = $"{Environment.GetEnvironmentVariable("TMP")}\\SmtpTest.txt";
-        private string _homeRelativeUrl = "home";
-        private string _signUpRelativeUrl = "sign-up";
-        private string _logInRelativeUrl = "log-in";
-        private string _forgotPasswordRelativeUrl = "log-in/forgot-password";
-        private string _resetPasswordRelativeUrl = "log-in/reset-password";
-        private string _manageAccountRelativeUrl = "manage-account";
+        private const string _homeRelativeUrl = "home";
+        private const string _signUpRelativeUrl = "sign-up";
+        private const string _logInRelativeUrl = "log-in";
+        private const string _forgotPasswordRelativeUrl = "log-in/forgot-password";
+        private const string _resetPasswordRelativeUrl = "log-in/reset-password";
+        private const string _manageAccountRelativeUrl = "manage-account";
+        private const string _changeAltEmailRelativeUrl = "manage-account/change-alt-email";
+        private const string _changeEmailRelativeUrl = "manage-account/change-email";
+        private const string _changeDisplayNameRelativeUrl = "manage-account/change-display-name";
+        private const string _changePasswordRelativeUrl = "manage-account/change-password";
 
         private ReusableWebDriver _webDriver { get; }
         private SqlConnection _sqlConnection { get; }
@@ -107,19 +115,49 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             SignUp(_testEmail, _testPassword, _testPassword);
             LogOff(_testEmail);
-            // mimic invalid cookie situation (authentication.guard passes but server returns 401)
+            // mimic invalid cookie situation (auth.guard passes but server returns 401)
             _webDriver.ExecuteScript("window.localStorage.clear()");
             _webDriver.ExecuteScript("window.localStorage['vakUsername'] = 'dummyUsername'");
             ManageAccount_NotLoggedIn(_testEmail, _testPassword);
         }
 
         [Fact]
-        public void AuthenticationGuardRedirectsToLogInIfNotLoggedIn()
+        public void AuthGuardRedirectsToLogInIfNotLoggedIn()
         {
             SignUp(_testEmail, _testPassword, _testPassword);
             LogOff(_testEmail);
 
             ManageAccount_NotLoggedIn(_testEmail, _testPassword);
+        }
+
+        [Fact]
+        public void ChangeAltEmailChangesAltEmail()
+        {
+            SignUp(_testEmail, _testPassword, _testPassword);
+            ChangeAltEmail(_testPassword, _testAltEmail);
+        }
+
+        [Fact]
+        public void ChangeEmailChangesEmail()
+        {
+            SignUp(_testEmail, _testPassword, _testPassword);
+            ChangeEmail(_testPassword, _testNewEmail);
+        }
+
+        [Fact]
+        public void ChangeDisplayNameChangesDisplayName()
+        {
+            SignUp(_testEmail, _testPassword, _testPassword);
+            ChangeDisplayName(_testPassword, _testNewDisplayName);
+        }
+
+        [Fact]
+        public void ChangePasswordChangesPassword()
+        {
+            SignUp(_testEmail, _testPassword, _testPassword);
+            ChangePassword(_testPassword, _testNewPassword);
+            LogOff(_testEmail);
+            LogIn(_testEmail, _testNewPassword, _homeRelativeUrl);
         }
 
         #region Helpers
@@ -133,8 +171,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             _webDriver.FindElement(By.Id("Email")).SendKeys(email);
             _webDriver.FindElement(By.Id("Password")).SendKeys(password);
             _webDriver.FindElement(By.Id("ConfirmPassword")).SendKeys(password);
-
-            _webDriver.Wait(wd => wd.FindElements(By.ClassName("valid")).Count == 2, _waitTime);
 
             _webDriver.FindElement(By.XPath("//button[text()='Sign up']")).Click();
 
@@ -158,8 +194,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
             _webDriver.FindElement(By.Id("Email")).SendKeys(email);
             _webDriver.FindElement(By.Id("Password")).SendKeys(password);
-
-            _webDriver.Wait(wd => wd.FindElements(By.ClassName("valid")).Count == 1, _waitTime);
 
             _webDriver.FindElement(By.XPath("//button[text()='Log in']")).Click();
 
@@ -189,8 +223,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             _webDriver.FindElement(By.Id("NewPassword")).SendKeys(newPassword);
             _webDriver.FindElement(By.Id("ConfirmPassword")).SendKeys(newPassword);
 
-            _webDriver.Wait(wd => wd.FindElements(By.ClassName("valid")).Count == 1, _waitTime);
-
             _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
 
             _webDriver.Wait(wd => wd.FindElements(By.LinkText("Log in")).Count == 1, _waitTime);
@@ -212,14 +244,71 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             _webDriver.FindElement(By.Id("Email")).SendKeys(email);
             _webDriver.FindElement(By.Id("Password")).SendKeys(password);
 
-            _webDriver.Wait(wd => wd.FindElements(By.ClassName("valid")).Count == 1, _waitTime);
-
             _webDriver.FindElement(By.XPath("//button[text()='Log in']")).Click();
 
             _webDriver.Wait(wd => wd.Url.Contains(_manageAccountRelativeUrl) &&
                 wd.FindElements(By.LinkText($"Account:{email}")).Count == 1, _waitTime);
         }
 
+        public void ChangeAltEmail(string password, string newAltEmail)
+        {
+            _webDriver.Navigate().GoToUrl(_baseUrl + _changeAltEmailRelativeUrl);
+
+            _webDriver.Wait(wd => wd.FindElements(By.Id("Password")).Count > 0, _waitTime);
+
+            _webDriver.FindElement(By.Id("Password")).SendKeys(password);
+            _webDriver.FindElement(By.Id("NewAltEmail")).SendKeys(newAltEmail);
+
+            _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
+
+            _webDriver.Wait(wd => wd.Url.Contains(_baseUrl + _manageAccountRelativeUrl) &&
+                wd.FindElements(By.XPath($"//div[contains(text(),'Alternative email address: {newAltEmail}')]")).Count == 1, _waitTime);
+        }
+
+        public void ChangeEmail(string password, string newEmail)
+        {
+            _webDriver.Navigate().GoToUrl(_baseUrl + _changeEmailRelativeUrl);
+
+            _webDriver.Wait(wd => wd.FindElements(By.Id("Password")).Count > 0, _waitTime);
+
+            _webDriver.FindElement(By.Id("Password")).SendKeys(password);
+            _webDriver.FindElement(By.Id("NewEmail")).SendKeys(newEmail);
+
+            _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
+
+            _webDriver.Wait(wd => wd.Url.Contains(_baseUrl + _manageAccountRelativeUrl) &&
+                wd.FindElements(By.XPath($"//div[contains(text(),'Email address: {newEmail}')]")).Count == 1, _waitTime);
+        }
+
+        public void ChangeDisplayName(string password, string newDisplayName)
+        {
+            _webDriver.Navigate().GoToUrl(_baseUrl + _changeDisplayNameRelativeUrl);
+
+            _webDriver.Wait(wd => wd.FindElements(By.Id("Password")).Count > 0, _waitTime);
+
+            _webDriver.FindElement(By.Id("Password")).SendKeys(password);
+            _webDriver.FindElement(By.Id("NewDisplayName")).SendKeys(newDisplayName);
+
+            _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
+
+            _webDriver.Wait(wd => wd.Url.Contains(_baseUrl + _manageAccountRelativeUrl) &&
+                wd.FindElements(By.XPath($"//div[contains(text(),'Display name: {newDisplayName}')]")).Count == 1, _waitTime);
+        }
+
+        public void ChangePassword(string password, string newPassword)
+        {
+            _webDriver.Navigate().GoToUrl(_baseUrl + _changePasswordRelativeUrl);
+
+            _webDriver.Wait(wd => wd.FindElements(By.Id("CurrentPassword")).Count > 0, _waitTime);
+
+            _webDriver.FindElement(By.Id("CurrentPassword")).SendKeys(password);
+            _webDriver.FindElement(By.Id("NewPassword")).SendKeys(newPassword);
+            _webDriver.FindElement(By.Id("ConfirmNewPassword")).SendKeys(newPassword);
+
+            _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
+
+            _webDriver.Wait(wd => wd.FindElements(By.XPath("//h2[text()='Manage Account']")).Count == 1, _waitTime);
+        }
         public void ResetAccountsTable()
         {
              _sqlConnection.Execute("Delete from [dbo].[Accounts];" +

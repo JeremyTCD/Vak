@@ -89,6 +89,24 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             return httpRequestMessage;
         }
 
+        public static HttpRequestMessage Create(string path, HttpMethod requestMethod, 
+            IDictionary<string, string> cookies = null,
+            IDictionary<string, string> formPostBodyData = null)
+        {
+            HttpRequestMessage httpRequestMessage = Create(path, requestMethod, formPostBodyData);
+
+            if (cookies != null)
+            {
+                if (cookies.Keys.Contains("XSRF-TOKEN"))
+                {
+                    httpRequestMessage.Headers.Add("X-XSRF-TOKEN", cookies["XSRF-TOKEN"]);
+                }
+                CookiesHelper.PutCookiesOnRequest(httpRequestMessage, cookies);
+            }
+
+            return httpRequestMessage;
+        }
+
         public static string ToJson(IDictionary<string, string> formPostBodyData)
         {
             return JsonConvert.SerializeObject(formPostBodyData);

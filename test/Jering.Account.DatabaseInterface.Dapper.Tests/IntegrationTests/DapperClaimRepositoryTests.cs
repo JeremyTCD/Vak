@@ -7,9 +7,9 @@ using System.Data;
 using Dapper;
 using System;
 using Jering.VectorArtKit.WebApi.BusinessModels;
-using Jering.AccountManagement.DatabaseInterface;
+using Jering.Accounts.DatabaseInterface;
 
-namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTests
+namespace Jering.Accounts.DatabaseInterface.Dapper.Tests.IntegrationTests
 {
     [Collection("DapperDatabaseCollection")]
     public class DapperClaimRepositoryTests

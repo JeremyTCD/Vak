@@ -7,7 +7,7 @@ using Dapper;
 using System.Data;
 using Xunit;
 
-namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTests
+namespace Jering.Accounts.DatabaseInterface.Dapper.Tests.IntegrationTests
 {
     [CollectionDefinition("DapperDatabaseCollection")]
     public class DapperDatabaseCollection : ICollectionFixture<DapperDatabaseFixture>

@@ -9,9 +9,9 @@ using System.Text;
 using System.Data;
 using Dapper;
 using Jering.VectorArtKit.WebApi.BusinessModels;
-using Jering.AccountManagement.DatabaseInterface;
+using Jering.Accounts.DatabaseInterface;
 
-namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTests
+namespace Jering.Accounts.DatabaseInterface.Dapper.Tests.IntegrationTests
 {
     [Collection("DapperDatabaseCollection")]
     public class DapperAccountRepositoryTests
@@ -26,11 +26,10 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
 
         private const string _testEmail1 = "test@email1.com";
         private const string _testEmail2 = "test@email2.com";
-        private const string _testAlternativeEmail = "testAlternative@email.com";
+        private const string _testAltEmail = "testAlternative@email.com";
         private const string _testWrongEmail = "testWrong@email.com";
-        private const string _testPassword = "testPassword";
-        private const string _testNewPassword = "testNewPassword";
-        private const string _testWrongPassword = "testWrongPassword";
+        private const string _testPasswordHash = "testPasswordHash";
+        private const string _testNewPasswordHash = "testNewPasswordHash";
         private const string _testDisplayName = "testDisplayName";
         private const string _testRoleName1 = "testRoleName1";
         private const string _testRoleName2 = "testRoleName2";
@@ -59,17 +58,19 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetAccountsTable();
 
             // Act
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Assert
-            SHA256 sha256 = SHA256.Create();
-            byte[] hash = sha256.ComputeHash(Encoding.Unicode.GetBytes(_testPassword + _testEmail1));
             Assert.Equal(1, account.AccountId);
             Assert.Equal(_testEmail1, account.Email);
-            Assert.Equal(null, account.DisplayName);
+            Assert.Null( account.DisplayName);
             Assert.NotEqual(Guid.Empty, account.SecurityStamp);
-            Assert.Equal(false, account.EmailVerified);
-            Assert.Equal(false, account.TwoFactorEnabled);
+            Assert.False( account.EmailVerified);
+            Assert.False(account.AltEmailVerified);
+            Assert.False( account.TwoFactorEnabled);
+            Assert.NotNull(account.PasswordHash);
+            Assert.NotNull(account.PasswordLastChanged);
+            Assert.NotNull(account.SecurityStamp);
         }
 
         [Fact]
@@ -79,7 +80,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetAccountsTable();
 
             // Act
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Guid securityStamp = await _dapperAccountRepository.GetAccountSecurityStampAsync(account.AccountId);
 
             // Assert
@@ -93,9 +94,9 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetAccountsTable();
 
             // Act
-            await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             SqlException sqlException = await Assert.
-              ThrowsAsync<SqlException>(async () => await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword));
+              ThrowsAsync<SqlException>(async () => await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash));
 
             // Assert
             Assert.Equal(51000, sqlException.Number);
@@ -107,19 +108,22 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             IAccount retrievedAccount = await _dapperAccountRepository.GetAccountAsync(account.AccountId);
 
             // Assert
-            Assert.NotEqual(null, retrievedAccount);
-            Assert.Equal(1, retrievedAccount.AccountId);
-            Assert.Equal(_testEmail1, retrievedAccount.Email);
-            Assert.Equal(null, retrievedAccount.DisplayName);
-            Assert.NotEqual(Guid.Empty, retrievedAccount.SecurityStamp);
-            Assert.Equal(false, retrievedAccount.EmailVerified);
-            Assert.Equal(false, retrievedAccount.TwoFactorEnabled);
+            Assert.Equal(1, account.AccountId);
+            Assert.Equal(_testEmail1, account.Email);
+            Assert.Null(account.DisplayName);
+            Assert.NotEqual(Guid.Empty, account.SecurityStamp);
+            Assert.False(account.EmailVerified);
+            Assert.False(account.AltEmailVerified);
+            Assert.False(account.TwoFactorEnabled);
+            Assert.NotNull(account.PasswordHash);
+            Assert.NotNull(account.PasswordLastChanged);
+            Assert.NotNull(account.SecurityStamp);
         }
 
         [Fact]
@@ -132,44 +136,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             IAccount account = await _dapperAccountRepository.GetAccountAsync(0);
 
             // Assert
-            Assert.Equal(null, account);
-        }
-
-        [Fact]
-        public async Task GetAccountByEmailAndPasswordAsync_GetsAccountTest()
-        {
-            // Arrange
-            await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
-
-            // Act
-            IAccount retrievedAccount = await _dapperAccountRepository.GetAccountByEmailAndPasswordAsync(_testEmail1, _testPassword);
-
-            // Assert
-            SHA256 sha256 = SHA256.Create();
-            byte[] hash = sha256.ComputeHash(Encoding.Unicode.GetBytes(_testPassword + _testEmail1));
-            Assert.Equal(1, account.AccountId);
-            Assert.Equal(_testEmail1, account.Email);
-            Assert.Equal(null, account.DisplayName);
-            Assert.NotEqual(Guid.Empty, account.SecurityStamp);
-            Assert.Equal(false, account.EmailVerified);
-            Assert.Equal(false, account.TwoFactorEnabled);
-        }
-
-        [Fact]
-        public async Task GetAccountByEmailAndPasswordAsync_ReturnsNullIfAccountDoesNotExistTest()
-        {
-            // Arrange
-            await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
-
-            // Act
-            IAccount wrongPasswordAccount = await _dapperAccountRepository.GetAccountByEmailAndPasswordAsync(_testEmail1, _testWrongPassword);
-            IAccount wrongEmailAndPasswordAccount = await _dapperAccountRepository.GetAccountByEmailAndPasswordAsync(_testWrongEmail, _testWrongPassword);
-
-            // Assert
-            Assert.Equal(null, wrongPasswordAccount);
-            Assert.Equal(null, wrongEmailAndPasswordAccount);
+            Assert.Null( account);
         }
 
         [Fact]
@@ -177,20 +144,22 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
-            IAccount retrievedAccount = await _dapperAccountRepository.GetAccountByEmailAsync(_testEmail1);
+            IAccount account = await _dapperAccountRepository.GetAccountByEmailAsync(_testEmail1);
 
             // Assert
-            SHA256 sha256 = SHA256.Create();
-            byte[] hash = sha256.ComputeHash(Encoding.Unicode.GetBytes(_testPassword + _testEmail1));
             Assert.Equal(1, account.AccountId);
             Assert.Equal(_testEmail1, account.Email);
-            Assert.Equal(null, account.DisplayName);
+            Assert.Null(account.DisplayName);
             Assert.NotEqual(Guid.Empty, account.SecurityStamp);
-            Assert.Equal(false, account.EmailVerified);
-            Assert.Equal(false, account.TwoFactorEnabled);
+            Assert.False(account.EmailVerified);
+            Assert.False(account.AltEmailVerified);
+            Assert.False(account.TwoFactorEnabled);
+            Assert.NotNull(account.PasswordHash);
+            Assert.NotNull(account.PasswordLastChanged);
+            Assert.NotNull(account.SecurityStamp);
         }
 
         [Fact]
@@ -203,45 +172,54 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             IAccount nonExistantAccount = await _dapperAccountRepository.GetAccountByEmailAsync(_testEmail1);
 
             // Assert
-            Assert.Equal(null, nonExistantAccount);
+            Assert.Null( nonExistantAccount);
         }
 
         [Theory]
-        [MemberData(nameof(GetAccountByEmailOrAlternativeEmailAsyncData))]
-        public async Task GetAccountByEmailOrAlternativeEmailAsync_GetsAccountTest(bool useAlt)
+        [MemberData(nameof(GetAccountByEmailOrAltEmailAsyncData))]
+        public async Task GetAccountByEmailOrAltEmailAsync_GetsAccountTest(bool useAlt)
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             if (useAlt)
             {
-                await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(account.AccountId, _testAlternativeEmail);
+                await _dapperAccountRepository.UpdateAccountAltEmailAsync(account.AccountId, _testAltEmail);
             }
 
             // Act
-            account = await _dapperAccountRepository.GetAccountByEmailOrAlternativeEmailAsync(useAlt ? _testAlternativeEmail : _testEmail1);
+            account = await _dapperAccountRepository.GetAccountByEmailOrAltEmailAsync(useAlt ? _testAltEmail : _testEmail1);
 
             // Assert
-            Assert.NotNull(account);
+            Assert.Equal(1, account.AccountId);
+            Assert.Equal(_testEmail1, account.Email);
+            Assert.Null(account.DisplayName);
+            Assert.NotEqual(Guid.Empty, account.SecurityStamp);
+            Assert.False(account.EmailVerified);
+            Assert.False(account.AltEmailVerified);
+            Assert.False(account.TwoFactorEnabled);
+            Assert.NotNull(account.PasswordHash);
+            Assert.NotNull(account.PasswordLastChanged);
+            Assert.NotNull(account.SecurityStamp);
         }
 
-        public static IEnumerable<object[]> GetAccountByEmailOrAlternativeEmailAsyncData()
+        public static IEnumerable<object[]> GetAccountByEmailOrAltEmailAsyncData()
         {
             yield return new object[] { false };
             yield return new object[] { true };
         }
 
         [Fact]
-        public async Task GetAccountByEmailOrAlternativeEmailAsync_ReturnsNullIfAccountDoesNotExistTest()
+        public async Task GetAccountByEmailOrAltEmailAsync_ReturnsNullIfAccountDoesNotExistTest()
         {
             // Arrange
             await _resetAccountsTable();
 
             // Act
-            IAccount nonExistantAccount = await _dapperAccountRepository.GetAccountByEmailOrAlternativeEmailAsync(_testEmail1);
+            IAccount nonExistantAccount = await _dapperAccountRepository.GetAccountByEmailOrAltEmailAsync(_testEmail1);
 
             // Assert
-            Assert.Equal(null, nonExistantAccount);
+            Assert.Null( nonExistantAccount);
         }
 
         [Fact]
@@ -251,7 +229,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
 
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             await _dapperAccountRepository.DeleteAccountAsync(account.AccountId);
@@ -267,7 +245,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
 
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             bool result = await _dapperAccountRepository.DeleteAccountAsync(account.AccountId);
@@ -297,7 +275,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetRolesTable();
             await _resetAccountsTable();
             Role role = await _dapperRoleRepository.CreateRoleAsync(_testRoleName1);
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             await _dapperAccountRepository.AddAccountRoleAsync(account.AccountId, role.RoleId);
@@ -315,7 +293,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetRolesTable();
             await _resetAccountsTable();
             Role role = await _dapperRoleRepository.CreateRoleAsync(_testRoleName1);
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             bool result = await _dapperAccountRepository.AddAccountRoleAsync(account.AccountId, role.RoleId);
@@ -330,7 +308,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetRolesTable();
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Role role = await _dapperRoleRepository.CreateRoleAsync(_testRoleName1);
 
             // Act
@@ -366,7 +344,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetRolesTable();
             await _resetAccountsTable();
             Role role = await _dapperRoleRepository.CreateRoleAsync(_testRoleName1);
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Guid initialSecurityStamp = await _dapperAccountRepository.GetAccountSecurityStampAsync(account.AccountId);
             await _dapperAccountRepository.AddAccountRoleAsync(account.AccountId, role.RoleId);
 
@@ -385,7 +363,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetRolesTable();
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Role role = await _dapperRoleRepository.CreateRoleAsync(_testRoleName1);
             await _dapperAccountRepository.AddAccountRoleAsync(account.AccountId, role.RoleId);
 
@@ -403,7 +381,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetRolesTable();
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Role role = await _dapperRoleRepository.CreateRoleAsync(_testRoleName1);
             await _dapperAccountRepository.AddAccountRoleAsync(account.AccountId, role.RoleId);
 
@@ -420,7 +398,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetRolesTable();
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             bool result = await _dapperAccountRepository.DeleteAccountRoleAsync(0, 0) ||
@@ -436,7 +414,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetRolesTable();
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Role role = await _dapperRoleRepository.CreateRoleAsync(_testRoleName1);
             await _dapperAccountRepository.AddAccountRoleAsync(account.AccountId, role.RoleId);
             Guid initialSecurityStamp = await _dapperAccountRepository.GetAccountSecurityStampAsync(account.AccountId);
@@ -459,7 +437,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetRolesTable();
             Role role1 = await _dapperRoleRepository.CreateRoleAsync(_testRoleName1);
             Role role2 = await _dapperRoleRepository.CreateRoleAsync(_testRoleName2);
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             await _dapperAccountRepository.AddAccountRoleAsync(account.AccountId, role1.RoleId);
             await _dapperAccountRepository.AddAccountRoleAsync(account.AccountId, role2.RoleId);
 
@@ -478,7 +456,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetAccountsTable();
             await _resetRolesTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             List<Role> accountDoesNotExistRoles = (await _dapperAccountRepository.GetAccountRolesAsync(0)).ToList<Role>();
@@ -498,7 +476,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetClaimsTable();
             await _resetAccountsTable();
             Claim claim = await _dapperClaimRepository.CreateClaimAsync(_testClaimType1, _testClaimValue1);
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             await _dapperAccountRepository.AddAccountClaimAsync(account.AccountId, claim.ClaimId);
@@ -517,7 +495,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetClaimsTable();
             await _resetAccountsTable();
             Claim claim = await _dapperClaimRepository.CreateClaimAsync(_testClaimType1, _testClaimValue1);
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             bool result = await _dapperAccountRepository.AddAccountClaimAsync(account.AccountId, claim.ClaimId);
@@ -533,7 +511,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetClaimsTable();
             await _resetAccountsTable();
             Claim claim = await _dapperClaimRepository.CreateClaimAsync(_testClaimType1, _testClaimValue1);
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Guid initialSecurityStamp = await _dapperAccountRepository.GetAccountSecurityStampAsync(account.AccountId);
             await _dapperAccountRepository.AddAccountClaimAsync(account.AccountId, claim.ClaimId);
 
@@ -552,7 +530,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetClaimsTable();
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Claim claim = await _dapperClaimRepository.CreateClaimAsync(_testClaimType1, _testClaimValue1);
 
             // Act
@@ -587,7 +565,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetClaimsTable();
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Claim claim = await _dapperClaimRepository.CreateClaimAsync(_testClaimType1, _testClaimValue1);
             await _dapperAccountRepository.AddAccountClaimAsync(account.AccountId, claim.ClaimId);
 
@@ -605,7 +583,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetClaimsTable();
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Claim claim = await _dapperClaimRepository.CreateClaimAsync(_testClaimType1, _testClaimValue1);
             await _dapperAccountRepository.AddAccountClaimAsync(account.AccountId, claim.ClaimId);
 
@@ -622,7 +600,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetClaimsTable();
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             bool result = await _dapperAccountRepository.DeleteAccountClaimAsync(0, 0) ||
@@ -638,7 +616,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetClaimsTable();
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Claim claim = await _dapperClaimRepository.CreateClaimAsync(_testClaimType1, _testClaimValue1);
             await _dapperAccountRepository.AddAccountClaimAsync(account.AccountId, claim.ClaimId);
             Guid initialSecurityStamp = await _dapperAccountRepository.GetAccountSecurityStampAsync(account.AccountId);
@@ -661,7 +639,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetClaimsTable();
             Claim claim1 = await _dapperClaimRepository.CreateClaimAsync(_testClaimType1, _testClaimValue1);
             Claim claim2 = await _dapperClaimRepository.CreateClaimAsync(_testClaimType2, _testClaimValue2);
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             await _dapperAccountRepository.AddAccountClaimAsync(account.AccountId, claim1.ClaimId);
             await _dapperAccountRepository.AddAccountClaimAsync(account.AccountId, claim2.ClaimId);
 
@@ -682,7 +660,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             // Arrange
             await _resetAccountsTable();
             await _resetClaimsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             List<Claim> accountDoesNotExistClaims = (await _dapperAccountRepository.GetAccountClaimsAsync(0)).ToList<Claim>();
@@ -702,7 +680,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetAccountsTable();
 
             // Act
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             Guid existingSecurityStamp = await _dapperAccountRepository.GetAccountSecurityStampAsync(account.AccountId);
 
             // Assert
@@ -727,7 +705,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             bool result = await _dapperAccountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, true);
@@ -757,7 +735,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             bool result = await _dapperAccountRepository.UpdateAccountTwoFactorEnabledAsync(account.AccountId, true);
@@ -787,15 +765,16 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
-            bool result = await _dapperAccountRepository.UpdateAccountPasswordHashAsync(account.AccountId, _testNewPassword);
+            bool result = await _dapperAccountRepository.UpdateAccountPasswordHashAsync(account.AccountId, _testNewPasswordHash);
 
             // Assert
-            account = await _dapperAccountRepository.GetAccountByEmailAndPasswordAsync(account.Email, _testNewPassword);
-            Assert.NotNull(account);
             Assert.True(result);
+            account = await _dapperAccountRepository.GetAccountAsync(account.AccountId);
+            Assert.Equal(_testNewPasswordHash, account.PasswordHash);
+
         }
 
         [Fact]
@@ -805,7 +784,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetAccountsTable();
 
             // Act
-            bool result = await _dapperAccountRepository.UpdateAccountPasswordHashAsync(0, _testNewPassword);
+            bool result = await _dapperAccountRepository.UpdateAccountPasswordHashAsync(0, _testNewPasswordHash);
 
             // Assert
             Assert.False(result);
@@ -819,19 +798,19 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetAccountsTable();
 
             // Act
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             if (alt)
             {
-                await _dapperAccountRepository.CreateAccountAsync("Email3@Jering.com", _testPassword);
-                await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(2, _testAlternativeEmail);
+                await _dapperAccountRepository.CreateAccountAsync("Email3@Jering.com", _testPasswordHash);
+                await _dapperAccountRepository.UpdateAccountAltEmailAsync(2, _testAltEmail);
             }
             else
             {
-                await _dapperAccountRepository.CreateAccountAsync(_testAlternativeEmail, _testPassword);
+                await _dapperAccountRepository.CreateAccountAsync(_testAltEmail, _testPasswordHash);
             }
 
             SqlException sqlException = await Assert.
-              ThrowsAsync<SqlException>(async () => await _dapperAccountRepository.UpdateAccountEmailAsync(account.AccountId, _testAlternativeEmail));
+              ThrowsAsync<SqlException>(async () => await _dapperAccountRepository.UpdateAccountEmailAsync(account.AccountId, _testAltEmail));
             // TODO if duplicate is an alt
 
             // Assert
@@ -850,7 +829,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             bool result = await _dapperAccountRepository.UpdateAccountEmailAsync(account.AccountId, _testEmail2);
@@ -875,61 +854,61 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         }
 
         [Theory]
-        [MemberData(nameof(UpdateAccountAlternativeEmailData))]
-        public async Task UpdateAccountAlternativeEmail_ThrowsExceptionIfDuplicateAlternativeEmailTest(bool alt)
+        [MemberData(nameof(UpdateAccountAltEmailData))]
+        public async Task UpdateAccountAltEmail_ThrowsExceptionIfDuplicateAltEmailTest(bool alt)
         {
             // Arrange
             await _resetAccountsTable();
 
             // Act
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             if (alt)
             {
-                await _dapperAccountRepository.CreateAccountAsync(_testEmail2, _testPassword);
-                await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(2, _testAlternativeEmail);
+                await _dapperAccountRepository.CreateAccountAsync(_testEmail2, _testPasswordHash);
+                await _dapperAccountRepository.UpdateAccountAltEmailAsync(2, _testAltEmail);
             }
             else{
-                await _dapperAccountRepository.CreateAccountAsync(_testAlternativeEmail, _testPassword);
+                await _dapperAccountRepository.CreateAccountAsync(_testAltEmail, _testPasswordHash);
             }
 
             SqlException sqlException = await Assert.
-              ThrowsAsync<SqlException>(async () => await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(account.AccountId, _testAlternativeEmail));
+              ThrowsAsync<SqlException>(async () => await _dapperAccountRepository.UpdateAccountAltEmailAsync(account.AccountId, _testAltEmail));
 
             // Assert
             Assert.Equal(51000, sqlException.Number);
             Assert.Equal("EmailInUse", sqlException.Message);
         }
 
-        public static IEnumerable<object[]> UpdateAccountAlternativeEmailData()
+        public static IEnumerable<object[]> UpdateAccountAltEmailData()
         {
             yield return new object[] { true };
             yield return new object[] { false };
         }
 
         [Fact]
-        public async Task UpdateAccountAlternativeEmail_ReturnsTrueIfSuccessfulTest()
+        public async Task UpdateAccountAltEmail_ReturnsTrueIfSuccessfulTest()
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
-            bool result = await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(account.AccountId, _testAlternativeEmail);
+            bool result = await _dapperAccountRepository.UpdateAccountAltEmailAsync(account.AccountId, _testAltEmail);
 
             // Assert
             account = await _dapperAccountRepository.GetAccountAsync(account.AccountId);
-            Assert.Equal(_testAlternativeEmail, account.AlternativeEmail);
+            Assert.Equal(_testAltEmail, account.AltEmail);
             Assert.True(result);
         }
 
         [Fact]
-        public async Task UpdateAccountAlternativeEmail_ReturnsFalseIfUnsuccessfulTest()
+        public async Task UpdateAccountAltEmail_ReturnsFalseIfUnsuccessfulTest()
         {
             // Arrange
             await _resetAccountsTable();
 
             // Act
-            bool result = await _dapperAccountRepository.UpdateAccountAlternativeEmailAsync(0, _testAlternativeEmail);
+            bool result = await _dapperAccountRepository.UpdateAccountAltEmailAsync(0, _testAltEmail);
 
             // Assert
             Assert.False(result);
@@ -942,8 +921,8 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
             await _resetAccountsTable();
 
             // Act
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
-            await _dapperAccountRepository.CreateAccountAsync(_testEmail2, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
+            await _dapperAccountRepository.CreateAccountAsync(_testEmail2, _testPasswordHash);
             await _dapperAccountRepository.UpdateAccountDisplayNameAsync(2, _testDisplayName);
 
             SqlException sqlException = await Assert.
@@ -959,14 +938,14 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             bool result = await _dapperAccountRepository.UpdateAccountDisplayNameAsync(account.AccountId, _testDisplayName);
 
             // Assert
             IAccount retrievedAccount = await _dapperAccountRepository.GetAccountAsync(account.AccountId);
-            Assert.Equal(null, account.DisplayName);
+            Assert.Null( account.DisplayName);
             Assert.Equal(_testDisplayName, retrievedAccount.DisplayName);
             Assert.True(result);
         }
@@ -985,30 +964,30 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         }
 
         [Fact]
-        public async Task UpdateAccountAlternativeEmailVerifiedAsync_UpdatesAlternativeEmailVerifiedAndReturnsTrueIfSuccessfulTest()
+        public async Task UpdateAccountAltEmailVerifiedAsync_UpdatesAltEmailVerifiedAndReturnsTrueIfSuccessfulTest()
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
-            bool result = await _dapperAccountRepository.UpdateAccountAlternativeEmailVerifiedAsync(account.AccountId, true);
+            bool result = await _dapperAccountRepository.UpdateAccountAltEmailVerifiedAsync(account.AccountId, true);
 
             // Assert
             IAccount retrievedAccount = await _dapperAccountRepository.GetAccountAsync(account.AccountId);
-            Assert.False(account.AlternativeEmailVerified);
-            Assert.True(retrievedAccount.AlternativeEmailVerified);
+            Assert.False(account.AltEmailVerified);
+            Assert.True(retrievedAccount.AltEmailVerified);
             Assert.True(result);
         }
 
         [Fact]
-        public async Task UpdateAccountAlternativeEmailVerifiedAsync_ReturnsFalseIfUnsuccessfulTest()
+        public async Task UpdateAccountAltEmailVerifiedAsync_ReturnsFalseIfUnsuccessfulTest()
         {
             // Arrange
             await _resetAccountsTable();
 
             // Act
-            bool result = await _dapperAccountRepository.UpdateAccountAlternativeEmailVerifiedAsync(0, true);
+            bool result = await _dapperAccountRepository.UpdateAccountAltEmailVerifiedAsync(0, true);
 
             // Assert
             Assert.False(result);
@@ -1019,7 +998,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         {
             // Arrange
             await _resetAccountsTable();
-            await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
 
             // Act
             bool result = await _dapperAccountRepository.CheckEmailInUseAsync(_testEmail1);
@@ -1046,7 +1025,7 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper.Tests.IntegrationTes
         {
             // Arrange
             await _resetAccountsTable();
-            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPassword);
+            IAccount account = await _dapperAccountRepository.CreateAccountAsync(_testEmail1, _testPasswordHash);
             await _dapperAccountRepository.UpdateAccountDisplayNameAsync(account.AccountId, _testDisplayName);
 
             // Act

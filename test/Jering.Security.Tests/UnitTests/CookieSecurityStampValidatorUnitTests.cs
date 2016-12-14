@@ -1,4 +1,4 @@
-﻿using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Accounts.DatabaseInterface;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -9,7 +9,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Jering.AccountManagement.Security.UnitTests.UnitTests
+namespace Jering.Security.UnitTests.UnitTests
 {
     public class CookieSecurityStampValidatorUnitTests
     {

@@ -168,7 +168,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
         }
 
         /// <summary>
-        /// Requires authentication.
+        /// Requires auth.
         /// </summary>
         [Authorize]
         public IActionResult Authorize()
