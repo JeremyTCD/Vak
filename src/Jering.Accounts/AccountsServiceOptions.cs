@@ -1,24 +1,25 @@
-﻿using System;
+﻿using Jering.Security;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Accounts
 {
     /// <summary>
-    /// Specifies options for <see cref="Jering.AccountManagement.Security"/>. 
+    /// Specifies options for <see cref="Jering.Accounts.AccountsService"/>. 
     /// </summary>
-    public class AccountSecurityOptions
+    public class AccountsServiceOptions
     {
         /// <summary>
         /// Gets or sets the <see cref="ClaimsOptions"/> for the security library.
         /// </summary>
-        public ClaimOptions ClaimsOptions { get; set; } = new ClaimOptions();
+        public ClaimsOptions ClaimsOptions { get; set; } = new ClaimsOptions();
 
         /// <summary>
         /// Gets or sets the <see cref="CookieOptions"/> for the security library. 
         /// </summary>
-        public CookieOptions CookieOptions { get; set; } = new CookieOptions();
+        public CookieAuthOptions CookieOptions { get; set; } = new CookieAuthOptions();
 
         /// <summary>
         /// Gets or sets the <see cref="TokenServiceOptions"/> for the security library. 

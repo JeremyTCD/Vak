@@ -1,13 +1,13 @@
-﻿using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Accounts.DatabaseInterface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Accounts
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityService{TAccount}.ConfirmEmailAsync(string)"/>.
+    /// Results for <see cref="IAccountsService{TAccount}.ConfirmEmailAsync(string)"/>.
     /// </summary>
     public class ConfirmEmailResult { 
         /// <summary>
@@ -22,19 +22,6 @@ namespace Jering.AccountManagement.Security
         /// 
         /// </summary>
         public bool ExpiredToken { get; set; }
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool NotLoggedIn { get; set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public static ConfirmEmailResult GetNotLoggedInResult()
-        {
-            return new ConfirmEmailResult() { NotLoggedIn = true };
-        }
 
         /// <summary>
         /// 

@@ -1,9 +1,9 @@
-﻿using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Accounts.DatabaseInterface;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Accounts
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityService{TAccount}.CreateAccountAsync"/>.
+    /// Results for <see cref="IAccountsService{TAccount}.CreateAccountAsync"/>.
     /// </summary>
     public class CreateAccountResult<TAccount> where TAccount : IAccount
     {

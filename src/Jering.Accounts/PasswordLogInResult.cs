@@ -1,13 +1,13 @@
-﻿using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Accounts.DatabaseInterface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Accounts
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityService{TAccount}.PasswordLogInAsync"/>.
+    /// Results for <see cref="IAccountsService{TAccount}.PasswordLogInAsync"/>.
     /// </summary>
     public class PasswordLogInResult<TAccount> where TAccount : IAccount
     {

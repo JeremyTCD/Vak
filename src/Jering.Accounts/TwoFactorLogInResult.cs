@@ -1,13 +1,13 @@
-﻿using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Accounts.DatabaseInterface;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Accounts
 {
     /// <summary>
-    /// Results for <see cref="IAccountSecurityService{TAccount}.TwoFactorLogInAsync"/>.
+    /// Results for <see cref="IAccountsService{TAccount}.TwoFactorLogInAsync"/>.
     /// </summary>
     public class TwoFactorLogInResult<TAccount> where TAccount : IAccount
     {
