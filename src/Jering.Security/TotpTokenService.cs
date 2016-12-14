@@ -1,4 +1,4 @@
-﻿using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Accounts.DatabaseInterface;
 using System;
 using System.Globalization;
 using System.Diagnostics;
@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Security
 {
     /// <summary>
     /// Provides Time-based One Time Password (Totp) services.

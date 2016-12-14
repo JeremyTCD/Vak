@@ -3,7 +3,7 @@
 
 using System.Security.Cryptography;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Security
 {
     /// <summary>
     /// Specifies options for password management.

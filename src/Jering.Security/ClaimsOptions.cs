@@ -4,12 +4,12 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Security
 {
     /// <summary>
     /// Specifies options for <see cref="Claim"/>s. 
     /// </summary>
-    public class ClaimOptions
+    public class ClaimsOptions
     {
         /// <summary>
         /// 

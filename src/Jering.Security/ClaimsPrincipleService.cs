@@ -1,22 +1,22 @@
 ﻿using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using Jering.AccountManagement.DatabaseInterface;
+using Jering.Accounts.DatabaseInterface;
 using System.Collections.Generic;
 using System.Linq;
 using System;
 using Microsoft.AspNetCore.Http.Authentication;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Security
 {
     /// <summary>
-    /// Provides methods to create a claims principal for a given account.
+    /// Abstraction for creating and updating <see cref="ClaimsPrincipal"/> instances.
     /// </summary>
-    public class ClaimsPrincipalService<TAccount> where TAccount : IAccount
+    public class ClaimsPrincipalService<TAccount> : IClaimsPrincipalService<TAccount> where TAccount : IAccount
     {
         private IAccountRepository<TAccount> _accountRepository { get; }
         private IRoleRepository _roleRepository { get; }
-        private AccountSecurityOptions _securityOptions { get; }
+        private ClaimsOptions _options { get; }
 
         /// <summary>
         /// 
@@ -24,20 +24,20 @@ namespace Jering.AccountManagement.Security
         /// <param name="accountRepository"></param>
         /// <param name="roleRepository"></param>
         /// <param name="securityOptionsAccessor"></param>
-        public ClaimsPrincipalService(IAccountRepository<TAccount> accountRepository, IRoleRepository roleRepository, IOptions<AccountSecurityOptions> securityOptionsAccessor)
+        public ClaimsPrincipalService(IAccountRepository<TAccount> accountRepository, IRoleRepository roleRepository, IOptions<ClaimsOptions> securityOptionsAccessor)
         {
             _accountRepository = accountRepository;
             _roleRepository = roleRepository;
-            _securityOptions = securityOptionsAccessor?.Value;
+            _options = securityOptionsAccessor?.Value;
         }
 
         /// <summary>
-        /// Creates a <see cref="ClaimsPrincipal"/> from <paramref name="account"/> and <paramref name="authenticationProperties"/>.
+        /// Creates a <see cref="ClaimsPrincipal"/> from <paramref name="account"/> and <paramref name="authProperties"/>.
         /// </summary>
         /// <param name="account"></param>
-        /// <param name="authenticationScheme"></param>
-        /// <param name="authenticationProperties"></param>
-        public virtual async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(TAccount account, string authenticationScheme, AuthenticationProperties authenticationProperties)
+        /// <param name="authScheme"></param>
+        /// <param name="authProperties"></param>
+        public virtual async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(TAccount account, string authScheme, AuthenticationProperties authProperties)
         {
             if(account == null)
             {
@@ -47,21 +47,21 @@ namespace Jering.AccountManagement.Security
             {
                 throw new ArgumentException(nameof(account.Email));
             }
-            if(authenticationScheme == null)
+            if(authScheme == null)
             {
-                throw new ArgumentNullException(nameof(authenticationScheme));
+                throw new ArgumentNullException(nameof(authScheme));
             }
           
 
             ClaimsIdentity claimsIdentity = new ClaimsIdentity(
-                authenticationScheme,
-                _securityOptions.ClaimsOptions.UsernameClaimType,
-                _securityOptions.ClaimsOptions.RoleClaimType);
+                authScheme,
+                _options.UsernameClaimType,
+                _options.RoleClaimType);
 
-            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.AccountIdClaimType, account.AccountId.ToString()));
-            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.UsernameClaimType, account.Email));
-            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.SecurityStampClaimType, account.SecurityStamp.ToString()));
-            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.IsPersistenClaimType, authenticationProperties.IsPersistent.ToString()));
+            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.AccountIdClaimType, account.AccountId.ToString()));
+            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.UsernameClaimType, account.Email));
+            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.SecurityStampClaimType, account.SecurityStamp.ToString()));
+            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.IsPersistenClaimType, authProperties.IsPersistent.ToString()));
 
             IEnumerable<Role> roles = await _accountRepository.GetAccountRolesAsync(account.AccountId);
             foreach (Role role in roles)
@@ -71,6 +71,26 @@ namespace Jering.AccountManagement.Security
             }
 
             claimsIdentity.AddClaims(ConvertDatabaseInterfaceClaims(await _accountRepository.GetAccountClaimsAsync(account.AccountId)));
+
+            return new ClaimsPrincipal(claimsIdentity);
+        }
+
+        /// <summary>
+        /// Creates a <see cref="ClaimsPrincipal"/> with an account id claim.
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="authScheme"></param>
+        /// <returns></returns>
+        public virtual ClaimsPrincipal CreateClaimsPrincipal(int accountId, string authScheme)
+        {
+            if (authScheme == null)
+            {
+                throw new ArgumentNullException(nameof(authScheme));
+            }
+
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity(authScheme);
+
+            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.AccountIdClaimType, accountId.ToString()));
 
             return new ClaimsPrincipal(claimsIdentity);
         }
@@ -99,9 +119,9 @@ namespace Jering.AccountManagement.Security
 
             ClaimsIdentity claimsIdentity = claimsPrincipal.Identity as ClaimsIdentity;
 
-            System.Security.Claims.Claim accountIdClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.AccountIdClaimType);
-            System.Security.Claims.Claim usernameClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.UsernameClaimType);
-            System.Security.Claims.Claim securityStampClaim = claimsIdentity.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType);
+            System.Security.Claims.Claim accountIdClaim = claimsIdentity.FindFirst(_options.AccountIdClaimType);
+            System.Security.Claims.Claim usernameClaim = claimsIdentity.FindFirst(_options.UsernameClaimType);
+            System.Security.Claims.Claim securityStampClaim = claimsIdentity.FindFirst(_options.SecurityStampClaimType);
 
             if (accountIdClaim == null || usernameClaim == null || securityStampClaim == null ||
                 account.AccountId.ToString() != accountIdClaim.Value)
@@ -112,41 +132,21 @@ namespace Jering.AccountManagement.Security
             if(usernameClaim.Value != account.Email)
             {
                 claimsIdentity.RemoveClaim(usernameClaim);
-                claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.UsernameClaimType, account.Email));
+                claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.UsernameClaimType, account.Email));
             }
 
             if (securityStampClaim.Value != account.SecurityStamp.ToString())
             {
                 claimsIdentity.RemoveClaim(securityStampClaim);
-                claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.SecurityStampClaimType, account.SecurityStamp.ToString()));
+                claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.SecurityStampClaimType, account.SecurityStamp.ToString()));
             }
         }
 
-        /// <summary>
-        /// Creates a <see cref="ClaimsPrincipal"/> with an account id claim.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="authenticationScheme"></param>
-        /// <returns></returns>
-        public virtual ClaimsPrincipal CreateClaimsPrincipal(int accountId, string authenticationScheme)
-        {
-            if(authenticationScheme == null)
-            {
-                throw new ArgumentNullException(nameof(authenticationScheme));
-            }
-
-            ClaimsIdentity claimsIdentity = new ClaimsIdentity(authenticationScheme);
-
-            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_securityOptions.ClaimsOptions.AccountIdClaimType, accountId.ToString()));
-
-            return new ClaimsPrincipal(claimsIdentity);
-        }
-
-        private IEnumerable<System.Security.Claims.Claim> ConvertDatabaseInterfaceClaims(IEnumerable<DatabaseInterface.Claim> databaseInterfaceClaims)
+        private IEnumerable<System.Security.Claims.Claim> ConvertDatabaseInterfaceClaims(IEnumerable<Jering.Accounts.DatabaseInterface.Claim> databaseInterfaceClaims)
         {
             List<System.Security.Claims.Claim> result = new List<System.Security.Claims.Claim>(databaseInterfaceClaims.Count());
 
-            foreach (DatabaseInterface.Claim databaseInterfaceClaim in databaseInterfaceClaims)
+            foreach (Jering.Accounts.DatabaseInterface.Claim databaseInterfaceClaim in databaseInterfaceClaims)
             {
                 result.Add(new System.Security.Claims.Claim(databaseInterfaceClaim.Type, databaseInterfaceClaim.Value));
             }

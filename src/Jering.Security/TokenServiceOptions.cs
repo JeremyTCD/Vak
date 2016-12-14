@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Security
 {
     /// <summary>
     /// Specifies options for token services"/>

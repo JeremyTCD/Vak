@@ -1,39 +1,40 @@
-﻿using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Accounts.DatabaseInterface;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Security
 {
     /// <summary>
     /// 
     /// </summary>
     public class CookieSecurityStampValidator<TAccount> : ICookieSecurityStampValidator where TAccount : IAccount
     {
-        private readonly AccountSecurityOptions _securityOptions;
+        private readonly ClaimsOptions _claimsOptions;
+        private readonly CookieAuthOptions _cookieOptions;
         private readonly IAccountRepository<TAccount> _accountRepository;
-        private readonly IAccountSecurityService<TAccount> _accountSecurityService;
-        private readonly ClaimsPrincipalService<TAccount> _claimsPrincipalService;
+        private readonly IClaimsPrincipalService<TAccount> _claimsPrincipalService;
 
         /// <summary>
         /// Constructs an instance of <see cref="CookieSecurityStampValidator{TAccount}"/> .
         /// </summary>
-        /// <param name="securityOptionsAccessor"></param>
+        /// <param name="claimsOptionsAccessor"></param>
         /// <param name="accountRepository"></param>
-        /// <param name="accountSecurityService"></param>
         /// <param name="claimsPrincipalService"></param>
-        public CookieSecurityStampValidator(IOptions<AccountSecurityOptions> securityOptionsAccessor,
+        /// <param name="cookieOptionsAccessor"></param>
+        public CookieSecurityStampValidator(IOptions<ClaimsOptions> claimsOptionsAccessor,
+                        IOptions<CookieAuthOptions> cookieOptionsAccessor,
                         IAccountRepository<TAccount> accountRepository,
-                        IAccountSecurityService<TAccount> accountSecurityService,
-                        ClaimsPrincipalService<TAccount> claimsPrincipalService)
+                        IClaimsPrincipalService<TAccount> claimsPrincipalService)
         {
             _accountRepository = accountRepository;
-            _securityOptions = securityOptionsAccessor.Value;
-            _accountSecurityService = accountSecurityService;
+            _claimsOptions = claimsOptionsAccessor.Value;
             _claimsPrincipalService = claimsPrincipalService;
+            _cookieOptions = cookieOptionsAccessor.Value;
         }
 
         /// <summary>
@@ -44,19 +45,30 @@ namespace Jering.AccountManagement.Security
         public virtual async Task ValidateAsync(CookieValidatePrincipalContext context)
         {
             if (context.Principal != null) {
-                TAccount account = await _accountSecurityService.GetLoggedInAccountAsync(context.Principal);
 
-                if (account == null || 
-                    account.SecurityStamp.ToString() != context.Principal.FindFirst(_securityOptions.ClaimsOptions.SecurityStampClaimType)?.Value) {
-                    context.RejectPrincipal();
-                    await _accountSecurityService.LogOffAsync();
+                if (context.Principal.Identity?.AuthenticationType == _cookieOptions.ApplicationCookieOptions.AuthenticationScheme)
+                {
+                    System.Security.Claims.Claim accountIdClaim = context.Principal.FindFirst(_claimsOptions.AccountIdClaimType);
+                    if (accountIdClaim != null)
+                    {
+                        TAccount account = await _accountRepository.GetAccountAsync(Convert.ToInt32(accountIdClaim.Value));
+
+                        if(account?.SecurityStamp.ToString() == context.Principal.FindFirst(_claimsOptions.SecurityStampClaimType)?.Value)
+                        {
+                            return;
+                        }
+                    }
                 }
+
+                context.RejectPrincipal();
+                await context.HttpContext.Authentication.SignOutAsync(_cookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+                await context.HttpContext.Authentication.SignOutAsync(_cookieOptions.TwoFactorCookieOptions.AuthenticationScheme);
             }
         }
     }
 
     /// <summary>
-    /// Static helper class used to configure a CookieAuthenticationNotifications to validate a cookie against a user's security
+    /// Static helper class used to configure a CookieAuthNotifications to validate a cookie against a user's security
     /// stamp.
     /// </summary>
     public static class CookieSecurityStampValidator
@@ -65,8 +77,8 @@ namespace Jering.AccountManagement.Security
         /// Validates a principal against a user's stored security stamp.
         /// the identity.
         /// </summary>
-        /// <param name="context">The context containing the <see cref="System.Security.Claims.ClaimsPrincipal"/>
-        /// and <see cref="Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties"/> to validate.</param>
+        /// <param name="context">The context containing the <see cref="ClaimsPrincipal"/>
+        /// and <see cref="AuthenticationProperties"/> to validate.</param>
         /// <returns>The <see cref="Task"/> that represents the asynchronous validation operation.</returns>
         public static Task ValidatePrincipalAsync(CookieValidatePrincipalContext context)
         {

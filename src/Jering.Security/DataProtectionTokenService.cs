@@ -1,4 +1,4 @@
-﻿using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Accounts.DatabaseInterface;
 using Jering.Utilities;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
@@ -9,14 +9,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Security
 {
     /// <summary>
     /// Provides data protection token services.
     /// </summary>
     public class DataProtectionTokenService<TAccount> : ITokenService<TAccount> where TAccount : IAccount
     {
-        private AccountSecurityOptions _securityOptions { get; }
+        private TokenServiceOptions _options { get; }
 
         private IDataProtector _dataProtector { get; }
 
@@ -26,13 +26,13 @@ namespace Jering.AccountManagement.Security
         /// Constructs an instance of <see cref="DataProtectionTokenService{TAccount}"/> 
         /// </summary>
         /// <param name="dataProtectionProvider"></param>
-        /// <param name="securityOptionsAccessor"></param>
+        /// <param name="optionsAccessor"></param>
         /// <param name="timeService"></param>
         public DataProtectionTokenService(IDataProtectionProvider dataProtectionProvider,
-            IOptions<AccountSecurityOptions> securityOptionsAccessor,
+            IOptions<TokenServiceOptions> optionsAccessor,
             ITimeService timeService)
         {
-            _securityOptions = securityOptionsAccessor.Value;
+            _options = optionsAccessor.Value;
             _dataProtector = dataProtectionProvider.CreateProtector(nameof(DataProtectionTokenService<TAccount>));
             _timeService = timeService;
         }
@@ -99,7 +99,7 @@ namespace Jering.AccountManagement.Security
                 using (BinaryReader binaryReader = memoryStream.CreateReader())
                 {
                     DateTimeOffset extractedCreationTime = binaryReader.ReadDateTimeOffset();
-                    DateTimeOffset expirationTime = extractedCreationTime + _securityOptions.TokenServiceOptions.DataProtectionTokenLifespan;
+                    DateTimeOffset expirationTime = extractedCreationTime + _options.DataProtectionTokenLifespan;
                     if (expirationTime < _timeService.UtcNow)
                     {
                         return ValidateTokenResult.GetExpiredResult();

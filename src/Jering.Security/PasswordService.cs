@@ -7,16 +7,16 @@ using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using Microsoft.Extensions.Options;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Security
 {
     /// <summary>
     /// Implements password management
     /// </summary>
     public class PasswordService : IPasswordService
     {
-        /* ======================
-         * HASHED PASSWORD FORMAT
-         * ======================
+        /* ====================
+         * PASSWORD HASH FORMAT
+         * ====================
          * 
          * PBKDF2 with HMAC-SHA256, 128-bit salt, 256-bit subkey, 10000 iterations.
          * Format: { 0x01, prf (UInt32), iter count (UInt32), salt length (UInt32), salt, subkey }
@@ -79,12 +79,14 @@ namespace Jering.AccountManagement.Security
         /// Determines whether <paramref name="providedPassword"/> matches the password used to 
         /// generate <paramref name="passwordHash"/>.
         /// </summary>
-        /// <param name="passwordHash">The hash value for a user's stored password.</param>
+        /// <param name="passwordHash">The hash value for a password.</param>
         /// <param name="providedPassword">The password supplied for comparison.</param>
-        /// <returns>True if <paramref name="providedPassword"/> is matches password used to 
-        /// generate <paramref name="passwordHash"/>, false otherwise.</returns>
+        /// <returns>
+        /// True if <paramref name="providedPassword"/> matches password used to 
+        /// generate <paramref name="passwordHash"/>, false otherwise.
+        /// </returns>
         /// <remarks>Implementations of this method should be time consistent.</remarks>
-        public virtual bool VerifyPassword(string passwordHash, string providedPassword)
+        public virtual bool ValidatePassword(string passwordHash, string providedPassword)
         {
             if (passwordHash == null)
             {

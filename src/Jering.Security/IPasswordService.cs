@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Security
 {
     /// <summary>
     /// Provides an abstraction for managing passwords.
@@ -17,13 +17,15 @@ namespace Jering.AccountManagement.Security
 
         /// <summary>
         /// Determines whether <paramref name="providedPassword"/> matches the password used to 
-        /// generate <paramref name="hashedPassword"/>.
+        /// generate <paramref name="passwordHash"/>.
         /// </summary>
-        /// <param name="hashedPassword">The hash value for a user's stored password.</param>
+        /// <param name="passwordHash">The hash value for a password.</param>
         /// <param name="providedPassword">The password supplied for comparison.</param>
-        /// <returns>True if <paramref name="providedPassword"/> is matches password used to 
-        /// generate <paramref name="hashedPassword"/>, false otherwise.</returns>
+        /// <returns>
+        /// True if <paramref name="providedPassword"/> matches password used to 
+        /// generate <paramref name="passwordHash"/>, false otherwise.
+        /// </returns>
         /// <remarks>Implementations of this method should be time consistent.</remarks>
-        bool VerifyPassword(string hashedPassword, string providedPassword);
+        bool ValidatePassword(string passwordHash, string providedPassword);
     }
 }

@@ -3,12 +3,12 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using System;
 
-namespace Jering.AccountManagement.Security
+namespace Jering.Security
 {
     /// <summary>
-    /// Specifies options for cookie authentication. 
+    /// Specifies options for cookie auth. 
     /// </summary>
-    public class CookieOptions
+    public class CookieAuthOptions
     {
         private static readonly string CookiePrefix = "Jering";
         private static readonly string DefaultApplicationScheme = CookiePrefix + ".Application";

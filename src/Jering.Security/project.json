@@ -5,13 +5,12 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Jering.AccountManagement.DatabaseInterface": "1.0.0",
     "System.Text.Encoding.Extensions": "4.0.11",
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
     "Microsoft.Extensions.Options": "1.0.0",
-    "Jering.Mail": "1.0.0",
-    "Jering.Utilities": "1.0.0",
-    "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.0.0"
+    "Microsoft.AspNetCore.Cryptography.KeyDerivation": "1.0.0",
+    "Jering.Accounts.DatabaseInterface": "1.0.0",
+    "Jering.Utilities": "1.0.0"
   },
   "frameworks": {
     "netcoreapp1.0": {}
