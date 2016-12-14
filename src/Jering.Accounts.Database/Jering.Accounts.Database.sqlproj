@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <Name>Jering.AccountManagement.Database</Name>
+    <Name>Jering.Accounts.Database</Name>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectVersion>4.1</ProjectVersion>
     <ProjectGuid>{e767c181-28a6-40db-8c8c-32893dfeceec}</ProjectGuid>
@@ -23,7 +23,7 @@
     <SqlServerVerification>False</SqlServerVerification>
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <TargetDatabaseSet>True</TargetDatabaseSet>
-    <TargetDatabase>Jering.AccountManagement.Database</TargetDatabase>
+    <TargetDatabase>Jering.Accounts.Database</TargetDatabase>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -94,10 +94,10 @@
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountPasswordHash.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountTwoFactorEnabled.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountEmail.sql" />
-    <Build Include="Website\Stored Procedures\Accounts\UpdateAccountAlternativeEmail.sql" />
+    <Build Include="Website\Stored Procedures\Accounts\UpdateAccountAltEmail.sql" />
     <Build Include="Website\Stored Procedures\Accounts\UpdateAccountDisplayName.sql" />
-    <Build Include="Website\Stored Procedures\Accounts\GetAccountByEmailOrAlternativeEmail.sql" />
-    <Build Include="Website\Stored Procedures\Accounts\UpdateAccountAlternativeEmailVerified.sql" />
+    <Build Include="Website\Stored Procedures\Accounts\GetAccountByEmailOrAltEmail.sql" />
+    <Build Include="Website\Stored Procedures\Accounts\UpdateAccountAltEmailVerified.sql" />
     <Build Include="Website\Stored Procedures\Accounts\CheckEmailInUse.sql" />
     <Build Include="Website\Stored Procedures\Accounts\CheckDisplayNameInUse.sql" />
   </ItemGroup>

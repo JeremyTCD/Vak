@@ -1,6 +1,6 @@
-﻿CREATE PROCEDURE [Website].[UpdateAccountAlternativeEmail]
+﻿CREATE PROCEDURE [Website].[UpdateAccountAltEmail]
 	@AccountId INT,
-	@AlternativeEmail NVARCHAR(256)
+	@AltEmail NVARCHAR(256)
 AS
 BEGIN	
 	SET NOCOUNT ON;
@@ -9,15 +9,15 @@ BEGIN
 	BEGIN TRY
 		BEGIN TRANSACTION
 			
-			IF EXISTS(SELECT * FROM [dbo].[Accounts] WHERE [Email] = @AlternativeEmail)
+			IF EXISTS(SELECT * FROM [dbo].[Accounts] WHERE [Email] = @AltEmail)
 				THROW 51000, 'EmailInUse', 1;
 
 			--Need to ensure that isolation level prevents email from being written to an alt email 
 			--between these statements
 
 			UPDATE [dbo].[Accounts]
-			SET [AlternativeEmail] = @AlternativeEmail,
-				[AlternativeEmailVerified] = 0
+			SET [AltEmail] = @AltEmail,
+				[AltEmailVerified] = 0
 			WHERE AccountId = @AccountId;
 
 			SELECT @@ROWCOUNT;

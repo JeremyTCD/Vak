@@ -9,7 +9,7 @@ BEGIN
 	BEGIN TRY
 		BEGIN TRANSACTION
 			
-			IF EXISTS(SELECT * FROM [dbo].[Accounts] WHERE [AlternativeEmail] = @Email)
+			IF EXISTS(SELECT * FROM [dbo].[Accounts] WHERE [AltEmail] = @Email)
 				THROW 51000, 'EmailInUse', 1;
 
 			--Need to ensure that isolation level prevents email from being written to an alt email 

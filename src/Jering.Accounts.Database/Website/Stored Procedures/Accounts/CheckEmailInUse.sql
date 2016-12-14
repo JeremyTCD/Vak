@@ -6,7 +6,7 @@ BEGIN
 	SET XACT_ABORT ON;
 
 	SELECT
-	   CASE WHEN EXISTS(SELECT * FROM [Accounts] WHERE [Email] = @Email OR [AlternativeEmail] = @Email)
+	   CASE WHEN EXISTS(SELECT * FROM [Accounts] WHERE [Email] = @Email OR [AltEmail] = @Email)
 	   THEN 1 
 	   ELSE 0 
 	   END 
