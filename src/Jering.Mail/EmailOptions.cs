@@ -32,7 +32,7 @@ namespace Jering.Mail
         /// </summary>
         public string DevelopmentFile { get; set; } = $"{Path.GetTempPath()}SmtpTest.txt";
 
-        // Authentication details should be stored somewhere safe
+        // Auth details should be stored somewhere safe
         /// <summary>
         /// Smtp server credentials.
         /// </summary>

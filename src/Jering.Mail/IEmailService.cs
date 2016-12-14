@@ -23,6 +23,5 @@ namespace Jering.Mail
         /// <param name="subject"></param>
         /// <returns></returns>
         MimeMessage CreateMimeMessage(string emailAddress, string subject, string message);
-
     }
 }

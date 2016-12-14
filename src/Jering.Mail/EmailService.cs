@@ -59,10 +59,10 @@ namespace Jering.Mail
             await _smtpClient.ConnectAsync(_emailOptions.Host, _emailOptions.Port, false);
 
             // Note: since we don't have an OAuth2 token, disable
-            // the XOAUTH2 authentication mechanism.
+            // the XOAUTH2 auth mechanism.
             _smtpClient.AuthenticationMechanisms.Remove("XOAUTH2");
 
-            // Note: only needed if the SMTP server requires authentication
+            // Note: only needed if the SMTP server requires auth
             await _smtpClient.AuthenticateAsync(_emailOptions.Username, _emailOptions.Password);
 
             await _smtpClient.SendAsync(mimeMessage);
