@@ -2,6 +2,7 @@
   "projects": [
     "src",
     "test",
-    "C:\\Users\\Jeremy\\Desktop\\LibrariesAndTools\\Dapper\\dapper-dot-net"
+    "C:\\Users\\Jeremy\\Desktop\\LibrariesAndTools\\Dapper\\dapper-dot-net",
+    "C:\\Users\\Jeremy\\Desktop\\LibrariesAndTools\\AspNetCore.AntiForgery\\Antiforgery\\src"
   ]
 }
