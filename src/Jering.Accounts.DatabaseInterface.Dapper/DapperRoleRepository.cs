@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.DatabaseInterface.Dapper
+namespace Jering.Accounts.DatabaseInterface.Dapper
 {
     /// <summary>
     /// 

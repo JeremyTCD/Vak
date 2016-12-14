@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System;
 
-namespace Jering.AccountManagement.DatabaseInterface.Dapper
+namespace Jering.Accounts.DatabaseInterface.Dapper
 {
     /// <summary>
     /// Provides an interface for performing CRUD operations on account representations in a database. 
@@ -36,17 +36,17 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         }
 
         /// <summary>
-        /// Creates an account with specified <paramref name="email"/> and <paramref name="password"/>.
+        /// Creates an account with specified <paramref name="email"/> and <paramref name="passwordHash"/>.
         /// </summary>
         /// <param name="email"></param>
-        /// <param name="password"></param>
+        /// <param name="passwordHash"></param>
         /// <returns>Newly created account.</returns>
-        public virtual async Task<TAccount> CreateAccountAsync(string email, string password)
+        public virtual async Task<TAccount> CreateAccountAsync(string email, string passwordHash)
         {
             return (await _sqlConnection.QueryAsync<TAccount>(@"[Website].[CreateAccount]",
                 new
                 {
-                    Password = password,
+                    PasswordHash = passwordHash,
                     Email = email
                 },
                 commandType: CommandType.StoredProcedure)).FirstOrDefault();
@@ -84,24 +84,6 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         }
 
         /// <summary>
-        /// Gets account with specified <paramref name="email"/> and <paramref name="password"/>. 
-        /// </summary>
-        /// <param name="email"></param>
-        /// <param name="password"></param>
-        /// <returns>account with specified <paramref name="email"/> and <paramref name="password"/> if it exists, 
-        /// null otherwise.</returns>
-        public virtual async Task<TAccount> GetAccountByEmailAndPasswordAsync(string email, string password)
-        {
-            return (await _sqlConnection.QueryAsync<TAccount>(@"[Website].[GetAccountByEmailAndPassword]",
-                new
-                {
-                    Email = email,
-                    Password = password
-                },
-                commandType: CommandType.StoredProcedure)).FirstOrDefault();
-        }
-
-        /// <summary>
         /// Gets account with specified <paramref name="email"/>. 
         /// </summary>
         /// <param name="email"></param>
@@ -123,9 +105,9 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         /// <param name="email"></param>
         /// <returns>account with specified <paramref name="email"/> if it exists, 
         /// null otherwise.</returns>
-        public virtual async Task<TAccount> GetAccountByEmailOrAlternativeEmailAsync(string email)
+        public virtual async Task<TAccount> GetAccountByEmailOrAltEmailAsync(string email)
         {
-            return (await _sqlConnection.QueryAsync<TAccount>(@"[Website].[GetAccountByEmailOrAlternativeEmail]",
+            return (await _sqlConnection.QueryAsync<TAccount>(@"[Website].[GetAccountByEmailOrAltEmail]",
                 new
                 {
                     Email = email
@@ -295,18 +277,18 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
 
         /// <summary>
         /// Sets PasswordHash of account with specified <paramref name="accountId"/> to 
-        /// hash generated from <paramref name="password"/>. 
+        /// <paramref name="passwordHash"/>. 
         /// </summary>
         /// <param name="accountId"></param>
-        /// <param name="password"></param>
+        /// <param name="passwordHash"></param>
         /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountPasswordHashAsync(int accountId, string password)
+        public virtual async Task<bool> UpdateAccountPasswordHashAsync(int accountId, string passwordHash)
         {
             return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountPasswordHash]",
                 new
                 {
                     AccountId = accountId,
-                    Password = password
+                    PasswordHash = passwordHash
                 },
                 commandType: CommandType.StoredProcedure) > 0;
         }
@@ -330,19 +312,19 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         }
 
         /// <summary>
-        /// Sets AlternativeEmail of account with specified <paramref name="accountId"/> to 
-        /// <paramref name="alternativeEmail"/>. 
+        /// Sets AltEmail of account with specified <paramref name="accountId"/> to 
+        /// <paramref name="altEmail"/>. 
         /// </summary>
         /// <param name="accountId"></param>
-        /// <param name="alternativeEmail"></param>
+        /// <param name="altEmail"></param>
         /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail)
+        public virtual async Task<bool> UpdateAccountAltEmailAsync(int accountId, string altEmail)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountAlternativeEmail]",
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountAltEmail]",
                 new
                 {
                     AccountId = accountId,
-                    AlternativeEmail = alternativeEmail
+                    AltEmail = altEmail
                 },
                 commandType: CommandType.StoredProcedure) > 0;
         }
@@ -366,18 +348,18 @@ namespace Jering.AccountManagement.DatabaseInterface.Dapper
         }
 
         /// <summary>
-        /// Sets AlternativeEmailVerified of account with specified <paramref name="accountId"/> to <paramref name="alternativeEmailVerified"/>. 
+        /// Sets AltEmailVerified of account with specified <paramref name="accountId"/> to <paramref name="altEmailVerified"/>. 
         /// </summary>
         /// <param name="accountId"></param>
-        /// <param name="alternativeEmailVerified"></param>
+        /// <param name="altEmailVerified"></param>
         /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountAlternativeEmailVerifiedAsync(int accountId, bool alternativeEmailVerified)
+        public virtual async Task<bool> UpdateAccountAltEmailVerifiedAsync(int accountId, bool altEmailVerified)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountAlternativeEmailVerified]",
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountAltEmailVerified]",
                 new
                 {
                     AccountId = accountId,
-                    AlternativeEmailVerified = alternativeEmailVerified
+                    AltEmailVerified = altEmailVerified
                 },
                 commandType: CommandType.StoredProcedure) > 0;
         }

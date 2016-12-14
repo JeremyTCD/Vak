@@ -7,7 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.DatabaseInterface.Dapper
+namespace Jering.Accounts.DatabaseInterface.Dapper
 {
     /// <summary>
     /// 
