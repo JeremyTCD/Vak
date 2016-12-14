@@ -89,9 +89,9 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Alternative email address.
         /// </summary>
-        public static string DisplayName_AlternativeEmail {
+        public static string DisplayName_AltEmail {
             get {
-                return ResourceManager.GetString("DisplayName_AlternativeEmail", resourceCulture);
+                return ResourceManager.GetString("DisplayName_AltEmail", resourceCulture);
             }
         }
         
@@ -143,9 +143,9 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         /// <summary>
         ///    Looks up a localized string similar to New alternative email address.
         /// </summary>
-        public static string DisplayName_NewAlternativeEmail {
+        public static string DisplayName_NewAltEmail {
             get {
-                return ResourceManager.GetString("DisplayName_NewAlternativeEmail", resourceCulture);
+                return ResourceManager.GetString("DisplayName_NewAltEmail", resourceCulture);
             }
         }
         
@@ -195,7 +195,7 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Two factor authentication.
+        ///    Looks up a localized string similar to Two factor auth.
         /// </summary>
         public static string DisplayName_TwoFactor {
             get {
@@ -359,9 +359,9 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         /// <summary>
         ///    Looks up a localized string similar to New alternative email required.
         /// </summary>
-        public static string ErrorMessage_NewAlternativeEmail_Required {
+        public static string ErrorMessage_NewAltEmail_Required {
             get {
-                return ResourceManager.GetString("ErrorMessage_NewAlternativeEmail_Required", resourceCulture);
+                return ResourceManager.GetString("ErrorMessage_NewAltEmail_Required", resourceCulture);
             }
         }
         
@@ -411,7 +411,7 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to New password cannot bt the same as current password..
+        ///    Looks up a localized string similar to New password cannot be the same as current password..
         /// </summary>
         public static string ErrorMessage_NewPassword_MustDiffer {
             get {
@@ -483,11 +483,11 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Invalid or expired code..
+        ///    Looks up a localized string similar to Invalid code..
         /// </summary>
-        public static string ErrorMessage_TwoFactorCode_InvalidOrExpired {
+        public static string ErrorMessage_TwoFactorCode_Invalid {
             get {
-                return ResourceManager.GetString("ErrorMessage_TwoFactorCode_InvalidOrExpired", resourceCulture);
+                return ResourceManager.GetString("ErrorMessage_TwoFactorCode_Invalid", resourceCulture);
             }
         }
         
@@ -521,18 +521,18 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         /// <summary>
         ///    Looks up a localized string similar to Alternative email verification confirmation.
         /// </summary>
-        public static string ViewTitle_AlternativeEmailVerificationConfirmation {
+        public static string ViewTitle_AltEmailVerificationConfirmation {
             get {
-                return ResourceManager.GetString("ViewTitle_AlternativeEmailVerificationConfirmation", resourceCulture);
+                return ResourceManager.GetString("ViewTitle_AltEmailVerificationConfirmation", resourceCulture);
             }
         }
         
         /// <summary>
         ///    Looks up a localized string similar to Change alternative email.
         /// </summary>
-        public static string ViewTitle_ChangeAlternativeEmail {
+        public static string ViewTitle_ChangeAltEmail {
             get {
-                return ResourceManager.GetString("ViewTitle_ChangeAlternativeEmail", resourceCulture);
+                return ResourceManager.GetString("ViewTitle_ChangeAltEmail", resourceCulture);
             }
         }
         
@@ -654,7 +654,7 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
-        ///    Looks up a localized string similar to Test two factor authentication.
+        ///    Looks up a localized string similar to Test two factor auth.
         /// </summary>
         public static string ViewTitle_TestTwoFactor {
             get {

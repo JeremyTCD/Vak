@@ -10,8 +10,8 @@ namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
         public bool TwoFactorEnabled { get; set; }
         public string Email { get; set; }
         public bool EmailVerified { get; set; }
-        public string AlternativeEmail { get; set; }
-        public bool AlternativeEmailVerified { get; set; }
+        public string AltEmail { get; set; }
+        public bool AltEmailVerified { get; set; }
         public SerializableError ModelState { get; set; }
         public bool ExpectedError { get; set; }
 

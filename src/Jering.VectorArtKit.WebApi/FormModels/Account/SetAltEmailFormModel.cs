@@ -11,20 +11,18 @@ using System.Threading.Tasks;
 namespace Jering.VectorArtKit.WebApi.FormModels
 {
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_Submit), typeof(Strings))]
-    public class ChangeDisplayNameFormModel
+    public class SetAltEmailFormModel
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_Password_Required), typeof(Strings))]
         [DynamicControl("input", nameof(Strings.DisplayName_Password), typeof(Strings), 0)]
         [DynamicControlProperty("type", "password")]
         public string Password { get; set; }
 
-        [ValidateRequired(nameof(Strings.ErrorMessage_NewDisplayName_Required), typeof(Strings))]
-        [AsyncValidate(nameof(Strings.ErrorMessage_DisplayName_InUse),
-            typeof(Strings),
-            nameof(DynamicFormsController),
-            nameof(DynamicFormsController.ValidateDisplayNameNotInUse))]
-        [DynamicControl("input", nameof(Strings.DisplayName_NewDisplayName), typeof(Strings), 1)]
-        [DynamicControlProperty("type", "text")]
-        public string NewDisplayName { get; set; }
+        [ValidateRequired(nameof(Strings.ErrorMessage_NewAltEmail_Required), typeof(Strings))]
+        [ValidateEmailAddress(nameof(Strings.ErrorMessage_Email_Invalid), typeof(Strings))]
+        [AsyncValidate(nameof(Strings.ErrorMessage_Email_InUse), typeof(Strings), nameof(DynamicFormController), nameof(DynamicFormController.ValidateEmailNotInUse))]
+        [DynamicControl("input", nameof(Strings.DisplayName_NewAltEmail), typeof(Strings), 1)]
+        [DynamicControlProperty("type", "email")]
+        public string NewAltEmail { get; set; }
     }
 }

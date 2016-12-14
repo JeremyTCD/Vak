@@ -1,4 +1,4 @@
-﻿using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Accounts.DatabaseInterface;
 
 namespace Jering.VectorArtKit.WebApi.BusinessModels
 {

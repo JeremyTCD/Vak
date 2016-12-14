@@ -147,7 +147,7 @@
   <data name="ViewTitle_ChangePassword" xml:space="preserve">
     <value>Change password</value>
   </data>
-  <data name="ViewTitle_ChangeAlternativeEmail" xml:space="preserve">
+  <data name="ViewTitle_ChangeAltEmail" xml:space="preserve">
     <value>Change alternative email</value>
   </data>
   <data name="ViewTitle_ChangeDisplayName" xml:space="preserve">
@@ -157,7 +157,7 @@
     <value>Change email</value>
   </data>
   <data name="ViewTitle_TestTwoFactor" xml:space="preserve">
-    <value>Test two factor authentication</value>
+    <value>Test two factor auth</value>
   </data>
   <data name="ViewTitle_SendEmailVerificationEmailConfirmation" xml:space="preserve">
     <value>Send email verification email confirmation</value>
@@ -165,7 +165,7 @@
   <data name="ViewTitle_EmailVerificationConfirmation" xml:space="preserve">
     <value>Email verification confirmation</value>
   </data>
-  <data name="ViewTitle_AlternativeEmailVerificationConfirmation" xml:space="preserve">
+  <data name="ViewTitle_AltEmailVerificationConfirmation" xml:space="preserve">
     <value>Alternative email verification confirmation</value>
   </data>
   <data name="Email_Subject_EmailVerification" xml:space="preserve">
@@ -204,8 +204,8 @@
   <data name="ErrorMessage_DisplayName_InUse" xml:space="preserve">
     <value>Display name already in use by another account.</value>
   </data>
-  <data name="ErrorMessage_TwoFactorCode_InvalidOrExpired" xml:space="preserve">
-    <value>Invalid or expired code.</value>
+  <data name="ErrorMessage_TwoFactorCode_Invalid" xml:space="preserve">
+    <value>Invalid code.</value>
   </data>
   <data name="Email_Message_EmailVerification" xml:space="preserve">
     <value>Please confirm your email by clicking this link: &lt;a href="{0}verify-email;token={1};accountid={2}"&gt;link&lt;/a&gt;</value>
@@ -235,12 +235,12 @@
     <value>Email address</value>
   </data>
   <data name="DisplayName_TwoFactor" xml:space="preserve">
-    <value>Two factor authentication</value>
+    <value>Two factor auth</value>
   </data>
   <data name="DisplayName_DisplayName" xml:space="preserve">
     <value>Display name</value>
   </data>
-  <data name="DisplayName_AlternativeEmail" xml:space="preserve">
+  <data name="DisplayName_AltEmail" xml:space="preserve">
     <value>Alternative email address</value>
   </data>
   <data name="ErrorMessage_Password_RequiresLowerCase" xml:space="preserve">
@@ -253,7 +253,7 @@
     <value>Password must be at least 8 characters long.</value>
   </data>
   <data name="ErrorMessage_NewPassword_MustDiffer" xml:space="preserve">
-    <value>New password cannot bt the same as current password.</value>
+    <value>New password cannot be the same as current password.</value>
   </data>
   <data name="ErrorMessage_Password_TooSimple" xml:space="preserve">
     <value>Password too simple.</value>
@@ -297,7 +297,7 @@
   <data name="DisplayName_CurrentPassword" xml:space="preserve">
     <value>Current password</value>
   </data>
-  <data name="DisplayName_NewAlternativeEmail" xml:space="preserve">
+  <data name="DisplayName_NewAltEmail" xml:space="preserve">
     <value>New alternative email address</value>
   </data>
   <data name="DisplayName_NewEmail" xml:space="preserve">
@@ -315,7 +315,7 @@
   <data name="ErrorMessage_NewEmail_Required" xml:space="preserve">
     <value>New email required</value>
   </data>
-  <data name="ErrorMessage_NewAlternativeEmail_Required" xml:space="preserve">
+  <data name="ErrorMessage_NewAltEmail_Required" xml:space="preserve">
     <value>New alternative email required</value>
   </data>
   <data name="DisplayName_ConfirmNewPassword" xml:space="preserve">

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace Jering.VectorArtKit.WebApi.FormModels
 {
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_Submit), typeof(Strings))]
-    public class ChangeEmailFormModel
+    public class SetEmailFormModel
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_Password_Required), typeof(Strings))]
         [DynamicControl("input", nameof(Strings.DisplayName_Password), typeof(Strings), 0)]
@@ -20,7 +20,7 @@ namespace Jering.VectorArtKit.WebApi.FormModels
 
         [ValidateRequired(nameof(Strings.ErrorMessage_NewEmail_Required), typeof(Strings))]
         [ValidateEmailAddress(nameof(Strings.ErrorMessage_Email_Invalid), typeof(Strings))]
-        [AsyncValidate(nameof(Strings.ErrorMessage_Email_InUse), typeof(Strings), nameof(DynamicFormsController), nameof(DynamicFormsController.ValidateEmailNotInUse))]
+        [AsyncValidate(nameof(Strings.ErrorMessage_Email_InUse), typeof(Strings), nameof(DynamicFormController), nameof(DynamicFormController.ValidateEmailNotInUse))]
         [DynamicControl("input", nameof(Strings.DisplayName_NewEmail), typeof(Strings), 1)]
         [DynamicControlProperty("type", "email")]
         public string NewEmail { get; set; }

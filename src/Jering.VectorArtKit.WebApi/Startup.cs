@@ -1,6 +1,4 @@
-﻿using Jering.AccountManagement.Extensions;
-using Jering.AccountManagement.Security;
-using Jering.DynamicForms;
+﻿using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.Options;
 using Jering.VectorArtKit.WebApi.Resources;
@@ -17,9 +15,11 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
+using Jering.Accounts;
+using Jering.Accounts.DatabaseInterface.Dapper;
+using Jering.Mail;
 
 namespace Jering.VectorArtKit.WebApi
 {
@@ -28,7 +28,7 @@ namespace Jering.VectorArtKit.WebApi
         private IConfigurationRoot _configurationRoot { get; }
         private IHostingEnvironment _hostingEnvironment { get; }
         // Matches default resolver settings used by MVC
-        private JsonSerializerSettings _jsonSerializationSettings { get; } = 
+        private JsonSerializerSettings _jsonSerializationSettings { get; } =
             new JsonSerializerSettings() { ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy() } };
 
         public Startup(IHostingEnvironment env)
@@ -52,8 +52,10 @@ namespace Jering.VectorArtKit.WebApi
                 options.HeaderName = "X-XSRF-TOKEN";
             });
 
-            services.AddAccountManagementSecurity<VakAccount>(_configurationRoot).
+            services.AddAccounts<VakAccount>(_configurationRoot).
                 AddAccountRepository<VakAccountRepository>().
+                AddRoleRepository<DapperRoleRepository>().
+                AddClaimRepository<DapperClaimRepository>().
                 AddDefaultTokenServices();
 
             services.AddDynamicForms();
@@ -89,18 +91,18 @@ namespace Jering.VectorArtKit.WebApi
 
             //Sets body to a general error message for all unexpected error responses with no bodies and status code >= 400 or < 600.
             app.UseStatusCodePages(new StatusCodePagesOptions()
-           {
-               HandleAsync = (StatusCodeContext context) =>
-               {
-                   context.HttpContext.Response.ContentType = "application/json";
-                   ErrorResponseModel responseModel = new ErrorResponseModel()
-                   {
-                       ExpectedError = false,
-                       ErrorMessage = Strings.ErrorMessage_UnexpectedError
-                   };
-                   return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(responseModel, _jsonSerializationSettings));
-               }
-           });
+            {
+                HandleAsync = (StatusCodeContext context) =>
+                {
+                    context.HttpContext.Response.ContentType = "application/json";
+                    ErrorResponseModel responseModel = new ErrorResponseModel()
+                    {
+                        ExpectedError = false,
+                        ErrorMessage = Strings.ErrorMessage_UnexpectedError
+                    };
+                    return context.HttpContext.Response.WriteAsync(JsonConvert.SerializeObject(responseModel, _jsonSerializationSettings));
+                }
+            });
 
             if (env.IsDevelopment())
             {
@@ -147,8 +149,8 @@ namespace Jering.VectorArtKit.WebApi
                 // app.UseCors(builder => builder.AllowAnyOrigin());
             }
 
-            AccountSecurityOptions securityOptions = app.ApplicationServices.GetRequiredService<IOptions<AccountSecurityOptions>>().Value;
-            // CookieAuthenticationMiddleware for TwoFactorCookie must be registered first. Otherwise if ApplicationCookie's middleware runs
+            AccountsServiceOptions securityOptions = app.ApplicationServices.GetRequiredService<IOptions<AccountsServiceOptions>>().Value;
+            // CookieAuthMiddleware for TwoFactorCookie must be registered first. Otherwise if ApplicationCookie's middleware runs
             // first and SecurityStamp is invalid, the middleware will call AccountSecurityService.SignOutAsync before a handler is created
             // for TwoFactorCookies.
             app.UseCookieAuthentication(securityOptions.CookieOptions.TwoFactorCookieOptions);

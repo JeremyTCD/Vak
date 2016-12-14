@@ -10,13 +10,14 @@ using System.Threading.Tasks;
 namespace Jering.VectorArtKit.WebApi.FormModels
 {
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_Submit), typeof(Strings))]
-    public class ChangePasswordFormModel
+    public class SetPasswordFormModel
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_Password_Required), typeof(Strings))]
         [DynamicControl("input", nameof(Strings.DisplayName_CurrentPassword), typeof(Strings), 0)]
         [DynamicControlProperty("type", "password")]
         public string CurrentPassword { get; set; }
 
+        [ValidateDiffers(nameof(CurrentPassword), nameof(Strings.ErrorMessage_NewPassword_MustDiffer), typeof(Strings))]
         [ValidateRequired(nameof(Strings.ErrorMessage_NewPassword_Required), typeof(Strings))]
         [ValidateComplexity(nameof(Strings.ErrorMessage_Password_TooSimple), typeof(Strings))]
         [DynamicControl("input", nameof(Strings.DisplayName_NewPassword), typeof(Strings), 1)]

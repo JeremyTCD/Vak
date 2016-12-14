@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
 {
-    public class ChangePasswordResponseModel: IErrorResponseModel
+    public class SetPasswordResponseModel: IErrorResponseModel
     {
         public SerializableError ModelState { get; set; }
 

@@ -5,8 +5,8 @@ using Dapper;
 using System.Collections.Generic;
 using System.Linq;
 using System;
-using Jering.AccountManagement.DatabaseInterface;
-using Jering.AccountManagement.DatabaseInterface.Dapper;
+using Jering.Accounts.DatabaseInterface;
+using Jering.Accounts.DatabaseInterface.Dapper;
 
 namespace Jering.VectorArtKit.WebApi.BusinessModels
 {

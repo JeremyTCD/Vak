@@ -8,7 +8,8 @@ namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
     {
         public string Username { get; set; }
         public bool IsPersistent { get; set; }
-        public bool TokenExpired { get; set; }
+        public bool ExpiredToken { get; set; }
+        public bool ExpiredCredentials { get; set; }
         public SerializableError ModelState { get; set; }
 
         public bool ExpectedError { get; set; }

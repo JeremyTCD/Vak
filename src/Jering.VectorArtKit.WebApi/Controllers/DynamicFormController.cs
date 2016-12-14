@@ -1,8 +1,9 @@
-﻿using Jering.AccountManagement.DatabaseInterface;
+﻿using Jering.Accounts.DatabaseInterface;
 using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.BusinessModels;
-using Jering.VectorArtKit.WebApi.Filters;
+using Jering.VectorArtKit.WebApi.Extensions;
 using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForms;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -11,13 +12,17 @@ using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApi.Controllers
 {
-    public class DynamicFormsController : Controller
+    public class DynamicFormController : Controller
     {
         private IDynamicFormsBuilder _dynamicFormsBuilder {get;set;}
         private IAccountRepository<VakAccount> _vakAccountRepository;
-        public DynamicFormsController(IAccountRepository<VakAccount> vakAccountRepository, 
-            IDynamicFormsBuilder dynamicFormsBuilder)
+        private IAntiforgery _antiforgery;
+
+        public DynamicFormController(IAccountRepository<VakAccount> vakAccountRepository, 
+            IDynamicFormsBuilder dynamicFormsBuilder,
+            IAntiforgery antiforgery)
         {
+            _antiforgery = antiforgery;
             _vakAccountRepository = vakAccountRepository;
             _dynamicFormsBuilder = dynamicFormsBuilder;
         }
@@ -27,12 +32,35 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="formModelName"></param>
         /// <returns>
-        /// 200 OK , <see cref="DynamicFormResponseModel"/> and anti-forgery cookies if <paramref name="formModelName"/> is the name of an existing form model.
+        /// 200 OK, <see cref="DynamicFormResponseModel"/> and anti-forgery cookies if <paramref name="formModelName"/> is the name of an existing form model.
         /// 404 NotFound and <see cref="ErrorResponseModel"/> if <paramref name="formModelName"/> is not the name of an existing form model.
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        [SetAntiForgeryToken]
+        public IActionResult GetDynamicFormWithAfTokens(string formModelName)
+        {
+            Type type = Type.GetType($"Jering.VectorArtKit.WebApi.FormModels.{formModelName}FormModel");
+
+            if (type == null)
+            {
+                return NotFound();
+            }
+
+            _antiforgery.AddAntiforgeryCookies(HttpContext);
+
+            return Ok(_dynamicFormsBuilder.BuildDynamicFormResponseModel(type.GetTypeInfo()));
+        }
+
+        /// <summary>
+        /// Gets <see cref="DynamicFormResponseModel"/> for a form model.
+        /// </summary>
+        /// <param name="formModelName"></param>
+        /// <returns>
+        /// 200 OK and <see cref="DynamicFormResponseModel"/> if <paramref name="formModelName"/> is the name of an existing form model.
+        /// 404 NotFound and <see cref="ErrorResponseModel"/> if <paramref name="formModelName"/> is not the name of an existing form model.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
         public IActionResult GetDynamicForm(string formModelName)
         {
             Type type = Type.GetType($"Jering.VectorArtKit.WebApi.FormModels.{formModelName}FormModel");
