@@ -1,13 +1,6 @@
-﻿using Dapper;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace Jering.AccountManagement.DatabaseInterface
+namespace Jering.Accounts.DatabaseInterface
 {
     /// <summary>
     /// 

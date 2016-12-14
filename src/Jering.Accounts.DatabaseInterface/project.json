@@ -5,8 +5,8 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Dapper": "1.50.*",
     "System.Data.SqlClient": "4.1.0",
+    "System.Runtime.InteropServices": "4.1.0",
     "System.Security.Claims": "4.0.1"
   },
 

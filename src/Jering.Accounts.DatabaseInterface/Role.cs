@@ -1,4 +1,4 @@
-﻿namespace Jering.AccountManagement.DatabaseInterface
+﻿namespace Jering.Accounts.DatabaseInterface
 {
     /// <summary>
     /// 

@@ -1,55 +1,60 @@
 ﻿using System;
 
-namespace Jering.AccountManagement.DatabaseInterface
+namespace Jering.Accounts.DatabaseInterface
 {
     /// <summary>
     /// Represents an account.
     /// </summary>
-    public interface IAccount
+    public class Account : IAccount
     {
         /// <summary>
         /// Account Id.
         /// </summary>
-        int AccountId { get; set; }
+        public virtual int AccountId { get; set; }
 
         /// <summary>
-        /// Account's username.
+        /// Account's display name.
         /// </summary>
-        string DisplayName { get; set; }
+        public virtual string DisplayName { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        DateTime PasswordLastChanged { get; set; }
+        public virtual DateTime PasswordLastChanged { get; set; }
 
         /// <summary>
         /// A random value that changes whenever an account's security data changes.
         /// </summary>
-        Guid SecurityStamp { get; set; }
+        public virtual Guid SecurityStamp { get; set; }
 
         /// <summary>
         /// Email.
         /// </summary>
-        string Email { get; set; }
+        public virtual string Email { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        string AlternativeEmail { get; set; }
+        public virtual string AltEmail { get; set; }
 
         /// <summary>
         /// True if the email is confirmed, false otherwise.
         /// </summary>
-        bool EmailVerified { get; set; }
+        public virtual bool EmailVerified { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        bool AlternativeEmailVerified { get; set; }
+        public virtual string PasswordHash { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual bool AltEmailVerified { get; set; }
 
         /// <summary>
         /// True if two factor is enabled, false otherwise.
         /// </summary>
-        bool TwoFactorEnabled { get; set; }
+        public virtual bool TwoFactorEnabled { get; set; }
     }
 }

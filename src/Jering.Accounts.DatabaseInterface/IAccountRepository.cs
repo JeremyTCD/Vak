@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System;
 
-namespace Jering.AccountManagement.DatabaseInterface
+namespace Jering.Accounts.DatabaseInterface
 {
     /// <summary>
     /// Provides an interface for performing CRUD operations on account representations in a database. 
@@ -13,12 +13,12 @@ namespace Jering.AccountManagement.DatabaseInterface
         where TAccount : IAccount
     {
         /// <summary>
-        /// Creates an <see cref="IAccount"/> with specified <paramref name="email"/> and <paramref name="password"/>.
+        /// Creates an account with specified <paramref name="email"/> and <paramref name="passwordHash"/>.
         /// </summary>
         /// <param name="email"></param>
-        /// <param name="password"></param>
-        /// <returns>Newly created <see cref="IAccount"/> if <see cref="IAccount"/> is created successfully, null otherwise.</returns>
-        Task<TAccount> CreateAccountAsync(string email, string password);
+        /// <param name="passwordHash"></param>
+        /// <returns>Newly created account.</returns>
+        Task<TAccount> CreateAccountAsync(string email, string passwordHash);
 
         /// <summary>
         /// Deletes <see cref="IAccount"/> with specified <paramref name="accountId"/>.
@@ -36,15 +36,6 @@ namespace Jering.AccountManagement.DatabaseInterface
         Task<TAccount> GetAccountAsync(int accountId);
 
         /// <summary>
-        /// Gets <see cref="IAccount"/> with specified <paramref name="email"/> and <paramref name="password"/>. 
-        /// </summary>
-        /// <param name="email"></param>
-        /// <param name="password"></param>
-        /// <returns><see cref="IAccount"/> with specified <paramref name="email"/> and <paramref name="password"/> if it exists, 
-        /// null otherwise.</returns>
-        Task<TAccount> GetAccountByEmailAndPasswordAsync(string email, string password);
-
-        /// <summary>
         /// Gets <see cref="IAccount"/> with specified <paramref name="email"/>. 
         /// </summary>
         /// <param name="email"></param>
@@ -57,7 +48,7 @@ namespace Jering.AccountManagement.DatabaseInterface
         /// </summary>
         /// <param name="email"></param>
         /// <returns></returns>
-        Task<TAccount> GetAccountByEmailOrAlternativeEmailAsync(string email);
+        Task<TAccount> GetAccountByEmailOrAltEmailAsync(string email);
 
         /// <summary>
         /// Adds <see cref="Role"/> with specified <paramref name="roleId"/> to <see cref="IAccount"/> with 
@@ -134,13 +125,13 @@ namespace Jering.AccountManagement.DatabaseInterface
         Task<bool> UpdateAccountEmailVerifiedAsync(int accountId, bool emailVerified);
 
         /// <summary>
-        /// Sets PasswordHash of <see cref="IAccount"/> with specified <paramref name="accountId"/> to 
-        /// hash generated from <paramref name="password"/>. 
+        /// Sets PasswordHash of account with specified <paramref name="accountId"/> to 
+        /// <paramref name="passwordHash"/>. 
         /// </summary>
         /// <param name="accountId"></param>
-        /// <param name="password"></param>
+        /// <param name="passwordHash"></param>
         /// <returns>True if successful, false otherwise.</returns>
-        Task<bool> UpdateAccountPasswordHashAsync(int accountId, string password);
+        Task<bool> UpdateAccountPasswordHashAsync(int accountId, string passwordHash);
 
         /// <summary>
         /// 
@@ -154,9 +145,9 @@ namespace Jering.AccountManagement.DatabaseInterface
         /// 
         /// </summary>
         /// <param name="accountId"></param>
-        /// <param name="alternativeEmail"></param>
+        /// <param name="altEmail"></param>
         /// <returns></returns>
-        Task<bool> UpdateAccountAlternativeEmailAsync(int accountId, string alternativeEmail);
+        Task<bool> UpdateAccountAltEmailAsync(int accountId, string altEmail);
 
         /// <summary>
         /// 
@@ -178,9 +169,9 @@ namespace Jering.AccountManagement.DatabaseInterface
         /// 
         /// </summary>
         /// <param name="accountId"></param>
-        /// <param name="alternativeEmailVerified"></param>
+        /// <param name="altEmailVerified"></param>
         /// <returns></returns>
-        Task<bool> UpdateAccountAlternativeEmailVerifiedAsync(int accountId, bool alternativeEmailVerified);
+        Task<bool> UpdateAccountAltEmailVerifiedAsync(int accountId, bool altEmailVerified);
 
         /// <summary>
         /// 
