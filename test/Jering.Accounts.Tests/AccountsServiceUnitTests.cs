@@ -161,7 +161,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountPasswordHashAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdatePasswordHashAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewPasswordHash))).
                 ReturnsAsync(false);
 
@@ -176,7 +176,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             // Act
             await Assert.ThrowsAsync<Exception>(async () => await AccountsService.
-                SetPasswordAsync(_testAccount, _testNewPassword));
+                SetPasswordHashAsync(_testAccount, _testNewPassword));
 
             // Assert
             mockAccountRepository.VerifyAll();
@@ -201,7 +201,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountPasswordHashAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdatePasswordHashAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewPasswordHash))).
                 ReturnsAsync(true);
 
@@ -215,8 +215,8 @@ namespace Jering.Accounts.Tests.UnitTests
                 mockPasswordService.Object);
 
             // Act
-            SetPasswordResult result = await AccountsService.
-                SetPasswordAsync(_testAccount, _testNewPassword);
+            SetPasswordHashResult result = await AccountsService.
+                SetPasswordHashAsync(_testAccount, _testNewPassword);
 
             // Assert
             mockAccountRepository.VerifyAll();
@@ -245,7 +245,7 @@ namespace Jering.Accounts.Tests.UnitTests
                 mockPasswordService.Object);
 
             // Act
-            SetPasswordResult result = await AccountsService.SetPasswordAsync(_testAccount, _testNewPassword);
+            SetPasswordHashResult result = await AccountsService.SetPasswordHashAsync(_testAccount, _testNewPassword);
 
             // Assert
             mockPasswordService.VerifyAll();
@@ -260,7 +260,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountEmailAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.SaveEmailAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewEmail))).
                 ReturnsAsync(false);
 
@@ -289,7 +289,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountEmailAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.SaveEmailAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewEmail))).
                 ReturnsAsync(true);
 
@@ -341,7 +341,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountEmailAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.SaveEmailAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewEmail))).
                 Throws(GetSqlException(51000));
 
@@ -370,7 +370,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountAltEmailAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateAltEmailAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewAltEmail))).
                 ReturnsAsync(false);
 
@@ -399,7 +399,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountAltEmailAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateAltEmailAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewAltEmail))).
                 ReturnsAsync(true);
 
@@ -451,7 +451,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountAltEmailAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateAltEmailAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewAltEmail))).
                 Throws(GetSqlException(51000));
 
@@ -480,7 +480,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountDisplayNameAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateDisplayNameAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewDisplayName))).
                 ReturnsAsync(false);
 
@@ -509,7 +509,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountDisplayNameAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateDisplayNameAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewDisplayName))).
                 ReturnsAsync(true);
 
@@ -561,7 +561,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountDisplayNameAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateDisplayNameAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<string>(s => s == _testNewDisplayName))).
                 Throws(GetSqlException(51000));
 
@@ -591,7 +591,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountTwoFactorEnabledAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateTwoFactorEnabledAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<bool>(b => b))).
                 ReturnsAsync(false);
 
@@ -621,7 +621,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountTwoFactorEnabledAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateTwoFactorEnabledAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<bool>(b => b))).
                 ReturnsAsync(true);
 
@@ -698,7 +698,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountEmailVerifiedAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateEmailVerifiedAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<bool>(b => b))).
                 ReturnsAsync(false);
 
@@ -728,7 +728,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountEmailVerifiedAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateEmailVerifiedAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<bool>(b => b))).
                 ReturnsAsync(true);
 
@@ -781,7 +781,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountAltEmailVerifiedAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateAltEmailVerifiedAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<bool>(b => b))).
                 ReturnsAsync(false);
 
@@ -811,7 +811,7 @@ namespace Jering.Accounts.Tests.UnitTests
 
             Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
             mockAccountRepository.
-                Setup(a => a.UpdateAccountAltEmailVerifiedAsync(It.Is<int>(i => i == _testAccountId),
+                Setup(a => a.UpdateAltEmailVerifiedAsync(It.Is<int>(i => i == _testAccountId),
                     It.Is<bool>(b => b))).
                 ReturnsAsync(true);
 

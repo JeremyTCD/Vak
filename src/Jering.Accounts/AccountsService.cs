@@ -12,6 +12,7 @@ using MimeKit;
 using Jering.Mail;
 using System.Net;
 using Jering.Security;
+using Jering.Utilities;
 
 namespace Jering.Accounts
 {
@@ -30,6 +31,7 @@ namespace Jering.Accounts
         private AccountsServiceOptions _securityOptions { get; }
         private IEmailService _emailService { get; }
         private IPasswordService _passwordService { get; }
+        private ITimeService _timeService { get; }
 
         /// <summary>
         /// 
@@ -72,7 +74,8 @@ namespace Jering.Accounts
             IAccountRepository<TAccount> accountRepository,
             IEmailService emailService,
             IServiceProvider serviceProvider,
-            IPasswordService passwordService)
+            IPasswordService passwordService,
+            ITimeService timeService)
         {
             _emailService = emailService;
             _claimsPrincipalService = claimsPrincipalService;
@@ -80,6 +83,7 @@ namespace Jering.Accounts
             _securityOptions = securityOptionsAccessor?.Value;
             _accountRepository = accountRepository;
             _passwordService = passwordService;
+            _timeService = timeService;
 
             if (serviceProvider != null)
             {
@@ -365,28 +369,17 @@ namespace Jering.Accounts
                 throw new ArgumentNullException(nameof(password));
             }
 
-            try
-            {
-                TAccount account = await _accountRepository.CreateAccountAsync(email, _passwordService.HashPassword(password));
+            CreateResult<TAccount> result = await _accountRepository.CreateAsync(email, 
+                _passwordService.HashPassword(password),
+                _timeService.UtcNow,
+                Guid.NewGuid());
 
-                if (account == null)
-                {
-                    throw new NullReferenceException(nameof(account));
-                }
-
-                return CreateAccountResult<TAccount>.GetSucceededResult(account);
-            }
-            catch (SqlException sqlException)
+            if (result.DuplicateRow)
             {
-                if (sqlException.Number == 51000)
-                {
-                    return CreateAccountResult<TAccount>.GetInvalidEmailResult();
-                }
-                else
-                {
-                    throw;
-                }
+                return CreateAccountResult<TAccount>.GetInvalidEmailResult();
             }
+
+            return CreateAccountResult<TAccount>.GetSucceededResult(result.Account);
         }
 
         /// <summary>
@@ -395,13 +388,13 @@ namespace Jering.Accounts
         /// <param name="newPassword"></param>
         /// <param name="account"></param>
         /// <returns>
-        /// <see cref="SetPasswordResult"/> with <see cref="SetPasswordResult.Succeeded"/> set to true if 
+        /// <see cref="SetPasswordHashResult"/> with <see cref="SetPasswordHashResult.Succeeded"/> set to true if 
         /// password change succeeds.
-        /// <see cref="SetPasswordResult"/> with <see cref="SetPasswordResult.AlreadySet"/> set to true if
+        /// <see cref="SetPasswordHashResult"/> with <see cref="SetPasswordHashResult.AlreadySet"/> set to true if
         /// account password is already equal to <paramref name="newPassword"/>.
         /// </returns>
         /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
-        public virtual async Task<SetPasswordResult> SetPasswordAsync(TAccount account, string newPassword)
+        public virtual async Task<SetPasswordHashResult> SetPasswordHashAsync(TAccount account, string newPassword)
         {
             if(account == null)
             {
@@ -414,67 +407,28 @@ namespace Jering.Accounts
 
             if(_passwordService.ValidatePassword(account.PasswordHash, newPassword))
             {
-                return SetPasswordResult.GetAlreadySetResult();
+                return SetPasswordHashResult.GetAlreadySetResult();
             }
 
-            if (!await _accountRepository.
-                UpdateAccountPasswordHashAsync(account.AccountId, 
-                _passwordService.HashPassword(newPassword)))
+            account.PasswordHash = _passwordService.HashPassword(newPassword);
+            account.PasswordLastChanged = _timeService.UtcNow;
+            account.SecurityStamp = Guid.NewGuid();
+
+            SaveChangeResult result = await _accountRepository.UpdatePasswordHashAsync(account.AccountId, 
+                account.PasswordHash, 
+                account.PasswordLastChanged,
+                account.SecurityStamp, 
+                account.RowVersion);
+
+            if (result.InvalidRowVersionOrAccountId)
             {
+                // Not recoverable, client will have to retry request.
                 throw new Exception();
             }
 
-            return SetPasswordResult.GetSucceededResult();
-        }
+            account.RowVersion = result.RowVersion;
 
-        /// <summary>
-        /// Sets email of <paramref name="account"/> to <paramref name="newEmail"/>.
-        /// </summary>
-        /// <param name="newEmail"></param>
-        /// <param name="account"></param>
-        /// <returns>
-        /// <see cref="SetEmailResult"/> with <see cref="SetEmailResult.Succeeded"/> set to true if 
-        /// email change succeeds.
-        /// <see cref="SetEmailResult"/> with <see cref="SetEmailResult.InvalidNewEmail"/> set to true if
-        /// <paramref name="newEmail"/> is in use.
-        /// <see cref="SetEmailResult"/> with <see cref="SetEmailResult.GetAlreadySetResult"/> set to true if
-        /// account email is already equal to <paramref name="newEmail"/>.
-        /// </returns>
-        /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
-        public virtual async Task<SetEmailResult> SetEmailAsync(TAccount account, string newEmail)
-        {
-            if(account == null)
-            {
-                throw new ArgumentNullException(nameof(account));
-            }
-            if (newEmail == null)
-            {
-                throw new ArgumentNullException(nameof(newEmail));
-            }
-
-            if(account.Email == newEmail)
-            {
-                return SetEmailResult.GetAlreadySetResult();
-            }
-
-            try
-            {
-                if (!await _accountRepository.UpdateAccountEmailAsync(account.AccountId, newEmail))
-                {// TODO the underlying stored procedure should throw a sql exception if update fails
-                    throw new Exception();
-                }
-            }
-            catch (SqlException sqlException)
-            {
-                if (sqlException.Number == 51000)
-                {
-                    return SetEmailResult.GetInvalidNewEmailResult();
-                }
-
-                throw;
-            }
-
-            return SetEmailResult.GetSucceededResult();
+            return SetPasswordHashResult.GetSucceededResult(account);
         }
 
         /// <summary>
@@ -509,9 +463,12 @@ namespace Jering.Accounts
 
             try
             {
-                if (!await _accountRepository.UpdateAccountAltEmailAsync(account.AccountId, newAltEmail))
-                {// TODO the underlying stored procedure should throw a sql exception if update fails
-                    throw new Exception();
+                if (await _accountRepository.
+                    UpdateAltEmailAsync(account.AccountId, newAltEmail, account.RowVersion) 
+                    != SaveChangeResult.Success)
+                {
+                    // Invalid row version or account id. Client will have to retry request.
+                    throw new OperationCanceledException();
                 }
             }
             catch (SqlException sqlException)
@@ -559,7 +516,7 @@ namespace Jering.Accounts
 
             try
             {
-                if (!await _accountRepository.UpdateAccountDisplayNameAsync(account.AccountId, newDisplayName))
+                if (!await _accountRepository.UpdateDisplayNameAsync(account.AccountId, newDisplayName))
                 {// TODO the underlying stored procedure should throw a sql exception if update fails
                     throw new Exception();
                 }
@@ -608,7 +565,7 @@ namespace Jering.Accounts
                 return SetTwoFactorEnabledResult.GetEmailUnverifiedResult();
             }
 
-            if (!await _accountRepository.UpdateAccountTwoFactorEnabledAsync(account.AccountId, enabled))
+            if (!await _accountRepository.UpdateTwoFactorEnabledAsync(account.AccountId, enabled))
             {// TODO the underlying stored procedure should throw a sql exception if update fails
                 throw new Exception();
             }
@@ -640,7 +597,7 @@ namespace Jering.Accounts
                 return SetEmailVerifiedResult.GetAlreadySetResult();
             }
 
-            if (!await _accountRepository.UpdateAccountEmailVerifiedAsync(account.AccountId, verified))
+            if (!await _accountRepository.UpdateEmailVerifiedAsync(account.AccountId, verified))
             {// TODO the underlying stored procedure should throw a sql exception if update fails
                 throw new Exception();
             }
@@ -673,7 +630,7 @@ namespace Jering.Accounts
                 return SetAltEmailVerifiedResult.GetAlreadySetResult();
             }
 
-            if (!await _accountRepository.UpdateAccountAltEmailVerifiedAsync(account.AccountId, verified))
+            if (!await _accountRepository.UpdateAltEmailVerifiedAsync(account.AccountId, verified))
             {// TODO the underlying stored procedure should throw a sql exception if update fails
                 throw new Exception();
             }

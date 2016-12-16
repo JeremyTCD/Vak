@@ -22,7 +22,7 @@ export class HttpService {
      * - ErrorObservable<ErrorResponseModel> or empty Observable if expected error occurs
      * - Empty Observable if unexpected error occurs
      */
-    post(relativeUrl: string, body: any, options?: RequestOptionsArgs, domain?: string): Observable<any> {
+    post(relativeUrl: string, body: {[key:string]:any}, options?: RequestOptionsArgs, domain?: string): Observable<any> {
         options = options || new RequestOptions();
         // Note that Http.request assigns content-type based on body's type
         options.body = body;
@@ -61,9 +61,9 @@ export class HttpService {
             options.headers = new Headers();
         }
 
-        // Required to prevent AspNetCore redirecting on failed authentication
+        // Required to prevent AspNetCore redirecting on failed auth
         options.headers.append(`X-Requested-With`, `XMLHttpRequest`);
-        // Required by AspNetCore authentication (sends cookies with XMLHttpRequest)
+        // Required by AspNetCore auth (sends cookies with XMLHttpRequest)
         options.withCredentials = true;
 
         return this.

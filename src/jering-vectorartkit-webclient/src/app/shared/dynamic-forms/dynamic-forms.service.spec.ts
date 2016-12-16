@@ -10,6 +10,7 @@ import { ValidateResponseModel } from '../response-models/validate.response-mode
 import { environment } from '../../../environments/environment';
 import { Validity } from './validity';
 import { HttpService } from '../http.service';
+import { StubHttpService } from '../../../testing/http.service.stub';
 
 let testFormModelName = `testFormModelName`;
 let testControlName = `testControlName`;
@@ -43,12 +44,12 @@ describe('DynamicFormsService', () => {
                 let getSpy = spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testDynamicFormResponseModel));
 
                 dynamicFormsService.
-                    getDynamicForm(testFormModelName).
+                    getDynamicForm(testFormModelName, true).
                     subscribe(dynamicForm => null);
 
                 expect(stubHttpService.get).toHaveBeenCalledTimes(1);
                 let args = getSpy.calls.first().args;
-                expect(args[0]).toBe(`DynamicForms/GetDynamicForm`);
+                expect(args[0]).toBe(`DynamicForm/GetDynamicFormWithAfTokens`);
                 let requestOptions = args[1] as RequestOptionsArgs;
                 let urlSearchParams = requestOptions.search as URLSearchParams;
                 expect(urlSearchParams.get(`formModelName`)).toBe(testFormModelName);
@@ -61,7 +62,7 @@ describe('DynamicFormsService', () => {
                 let result: DynamicForm;
 
                 dynamicFormsService.
-                    getDynamicForm(testFormModelName).
+                    getDynamicForm(testFormModelName, true).
                     subscribe(dynamicForm => result = dynamicForm);
 
                 expect(result instanceof DynamicForm).toBe(true);
@@ -133,12 +134,4 @@ describe('DynamicFormsService', () => {
     });
 });
 
-class StubHttpService {
-    get(url: string, options?: RequestOptionsArgs, domain?: string): Observable<any> {
-        return Observable.of(testResponse);
-    };
 
-    post(url: string, body: string, options?: RequestOptionsArgs, domain?: string): Observable<any> {
-        return Observable.of(testResponse);
-    };
-}

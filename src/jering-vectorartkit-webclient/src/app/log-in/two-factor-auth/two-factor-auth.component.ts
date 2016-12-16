@@ -16,6 +16,8 @@ export class TwoFactorAuthComponent implements AfterViewInit {
 
     @ViewChild(`dynamicFormComponent`) dynamicFormComponent: DynamicFormComponent;
 
+    codeExpired: boolean = false;
+
     constructor(private _router: Router, private _userService: UserService,
         private _activatedRoute: ActivatedRoute) {
     }
@@ -26,8 +28,13 @@ export class TwoFactorAuthComponent implements AfterViewInit {
 
     onSubmitSuccess(responseModel: TwoFactorLogInResponseModel): void {
         this._userService.logIn(responseModel.username, responseModel.isPersistent);
-        // navigate to return url or to home
         let returnUrl = this._activatedRoute.snapshot.params[`returnUrl`];
         this._router.navigate([returnUrl ? returnUrl : `/home`]);
+    }
+
+    onSubmitError(responseModel: TwoFactorLogInResponseModel): void {
+        if (responseModel.expiredCredentials || responseModel.expiredToken) {
+            this.codeExpired = true;
+        } 
     }
 }

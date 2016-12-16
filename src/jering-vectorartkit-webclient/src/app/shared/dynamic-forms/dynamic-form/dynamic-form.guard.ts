@@ -11,6 +11,6 @@ export class DynamicFormGuard implements Resolve<DynamicForm> {
 
     resolve(route: ActivatedRouteSnapshot): Observable<DynamicForm>{
         return this._dynamicFormsService
-            .getDynamicForm(route.data[`formModelName`]);
+            .getDynamicForm(route.data[`formModelName`], route.data[`getAfToken`]);
     };
 }

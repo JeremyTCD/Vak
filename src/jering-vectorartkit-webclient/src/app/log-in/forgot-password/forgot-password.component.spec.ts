@@ -23,17 +23,27 @@ describe('ForgotPasswordComponent', () => {
 
     it(`Listens to child DynamicFormComponent output`, () => {
         spyOn(forgotPasswordComponent, `onSubmitSuccess`);
+        spyOn(forgotPasswordComponent, `onSubmitError`);
+
         forgotPasswordComponentFixture.detectChanges();
         let anchorDebugElement = forgotPasswordDebugElement.query(By.css(`a`));
 
         anchorDebugElement.triggerEventHandler('click', null);
 
+        expect(forgotPasswordComponent.onSubmitError).toHaveBeenCalledTimes(1);
         expect(forgotPasswordComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
     });
 
     it(`onSubmitSuccess sets submitSuccessful to true`, () => {
         forgotPasswordComponentFixture.detectChanges();
         forgotPasswordComponent.onSubmitSuccess(null);
+
+        expect(forgotPasswordComponent.submitSuccessful).toBe(true);
+    });
+
+    it(`onSubmitError sets submitSuccessful to true`, () => {
+        forgotPasswordComponentFixture.detectChanges();
+        forgotPasswordComponent.onSubmitError(null);
 
         expect(forgotPasswordComponent.submitSuccessful).toBe(true);
     });
@@ -65,8 +75,9 @@ describe('ForgotPasswordComponent', () => {
 
 @Component({
     selector: `dynamic-form`,
-    template: `<a (click)=submitSuccess.emit()></a>`
+    template: `<a (click)="submitSuccess.emit();submitError.emit();"></a>`
 })
 class StubDynamicFormComponent {
     @Output() submitSuccess = new EventEmitter<any>();
+    @Output() submitError = new EventEmitter<any>();
 }

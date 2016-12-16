@@ -183,7 +183,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Arrange
             await _resetAccountsTable();
             VakAccount account = await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
-            await _vakAccountRepository.UpdateAccountDisplayNameAsync(account.AccountId, _testDisplayName);
+            await _vakAccountRepository.UpdateDisplayNameAsync(account.AccountId, _testDisplayName);
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/{nameof(DynamicFormController.ValidateDisplayNameNotInUse)}?value={_testDisplayName}", HttpMethod.Get, null);
 
             // Act 

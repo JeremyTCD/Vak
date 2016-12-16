@@ -40,68 +40,70 @@ describe('LogInComponent', () => {
 
     it(`Listens to child DynamicFormComponent output`, () => {
         spyOn(logInComponent, `onSubmitSuccess`);
+        spyOn(logInComponent, `onSubmitError`);
         logInComponentFixture.detectChanges();
         let anchorDebugElement = logInDebugElement.query(By.css(`a`));
 
         anchorDebugElement.triggerEventHandler('click', null);
 
+        expect(logInComponent.onSubmitError).toHaveBeenCalledTimes(1);
         expect(logInComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
     });
 
     describe(`onSubmitSuccess`, () => {
-        beforeEach(() => {
+        it(`Calls UseService.login`, () => {
             stubActivatedRoute.testParams = { returnUrl: testReturnUrl };
-        });
-
-        it(`Navigates to /Login/TwoFactorAuth if two factor authentication is required`, () => {
-            testLogInResponseModel = { twoFactorRequired: true, isPersistent: false };
-            spyOn(stubRouter, `navigate`);
+            testLogInResponseModel = { twoFactorRequired: false, username: testUsername, isPersistent: true };
+            spyOn(stubUserService, `logIn`);
 
             logInComponent.onSubmitSuccess(testLogInResponseModel);
 
-            expect(stubRouter.navigate).toHaveBeenCalledWith([`/login/twofactorauth`, { isPersistent: false, returnUrl: testReturnUrl }]);
+            expect(stubUserService.logIn).toHaveBeenCalledWith(testUsername, true);
         });
 
-        describe(`If two factor authentication is not required`, () => {
-            it(`Calls UseService.login`, () => {
-                testLogInResponseModel = { twoFactorRequired: false, username: testUsername, isPersistent: true };
-                spyOn(stubUserService, `logIn`);
+        it(`Navigates to home if ActivatedRoute.snapshot.params.returnUrl is null`, () => {
+            stubActivatedRoute.testParams = { returnUrl: null };
+            testLogInResponseModel = { twoFactorRequired: false};
+            spyOn(stubRouter, `navigate`);
+            spyOn(stubUserService, `logIn`);
 
-                logInComponent.onSubmitSuccess(testLogInResponseModel);
+            logInComponent.onSubmitSuccess(testLogInResponseModel);
 
-                expect(stubUserService.logIn).toHaveBeenCalledWith(testUsername, true);
-            });
+            expect(stubRouter.navigate).toHaveBeenCalledWith([`/home`]);
+        });
 
-            it(`Navigates to home if ActivatedRoute.snapshot.params.returnUrl is null`, () => {
-                stubActivatedRoute.testParams = { returnUrl: null };
-                testLogInResponseModel = { twoFactorRequired: false};
-                spyOn(stubRouter, `navigate`);
-                spyOn(stubUserService, `logIn`);
+        it(`Navigates to return url if ActivatedRoute.snapshot.params.returnUrl is defined`, () => {
+            stubActivatedRoute.testParams = { returnUrl: testReturnUrl };
+            testLogInResponseModel = { twoFactorRequired: false };
+            spyOn(stubRouter, `navigate`);
+            spyOn(stubUserService, `logIn`);
 
-                logInComponent.onSubmitSuccess(testLogInResponseModel);
+            logInComponent.onSubmitSuccess(testLogInResponseModel);
 
-                expect(stubRouter.navigate).toHaveBeenCalledWith([`/home`]);
-            });
+            expect(stubRouter.navigate).toHaveBeenCalledWith([testReturnUrl]);
+        });
+    });
 
-            it(`Navigates to return url if ActivatedRoute.snapshot.params.returnUrl is defined`, () => {
-                testLogInResponseModel = { twoFactorRequired: false };
-                spyOn(stubRouter, `navigate`);
-                spyOn(stubUserService, `logIn`);
+    describe(`onSubmitError`, () => {
+        it(`Navigates to /Login/TwoFactorAuth if two factor auth is required`, () => {
+            stubActivatedRoute.testParams = { returnUrl: testReturnUrl };
+            testLogInResponseModel = { twoFactorRequired: true, isPersistent: false };
+            spyOn(stubRouter, `navigate`);
 
-                logInComponent.onSubmitSuccess(testLogInResponseModel);
+            logInComponent.onSubmitError(testLogInResponseModel);
 
-                expect(stubRouter.navigate).toHaveBeenCalledWith([testReturnUrl]);
-            });
+            expect(stubRouter.navigate).toHaveBeenCalledWith([`/login/two-factor-auth`, { isPersistent: false, returnUrl: testReturnUrl }]);
         });
     });
 });
 
 @Component({
     selector: `dynamic-form`,
-    template: `<a (click)=submitSuccess.emit()></a>`
+    template: `<a (click)="submitSuccess.emit();submitError.emit();"></a>`
 })
 class StubDynamicFormComponent {
     @Output() submitSuccess = new EventEmitter<Response>();
+    @Output() submitError = new EventEmitter<Response>();
 }
 
 class StubUserService {

@@ -38,10 +38,10 @@ namespace Jering.Security.Tests.UnitTests
             Jering.Accounts.DatabaseInterface.Claim accountClaim = new Jering.Accounts.DatabaseInterface.Claim() { ClaimId = _testClaimId1, Type = _testClaimType1, Value = _testClaimValue1 };
             List<Jering.Accounts.DatabaseInterface.Claim> accountClaims = new List<Jering.Accounts.DatabaseInterface.Claim>() { accountClaim };
             mockAccountRepository.
-                Setup(a => a.GetAccountRolesAsync(It.Is<int>(i => i == _testAccountId1))).
+                Setup(a => a.GetRolesAsync(It.Is<int>(i => i == _testAccountId1))).
                 ReturnsAsync(accountRoles);
             mockAccountRepository.
-                Setup(a => a.GetAccountClaimsAsync(It.Is<int>(i => i == _testAccountId1))).
+                Setup(a => a.GetClaimsAsync(It.Is<int>(i => i == _testAccountId1))).
                 ReturnsAsync(accountClaims);
 
             Mock<IRoleRepository> mockRoleRepository = new Mock<IRoleRepository>();

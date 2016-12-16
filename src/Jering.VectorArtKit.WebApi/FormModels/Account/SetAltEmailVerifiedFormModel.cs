@@ -13,6 +13,5 @@ namespace Jering.VectorArtKit.WebApi.FormModels
     public class SetAltEmailVerifiedFormModel
     {
         public string Token { get; set; }
-        public int AccountId { get; set; }
     }
 }

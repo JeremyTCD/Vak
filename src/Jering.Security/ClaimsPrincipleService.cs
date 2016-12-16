@@ -63,14 +63,14 @@ namespace Jering.Security
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.SecurityStampClaimType, account.SecurityStamp.ToString()));
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.IsPersistenClaimType, authProperties.IsPersistent.ToString()));
 
-            IEnumerable<Role> roles = await _accountRepository.GetAccountRolesAsync(account.AccountId);
+            IEnumerable<Role> roles = await _accountRepository.GetRolesAsync(account.AccountId);
             foreach (Role role in roles)
             {
                 claimsIdentity.AddClaim(new System.Security.Claims.Claim(ClaimTypes.Role, role.Name));
                 claimsIdentity.AddClaims(ConvertDatabaseInterfaceClaims(await _roleRepository.GetRoleClaimsAsync(role.RoleId)));
             }
 
-            claimsIdentity.AddClaims(ConvertDatabaseInterfaceClaims(await _accountRepository.GetAccountClaimsAsync(account.AccountId)));
+            claimsIdentity.AddClaims(ConvertDatabaseInterfaceClaims(await _accountRepository.GetClaimsAsync(account.AccountId)));
 
             return new ClaimsPrincipal(claimsIdentity);
         }

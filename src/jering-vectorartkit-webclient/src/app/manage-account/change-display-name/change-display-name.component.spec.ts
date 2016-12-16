@@ -7,9 +7,9 @@ import { ChangeDisplayNameComponent } from './change-display-name.component';
 import { StubRouter } from '../../../testing/router-stubs';
 
 let testSubmitSuccessElementId = "testSubmitSuccessElementId";
-let changeAlternativeEmailComponentFixture: ComponentFixture<ChangeDisplayNameComponent>;
-let changeAlternativeEmailComponent: ChangeDisplayNameComponent;
-let changeAlternativeEmailDebugElement: DebugElement;
+let changeAltEmailComponentFixture: ComponentFixture<ChangeDisplayNameComponent>;
+let changeAltEmailComponent: ChangeDisplayNameComponent;
+let changeAltEmailDebugElement: DebugElement;
 let stubRouter: StubRouter;
 
 describe('ChangeDisplayNameComponent', () => {
@@ -21,27 +21,27 @@ describe('ChangeDisplayNameComponent', () => {
     }));
 
     beforeEach(() => {
-        changeAlternativeEmailComponentFixture = TestBed.createComponent(ChangeDisplayNameComponent);
-        changeAlternativeEmailComponent = changeAlternativeEmailComponentFixture.componentInstance;
-        changeAlternativeEmailDebugElement = changeAlternativeEmailComponentFixture.debugElement;
+        changeAltEmailComponentFixture = TestBed.createComponent(ChangeDisplayNameComponent);
+        changeAltEmailComponent = changeAltEmailComponentFixture.componentInstance;
+        changeAltEmailDebugElement = changeAltEmailComponentFixture.debugElement;
         stubRouter = TestBed.get(Router) as StubRouter;
-        changeAlternativeEmailComponentFixture.detectChanges();
+        changeAltEmailComponentFixture.detectChanges();
     });
 
     it(`Listens to child DynamicFormComponent outputs`, () => {
-        spyOn(changeAlternativeEmailComponent, `onSubmitSuccess`);
+        spyOn(changeAltEmailComponent, `onSubmitSuccess`);
 
-        changeAlternativeEmailDebugElement.
+        changeAltEmailDebugElement.
             query(By.css(`#${testSubmitSuccessElementId}`)).
             triggerEventHandler('click', null);
 
-        expect(changeAlternativeEmailComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
+        expect(changeAltEmailComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
     });
 
     it(`onSubmitSuccess sets calls Router.navigate`, () => {
         spyOn(stubRouter, `navigate`);
 
-        changeAlternativeEmailComponent.onSubmitSuccess(null);
+        changeAltEmailComponent.onSubmitSuccess(null);
 
         expect(stubRouter.navigate).toHaveBeenCalledWith([`/manage-account`]);
     });

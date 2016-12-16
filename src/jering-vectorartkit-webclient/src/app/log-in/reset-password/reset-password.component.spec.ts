@@ -74,9 +74,9 @@ describe('ResetPasswordComponent', () => {
         expect(resetPasswordComponent.passwordResetSuccessful).toBe(true);
     });
 
-    it(`onSubmitError sets linkExpiredOrInvalid to true if responseModel.linkExpiredOrInvalid is true`, () => {
+    it(`onSubmitError sets linkExpiredOrInvalid to true if responseModel.invalidToken or responseModel.invalidEmail is true`, () => {
         resetPasswordComponentFixture.detectChanges();
-        resetPasswordComponent.onSubmitError({ linkExpiredOrInvalid: true });
+        resetPasswordComponent.onSubmitError({ invalidToken: true, invalidEmail: true });
 
         expect(resetPasswordComponent.linkExpiredOrInvalid).toBe(true);
     });

@@ -1,0 +1,17 @@
+<h2>Verify email</h2>
+<div>
+    logo
+</div>
+<hr/>
+<div *ngIf="linkExpiredOrInvalid">
+    <div>
+        Link expired
+    </div>
+    <hr />
+    <a (click)="sendEmailVerificationEmail()">Get new email verification link</a><br />
+</div>
+<div *ngIf="!linkExpiredOrInvalid">
+    <div>
+        Email {{userService.Username}} verified
+    </div>
+</div>

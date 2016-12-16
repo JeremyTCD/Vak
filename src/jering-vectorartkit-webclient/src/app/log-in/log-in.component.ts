@@ -19,10 +19,15 @@ export class LogInComponent {
     onSubmitSuccess(responseModel: LogInResponseModel): void {
         let returnUrl = this._activatedRoute.snapshot.params[`returnUrl`];
 
-        if (responseModel.twoFactorRequired) {
-            this._router.navigate([`/login/twofactorauth`, { isPersistent: responseModel.isPersistent, returnUrl: returnUrl }]);
-        }
         this._userService.logIn(responseModel.username, responseModel.isPersistent);
         this._router.navigate([returnUrl ? returnUrl : `/home`]);
+    }
+
+    onSubmitError(responseModel: LogInResponseModel): void {
+        if (responseModel.twoFactorRequired) {
+            let returnUrl = this._activatedRoute.snapshot.params[`returnUrl`];
+
+            this._router.navigate([`/login/two-factor-auth`, { isPersistent: responseModel.isPersistent, returnUrl: returnUrl }]);
+        } 
     }
 }

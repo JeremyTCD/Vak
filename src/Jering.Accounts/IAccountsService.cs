@@ -164,13 +164,13 @@ namespace Jering.Accounts
         /// <param name="newPassword"></param>
         /// <param name="account"></param>
         /// <returns>
-        /// <see cref="SetPasswordResult"/> with <see cref="SetPasswordResult.Succeeded"/> set to true if 
+        /// <see cref="SetPasswordHashResult"/> with <see cref="SetPasswordHashResult.Succeeded"/> set to true if 
         /// password change succeeds.
-        /// <see cref="SetPasswordResult"/> with <see cref="SetPasswordResult.AlreadySet"/> set to true if
+        /// <see cref="SetPasswordHashResult"/> with <see cref="SetPasswordHashResult.AlreadySet"/> set to true if
         /// account password is already equal to <paramref name="newPassword"/>.
         /// </returns>
         /// <exception cref="Exception">Thrown if database update fails unexpectedly</exception>
-        Task<SetPasswordResult> SetPasswordAsync(TAccount account, string newPassword);
+        Task<SetPasswordHashResult> SetPasswordHashAsync(TAccount account, string newPassword);
 
         /// <summary>
         /// Sets email of <paramref name="account"/> to <paramref name="newEmail"/>.

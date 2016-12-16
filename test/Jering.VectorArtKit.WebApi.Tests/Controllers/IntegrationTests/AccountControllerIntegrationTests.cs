@@ -206,8 +206,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
             IDictionary<string, string> applicationAndAntiForgeryCookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1,
                 _testPassword);
-            await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(_testAccountId, true);
-            await _vakAccountRepository.UpdateAccountTwoFactorEnabledAsync(_testAccountId, true);
+            await _vakAccountRepository.UpdateEmailVerifiedAsync(_testAccountId, true);
+            await _vakAccountRepository.UpdateTwoFactorEnabledAsync(_testAccountId, true);
             File.WriteAllText(_tempEmailFile, "");
 
             // Act
@@ -992,7 +992,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             // Arrange
             IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
-            await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(_testAccountId, true);
+            await _vakAccountRepository.UpdateEmailVerifiedAsync(_testAccountId, true);
 
             // Act
             HttpResponseMessage httpResponseMessage = await SetTwoFactorEnabled(cookies, _testNewTwoFactorEnabled);
@@ -1119,7 +1119,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             // Arrange
             IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
-            await _vakAccountRepository.UpdateAccountAltEmailAsync(_testAccountId, _testAltEmail);
+            await _vakAccountRepository.UpdateAltEmailAsync(_testAccountId, _testAltEmail);
             File.WriteAllText(_tempEmailFile, "");
 
             // Act
@@ -1494,7 +1494,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetEmailVerifiedFormModel.AccountId), accountId.ToString() },
                 { nameof(SetEmailVerifiedFormModel.Token), token }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
@@ -1509,7 +1508,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetAltEmailVerifiedFormModel.AccountId), accountId.ToString() },
                 { nameof(SetAltEmailVerifiedFormModel.Token), token }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
@@ -1737,8 +1735,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             IDictionary<string, string> applicationAndAntiForgeryCookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1,
                 _testPassword);
 
-            await _vakAccountRepository.UpdateAccountEmailVerifiedAsync(_testAccountId, true);
-            await _vakAccountRepository.UpdateAccountTwoFactorEnabledAsync(_testAccountId, true);
+            await _vakAccountRepository.UpdateEmailVerifiedAsync(_testAccountId, true);
+            await _vakAccountRepository.UpdateTwoFactorEnabledAsync(_testAccountId, true);
 
             IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
             HttpResponseMessage httpResponseMessage = await LogIn(antiforgeryCookies, _testEmail1, _testPassword);

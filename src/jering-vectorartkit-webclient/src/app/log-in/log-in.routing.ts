@@ -13,7 +13,8 @@ const logInRoutes: Routes = [
         component: LogInComponent,
         data: {
             formModelName: LogInComponent.formModelName,
-            formSubmitRelativeUrl: LogInComponent.formSubmitRelativeUrl
+            formSubmitRelativeUrl: LogInComponent.formSubmitRelativeUrl,
+            getAfToken: true
         },
         resolve: {
             dynamicForm: DynamicFormGuard
@@ -35,7 +36,8 @@ const logInRoutes: Routes = [
         component: ForgotPasswordComponent,
         data: {
             formModelName: ForgotPasswordComponent.formModelName,
-            formSubmitRelativeUrl: ForgotPasswordComponent.formSubmitRelativeUrl
+            formSubmitRelativeUrl: ForgotPasswordComponent.formSubmitRelativeUrl,
+            getAfToken: true
         },
         resolve: {
             dynamicForm: DynamicFormGuard
@@ -46,7 +48,8 @@ const logInRoutes: Routes = [
         component: ResetPasswordComponent,
         data: {
             formModelName: ResetPasswordComponent.formModelName,
-            formSubmitRelativeUrl: ResetPasswordComponent.formSubmitRelativeUrl
+            formSubmitRelativeUrl: ResetPasswordComponent.formSubmitRelativeUrl,
+            getAfToken: true
         },
         resolve: {
             dynamicForm: DynamicFormGuard

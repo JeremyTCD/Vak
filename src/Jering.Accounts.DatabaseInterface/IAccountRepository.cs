@@ -112,7 +112,7 @@ namespace Jering.Accounts.DatabaseInterface
         /// <param name="emailVerified"></param>
         /// <param name="rowVersion"></param>
         /// <returns></returns>
-        Task<SaveChangeResult<TAccount>> UpdateEmailVerifiedAsync(int accountId, bool emailVerified, byte[] rowVersion = null);
+        Task<UpdateResult<TAccount>> UpdateEmailVerifiedAsync(int accountId, bool emailVerified, byte[] rowVersion = null);
 
         /// <summary>
         /// 
@@ -123,14 +123,15 @@ namespace Jering.Accounts.DatabaseInterface
         /// <param name="passwordLastChanged"></param>
         /// <param name="securityStamp"></param>
         /// <returns></returns>
-        Task<SaveChangeResult<TAccount>> UpdatePasswordHashAsync(int accountId, string passwordHash, DateTimeOffset passwordLastChanged, Guid securityStamp, byte[] rowVersion = null);
+        Task<UpdateResult<TAccount>> UpdatePasswordHashAsync(int accountId, string passwordHash, DateTimeOffset passwordLastChanged, Guid securityStamp, byte[] rowVersion = null);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="account"></param>
+        /// <param name="newEmail"></param>
         /// <returns></returns>
-        Task<SaveChangeResult<TAccount>> UpdateEmailAsync(TAccount account);
+        Task<UpdateResult<TAccount>> UpdateEmailAsync(TAccount account, string newEmail);
 
         /// <summary>
         /// 
@@ -139,7 +140,7 @@ namespace Jering.Accounts.DatabaseInterface
         /// <param name="altEmail"></param>
         /// <param name="rowVersion"></param>
         /// <returns></returns>
-        Task<SaveChangeResult<TAccount>> UpdateAltEmailAsync(int accountId, string altEmail, byte[] rowVersion = null);
+        Task<UpdateResult<TAccount>> UpdateAltEmailAsync(int accountId, string altEmail, byte[] rowVersion = null);
 
         /// <summary>
         /// 
@@ -148,7 +149,7 @@ namespace Jering.Accounts.DatabaseInterface
         /// <param name="displayName"></param>
         /// <param name="rowVersion"></param>
         /// <returns></returns>
-        Task<SaveChangeResult<TAccount>> UpdateDisplayNameAsync(int accountId, string displayName, byte[] rowVersion = null);
+        Task<UpdateResult<TAccount>> UpdateDisplayNameAsync(int accountId, string displayName, byte[] rowVersion = null);
 
         /// <summary>
         /// 
@@ -157,7 +158,7 @@ namespace Jering.Accounts.DatabaseInterface
         /// <param name="twoFactorEnabled"></param>
         /// <param name="rowVersion"></param>
         /// <returns></returns>
-        Task<SaveChangeResult<TAccount>> UpdateTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled, byte[] rowVersion = null);
+        Task<UpdateResult<TAccount>> UpdateTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled, byte[] rowVersion = null);
 
         /// <summary>
         /// 
@@ -166,7 +167,7 @@ namespace Jering.Accounts.DatabaseInterface
         /// <param name="altEmailVerified"></param>
         /// <param name="rowVersion"></param>
         /// <returns></returns>
-        Task<SaveChangeResult<TAccount>> UpdateAltEmailVerifiedAsync(int accountId, bool altEmailVerified, byte[] rowVersion = null);
+        Task<UpdateResult<TAccount>> UpdateAltEmailVerifiedAsync(int accountId, bool altEmailVerified, byte[] rowVersion = null);
 
         /// <summary>
         /// 

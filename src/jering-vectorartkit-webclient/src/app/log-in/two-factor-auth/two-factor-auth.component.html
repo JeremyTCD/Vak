@@ -1,9 +1,17 @@
-<h2>Two factor authentication</h2>
+<h2>Two factor auth</h2>
 <div>
     logo
 </div>
 <div>
     Two factor explanation
 </div>
-<dynamic-form #dynamicFormComponent (submitSuccess)="onSubmitSuccess($event)"></dynamic-form>
+<div *ngIf="codeExpired">
+    <div>
+        Code expired. Log in again to obtain a new code.
+    </div>
+    <a routerLink="/log-in">Log in</a>
+</div>
+<div *ngIf="!codeExpired">
+    <dynamic-form #dynamicFormComponent (submitSuccess)="onSubmitSuccess($event)" (submitError)="onSubmitError($event)"></dynamic-form>
+</div>
 <a>Did not receive email help</a>

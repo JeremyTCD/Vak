@@ -10,7 +10,7 @@ import { UserService } from './shared/user.service';
 import { StorageService } from './shared/storage.service';
 import { HttpService } from './shared/http.service';
 import { ErrorHandlerService } from './shared/error-handler.service';
-import { AuthenticationGuard } from './shared/authentication.guard';
+import { AuthGuard } from './shared/auth.guard';
 import { HomeModule } from './home/home.module';
 
 @NgModule({
@@ -26,7 +26,7 @@ import { HomeModule } from './home/home.module';
         StorageService,
         HttpService,
         ErrorHandlerService,
-        AuthenticationGuard],
+        AuthGuard],
     bootstrap: [AppComponent]
 })
 export class AppModule { }

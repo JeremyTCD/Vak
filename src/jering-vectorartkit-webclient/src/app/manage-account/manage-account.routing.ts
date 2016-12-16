@@ -3,17 +3,19 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { ManageAccountComponent } from './manage-account.component';
 import { ManageAccountGuard } from './manage-account.guard';
-import { AuthenticationGuard } from '../shared/authentication.guard';
-import { ChangeAlternativeEmailComponent } from './change-alternative-email/change-alternative-email.component';
+import { AuthGuard } from '../shared/auth.guard';
+import { ChangeAltEmailComponent } from './change-alt-email/change-alt-email.component';
 import { ChangeEmailComponent } from './change-email/change-email.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { ChangeDisplayNameComponent } from './change-display-name/change-display-name.component';
+import { VerifyEmailComponent } from './verify-email/verify-email.component';
+import { VerifyEmailGuard } from './verify-email/verify-email.guard';
 import { DynamicFormGuard } from '../shared/dynamic-forms/dynamic-form/dynamic-form.guard';
 
 const manageAccountRoutes: Routes = [
     {
         path: '',
-        canActivateChild: [AuthenticationGuard],
+        canActivateChild: [AuthGuard],
         children: [
             {
                 path: '',
@@ -23,11 +25,18 @@ const manageAccountRoutes: Routes = [
                 }
             },
             {
-                path: 'change-alternative-email',
-                component: ChangeAlternativeEmailComponent,
+                path: 'verify-email',
+                component: VerifyEmailComponent,
+                resolve: {
+                    responseModel: VerifyEmailGuard
+                }
+            },
+            {
+                path: 'change-alt-email',
+                component: ChangeAltEmailComponent,
                 data: {
-                    formModelName: ChangeAlternativeEmailComponent.formModelName,
-                    formSubmitRelativeUrl: ChangeAlternativeEmailComponent.formSubmitRelativeUrl
+                    formModelName: ChangeAltEmailComponent.formModelName,
+                    formSubmitRelativeUrl: ChangeAltEmailComponent.formSubmitRelativeUrl
                 },
                 resolve: {
                     dynamicForm: DynamicFormGuard

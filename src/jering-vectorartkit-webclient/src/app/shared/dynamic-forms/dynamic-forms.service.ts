@@ -17,7 +17,8 @@ import { Validity } from './validity';
  */
 @Injectable()
 export class DynamicFormsService {
-    private _dynamicFormsRelativeUrl = `DynamicForms/GetDynamicForm`;
+    private _getDynamicFormRelativeUrl = `DynamicForm/GetDynamicForm`;
+    private _getDynamicFormWithAfTokenRelativeUrl = `DynamicForm/GetDynamicFormWithAfTokens`;
 
     constructor(private _httpService: HttpService) { }
 
@@ -28,13 +29,14 @@ export class DynamicFormsService {
      * Returns
      * - Observable<DynamicForm> if get request succeeds.
      */
-    getDynamicForm(formModelName: string): Observable<DynamicForm> {
+    getDynamicForm(formModelName: string, getAfToken: boolean): Observable<DynamicForm> {
         let urlSearchParams = new URLSearchParams();
         urlSearchParams.set(`formModelName`, formModelName);
         let requestOptions = new RequestOptions({withCredentials: true, search: urlSearchParams });
 
         return this._httpService.
-            get(this._dynamicFormsRelativeUrl, requestOptions).
+            get(getAfToken === true ? this._getDynamicFormWithAfTokenRelativeUrl : this._getDynamicFormRelativeUrl,
+                requestOptions).
             map(this.dynamicFormFromResponseModel, this);
     }
 

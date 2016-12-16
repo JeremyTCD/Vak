@@ -6,7 +6,8 @@
   },
   "dependencies": {
     "Dapper": "1.50.*",
-    "Jering.Accounts.DatabaseInterface": "1.0.0"
+    "Jering.Accounts.DatabaseInterface": "1.0.0",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.0.0"
   },
 
   "frameworks": {

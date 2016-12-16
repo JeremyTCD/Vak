@@ -9,6 +9,7 @@ import { TwoFactorAuthComponent } from './two-factor-auth.component';
 import { StubRouter, StubActivatedRoute } from '../../../testing/router-stubs';
 import { UserService } from '../../shared/user.service';
 import { DynamicForm } from '../../shared/dynamic-forms/dynamic-form/dynamic-form';
+import { DynamicControl } from '../../shared/dynamic-forms/dynamic-control/dynamic-control';
 
 let testIsPersistent = true;
 let testUsername = `testUsername`;
@@ -17,7 +18,7 @@ let twoFactorAuthComponentFixture: ComponentFixture<TwoFactorAuthComponent>;
 let twoFactorAuthComponent: TwoFactorAuthComponent;
 let twoFactorAuthDebugElement: DebugElement;
 let testTwoFactorAuthResponseModel: TwoFactorLogInResponseModel;
-let stubDynamicControl: StubDynamicControl;
+let testDynamicControl: DynamicControl;
 let stubDynamicFormComponent: StubDynamicFormComponent;
 let stubRouter: StubRouter;
 let stubUserService: StubUserService;
@@ -41,25 +42,24 @@ describe('TwoFactorAuthComponent', () => {
         stubUserService = TestBed.get(UserService) as StubUserService;
         stubActivatedRoute = TestBed.get(ActivatedRoute) as StubActivatedRoute;
         stubActivatedRoute.testParams = { returnUrl: testReturnUrl, isPersistent: testIsPersistent };
+        testDynamicControl = new DynamicControl({ name: `IsPersistent` });
+        twoFactorAuthComponentFixture.detectChanges();
         stubDynamicFormComponent = twoFactorAuthComponent.dynamicFormComponent;
-        stubDynamicControl = { value: null };
-        spyOn(stubDynamicFormComponent.dynamicForm, `getDynamicControl`).and.returnValue(stubDynamicControl);
     });
 
     it(`Uses ViewChild to retrieve child DynamicFormsComponent and sets its IsPersistent DynamicControl's value`, () => {
-        twoFactorAuthComponentFixture.detectChanges();
         expect(stubDynamicFormComponent).toBeDefined();
-        expect(stubDynamicFormComponent.dynamicForm.getDynamicControl).toHaveBeenCalledWith(`IsPersistent`);
-        expect(stubDynamicControl.value).toBe(testIsPersistent);
+        expect(testDynamicControl.value).toBe(testIsPersistent);
     });
 
     it(`Listens to child DynamicFormComponent output`, () => {
         spyOn(twoFactorAuthComponent, `onSubmitSuccess`);
-        twoFactorAuthComponentFixture.detectChanges();
+        spyOn(twoFactorAuthComponent, `onSubmitError`);
         let anchorDebugElement = twoFactorAuthDebugElement.query(By.css(`a`));
 
         anchorDebugElement.triggerEventHandler('click', null);
 
+        expect(twoFactorAuthComponent.onSubmitError).toHaveBeenCalledTimes(1);
         expect(twoFactorAuthComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
     });
 
@@ -95,15 +95,60 @@ describe('TwoFactorAuthComponent', () => {
             expect(stubRouter.navigate).toHaveBeenCalledWith([testReturnUrl]);
         });
     });
+
+    describe(`onSubmitError`, () => {
+        it(`Sets codeExpired to true if twoFactorAuthResponseModel.expiredCredentials is true`, () => {
+            testTwoFactorAuthResponseModel = { expiredCredentials: true }
+
+            twoFactorAuthComponent.onSubmitError(testTwoFactorAuthResponseModel);
+
+            expect(twoFactorAuthComponent.codeExpired).toBe(true);
+        });
+
+        it(`Sets codeExpired to true if twoFactorAuthResponseModel.expiredToken is true`, () => {
+            testTwoFactorAuthResponseModel = { expiredToken: true }
+
+            twoFactorAuthComponent.onSubmitError(testTwoFactorAuthResponseModel);
+
+            expect(twoFactorAuthComponent.codeExpired).toBe(true);
+        });
+    });
+
+    it(`Renders DynamicForm if codeExpired is false`, () => {
+        twoFactorAuthComponent.codeExpired = false;
+        twoFactorAuthComponentFixture.detectChanges();
+
+        expect(twoFactorAuthDebugElement.queryAll(By.css(`dynamic-form`)).length).toBe(1);
+        let divs = twoFactorAuthDebugElement.queryAll(By.css(`div`));
+        expect(divs.
+            some(debugElement => debugElement.nativeElement.textContent.trim() === `Code expired. Log in again to obtain a new code.`)).toBe(false);
+        let anchors = twoFactorAuthDebugElement.queryAll(By.css(`a`));
+        expect(anchors.
+            some(debugElement => debugElement.nativeElement.textContent.trim() === `Log in`)).toBe(false);
+    });
+
+    it(`Renders code expired tip and log in link if codeExpired is true`, () => {
+        twoFactorAuthComponent.codeExpired = true;
+        twoFactorAuthComponentFixture.detectChanges();
+
+        let divs = twoFactorAuthDebugElement.queryAll(By.css(`div`));
+        expect(divs.
+            some(debugElement => debugElement.nativeElement.textContent.trim() === `Code expired. Log in again to obtain a new code.`)).toBe(true);
+        let anchors = twoFactorAuthDebugElement.queryAll(By.css(`a`));
+        expect(anchors.
+            some(debugElement => debugElement.nativeElement.textContent.trim() === `Log in`)).toBe(true);
+        expect(twoFactorAuthDebugElement.queryAll(By.css(`dynamic-form`)).length).toBe(0);
+    });
 });
 
 @Component({
     selector: `dynamic-form`,
-    template: `<a (click)=submitSuccess.emit()></a>`
+    template: `<a (click)="submitSuccess.emit();submitError.emit()"></a>`
 })
 class StubDynamicFormComponent {
     @Output() submitSuccess = new EventEmitter<Response>();
-    dynamicForm: DynamicForm = new DynamicForm([], null, null);
+    @Output() submitError = new EventEmitter<Response>();
+    dynamicForm: DynamicForm = new DynamicForm([testDynamicControl], null, null);
 }
 
 class StubUserService {
@@ -111,8 +156,4 @@ class StubUserService {
     }
 
     returnUrl: string;
-}
-
-class StubDynamicControl {
-    value: string;
 }

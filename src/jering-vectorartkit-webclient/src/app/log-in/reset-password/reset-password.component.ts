@@ -36,7 +36,7 @@ export class ResetPasswordComponent implements AfterViewInit, OnInit {
     }
 
     onSubmitError(responseModel: ResetPasswordResponseModel): void {
-        if (responseModel.linkExpiredOrInvalid) {
+        if (responseModel.invalidEmail || responseModel.invalidToken) {
             this.linkExpiredOrInvalid = true;
         }
     }

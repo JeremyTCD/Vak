@@ -5,7 +5,7 @@ namespace Jering.Accounts.DatabaseInterface
     /// <summary>
     /// Result for <see cref="IAccountRepository{TAccount}.Update*"/>.
     /// </summary>
-    public class SaveChangeResult<TAccount> where TAccount : IAccount
+    public class UpdateResult<TAccount> where TAccount : IAccount
     {
         /// <summary>
         /// 
@@ -24,38 +24,52 @@ namespace Jering.Accounts.DatabaseInterface
         /// <summary>
         /// 
         /// </summary>
+        public bool AlreadyUpdated { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public byte[] RowVersion { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
-        TAccount Account { get; set; }
+        public TAccount Account { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static SaveChangeResult<TAccount> GetSucceededResult(TAccount account)
+        public static UpdateResult<TAccount> GetSucceededResult(TAccount account)
         {
-            return new SaveChangeResult<TAccount>() { Succeeded = true, Account = account };
+            return new UpdateResult<TAccount>() { Succeeded = true, Account = account };
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static SaveChangeResult<TAccount> GetDuplicateRowResult()
+        public static UpdateResult<TAccount> GetAlreadyUpdatedResult()
         {
-            return new SaveChangeResult<TAccount>() { DuplicateRow = true };
+            return new UpdateResult<TAccount>() { AlreadyUpdated = true };
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static SaveChangeResult<TAccount> GetInvalidRowVersionOrAccountIdResult()
+        public static UpdateResult<TAccount> GetDuplicateRowResult()
         {
-            return new SaveChangeResult<TAccount>() { InvalidRowVersionOrAccountId = true };
+            return new UpdateResult<TAccount>() { DuplicateRow = true };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static UpdateResult<TAccount> GetInvalidRowVersionOrAccountIdResult()
+        {
+            return new UpdateResult<TAccount>() { InvalidRowVersionOrAccountId = true };
         }
     }
 }

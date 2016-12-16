@@ -1,8 +1,8 @@
  
 
-export interface SendResetPasswordResponseModel {
+export interface SendAltEmailVerificationEmailResponseModel {
 	modelState?: { [key: string]: any; };
 	expectedError?: boolean;
 	errorMessage?: string;
-	invalidEmail?: boolean;
+	invalidAltEmail?: boolean;
 }

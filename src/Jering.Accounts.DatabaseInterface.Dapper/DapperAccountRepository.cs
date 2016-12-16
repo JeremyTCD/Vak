@@ -280,135 +280,6 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
                 commandType: CommandType.StoredProcedure) > 0;
         }
 
-        /// <summary>
-        /// Sets EmailVerified of account with specified <paramref name="accountId"/> to 
-        /// <paramref name="emailVerified"/>. 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="emailVerified"></param>
-        /// <param name="rowVersion"></param>
-        /// <returns>
-        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
-        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
-        /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
-        /// </returns>
-        public virtual async Task<SaveChangeResult<TAccount>> UpdateEmailVerifiedAsync(int accountId, bool emailVerified, 
-            byte[] rowVersion = null)
-        {
-            try
-            {
-                await _sqlConnection.ExecuteAsync(@"[Accounts].[UpdateEmailVerified]",
-                    new
-                    {
-                        AccountId = accountId,
-                        EmailVerified = emailVerified,
-                        RowVersion = rowVersion
-                    },
-                    commandType: CommandType.StoredProcedure);
-
-                return SaveChangeResult<TAccount>.GetSucceededResult();
-            }
-            catch (SqlException exception)
-            {
-                if (exception.Number == _invalidArgumentErrorNumber)
-                {
-                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
-                }
-
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Sets TwoFactorEnabled of account with specified <paramref name="accountId"/> to 
-        /// <paramref name="twoFactorEnabled"/>. 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="twoFactorEnabled"></param>
-        /// <param name="rowVersion"></param>
-        /// <returns>
-        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
-        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
-        /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
-        /// </returns>
-        public virtual async Task<SaveChangeResult<TAccount>> UpdateTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled, 
-            byte[] rowVersion = null)
-        {
-            try
-            {
-                await _sqlConnection.ExecuteAsync(@"[Accounts].[UpdateTwoFactorEnabled]",
-                    new
-                    {
-                        AccountId = accountId,
-                        TwoFactorEnabled = twoFactorEnabled,
-                        RowVersion = rowVersion
-                    },
-                    commandType: CommandType.StoredProcedure);
-
-                return SaveChangeResult<TAccount>.GetSucceededResult();
-            }
-            catch (SqlException exception)
-            {
-                if (exception.Number == _invalidArgumentErrorNumber)
-                {
-                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
-                }
-
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Sets PasswordHash of account with specified <paramref name="accountId"/> to 
-        /// <paramref name="passwordHash"/>. 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="passwordHash"></param>
-        /// <param name="rowVersion"></param>
-        /// <param name="passwordLastChanged"></param>
-        /// <param name="securityStamp"></param>
-        /// <returns>
-        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
-        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
-        /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
-        /// </returns>
-        public virtual async Task<SaveChangeResult<TAccount>> UpdatePasswordHashAsync(int accountId, string passwordHash,
-            DateTimeOffset passwordLastChanged, Guid securityStamp, byte[] rowVersion = null)
-        {
-            if (string.IsNullOrEmpty(passwordHash))
-            {
-                throw new ArgumentException(nameof(passwordHash));
-            }
-            if(passwordLastChanged == default(DateTimeOffset))
-            {
-                throw new ArgumentException(nameof(passwordLastChanged));
-            }
-
-            try
-            {
-                await _sqlConnection.ExecuteAsync(@"[Accounts].[UpdatePasswordHash]",
-                    new
-                    {
-                        AccountId = accountId,
-                        PasswordHash = passwordHash,
-                        PasswordLastChanged = passwordLastChanged,
-                        SecurityStamp = securityStamp,
-                        RowVersion = rowVersion
-                    },
-                    commandType: CommandType.StoredProcedure);
-
-                return SaveChangeResult<TAccount>.GetSucceededResult();
-            }
-            catch (SqlException exception)
-            {
-                if (exception.Number == _invalidArgumentErrorNumber)
-                {
-                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
-                }
-
-                throw;
-            }
-        }
 
         /// <summary>
         /// Sets Email of account with specified <paramref name="accountId"/> to 
@@ -417,16 +288,21 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
         /// <param name="account"></param>
         /// <param name="newEmail"></param>
         /// <returns>
-        /// <see cref="UpdateEmailResult.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
-        /// <see cref="UpdateEmailResult.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
-        /// <see cref="UpdateEmailResult.DuplicateRow"/> if <paramref name="email"/> is in use.
-        /// <see cref="UpdateEmailResult.Succeeded"/> if update is successful.
+        /// <see cref="UpdateResult.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
+        /// <see cref="UpdateResult.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
+        /// <see cref="UpdateResult.DuplicateRow"/> if <paramref name="email"/> is in use.
+        /// <see cref="UpdateResult.Succeeded"/> if update is successful.
         /// </returns>
-        public virtual async Task<SaveChangeResult<TAccount>> UpdateEmailAsync(TAccount account, string newEmail)
+        public virtual async Task<UpdateResult<TAccount>> UpdateEmailAsync(TAccount account, string newEmail)
         {
             if(account == null)
             {
                 throw new ArgumentNullException(nameof(account));
+            }
+
+            if(account.Email == newEmail)
+            {
+                return UpdateResult<TAccount>.GetAlreadyUpdatedResult();
             }
 
             try
@@ -444,17 +320,17 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
                 updatedAccount.EmailVerified = false;
                 updatedAccount.TwoFactorEnabled = false;
 
-                return SaveChangeResult<TAccount>.GetSucceededResult(account);
+                return UpdateResult<TAccount>.GetSucceededResult(updatedAccount);
             }
             catch (SqlException exception)
             {
                 if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                    return UpdateResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
                 }
                 if (exception.Number == _constraintViolationErrorNumber)
                 {
-                    return SaveChangeResult<TAccount>.GetDuplicateRowResult();
+                    return UpdateResult<TAccount>.GetDuplicateRowResult();
                 }
 
                 throw;
@@ -473,8 +349,7 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
         /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
         /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
         /// </returns>
-        public virtual async Task<SaveChangeResult<TAccount>> UpdateAltEmailAsync(int accountId, string altEmail, 
-            byte[] rowVersion = null)
+        public virtual async Task<UpdateResult<TAccount>> UpdateAltEmailAsync(TAccount account, string altEmail)
         {
             if (string.IsNullOrEmpty(altEmail))
             {
@@ -492,13 +367,13 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
                     },
                     commandType: CommandType.StoredProcedure);
 
-                return SaveChangeResult<TAccount>.GetSucceededResult();
+                return UpdateResult<TAccount>.GetSucceededResult();
             }
             catch (SqlException exception)
             {
                 if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                    return UpdateResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
                 }
 
                 throw;
@@ -518,7 +393,7 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
         /// <see cref="SaveChangeResult<TAccount>.DuplicateRow"/> if <paramref name="displayName"/> is in use.
         /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
         /// </returns>
-        public virtual async Task<SaveChangeResult<TAccount>> UpdateDisplayNameAsync(int accountId, string displayName, 
+        public virtual async Task<UpdateResult<TAccount>> UpdateDisplayNameAsync(int accountId, string displayName, 
             byte[] rowVersion = null)
         {
             if (string.IsNullOrEmpty(displayName))
@@ -537,17 +412,17 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
                     },
                     commandType: CommandType.StoredProcedure);
 
-                return SaveChangeResult<TAccount>.GetSucceededResult();
+                return UpdateResult<TAccount>.GetSucceededResult();
             }
             catch (SqlException exception)
             {
                 if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                    return UpdateResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
                 }
                 if (exception.Number == _uniqueIndexViolationErrorNumber)
                 {
-                    return SaveChangeResult<TAccount>.GetDuplicateRowResult();
+                    return UpdateResult<TAccount>.GetDuplicateRowResult();
                 }
 
                 throw;
@@ -566,7 +441,7 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
         /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
         /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
         /// </returns>
-        public virtual async Task<SaveChangeResult<TAccount>> UpdateAltEmailVerifiedAsync(int accountId, bool altEmailVerified, 
+        public virtual async Task<UpdateResult<TAccount>> UpdateAltEmailVerifiedAsync(int accountId, bool altEmailVerified, 
             byte[] rowVersion = null)
         {
             try
@@ -580,13 +455,13 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
                     },
                     commandType: CommandType.StoredProcedure);
 
-                return SaveChangeResult<TAccount>.GetSucceededResult();
+                return UpdateResult<TAccount>.GetSucceededResult();
             }
             catch (SqlException exception)
             {
                 if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                    return UpdateResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
                 }
 
                 throw;

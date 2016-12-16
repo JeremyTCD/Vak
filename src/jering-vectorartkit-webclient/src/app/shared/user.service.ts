@@ -6,7 +6,7 @@ import { HttpService } from './http.service';
 import { StorageService } from './storage.service';
 
 /**
- * Provides user authentication state and management
+ * Provides user auth state and management
  */
 @Injectable()
 export class UserService {

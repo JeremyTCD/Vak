@@ -6,8 +6,8 @@ export interface GetAccountDetailsResponseModel {
 	twoFactorEnabled?: boolean;
 	email?: string;
 	emailVerified?: boolean;
-	alternativeEmail?: string;
-	alternativeEmailVerified?: boolean;
+	altEmail?: string;
+	altEmailVerified?: boolean;
 	modelState?: { [key: string]: any; };
 	expectedError?: boolean;
 	errorMessage?: string;

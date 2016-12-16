@@ -3,8 +3,8 @@
     logo
 </div>
 <hr />
-<dynamic-form (submitSuccess)="onSubmitSuccess($event)"></dynamic-form>
+<dynamic-form (submitSuccess)="onSubmitSuccess($event)" (submitError)="onSubmitError($event)"></dynamic-form>
 <hr />
-<a routerLink="/login/forgot-password">Forgot password</a><br />
+<a routerLink="/log-in/forgot-password">Forgot password</a><br />
 <!-- TODO consider adding return url -->
 <a routerLink="/sign-up">Sign up</a>

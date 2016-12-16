@@ -2,7 +2,8 @@
 
 export interface ResetPasswordResponseModel {
 	modelState?: { [key: string]: any; };
-	linkExpiredOrInvalid?: boolean;
+	invalidToken?: boolean;
+	invalidEmail?: boolean;
 	expectedError?: boolean;
 	errorMessage?: string;
 	email?: string;

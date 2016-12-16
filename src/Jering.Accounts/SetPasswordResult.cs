@@ -3,9 +3,9 @@
 namespace Jering.Accounts
 {
     /// <summary>
-    /// Results for <see cref="IAccountsService{TAccount}.SetPasswordAsync(TAccount, string)"/>.
+    /// Results for <see cref="IAccountsService{TAccount}.SetPasswordHashAsync(TAccount, string)"/>.
     /// </summary>
-    public class SetPasswordResult
+    public class SetPasswordHashResult
     {
         /// <summary>
         /// 
@@ -21,18 +21,18 @@ namespace Jering.Accounts
         /// 
         /// </summary>
         /// <returns></returns>
-        public static SetPasswordResult GetSucceededResult()
+        public static SetPasswordHashResult GetSucceededResult()
         {
-            return new SetPasswordResult { Succeeded = true};
+            return new SetPasswordHashResult { Succeeded = true};
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <returns></returns>
-        public static SetPasswordResult GetAlreadySetResult()
+        public static SetPasswordHashResult GetAlreadySetResult()
         {
-            return new SetPasswordResult { AlreadySet = true };
+            return new SetPasswordHashResult { AlreadySet = true };
         }
     }
 }

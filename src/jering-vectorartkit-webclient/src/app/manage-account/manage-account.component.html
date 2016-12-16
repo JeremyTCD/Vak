@@ -8,70 +8,81 @@
         Password
     </h3>
     <div>
-        Last changed: {{responseModel.durationSinceLastPasswordChange}}
+        Last changed: {{accountDetails.durationSinceLastPasswordChange}}
     </div>
     <a>Change password</a>
 </div>
 <div>
     <h3>Email address</h3>
     <div>
-        Email address: {{responseModel.email}}
+        Email address: {{accountDetails.email}}
     </div>
-    <div *ngIf="responseModel.emailVerified">
+    <div *ngIf="accountDetails.emailVerified">
         Email address verified
     </div>
-    <div *ngIf="!responseModel.emailVerified">
+    <div *ngIf="!accountDetails.emailVerified">
         <div>Email address unverified</div>
-        <a>Send verification email</a>
+        <div *ngIf="emailVerificationEmailSent">
+            <div>Email verification email sent.</div>
+            <a>Did not receive email help</a>
+        </div>
+        <div *ngIf="!emailVerificationEmailSent">
+            <a (click)="sendEmailVerificationEmail()">Send verification email</a>
+        </div>
     </div>
     <a routerLink="/manage-account/change-email">Change email address</a>
 </div>
 <div>
     <h3>Alternative email address</h3>
-    <div *ngIf="!responseModel.alternativeEmail">
+    <div *ngIf="!accountDetails.altEmail">
         Alternative email address not set
     </div>
-    <div *ngIf="responseModel.alternativeEmail">
+    <div *ngIf="accountDetails.altEmail">
         <div>
-            Alternative email address: {{responseModel.alternativeEmail}}
+            Alternative email address: {{accountDetails.altEmail}}
         </div>
-        <div *ngIf="responseModel.alternativeEmailVerified">
+        <div *ngIf="accountDetails.altEmailVerified">
             Alternative email address verified
         </div>
-        <div *ngIf="!responseModel.alternativeEmailVerified">
+        <div *ngIf="!accountDetails.altEmailVerified">
             <div>Alternative email address unverified</div>
-            <a>Send verification email</a>
+            <div *ngIf="altEmailVerificationEmailSent">
+                <div>Email verification email sent.</div>
+                <a>Did not receive email help</a>
+            </div>
+            <div *ngIf="!altEmailVerificationEmailSent">
+                <a (click)="sendAltEmailVerificationEmail()">Send verification email</a>
+            </div>
         </div>
     </div>
-    <a routerLink="/manage-account/change-alternative-email">Change alternative email address</a>
+    <a routerLink="/manage-account/change-alt-email">Change alt email address</a>
 </div>
 <div>
     <h3>
         Display name
     </h3>
-    <div *ngIf="!responseModel.displayName">
+    <div *ngIf="!accountDetails.displayName">
         Display name not set
     </div>
-    <div *ngIf="responseModel.displayName">
+    <div *ngIf="accountDetails.displayName">
         <div>
-            Display name: {{responseModel.displayName}}
+            Display name: {{accountDetails.displayName}}
         </div>
     </div>
     <a routerLink="/manage-account/change-display-name">Change display name</a>
 </div>
 <div>
     <h3>
-        Two factor authentication
+        Two factor auth
     </h3>
-    <div *ngIf="!responseModel.twoFactorEnabled">
-        <div>Two factor authentication disabled</div>
-        <a>Enable two factor authentication</a>
+    <div *ngIf="!accountDetails.twoFactorEnabled">
+        <div>Two factor auth disabled</div>
+        <a (click)="setTwoFactorEnabled(true)">Enable two factor auth</a>
     </div>
-    <div *ngIf="responseModel.twoFactorEnabled">
+    <div *ngIf="accountDetails.twoFactorEnabled">
         <div>
-            Two factor authentication enabled
+            Two factor auth enabled
         </div>
-        <a>Disable two factor authentication</a>
+        <a (click)="setTwoFactorEnabled(false)">Disable two factor auth</a>
     </div>
-
 </div>
