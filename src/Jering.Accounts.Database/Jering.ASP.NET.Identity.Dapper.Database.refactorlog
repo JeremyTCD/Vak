@@ -50,9 +50,9 @@
     <Property Name="NewName" Value="[ClaimId]" />
   </Operation>
   <Operation Name="Rename Refactor" Key="ec0e9e23-38e3-49bc-b3fe-e3388ac83206" ChangeDateTime="07/15/2016 04:15:11">
-    <Property Name="ElementName" Value="[Website].[GetUsername]" />
+    <Property Name="ElementName" Value="[Accounts].[GetUsername]" />
     <Property Name="ElementType" Value="SqlProcedure" />
-    <Property Name="ParentElementName" Value="[Website]" />
+    <Property Name="ParentElementName" Value="[Accounts]" />
     <Property Name="ParentElementType" Value="SqlSchema" />
     <Property Name="NewName" Value="[GetAccountUsername]" />
   </Operation>

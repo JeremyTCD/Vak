@@ -5,6 +5,7 @@ using Dapper;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using Jering.Accounts.DatabaseInterface;
 
 namespace Jering.Accounts.DatabaseInterface.Dapper
 {
@@ -16,6 +17,10 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
     public class DapperAccountRepository<TAccount> : IAccountRepository<TAccount> 
         where TAccount : IAccount
     {
+        private int _invalidArgumentErrorNumber = 51000;
+        private int _constraintViolationErrorNumber = 2627;
+        private int _uniqueIndexViolationErrorNumber = 2601;
+
         /// <summary>
         /// 
         /// </summary>
@@ -35,120 +40,168 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
             _sqlConnection = sqlConnection;
         }
 
+        #region Create
         /// <summary>
         /// Creates an account with specified <paramref name="email"/> and <paramref name="passwordHash"/>.
         /// </summary>
         /// <param name="email"></param>
         /// <param name="passwordHash"></param>
-        /// <returns>Newly created account.</returns>
-        public virtual async Task<TAccount> CreateAccountAsync(string email, string passwordHash)
+        /// <param name="passwordLastChanged"></param>
+        /// <param name="securityStamp"></param>
+        /// <returns>
+        /// <see cref="CreateResult{TAccount}"/> with <see cref="CreateResult{TAccount}.DuplicateRow"/> set to true if <paramref name="email"/> is in use.
+        /// <see cref="CreateResult{TAccount}"/> with <see cref="CreateResult{TAccount}.Succeeded"/> set to true if account is created successfully. 
+        /// </returns>
+        public virtual async Task<CreateResult<TAccount>> CreateAsync(string email, string passwordHash, 
+            DateTimeOffset passwordLastChanged, Guid securityStamp)
         {
-            return (await _sqlConnection.QueryAsync<TAccount>(@"[Website].[CreateAccount]",
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new ArgumentException(nameof(email));
+            }
+            if(string.IsNullOrEmpty(passwordHash))
+            {
+                throw new ArgumentException(nameof(passwordHash));
+            }
+            if(securityStamp == default(Guid))
+            {
+                throw new ArgumentException(nameof(securityStamp));
+            }
+            if(passwordLastChanged == default(DateTimeOffset))
+            {
+                throw new ArgumentException(nameof(passwordLastChanged));
+            }
+
+            try
+            {
+                TAccount account = (await _sqlConnection.QueryAsync<TAccount>(@"[Accounts].[CreateAccount]",
+                    new
+                    {
+                        PasswordHash = passwordHash,
+                        Email = email,
+                        PasswordLastChanged = passwordLastChanged,
+                        SecurityStamp = securityStamp
+                    },
+                commandType: CommandType.StoredProcedure)).First();
+
+                return CreateResult<TAccount>.GetSucceededResult(account);
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _constraintViolationErrorNumber)
+                {
+                    return CreateResult<TAccount>.GetDuplicateRowResult();
+                }
+
+                throw;
+            }
+        }
+        #endregion
+
+        #region Read
+        /// <summary>
+        /// Checks whether <paramref name="email"/> is in use.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns>
+        /// True if <paramref name="email"/> is in use.
+        /// False otherwise.
+        /// </returns>
+        public virtual async Task<bool> CheckEmailInUseAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new ArgumentException(nameof(email));
+            }
+
+            return await _sqlConnection.ExecuteScalarAsync<bool>(@"[Accounts].[CheckEmailInUse]",
                 new
                 {
-                    PasswordHash = passwordHash,
                     Email = email
                 },
-                commandType: CommandType.StoredProcedure)).FirstOrDefault();
+                commandType: CommandType.StoredProcedure);
         }
 
         /// <summary>
-        /// Deletes account with specified <paramref name="accountId"/>.
+        /// Checks whether <paramref name="displayName"/> is in use.
         /// </summary>
-        /// <param name="accountId"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> DeleteAccountAsync(int accountId)
+        /// <param name="displayName"></param>
+        /// <returns>
+        /// True if <paramref name="displayName"/> is in use.
+        /// False otherwise.
+        /// </returns>
+        public virtual async Task<bool> CheckDisplayNameInUseAsync(string displayName)
         {
-            return (await _sqlConnection.QueryAsync<int>(@"[Website].[DeleteAccount]",
+            return await _sqlConnection.ExecuteScalarAsync<bool>(@"[Accounts].[CheckDisplayNameInUse]",
                 new
                 {
-                    AccountId = accountId
+                    DisplayName = displayName
                 },
-                commandType: CommandType.StoredProcedure)).FirstOrDefault() > 0;
-        }
+                commandType: CommandType.StoredProcedure);
+        } 
 
         /// <summary>
         /// Gets account with specified <paramref name="accountId"/>. 
         /// </summary>
         /// <param name="accountId"></param>
-        /// <returns>account with specified <paramref name="accountId"/> if it exists, 
-        /// null otherwise.</returns>
+        /// <returns>
+        /// Account with specified <paramref name="accountId"/> if it exists. 
+        /// Null otherwise.
+        /// </returns>
         public virtual async Task<TAccount> GetAccountAsync(int accountId)
         {
-            return (await _sqlConnection.QueryAsync<TAccount>(@"[Website].[GetAccount]",
+            try
+            {
+                TAccount account = (await _sqlConnection.QueryAsync<TAccount>(@"[Accounts].[GetAccount]",
                 new
                 {
                     AccountId = accountId
                 },
-                commandType: CommandType.StoredProcedure)).FirstOrDefault();
+                commandType: CommandType.StoredProcedure)).First();
+
+                return account;
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _invalidArgumentErrorNumber)
+                {
+                    return default(TAccount);
+                }
+
+                throw;
+            }
         }
 
         /// <summary>
         /// Gets account with specified <paramref name="email"/>. 
         /// </summary>
         /// <param name="email"></param>
-        /// <returns>account with specified <paramref name="email"/> if it exists, 
-        /// null otherwise.</returns>
-        public virtual async Task<TAccount> GetAccountByEmailAsync(string email)
+        /// <returns>
+        /// Account with specified <paramref name="email"/> if it exists. 
+        /// Null otherwise.
+        /// </returns>
+        public virtual async Task<TAccount> GetByEmailAsync(string email)
         {
-            return (await _sqlConnection.QueryAsync<TAccount>(@"[Website].[GetAccountByEmail]",
+            try
+            {
+                TAccount account = (await _sqlConnection.QueryAsync<TAccount>(@"[Accounts].[GetAccountByEmail]",
                 new
                 {
                     Email = email
                 },
-                commandType: CommandType.StoredProcedure)).FirstOrDefault();
-        }
+                commandType: CommandType.StoredProcedure)).First();
 
-        /// <summary>
-        /// Gets account with specified <paramref name="email"/>. 
-        /// </summary>
-        /// <param name="email"></param>
-        /// <returns>account with specified <paramref name="email"/> if it exists, 
-        /// null otherwise.</returns>
-        public virtual async Task<TAccount> GetAccountByEmailOrAltEmailAsync(string email)
-        {
-            return (await _sqlConnection.QueryAsync<TAccount>(@"[Website].[GetAccountByEmailOrAltEmail]",
-                new
+                return account;
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    Email = email
-                },
-                commandType: CommandType.StoredProcedure)).FirstOrDefault();
-        }
+                    return default(TAccount);
+                }
 
-        /// <summary>
-        /// Adds <see cref="Role"/> with specified <paramref name="roleId"/> to account with 
-        /// specified <paramref name="accountId"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="roleId"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> AddAccountRoleAsync(int accountId, int roleId)
-        {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[AddAccountRole]",
-                new
-                {
-                    AccountId = accountId,
-                    RoleId = roleId
-                },
-                commandType: CommandType.StoredProcedure) > 0;
-        }
-
-        /// <summary>
-        /// Deletes <see cref="Role"/> with specified <paramref name="roleId"/> from account with 
-        /// specified <paramref name="accountId"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="roleId"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> DeleteAccountRoleAsync(int accountId, int roleId)
-        {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[DeleteAccountRole]",
-                new
-                {
-                    AccountId = accountId,
-                    RoleId = roleId
-                },
-                commandType: CommandType.StoredProcedure) > 0;
+                throw;
+            }
         }
 
         /// <summary>
@@ -160,50 +213,14 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
         /// specified <paramref name="accountId"/>.</returns>
         /// <remarks>Returns empty <see cref="IEnumerable{Role}"/> if account has no <see cref="Role"/>s 
         /// or account does not exist.</remarks>
-        public virtual async Task<IEnumerable<Role>> GetAccountRolesAsync(int accountId)
+        public virtual async Task<IEnumerable<Role>> GetRolesAsync(int accountId)
         {
-            return await _sqlConnection.QueryAsync<Role>(@"[Website].[GetAccountRoles]",
+            return await _sqlConnection.QueryAsync<Role>(@"[Accounts].[GetAccountRoles]",
                 new
                 {
                     AccountId = accountId
                 },
                 commandType: CommandType.StoredProcedure);
-        }
-
-        /// <summary>
-        /// Adds <see cref="Claim"/> with specified <paramref name="claimId"/> to account with 
-        /// specified <paramref name="accountId"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="claimId"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> AddAccountClaimAsync(int accountId, int claimId)
-        {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[AddAccountClaim]",
-                new
-                {
-                    AccountId = accountId,
-                    ClaimId = claimId
-                },
-                commandType: CommandType.StoredProcedure) > 0;
-        }
-
-        /// <summary>
-        /// Deletes <see cref="Claim"/> with specified <paramref name="claimId"/> from account with 
-        /// specified <paramref name="accountId"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="claimId"></param>
-        /// <returns>True if successful, false othewise.</returns>
-        public virtual async Task<bool> DeleteAccountClaimAsync(int accountId, int claimId)
-        {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[DeleteAccountClaim]",
-                new
-                {
-                    AccountId = accountId,
-                    ClaimId = claimId
-                },
-                commandType: CommandType.StoredProcedure) > 0;
         }
 
         /// <summary>
@@ -215,64 +232,130 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
         /// specified <paramref name="accountId"/>.</returns>
         /// <remarks>Returns empty <see cref="IEnumerable{Claim}"/> if account has no <see cref="Role"/>s 
         /// or account does not exist.</remarks>
-        public virtual async Task<IEnumerable<Claim>> GetAccountClaimsAsync(int accountId)
+        public virtual async Task<IEnumerable<Claim>> GetClaimsAsync(int accountId)
         {
-            return await _sqlConnection.QueryAsync<Claim>(@"[Website].[GetAccountClaims]",
+            return await _sqlConnection.QueryAsync<Claim>(@"[Accounts].[GetAccountClaims]",
                 new
                 {
                     AccountId = accountId
                 },
                 commandType: CommandType.StoredProcedure);
         }
+        #endregion
 
+        #region Update
         /// <summary>
-        /// Gets SecurityStamp of account with specified <paramref name="accountId"/>.
+        /// Adds <see cref="Role"/> with specified <paramref name="roleId"/> to account with 
+        /// specified <paramref name="accountId"/>.
         /// </summary>
         /// <param name="accountId"></param>
-        /// <returns>A <see cref="Guid"/>.</returns>
-        /// <remarks>Returns a <see cref="Guid"/> with value <see cref="Guid.Empty"/> if account does not exist.</remarks>
-        public virtual async Task<Guid> GetAccountSecurityStampAsync(int accountId)
+        /// <param name="roleId"></param>
+        /// <returns>True if successful, false otherwise.</returns>
+        public virtual async Task<bool> AddRoleAsync(int accountId, int roleId)
         {
-            return await _sqlConnection.ExecuteScalarAsync<Guid>(@"[Website].[GetAccountSecurityStamp]",
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Accounts].[AddAccountRole]",
                 new
                 {
-                    AccountId = accountId
+                    AccountId = accountId,
+                    RoleId = roleId
                 },
-                commandType: CommandType.StoredProcedure);
+                commandType: CommandType.StoredProcedure) > 0;
         }
 
         /// <summary>
-        /// Sets EmailVerified of account with specified <paramref name="accountId"/> to <paramref name="emailVerified"/>. 
+        /// Adds <see cref="Claim"/> with specified <paramref name="claimId"/> to account with 
+        /// specified <paramref name="accountId"/>.
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="claimId"></param>
+        /// <returns>True if successful, false otherwise.</returns>
+        public virtual async Task<bool> AddClaimAsync(int accountId, int claimId)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Accounts].[AddAccountClaim]",
+                new
+                {
+                    AccountId = accountId,
+                    ClaimId = claimId
+                },
+                commandType: CommandType.StoredProcedure) > 0;
+        }
+
+        /// <summary>
+        /// Sets EmailVerified of account with specified <paramref name="accountId"/> to 
+        /// <paramref name="emailVerified"/>. 
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="emailVerified"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountEmailVerifiedAsync(int accountId, bool emailVerified)
+        /// <param name="rowVersion"></param>
+        /// <returns>
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
+        /// </returns>
+        public virtual async Task<SaveChangeResult<TAccount>> UpdateEmailVerifiedAsync(int accountId, bool emailVerified, 
+            byte[] rowVersion = null)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountEmailVerified]",
-                new
+            try
+            {
+                await _sqlConnection.ExecuteAsync(@"[Accounts].[UpdateEmailVerified]",
+                    new
+                    {
+                        AccountId = accountId,
+                        EmailVerified = emailVerified,
+                        RowVersion = rowVersion
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                return SaveChangeResult<TAccount>.GetSucceededResult();
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    AccountId = accountId,
-                    EmailVerified = emailVerified
-                },
-                commandType: CommandType.StoredProcedure) > 0;
+                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                }
+
+                throw;
+            }
         }
 
         /// <summary>
-        /// Sets TwoFactorEnabled of account with specified <paramref name="accountId"/> to <paramref name="twoFactorEnabled"/>. 
+        /// Sets TwoFactorEnabled of account with specified <paramref name="accountId"/> to 
+        /// <paramref name="twoFactorEnabled"/>. 
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="twoFactorEnabled"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled)
+        /// <param name="rowVersion"></param>
+        /// <returns>
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
+        /// </returns>
+        public virtual async Task<SaveChangeResult<TAccount>> UpdateTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled, 
+            byte[] rowVersion = null)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountTwoFactorEnabled]",
-                new
+            try
+            {
+                await _sqlConnection.ExecuteAsync(@"[Accounts].[UpdateTwoFactorEnabled]",
+                    new
+                    {
+                        AccountId = accountId,
+                        TwoFactorEnabled = twoFactorEnabled,
+                        RowVersion = rowVersion
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                return SaveChangeResult<TAccount>.GetSucceededResult();
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    AccountId = accountId,
-                    TwoFactorEnabled = twoFactorEnabled
-                },
-                commandType: CommandType.StoredProcedure) > 0;
+                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                }
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -281,34 +364,101 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="passwordHash"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountPasswordHashAsync(int accountId, string passwordHash)
+        /// <param name="rowVersion"></param>
+        /// <param name="passwordLastChanged"></param>
+        /// <param name="securityStamp"></param>
+        /// <returns>
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
+        /// </returns>
+        public virtual async Task<SaveChangeResult<TAccount>> UpdatePasswordHashAsync(int accountId, string passwordHash,
+            DateTimeOffset passwordLastChanged, Guid securityStamp, byte[] rowVersion = null)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountPasswordHash]",
-                new
+            if (string.IsNullOrEmpty(passwordHash))
+            {
+                throw new ArgumentException(nameof(passwordHash));
+            }
+            if(passwordLastChanged == default(DateTimeOffset))
+            {
+                throw new ArgumentException(nameof(passwordLastChanged));
+            }
+
+            try
+            {
+                await _sqlConnection.ExecuteAsync(@"[Accounts].[UpdatePasswordHash]",
+                    new
+                    {
+                        AccountId = accountId,
+                        PasswordHash = passwordHash,
+                        PasswordLastChanged = passwordLastChanged,
+                        SecurityStamp = securityStamp,
+                        RowVersion = rowVersion
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                return SaveChangeResult<TAccount>.GetSucceededResult();
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    AccountId = accountId,
-                    PasswordHash = passwordHash
-                },
-                commandType: CommandType.StoredProcedure) > 0;
+                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                }
+
+                throw;
+            }
         }
 
         /// <summary>
         /// Sets Email of account with specified <paramref name="accountId"/> to 
         /// <paramref name="email"/>. 
         /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="email"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountEmailAsync(int accountId, string email)
+        /// <param name="account"></param>
+        /// <param name="newEmail"></param>
+        /// <returns>
+        /// <see cref="UpdateEmailResult.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
+        /// <see cref="UpdateEmailResult.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
+        /// <see cref="UpdateEmailResult.DuplicateRow"/> if <paramref name="email"/> is in use.
+        /// <see cref="UpdateEmailResult.Succeeded"/> if update is successful.
+        /// </returns>
+        public virtual async Task<SaveChangeResult<TAccount>> UpdateEmailAsync(TAccount account, string newEmail)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountEmail]",
-                new
+            if(account == null)
+            {
+                throw new ArgumentNullException(nameof(account));
+            }
+
+            try
+            {
+                TAccount updatedAccount = (await _sqlConnection.QueryAsync<TAccount>(@"[Accounts].[UpdateEmail]",
+                    new
+                    {
+                        AccountId = account.AccountId,
+                        Email = newEmail,
+                        RowVersion = account.RowVersion
+                    },
+                    commandType: CommandType.StoredProcedure)).First();
+
+
+                updatedAccount.EmailVerified = false;
+                updatedAccount.TwoFactorEnabled = false;
+
+                return SaveChangeResult<TAccount>.GetSucceededResult(account);
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    AccountId = accountId,
-                    Email = email
-                },
-                commandType: CommandType.StoredProcedure) > 0;
+                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                }
+                if (exception.Number == _constraintViolationErrorNumber)
+                {
+                    return SaveChangeResult<TAccount>.GetDuplicateRowResult();
+                }
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -317,16 +467,42 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="altEmail"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountAltEmailAsync(int accountId, string altEmail)
+        /// <param name="rowVersion"></param>
+        /// <returns>
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
+        /// </returns>
+        public virtual async Task<SaveChangeResult<TAccount>> UpdateAltEmailAsync(int accountId, string altEmail, 
+            byte[] rowVersion = null)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountAltEmail]",
-                new
+            if (string.IsNullOrEmpty(altEmail))
+            {
+                throw new ArgumentException(nameof(altEmail));
+            }
+
+            try
+            {
+                await _sqlConnection.ExecuteAsync(@"[Accounts].[UpdateAltEmail]",
+                    new
+                    {
+                        AccountId = accountId,
+                        AltEmail = altEmail,
+                        RowVersion = rowVersion
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                return SaveChangeResult<TAccount>.GetSucceededResult();
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    AccountId = accountId,
-                    AltEmail = altEmail
-                },
-                commandType: CommandType.StoredProcedure) > 0;
+                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                }
+
+                throw;
+            }
         }
 
         /// <summary>
@@ -335,63 +511,160 @@ namespace Jering.Accounts.DatabaseInterface.Dapper
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="displayName"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountDisplayNameAsync(int accountId, string displayName)
+        /// <param name="rowVersion"></param>
+        /// <returns>
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.DuplicateRow"/> if <paramref name="displayName"/> is in use.
+        /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
+        /// </returns>
+        public virtual async Task<SaveChangeResult<TAccount>> UpdateDisplayNameAsync(int accountId, string displayName, 
+            byte[] rowVersion = null)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountDisplayName]",
-                new
+            if (string.IsNullOrEmpty(displayName))
+            {
+                throw new ArgumentException(nameof(displayName));
+            }
+
+            try
+            {
+                await _sqlConnection.ExecuteScalarAsync<int>(@"[Accounts].[UpdateDisplayName]",
+                    new
+                    {
+                        AccountId = accountId,
+                        DisplayName = displayName,
+                        RowVersion = rowVersion
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                return SaveChangeResult<TAccount>.GetSucceededResult();
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _invalidArgumentErrorNumber)
                 {
-                    AccountId = accountId,
-                    DisplayName = displayName
-                },
-                commandType: CommandType.StoredProcedure) > 0;
+                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                }
+                if (exception.Number == _uniqueIndexViolationErrorNumber)
+                {
+                    return SaveChangeResult<TAccount>.GetDuplicateRowResult();
+                }
+
+                throw;
+            }
         }
 
         /// <summary>
-        /// Sets AltEmailVerified of account with specified <paramref name="accountId"/> to <paramref name="altEmailVerified"/>. 
+        /// Sets AltEmailVerified of account with specified <paramref name="accountId"/> to 
+        /// <paramref name="altEmailVerified"/>. 
         /// </summary>
         /// <param name="accountId"></param>
         /// <param name="altEmailVerified"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        public virtual async Task<bool> UpdateAccountAltEmailVerifiedAsync(int accountId, bool altEmailVerified)
+        /// <param name="rowVersion"></param>
+        /// <returns>
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
+        /// <see cref="SaveChangeResult<TAccount>.Succeeded"/> if update is successful.
+        /// </returns>
+        public virtual async Task<SaveChangeResult<TAccount>> UpdateAltEmailVerifiedAsync(int accountId, bool altEmailVerified, 
+            byte[] rowVersion = null)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[UpdateAccountAltEmailVerified]",
+            try
+            {
+                await _sqlConnection.ExecuteAsync(@"[Accounts].[UpdateAltEmailVerified]",
+                    new
+                    {
+                        AccountId = accountId,
+                        AltEmailVerified = altEmailVerified,
+                        RowVersion = rowVersion
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                return SaveChangeResult<TAccount>.GetSucceededResult();
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _invalidArgumentErrorNumber)
+                {
+                    return SaveChangeResult<TAccount>.GetInvalidRowVersionOrAccountIdResult();
+                }
+
+                throw;
+            }
+        }
+        #endregion
+
+        #region Delete
+        /// <summary>
+        /// Deletes account with specified <paramref name="accountId"/>.
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="rowVersion"></param>
+        /// <returns>
+        /// <see cref="DeleteResult.InvalidRowVersionOrAccountId"/> if <paramref name="accountId"/> is invalid.
+        /// <see cref="DeleteResult.InvalidRowVersionOrAccountId"/> if <paramref name="rowVersion"/> is invalid.
+        /// <see cref="DeleteResult.Succeeded"/> if deletion is successful.
+        /// </returns>
+        public virtual async Task<DeleteResult> DeleteAsync(int accountId, byte[] rowVersion = null)
+        {
+            try
+            {
+                await _sqlConnection.ExecuteAsync(@"[Accounts].[DeleteAccount]",
+                    new
+                    {
+                        AccountId = accountId,
+                        RowVersion = rowVersion
+                    },
+                    commandType: CommandType.StoredProcedure);
+
+                return DeleteResult.GetSucceededResult();
+            }
+            catch (SqlException exception)
+            {
+                if (exception.Number == _invalidArgumentErrorNumber)
+                {
+                    return DeleteResult.GetInvalidRowVersionOrAccountIdResult();
+                }
+
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Deletes <see cref="Role"/> with specified <paramref name="roleId"/> from account with 
+        /// specified <paramref name="accountId"/>.
+        /// </summary>
+        /// <param name="accountId"></param>
+        /// <param name="roleId"></param>
+        /// <returns>True if successful, false otherwise.</returns>
+        public virtual async Task<bool> DeleteRoleAsync(int accountId, int roleId)
+        {
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Accounts].[DeleteAccountRole]",
                 new
                 {
                     AccountId = accountId,
-                    AltEmailVerified = altEmailVerified
+                    RoleId = roleId
                 },
                 commandType: CommandType.StoredProcedure) > 0;
         }
 
         /// <summary>
-        /// Checks whether <paramref name="email"/> is in use as a primary or secondary email of any account.
+        /// Deletes <see cref="Claim"/> with specified <paramref name="claimId"/> from account with 
+        /// specified <paramref name="accountId"/>.
         /// </summary>
-        /// <param name="email"></param>
-        /// <returns>True if in use, false otherwise.</returns>
-        public virtual async Task<bool> CheckEmailInUseAsync(string email)
+        /// <param name="accountId"></param>
+        /// <param name="claimId"></param>
+        /// <returns>True if successful, false othewise.</returns>
+        public virtual async Task<bool> DeleteClaimAsync(int accountId, int claimId)
         {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[CheckEmailInUse]",
+            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Accounts].[DeleteAccountClaim]",
                 new
                 {
-                    Email = email
+                    AccountId = accountId,
+                    ClaimId = claimId
                 },
-                commandType: CommandType.StoredProcedure) == 1;
+                commandType: CommandType.StoredProcedure) > 0;
         }
-
-        /// <summary>
-        /// Checks whether <paramref name="displayName"/> is in use by any account.
-        /// </summary>
-        /// <param name="displayName"></param>
-        /// <returns>True if in use, false otherwise.</returns>
-        public virtual async Task<bool> CheckDisplayNameInUseAsync(string displayName)
-        {
-            return await _sqlConnection.ExecuteScalarAsync<int>(@"[Website].[CheckDisplayNameInUse]",
-                new
-                {
-                    DisplayName = displayName
-                },
-                commandType: CommandType.StoredProcedure) == 1;
-        }
+        #endregion
     }
 }

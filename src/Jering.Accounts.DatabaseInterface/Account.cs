@@ -20,7 +20,7 @@ namespace Jering.Accounts.DatabaseInterface
         /// <summary>
         /// 
         /// </summary>
-        public virtual DateTime PasswordLastChanged { get; set; }
+        public virtual DateTimeOffset PasswordLastChanged { get; set; }
 
         /// <summary>
         /// A random value that changes whenever an account's security data changes.
@@ -56,5 +56,10 @@ namespace Jering.Accounts.DatabaseInterface
         /// True if two factor is enabled, false otherwise.
         /// </summary>
         public virtual bool TwoFactorEnabled { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public virtual byte[] RowVersion { get; set; }
     }
 }
