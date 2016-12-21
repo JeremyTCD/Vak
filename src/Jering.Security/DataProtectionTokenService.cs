@@ -102,28 +102,28 @@ namespace Jering.Security
                     DateTimeOffset expirationTime = extractedCreationTime + _options.DataProtectionTokenLifespan;
                     if (expirationTime < _timeService.UtcNow)
                     {
-                        return ValidateTokenResult.GetExpiredResult();
+                        return ValidateTokenResult.Expired;
                     }
 
                     int extractedAccountId = binaryReader.ReadInt32();
                     if (extractedAccountId != account.AccountId)
                     {
-                        return ValidateTokenResult.GetInvalidResult();
+                        return ValidateTokenResult.Invalid;
                     }
 
                     string extractedPurpose = binaryReader.ReadString();
                     if (extractedPurpose != purpose)
                     {
-                        return ValidateTokenResult.GetInvalidResult();
+                        return ValidateTokenResult.Invalid;
                     }
 
                     string extractedSecurityStamp = binaryReader.ReadString();
                     if (binaryReader.PeekChar() != -1 || extractedSecurityStamp != account.SecurityStamp.ToString())
                     {
-                        return ValidateTokenResult.GetInvalidResult();
+                        return ValidateTokenResult.Invalid;
                     }
 
-                    return ValidateTokenResult.GetValidResult();
+                    return ValidateTokenResult.Valid;
                 }
             }
             catch
@@ -131,7 +131,7 @@ namespace Jering.Security
 
             }
 
-            return ValidateTokenResult.GetInvalidResult();
+            return ValidateTokenResult.Invalid;
         }
     }
 

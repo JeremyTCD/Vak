@@ -58,13 +58,17 @@
   <Import Condition="'$(SQLDBExtensionsRefPath)' == ''" Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\SSDT\Microsoft.Data.Tools.Schema.SqlTasks.targets" />
   <ItemGroup>
     <Folder Include="Properties" />
+    <Folder Include="dbo" />
+    <Folder Include="dbo\tables" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Jering.Accounts.Database\Jering.Accounts.Database.sqlproj">
-      <Name>Jering.Accounts.Database</Name>
-      <Project>{e767c181-28a6-40db-8c8c-32893dfeceec}</Project>
-      <Private>True</Private>
-      <SuppressMissingDependenciesErrors>False</SuppressMissingDependenciesErrors>
-    </ProjectReference>
+    <Build Include="dbo\tables\AccountClaims.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <Build Include="dbo\tables\AccountRoles.sql" />
+    <Build Include="dbo\tables\Accounts.sql" />
+    <Build Include="dbo\tables\Claims.sql" />
+    <Build Include="dbo\tables\RoleClaims.sql" />
+    <Build Include="dbo\tables\Roles.sql" />
   </ItemGroup>
 </Project>

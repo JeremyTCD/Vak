@@ -1,7 +1,8 @@
 ﻿using Dapper;
-using Jering.VectorArtKit.WebApi.BusinessModels;
+using Jering.VectorArtKit.DatabaseInterface;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.PlatformAbstractions;
 using Microsoft.Net.Http.Headers;
@@ -13,7 +14,6 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -31,9 +31,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
     {
         public TestServer TestServer;
         public HttpClient HttpClient;
-        public VakAccountRepository VakAccountRepository { get; }
-        public SqlConnection SqlConnection { get; }
         public IConfigurationRoot ConfigurationRoot { get; }
+        public DbContextOptions<VakDbContext> DbContextOptions { get; }
 
         public ControllersFixture()
         {
@@ -42,12 +41,14 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
                 SetBasePath(Directory.GetCurrentDirectory()).
                 AddJsonFile("project.json");
             ConfigurationRoot = configurationBuilder.Build();
-            SqlConnection = new SqlConnection(ConfigurationRoot["Data:DefaultConnection:ConnectionString"]);
+
+            var optionsBuilder = new DbContextOptionsBuilder<VakDbContext>();
+            optionsBuilder.UseSqlServer(ConfigurationRoot["Data:DefaultConnection:ConnectionString"]);
+
+            DbContextOptions = optionsBuilder.Options;
 
             string testProjectPath = PlatformServices.Default.Application.ApplicationBasePath;
             string webApplicationProjectPath = Path.GetFullPath(Path.Combine(testProjectPath, @"..\..\..\..\..\src\Jering.VectorArtKit.WebApi"));
-
-            VakAccountRepository = new VakAccountRepository(SqlConnection);
 
             TestServer = new TestServer(new WebHostBuilder().
                 UseEnvironment("Development").
@@ -60,13 +61,11 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             TestServer.Dispose();
             HttpClient.Dispose();
-            SqlConnection.Close();
         }
 
-        public async Task ResetAccountsTable()
+        public void ResetAccountsTable(VakDbContext dbContext)
         {
-            await SqlConnection.ExecuteAsync("Delete from [dbo].[Accounts];" +
-                "DBCC CHECKIDENT('[dbo].[Accounts]', RESEED, 0);", commandType: CommandType.Text);
+            dbContext.Database.ExecuteSqlCommand("Delete from [dbo].[Accounts]; DBCC CHECKIDENT('[dbo].[Accounts]', RESEED, 0);");
         }
     }
 

@@ -4,7 +4,7 @@ using MimeKit;
 using Moq;
 using Xunit;
 
-namespace Jering.Security.UnitTests.UnitTests
+namespace Jering.Mail.Tests.UnitTests
 {
     public class EmailSenderUnitTests
     {

@@ -1,10 +1,6 @@
-﻿using Jering.Security;
-using Jering.Accounts.DatabaseInterface;
-using Moq;
+﻿using Jering.Accounts.DatabaseInterface;
+using Jering.Accounts.DatabaseInterface.EfCore;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Jering.Security.Tests.UnitTests
@@ -14,11 +10,11 @@ namespace Jering.Security.Tests.UnitTests
         private string _validPurpose = "validPurpose";
         private string _invalidPurpose = "invalidPurpose";
         private string _testEmail = "testEmail";
-        private Account _testAccount;
+        private StubAccount _testAccount;
 
         public TotpTokenServiceUnitTests()
         {
-            _testAccount = new Account()
+            _testAccount = new StubAccount()
             {
                 Email = _testEmail,
                 SecurityStamp = Guid.Empty
@@ -29,7 +25,7 @@ namespace Jering.Security.Tests.UnitTests
         public void GenerateToken_GeneratesTokenTest()
         {
             // Arrange
-            TotpTokenService<Account> totpTokenService = new TotpTokenService<Account>();
+            TotpTokenService<StubAccount> totpTokenService = new TotpTokenService<StubAccount>();
 
             // Act
             string token = totpTokenService.GenerateToken(_validPurpose, _testAccount);
@@ -45,28 +41,28 @@ namespace Jering.Security.Tests.UnitTests
         public void ValidateToken_ReturnsValidateTokenResultValidIfTokenIsValid()
         {
             // Arrange
-            TotpTokenService<Account> totpTokenService = new TotpTokenService<Account>();
+            TotpTokenService<StubAccount> totpTokenService = new TotpTokenService<StubAccount>();
             string token = totpTokenService.GenerateToken(_validPurpose, _testAccount);
 
             // Act
             ValidateTokenResult result = totpTokenService.ValidateToken(_validPurpose, token, _testAccount);
 
             // Assert
-            Assert.True(result.Valid);
+            Assert.Equal(ValidateTokenResult.Valid, result);
         }
 
         [Fact]
         public void ValidateToken_ReturnsFalseIfTokenIsInvalidTest()
         {
             // Arrange
-            TotpTokenService<Account> totpTokenService = new TotpTokenService<Account>();
+            TotpTokenService<StubAccount> totpTokenService = new TotpTokenService<StubAccount>();
             string token = totpTokenService.GenerateToken(_invalidPurpose, _testAccount);
 
             // Act
             ValidateTokenResult result = totpTokenService.ValidateToken(_validPurpose, token, _testAccount);
 
             // Assert
-            Assert.True(result.Invalid);
+            Assert.Equal(ValidateTokenResult.Invalid, result);
         }
     }
 }

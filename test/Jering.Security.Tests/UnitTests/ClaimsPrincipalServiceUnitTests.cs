@@ -1,4 +1,5 @@
 ﻿using Jering.Accounts.DatabaseInterface;
+using Jering.Accounts.DatabaseInterface.EfCore;
 using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -31,25 +32,25 @@ namespace Jering.Security.Tests.UnitTests
         public async Task CreateClaimsPrincipalAsync_CreatesClaimsPrincipalTest()
         {
             // Arrange
-            Mock<IAccountRepository<Account>> mockAccountRepository = new Mock<IAccountRepository<Account>>();
-            Account account = new Account() {AccountId = _testAccountId1, Email = _testEmail1, SecurityStamp = Guid.NewGuid() };
-            Role role = new Role() { RoleId = _testRoleId, Name = _testRoleName };
-            List<Role> accountRoles = new List<Role>() { role };
-            Jering.Accounts.DatabaseInterface.Claim accountClaim = new Jering.Accounts.DatabaseInterface.Claim() { ClaimId = _testClaimId1, Type = _testClaimType1, Value = _testClaimValue1 };
-            List<Jering.Accounts.DatabaseInterface.Claim> accountClaims = new List<Jering.Accounts.DatabaseInterface.Claim>() { accountClaim };
-            mockAccountRepository.
-                Setup(a => a.GetRolesAsync(It.Is<int>(i => i == _testAccountId1))).
-                ReturnsAsync(accountRoles);
-            mockAccountRepository.
-                Setup(a => a.GetClaimsAsync(It.Is<int>(i => i == _testAccountId1))).
-                ReturnsAsync(accountClaims);
+            Mock<IAccountRepository<StubAccount>> mockAccountRepository = new Mock<IAccountRepository<StubAccount>>();
+            StubAccount account = new StubAccount() {AccountId = _testAccountId1, Email = _testEmail1, SecurityStamp = Guid.NewGuid() };
+           // Role role = new Role() { RoleId = _testRoleId, Name = _testRoleName };
+            //List<Role> accountRoles = new List<Role>() { role };
+            //Jering.Accounts.DatabaseInterface.EfCore.Claim accountClaim = new Jering.Accounts.DatabaseInterface.EfCore.Claim() { ClaimId = _testClaimId1, Type = _testClaimType1, Value = _testClaimValue1 };
+            //List<Jering.Accounts.DatabaseInterface.EfCore.Claim> accountClaims = new List<Jering.Accounts.DatabaseInterface.EfCore.Claim>() { accountClaim };
+            //mockAccountRepository.
+            //    Setup(a => a.GetRolesAsync(It.Is<int>(i => i == _testAccountId1))).
+            //    ReturnsAsync(accountRoles);
+            //mockAccountRepository.
+            //    Setup(a => a.GetClaimsAsync(It.Is<int>(i => i == _testAccountId1))).
+            //    ReturnsAsync(accountClaims);
 
-            Mock<IRoleRepository> mockRoleRepository = new Mock<IRoleRepository>();
-            Jering.Accounts.DatabaseInterface.Claim roleClaim = new Jering.Accounts.DatabaseInterface.Claim() { ClaimId = _testClaimId2, Type = _testClaimType2, Value = _testClaimValue2 };
-            List<Jering.Accounts.DatabaseInterface.Claim> roleClaims = new List<Jering.Accounts.DatabaseInterface.Claim>() { roleClaim };
-            mockRoleRepository.
-                Setup(m => m.GetRoleClaimsAsync(It.Is<int>(i => i == _testRoleId))).
-                ReturnsAsync(roleClaims);
+            //Mock<IRoleRepository> mockRoleRepository = new Mock<IRoleRepository>();
+            //Jering.Accounts.DatabaseInterface.EfCore.Claim roleClaim = new Jering.Accounts.DatabaseInterface.EfCore.Claim() { ClaimId = _testClaimId2, Type = _testClaimType2, Value = _testClaimValue2 };
+            //List<Jering.Accounts.DatabaseInterface.EfCore.Claim> roleClaims = new List<Jering.Accounts.DatabaseInterface.EfCore.Claim>() { roleClaim };
+            //mockRoleRepository.
+            //    Setup(m => m.GetRoleClaimsAsync(It.Is<int>(i => i == _testRoleId))).
+            //    ReturnsAsync(roleClaims);
 
             Mock<IOptions<ClaimsOptions>> mockOptions = new Mock<IOptions<ClaimsOptions>>();
             ClaimsOptions claimsOptions = new ClaimsOptions();
@@ -57,8 +58,8 @@ namespace Jering.Security.Tests.UnitTests
                 Setup(o => o.Value).
                 Returns(claimsOptions);
 
-            ClaimsPrincipalService<Account> claimsPrincipalService = new ClaimsPrincipalService<Account>(mockAccountRepository.Object, 
-                mockRoleRepository.Object,
+            ClaimsPrincipalService<StubAccount> claimsPrincipalService = new ClaimsPrincipalService<StubAccount>(mockAccountRepository.Object, 
+                //mockRoleRepository.Object,
                 mockOptions.Object);
 
             AuthenticationProperties authProperties = new AuthenticationProperties { IsPersistent = true };
@@ -78,12 +79,12 @@ namespace Jering.Security.Tests.UnitTests
             Assert.True(claims.Any(c => c.Type == claimsOptions.AccountIdClaimType && c.Value == _testAccountId1.ToString()));
             Assert.True(claims.Any(c => c.Type == claimsOptions.UsernameClaimType && c.Value == _testEmail1));
             Assert.True(claims.Any(c => c.Type == claimsOptions.SecurityStampClaimType && c.Value == account.SecurityStamp.ToString()));
-            Assert.True(claims.Any(c => c.Type == claimsOptions.RoleClaimType && c.Value == _testRoleName));
-            Assert.True(claims.Any(c => c.Type == _testClaimType1 && c.Value == _testClaimValue1));
-            Assert.True(claims.Any(c => c.Type == _testClaimType2 && c.Value == _testClaimValue2));
             Assert.True(claims.Any(c => c.Type == claimsOptions.IsPersistenClaimType && c.Value == authProperties.IsPersistent.ToString()));
+            //Assert.True(claims.Any(c => c.Type == claimsOptions.RoleClaimType && c.Value == _testRoleName));
+            //Assert.True(claims.Any(c => c.Type == _testClaimType1 && c.Value == _testClaimValue1));
+            //Assert.True(claims.Any(c => c.Type == _testClaimType2 && c.Value == _testClaimValue2));
             mockAccountRepository.VerifyAll();
-            mockRoleRepository.VerifyAll();
+            //mockRoleRepository.VerifyAll();
             mockOptions.VerifyAll();
         }
 
@@ -101,9 +102,9 @@ namespace Jering.Security.Tests.UnitTests
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(claimsOptions.SecurityStampClaimType, Guid.NewGuid().ToString()));
             ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-            Account account = new Account() { AccountId = _testAccountId1, Email = _testEmail2, SecurityStamp = Guid.NewGuid() };
+            StubAccount account = new StubAccount() { AccountId = _testAccountId1, Email = _testEmail2, SecurityStamp = Guid.NewGuid() };
 
-            ClaimsPrincipalService<Account> claimsPrincipalService = new ClaimsPrincipalService<Account>(null, null, mockOptions.Object);
+            ClaimsPrincipalService<StubAccount> claimsPrincipalService = new ClaimsPrincipalService<StubAccount>(null,mockOptions.Object);
 
             // Act
             claimsPrincipalService.UpdateClaimsPrincipal(account, claimsPrincipal);
@@ -127,9 +128,9 @@ namespace Jering.Security.Tests.UnitTests
             claimsIdentity.AddClaim(new System.Security.Claims.Claim(claimsOptions.SecurityStampClaimType, Guid.NewGuid().ToString()));
             ClaimsPrincipal claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-            Account account = new Account() { AccountId = _testAccountId2, Email = _testEmail2, SecurityStamp = Guid.NewGuid() };
+            StubAccount account = new StubAccount() { AccountId = _testAccountId2, Email = _testEmail2, SecurityStamp = Guid.NewGuid() };
 
-            ClaimsPrincipalService<Account> claimsPrincipalService = new ClaimsPrincipalService<Account>(null, null, mockOptions.Object);
+            ClaimsPrincipalService<StubAccount> claimsPrincipalService = new ClaimsPrincipalService<StubAccount>(null, mockOptions.Object);
 
             // Act and Assert
             Assert.Throws<ArgumentException>(() => claimsPrincipalService.UpdateClaimsPrincipal(account, claimsPrincipal));
@@ -143,7 +144,7 @@ namespace Jering.Security.Tests.UnitTests
             ClaimsOptions claimsOptions = new ClaimsOptions();
             mockOptions.Setup(o => o.Value).Returns(claimsOptions);
 
-            ClaimsPrincipalService<Account> claimsPrincipalFactory = new ClaimsPrincipalService<Account>(null, null, mockOptions.Object);
+            ClaimsPrincipalService<StubAccount> claimsPrincipalFactory = new ClaimsPrincipalService<StubAccount>(null, mockOptions.Object);
 
             // Act
             ClaimsPrincipal claimsPrincipal = claimsPrincipalFactory.CreateClaimsPrincipal(_testAccountId1, _testAuthScheme);

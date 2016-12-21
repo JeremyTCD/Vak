@@ -1,0 +1,15 @@
+{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Jering.Accounts.DatabaseInterface": "1.0.0",
+    "Jering.Utilities": "1.0.0",
+    "Microsoft.EntityFrameworkCore": "1.1.0",
+    "Microsoft.EntityFrameworkCore.SqlServer": "1.1.0"
+  },
+
+  "frameworks": {
+    "netcoreapp1.1": {
+    }
+  }
+}

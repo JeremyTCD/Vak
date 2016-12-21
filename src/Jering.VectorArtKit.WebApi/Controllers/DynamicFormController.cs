@@ -1,6 +1,6 @@
 ﻿using Jering.Accounts.DatabaseInterface;
 using Jering.DynamicForms;
-using Jering.VectorArtKit.WebApi.BusinessModels;
+using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.Extensions;
 using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForms;
 using Microsoft.AspNetCore.Antiforgery;
@@ -26,6 +26,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             _vakAccountRepository = vakAccountRepository;
             _dynamicFormsBuilder = dynamicFormsBuilder;
         }
+
+        // Logic should be moved to service
 
         /// <summary>
         /// Gets <see cref="DynamicFormResponseModel"/> for a form model.
@@ -73,6 +75,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             return Ok(_dynamicFormsBuilder.BuildDynamicFormResponseModel(type.GetTypeInfo()));
         }
 
+        // These two belong in account controller
+
         /// <summary>
         /// Validates that an email address is not in use.
         /// </summary>
@@ -90,7 +94,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 return BadRequest();
             }
 
-            return Ok(new ValidateResponseModel(){Valid = !await _vakAccountRepository.CheckEmailInUseAsync(value) });
+            return Ok(new ValidateResponseModel(){Valid = !await _vakAccountRepository.
+                CheckEmailInUseAsync(value, HttpContext.RequestAborted) });
         }
 
 
@@ -111,7 +116,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 return BadRequest();
             }
 
-            return Ok(new ValidateResponseModel() { Valid = !await _vakAccountRepository.CheckDisplayNameInUseAsync(value) });
+            return Ok(new ValidateResponseModel() { Valid = !await _vakAccountRepository.
+                CheckDisplayNameInUseAsync(value, HttpContext.RequestAborted) });
         }
     }
 }

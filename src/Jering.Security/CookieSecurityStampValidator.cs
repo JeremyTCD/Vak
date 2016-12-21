@@ -51,7 +51,7 @@ namespace Jering.Security
                     System.Security.Claims.Claim accountIdClaim = context.Principal.FindFirst(_claimsOptions.AccountIdClaimType);
                     if (accountIdClaim != null)
                     {
-                        TAccount account = await _accountRepository.GetAccountAsync(Convert.ToInt32(accountIdClaim.Value));
+                        TAccount account = await _accountRepository.GetAsync(Convert.ToInt32(accountIdClaim.Value), context.HttpContext.RequestAborted);
 
                         if(account?.SecurityStamp.ToString() == context.Principal.FindFirst(_claimsOptions.SecurityStampClaimType)?.Value)
                         {

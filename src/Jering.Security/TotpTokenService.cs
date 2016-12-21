@@ -65,14 +65,14 @@ namespace Jering.Security
             int totp;
             if (!int.TryParse(token, out totp))
             {
-                return ValidateTokenResult.GetInvalidResult();
+                return ValidateTokenResult.Invalid;
             }
 
             string modifier = GetTokenModifier(purpose, account);
 
             return ValidateTotp(account.SecurityStamp.ToByteArray(), totp, modifier) ?
-                ValidateTokenResult.GetValidResult() :
-                ValidateTokenResult.GetInvalidResult();
+                ValidateTokenResult.Valid :
+                ValidateTokenResult.Invalid;
         }
 
         /// <summary>

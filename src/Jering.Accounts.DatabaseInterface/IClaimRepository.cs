@@ -13,7 +13,7 @@ namespace Jering.Accounts.DatabaseInterface
         /// <param name="type"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        Task<Claim> CreateClaimAsync(string type, string value);
+        Task<IClaim> CreateClaimAsync(string type, string value);
 
         /// <summary>
         /// 

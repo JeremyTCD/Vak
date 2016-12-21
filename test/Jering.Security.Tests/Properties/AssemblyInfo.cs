@@ -8,7 +8,7 @@ using Xunit;
 // associated with an assembly.
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Jering.VectorArtKit.AccountManagement.Test")]
+[assembly: AssemblyProduct("Jering.Security.Tests")]
 [assembly: AssemblyTrademark("")]
 
 // Setting ComVisible to false makes the types in this assembly not visible

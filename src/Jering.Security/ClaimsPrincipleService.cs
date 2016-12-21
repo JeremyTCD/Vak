@@ -15,7 +15,7 @@ namespace Jering.Security
     public class ClaimsPrincipalService<TAccount> : IClaimsPrincipalService<TAccount> where TAccount : IAccount
     {
         private IAccountRepository<TAccount> _accountRepository { get; }
-        private IRoleRepository _roleRepository { get; }
+        //private IRoleRepository _roleRepository { get; }
         private ClaimsOptions _options { get; }
 
         /// <summary>
@@ -24,10 +24,11 @@ namespace Jering.Security
         /// <param name="accountRepository"></param>
         /// <param name="roleRepository"></param>
         /// <param name="securityOptionsAccessor"></param>
-        public ClaimsPrincipalService(IAccountRepository<TAccount> accountRepository, IRoleRepository roleRepository, IOptions<ClaimsOptions> securityOptionsAccessor)
+        public ClaimsPrincipalService(IAccountRepository<TAccount> accountRepository, //IRoleRepository roleRepository, 
+            IOptions<ClaimsOptions> securityOptionsAccessor)
         {
             _accountRepository = accountRepository;
-            _roleRepository = roleRepository;
+            //_roleRepository = roleRepository;
             _options = securityOptionsAccessor?.Value;
         }
 
@@ -37,19 +38,20 @@ namespace Jering.Security
         /// <param name="account"></param>
         /// <param name="authScheme"></param>
         /// <param name="authProperties"></param>
-        public virtual async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(TAccount account, string authScheme, AuthenticationProperties authProperties)
+        public virtual async Task<ClaimsPrincipal> CreateClaimsPrincipalAsync(TAccount account, string authScheme, 
+            AuthenticationProperties authProperties)
         {
             if(account == null)
             {
                 throw new ArgumentNullException(nameof(account));
             }
-            if(account.Email == null)
+            if(string.IsNullOrEmpty(account.Email))
             {
                 throw new ArgumentException(nameof(account.Email));
             }
-            if(authScheme == null)
+            if(string.IsNullOrEmpty(authScheme))
             {
-                throw new ArgumentNullException(nameof(authScheme));
+                throw new ArgumentException(nameof(authScheme));
             }
           
 
@@ -58,19 +60,19 @@ namespace Jering.Security
                 _options.UsernameClaimType,
                 _options.RoleClaimType);
 
-            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.AccountIdClaimType, account.AccountId.ToString()));
-            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.UsernameClaimType, account.Email));
-            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.SecurityStampClaimType, account.SecurityStamp.ToString()));
-            claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.IsPersistenClaimType, authProperties.IsPersistent.ToString()));
+            claimsIdentity.AddClaim(new Claim(_options.AccountIdClaimType, account.AccountId.ToString()));
+            claimsIdentity.AddClaim(new Claim(_options.UsernameClaimType, account.Email));
+            claimsIdentity.AddClaim(new Claim(_options.SecurityStampClaimType, account.SecurityStamp.ToString()));
+            claimsIdentity.AddClaim(new Claim(_options.IsPersistenClaimType, authProperties.IsPersistent.ToString()));
 
-            IEnumerable<Role> roles = await _accountRepository.GetRolesAsync(account.AccountId);
-            foreach (Role role in roles)
-            {
-                claimsIdentity.AddClaim(new System.Security.Claims.Claim(ClaimTypes.Role, role.Name));
-                claimsIdentity.AddClaims(ConvertDatabaseInterfaceClaims(await _roleRepository.GetRoleClaimsAsync(role.RoleId)));
-            }
+            //IEnumerable<Role> roles = await _accountRepository.GetRolesAsync(account.AccountId);
+            //foreach (Role role in roles)
+            //{
+            //    claimsIdentity.AddClaim(new System.Security.Claims.Claim(ClaimTypes.Role, role.Name));
+            //    claimsIdentity.AddClaims(ConvertDatabaseInterfaceClaims(await _roleRepository.GetRoleClaimsAsync(role.RoleId)));
+            //}
 
-            claimsIdentity.AddClaims(ConvertDatabaseInterfaceClaims(await _accountRepository.GetClaimsAsync(account.AccountId)));
+            //claimsIdentity.AddClaims(ConvertDatabaseInterfaceClaims(await _accountRepository.GetClaimsAsync(account.AccountId)));
 
             return new ClaimsPrincipal(claimsIdentity);
         }
@@ -119,9 +121,9 @@ namespace Jering.Security
 
             ClaimsIdentity claimsIdentity = claimsPrincipal.Identity as ClaimsIdentity;
 
-            System.Security.Claims.Claim accountIdClaim = claimsIdentity.FindFirst(_options.AccountIdClaimType);
-            System.Security.Claims.Claim usernameClaim = claimsIdentity.FindFirst(_options.UsernameClaimType);
-            System.Security.Claims.Claim securityStampClaim = claimsIdentity.FindFirst(_options.SecurityStampClaimType);
+            Claim accountIdClaim = claimsIdentity.FindFirst(_options.AccountIdClaimType);
+            Claim usernameClaim = claimsIdentity.FindFirst(_options.UsernameClaimType);
+            Claim securityStampClaim = claimsIdentity.FindFirst(_options.SecurityStampClaimType);
 
             if (accountIdClaim == null || usernameClaim == null || securityStampClaim == null ||
                 account.AccountId.ToString() != accountIdClaim.Value)
@@ -132,26 +134,26 @@ namespace Jering.Security
             if(usernameClaim.Value != account.Email)
             {
                 claimsIdentity.RemoveClaim(usernameClaim);
-                claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.UsernameClaimType, account.Email));
+                claimsIdentity.AddClaim(new Claim(_options.UsernameClaimType, account.Email));
             }
 
             if (securityStampClaim.Value != account.SecurityStamp.ToString())
             {
                 claimsIdentity.RemoveClaim(securityStampClaim);
-                claimsIdentity.AddClaim(new System.Security.Claims.Claim(_options.SecurityStampClaimType, account.SecurityStamp.ToString()));
+                claimsIdentity.AddClaim(new Claim(_options.SecurityStampClaimType, account.SecurityStamp.ToString()));
             }
         }
 
-        private IEnumerable<System.Security.Claims.Claim> ConvertDatabaseInterfaceClaims(IEnumerable<Jering.Accounts.DatabaseInterface.Claim> databaseInterfaceClaims)
-        {
-            List<System.Security.Claims.Claim> result = new List<System.Security.Claims.Claim>(databaseInterfaceClaims.Count());
+        //private IEnumerable<System.Security.Claims.Claim> ConvertDatabaseInterfaceClaims(IEnumerable<Jering.Accounts.DatabaseInterface.Claim> databaseInterfaceClaims)
+        //{
+        //    List<System.Security.Claims.Claim> result = new List<System.Security.Claims.Claim>(databaseInterfaceClaims.Count());
 
-            foreach (Jering.Accounts.DatabaseInterface.Claim databaseInterfaceClaim in databaseInterfaceClaims)
-            {
-                result.Add(new System.Security.Claims.Claim(databaseInterfaceClaim.Type, databaseInterfaceClaim.Value));
-            }
+        //    foreach (Jering.Accounts.DatabaseInterface.Claim databaseInterfaceClaim in databaseInterfaceClaims)
+        //    {
+        //        result.Add(new System.Security.Claims.Claim(databaseInterfaceClaim.Type, databaseInterfaceClaim.Value));
+        //    }
 
-            return result;
-        }
+        //    return result;
+        //}
     }
 }

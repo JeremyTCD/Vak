@@ -1,5 +1,6 @@
 ﻿using Jering.DynamicForms;
-using Jering.VectorArtKit.WebApi.BusinessModels;
+using Jering.Utilities;
+using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.Controllers;
 using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForms;
@@ -7,9 +8,9 @@ using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -20,7 +21,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
     {
         private HttpClient _httpClient { get; }
         private VakAccountRepository _vakAccountRepository { get; }
-        private Func<Task> _resetAccountsTable { get; }
         private string _dynamicFormControllerName = nameof(DynamicFormController).Replace("Controller", "");
         private string _notFound { get; } = "NotFound";
         private string _badRequest { get; } = "BadRequest";
@@ -28,14 +28,16 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         private const string _testEmail = "test@email.com";
         private const string _testPassword = "testPassword";
+        private const string _testPasswordHash = "testPasswordHash";
         private const string _testDisplayName = "testDisplayName";
         private const string _testFormModelName = "testFormModelName";
 
         public DynamicFormControllerIntegrationTests(ControllersFixture controllersFixture)
         {
-            _httpClient = controllersFixture.HttpClient;     
-            _vakAccountRepository = controllersFixture.VakAccountRepository;
-            _resetAccountsTable = controllersFixture.ResetAccountsTable;
+            _httpClient = controllersFixture.HttpClient;
+            VakDbContext dbContext = new VakDbContext(controllersFixture.DbContextOptions);
+            _vakAccountRepository = new VakAccountRepository(dbContext, new TimeService());
+            controllersFixture.ResetAccountsTable(dbContext);
         }
 
         [Fact]
@@ -43,7 +45,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             //Arrange
             string signUpFormModelName = "SignUp";
-            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/" + 
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/" +
                 $"{nameof(DynamicFormController.GetDynamicForm)}?formModelName={signUpFormModelName}", HttpMethod.Get, null);
 
             // Act
@@ -132,8 +134,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         public async Task ValidateEmailNotInUse_Returns200OkAndValidateResponseModelIfEmailIsInUse()
         {
             // Arrange
-            await _resetAccountsTable();
-            await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
+            await _vakAccountRepository.CreateAsync(_testEmail, _testPasswordHash, CancellationToken.None);
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/{nameof(DynamicFormController.ValidateEmailNotInUse)}?value={_testEmail}", HttpMethod.Get, null);
 
             // Act 
@@ -149,7 +150,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         public async Task ValidateEmailNotInUse_Returns200OkAndValidateResponseModelIfEmailIsNotInUse()
         {
             // Arrange
-            await _resetAccountsTable();
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/{nameof(DynamicFormController.ValidateEmailNotInUse)}?value={_testEmail}", HttpMethod.Get, null);
 
             // Act 
@@ -181,9 +181,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         public async Task ValidateDisplayNameNotInUse_Returns200OkAndValidateResponseModelIfDisplayNameIsInUse()
         {
             // Arrange
-            await _resetAccountsTable();
-            VakAccount account = await _vakAccountRepository.CreateAccountAsync(_testEmail, _testPassword);
-            await _vakAccountRepository.UpdateDisplayNameAsync(account.AccountId, _testDisplayName);
+            VakAccount account = await _vakAccountRepository.CreateAsync(_testEmail, _testPasswordHash, CancellationToken.None);
+            await _vakAccountRepository.UpdateDisplayNameAsync(account, _testDisplayName, CancellationToken.None);
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/{nameof(DynamicFormController.ValidateDisplayNameNotInUse)}?value={_testDisplayName}", HttpMethod.Get, null);
 
             // Act 
@@ -199,7 +198,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         public async Task ValidateDisplayNameNotInUse_Returns200OkAndValidateResponseModelIfDisplayNameIsNotInUse()
         {
             // Arrange
-            await _resetAccountsTable();
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/{nameof(DynamicFormController.ValidateDisplayNameNotInUse)}?value={_testDisplayName}", HttpMethod.Get, null);
 
             // Act 

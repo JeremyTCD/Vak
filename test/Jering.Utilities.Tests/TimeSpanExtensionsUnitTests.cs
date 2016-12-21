@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Xunit;
 
-namespace Jering.Utilities.Tests
+namespace Jering.Utilities.Tests.UnitTests
 {
     public class TimeSpanExtensionsUnitTests
     {

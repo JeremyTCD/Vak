@@ -1,4 +1,5 @@
-﻿using Jering.VectorArtKit.WebApi.BusinessModels;
+﻿using Jering.Utilities;
+using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.Controllers;
 using Jering.VectorArtKit.WebApi.FormModels;
 using Jering.VectorArtKit.WebApi.Resources;
@@ -8,11 +9,11 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -23,7 +24,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
     {
         private HttpClient _httpClient { get; }
         private VakAccountRepository _vakAccountRepository { get; }
-        private Func<Task> _resetAccountsTable { get; }
+        private VakDbContext _dbContext { get; }
 
         private string _accountControllerName { get; } = nameof(AccountController).Replace("Controller", "");
         private string _dynamicFormsControllerName { get; } = nameof(DynamicFormController).Replace("Controller", "");
@@ -49,88 +50,18 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         private const bool _testNewTwoFactorEnabled = true;
         private const int _testAccountId = 1;
         private const int _testInvalidAccountId = 2;
+        private VakAccount _testAccount;
 
         public AccountControllerIntegrationTests(ControllersFixture controllersFixture)
         {
             _httpClient = controllersFixture.HttpClient;
-            _vakAccountRepository = controllersFixture.VakAccountRepository;
-            _resetAccountsTable = controllersFixture.ResetAccountsTable;
-            _resetAccountsTable();
+            _dbContext = new VakDbContext(controllersFixture.DbContextOptions);
+            _vakAccountRepository = new VakAccountRepository(_dbContext, new TimeService());
+            controllersFixture.ResetAccountsTable(_dbContext);
+            _testAccount = new VakAccount();
         }
 
-        [Fact]
-        public async Task SignUp_Returns400BadRequestAndSignUpResponseModelIfModelStateIsInvalid()
-        {
-            // Arrange
-            IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SignUp(antiforgeryCookies, "test", "test1", "test2");
-
-            // Assert
-            SetPasswordResponseModel body = JsonConvert.DeserializeObject<SetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Email_Invalid, (body.ModelState[nameof(SignUpFormModel.Email)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_Password_TooSimple, (body.ModelState[nameof(SignUpFormModel.Password)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_ConfirmPassword_Differs, (body.ModelState[nameof(SignUpFormModel.ConfirmPassword)] as JArray)[0]);
-        }
-
-        [Fact]
-        public async Task SignUp_Returns400BadRequestAndSignUpResponseModelIfEmailInUse()
-        {
-            // Arrange
-            IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
-            await SignUp(antiforgeryCookies, _testEmail1, _testPassword, _testPassword);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SignUp(antiforgeryCookies, _testEmail1, _testPassword, _testPassword);
-
-            // Assert
-            SetPasswordResponseModel body = JsonConvert.DeserializeObject<SetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Email_InUse, (body.ModelState[nameof(SignUpFormModel.Email)] as JArray)[0]);
-        }
-
-        [Fact]
-        public async Task SignUp_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
-        {
-            // Arrange
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SignUp(null, _testEmail1, _testPassword, _testPassword);
-
-            // Assert
-            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
-        }
-
-        [Fact]
-        public async Task SignUp_Returns200OkSignUpResponseModelApplicationCookieAntiForgeryCookiesAndSendsEmailVerificationEmailIfRegistrationSucceeds()
-        {
-            // Arrange
-            File.WriteAllText(_tempEmailFile, "");
-            IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SignUp(antiforgeryCookies, _testEmail1, _testPassword, _testPassword);
-
-            // Assert
-            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
-            Assert.Equal(2, cookies.Count());
-            Assert.True(cookies.Keys.Contains(_applicationCookieName));
-            Assert.True(cookies.Keys.Contains(_requestTokenName));
-            SignUpResponseModel body = JsonConvert.DeserializeObject<SignUpResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_testEmail1, body.Username);
-            string emailVerificationEmail = File.ReadAllText(_tempEmailFile);
-            Assert.Contains(Strings.Email_Subject_EmailVerification, emailVerificationEmail);
-            Assert.Contains(_testEmail1, emailVerificationEmail);
-        }
-
+        #region Session
         [Fact]
         public async Task Login_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
         {
@@ -206,8 +137,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
             IDictionary<string, string> applicationAndAntiForgeryCookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1,
                 _testPassword);
-            await _vakAccountRepository.UpdateEmailVerifiedAsync(_testAccountId, true);
-            await _vakAccountRepository.UpdateTwoFactorEnabledAsync(_testAccountId, true);
+            _testAccount = await _vakAccountRepository.GetAsync(_testAccountId, CancellationToken.None);
+            await _vakAccountRepository.UpdateEmailVerifiedAsync(_testAccount, true, CancellationToken.None);
+            await SetTwoFactorEnabled(applicationAndAntiForgeryCookies, true);
             File.WriteAllText(_tempEmailFile, "");
 
             // Act
@@ -232,7 +164,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             //Arrange
             IDictionary<string, string> applicationAndAntiForgeryCookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1,
-    _testPassword);
+                _testPassword);
 
             // Act
             HttpResponseMessage httpResponseMessage = await LogOff(applicationAndAntiForgeryCookies);
@@ -240,11 +172,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
-            Assert.Equal(2, cookies.Count);
+            Assert.Equal(1, cookies.Count);
             Assert.Contains(_applicationCookieName, cookies.Keys);
             Assert.Equal("", cookies[_applicationCookieName]);
-            Assert.Contains(_twoFactorCookieName, cookies.Keys);
-            Assert.Equal("", cookies[_twoFactorCookieName]);
         }
 
         [Fact]
@@ -300,13 +230,25 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Contains(_twoFactorCookieName, cookies.Keys);
             Assert.Equal("", cookies[_twoFactorCookieName]);
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            TwoFactorLogInResponseModel body = JsonConvert.DeserializeObject<TwoFactorLogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_testEmail1, body.Username);
-            Assert.False(body.IsPersistent);
         }
 
         [Fact]
-        public async Task TwoFactorLogIn_Returns400BadRequestAndTwoFactorResponseModelIfCodeIsInvalid()
+        public async Task TwoFactorLogIn_Returns400BadRequestAndTwoFactorResponseModelIfTwoFactorCredentialsAreInvalid()
+        {
+            // Arrange
+            IDictionary<string, string> cookies = await GetAnonymousAntiforgeryCookies();
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await TwoFactorLogIn(cookies, _testToken);
+
+            // Assert
+            TwoFactorLogInResponseModel body = JsonConvert.DeserializeObject<TwoFactorLogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.True(body.ExpectedError);
+            Assert.True(body.ExpiredCredentials);
+        }
+
+        [Fact]
+        public async Task TwoFactorLogIn_Returns400BadRequestAndTwoFactorResponseModelIfCodeIsInvalidOrExpired()
         {
             // Arrange
             IDictionary<string, string> twoFactorAndAntiForgeryCookies = await GetTwoFactorAndAnonymousAntiforgeryCookies(_testEmail1, _testPassword);
@@ -355,6 +297,79 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.False(body.ExpectedError);
             Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
+        #endregion
+
+        #region Account Management
+        [Fact]
+        public async Task SignUp_Returns400BadRequestAndSignUpResponseModelIfModelStateIsInvalid()
+        {
+            // Arrange
+            IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SignUp(antiforgeryCookies, "test", "test1", "test2");
+
+            // Assert
+            SetPasswordResponseModel body = JsonConvert.DeserializeObject<SetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Email_Invalid, (body.ModelState[nameof(SignUpFormModel.Email)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_TooSimple, (body.ModelState[nameof(SignUpFormModel.Password)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_ConfirmPassword_Differs, (body.ModelState[nameof(SignUpFormModel.ConfirmPassword)] as JArray)[0]);
+        }
+
+        [Fact]
+        public async Task SignUp_Returns400BadRequestAndSignUpResponseModelIfEmailInUse()
+        {
+            // Arrange
+            IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
+            await SignUp(antiforgeryCookies, _testEmail1, _testPassword, _testPassword);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SignUp(antiforgeryCookies, _testEmail1, _testPassword, _testPassword);
+
+            // Assert
+            SetPasswordResponseModel body = JsonConvert.DeserializeObject<SetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Email_InUse, (body.ModelState[nameof(SignUpFormModel.Email)] as JArray)[0]);
+        }
+
+        [Fact]
+        public async Task SignUp_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
+        {
+            // Arrange
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SignUp(null, _testEmail1, _testPassword, _testPassword);
+
+            // Assert
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task SignUp_Returns200OkSignUpResponseModelApplicationCookieAntiForgeryCookiesAndSendsEmailVerificationEmailIfRegistrationSucceeds()
+        {
+            // Arrange
+            File.WriteAllText(_tempEmailFile, "");
+            IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SignUp(antiforgeryCookies, _testEmail1, _testPassword, _testPassword);
+
+            // Assert
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
+            Assert.Equal(2, cookies.Count());
+            Assert.True(cookies.Keys.Contains(_applicationCookieName));
+            Assert.True(cookies.Keys.Contains(_requestTokenName));
+            string emailVerificationEmail = File.ReadAllText(_tempEmailFile);
+            Assert.Contains(Strings.Email_Subject_EmailVerification, emailVerificationEmail);
+            Assert.Contains(_testEmail1, emailVerificationEmail);
+        }
 
         [Fact]
         public async Task SendResetPasswordEmail_Returns200OkAndSendsResetPasswordEmailIfEmailIsValid()
@@ -386,7 +401,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SendResetPasswordEmailResponseModel body = JsonConvert.DeserializeObject<SendResetPasswordEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.True(body.InvalidEmail);
+            Assert.Equal(Strings.ErrorMessage_Email_Invalid, (body.ModelState[nameof(SendResetPasswordEmailFormModel.Email)] as JArray)[0]);
         }
 
         [Fact]
@@ -500,13 +515,63 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
+        public async Task ResetPassword_Returns400BadRequestAndResetPasswordResponseModelIfEmailIsInvalid()
+        {
+            // Arrange
+            IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
+            await SignUp(antiforgeryCookies, _testEmail1, _testPassword, _testPassword);
+            await SendResetPasswordEmail(antiforgeryCookies, _testEmail1);
+            string resetPasswordEmail = File.ReadAllText(_tempEmailFile);
+            Regex tokenRegex = new Regex(@"token=(.*?);");
+            string token = Uri.UnescapeDataString(tokenRegex.Match(resetPasswordEmail).Groups[1].Value);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await ResetPassword(antiforgeryCookies,
+                _testEmail2,
+                token,
+                _testNewPassword,
+                _testNewPassword);
+
+            // Assert
+            ResetPasswordResponseModel body = JsonConvert.DeserializeObject<ResetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.True(body.ExpectedError);
+            Assert.True(body.InvalidEmail);
+        }
+
+        [Fact]
+        public async Task ResetPassword_Returns400BadRequestAndResetPasswordResponseModelIfNewPasswordIsSameAsCurrentPassword()
+        {
+            // Arrange
+            IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
+            await SignUp(antiforgeryCookies, _testEmail1, _testPassword, _testPassword);
+            await SendResetPasswordEmail(antiforgeryCookies, _testEmail1);
+            string resetPasswordEmail = File.ReadAllText(_tempEmailFile);
+            Regex tokenRegex = new Regex(@"token=(.*?);");
+            string token = Uri.UnescapeDataString(tokenRegex.Match(resetPasswordEmail).Groups[1].Value);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await ResetPassword(antiforgeryCookies,
+                _testEmail1,
+                token,
+                _testPassword,
+                _testPassword);
+
+            // Assert
+            ResetPasswordResponseModel body = JsonConvert.DeserializeObject<ResetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_NewPassword_MustDiffer, (body.ModelState[nameof(ResetPasswordFormModel.NewPassword)] as JArray)[0]);
+        }
+
+        [Fact]
         public async Task GetAccountDetails_Returns200OkAndGetAccountDetailsResponseModelIfAuthSucceeds()
         {
             // Arrange
-            IDictionary<string, string> cookie = await GetApplicationCookie(_testEmail1, _testPassword);
+            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
 
             // Act
-            HttpResponseMessage httpResponseMessage = await GetAccountDetails(cookie);
+            HttpResponseMessage httpResponseMessage = await GetAccountDetails(cookies);
 
             // Assert
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
@@ -523,14 +588,28 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         [Fact]
         public async Task GetAccountDetails_Returns401UnauthorizedAndErrorResponseModelIfAuthFails()
         {
-            // Arrange
-
             // Act
             HttpResponseMessage httpResponseMessage = await GetAccountDetails(null);
 
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task GetAccountDetails_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
+        {
+            // Arrange 
+            IDictionary<string, string> cookie = await GetApplicationCookie(_testEmail1, _testPassword);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await GetAccountDetails(cookie);
+
+            // Assert
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             Assert.False(body.ExpectedError);
             Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
@@ -620,6 +699,22 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
+        public async Task SetPassword_Returns400BadRequestAndSetPasswordResponseModelIfNewPasswordIsSameAsCurrentPassword()
+        {
+            // Arrange
+            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetPassword(cookies, _testPassword, _testPassword, _testPassword);
+
+            // Assert
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            SetPasswordResponseModel body = JsonConvert.DeserializeObject<SetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_NewPassword_MustDiffer, (body.ModelState[nameof(SetPasswordFormModel.NewPassword)] as JArray)[0]);
+        }
+
+        [Fact]
         public async Task SetEmail_Returns401UnauthorizedAndErrorResponseModelIfAuthFails()
         {
             // Act
@@ -691,7 +786,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
 
             // Act
-            HttpResponseMessage httpResponseMessage = await SetEmail(cookies, _testInvalidPassword, _testEmail1);
+            HttpResponseMessage httpResponseMessage = await SetEmail(cookies, _testInvalidPassword, _testNewEmail);
 
             // Assert
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
@@ -810,22 +905,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             SetAltEmailResponseModel body = JsonConvert.DeserializeObject<SetAltEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
             Assert.Equal(Strings.ErrorMessage_Password_Invalid, (body.ModelState[nameof(SetAltEmailFormModel.Password)] as JArray)[0]);
-        }
-
-        [Fact]
-        public async Task SetAltEmail_Returns400BadRequestAndSetAltEmailResponseModelIfNewAltEmailIsInUse()
-        {
-            // Arrange
-            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testNewAltEmail, _testPassword);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SetAltEmail(cookies, _testPassword, _testNewAltEmail);
-
-            // Assert
-            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            SetAltEmailResponseModel body = JsonConvert.DeserializeObject<SetAltEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Email_InUse, (body.ModelState[nameof(SetAltEmailFormModel.NewAltEmail)] as JArray)[0]);
         }
 
         [Fact]
@@ -992,7 +1071,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             // Arrange
             IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
-            await _vakAccountRepository.UpdateEmailVerifiedAsync(_testAccountId, true);
+            _testAccount = await _vakAccountRepository.GetAsync(_testAccountId, CancellationToken.None);
+            await _vakAccountRepository.UpdateEmailVerifiedAsync(_testAccount, true, CancellationToken.None);
 
             // Act
             HttpResponseMessage httpResponseMessage = await SetTwoFactorEnabled(cookies, _testNewTwoFactorEnabled);
@@ -1019,6 +1099,135 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             string twoFactorEmail = File.ReadAllText(_tempEmailFile);
             Assert.Contains(Strings.Email_Subject_TwoFactorCode, twoFactorEmail);
             Assert.Contains(_testEmail1, twoFactorEmail);
+        }
+
+        [Fact]
+        public async Task SetEmailVerified_Returns200OKIfEmailVerifiedChangeSucceeds()
+        {
+            // Arrange
+            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
+            await SendEmailVerificationEmail(cookies);
+            string email = File.ReadAllText(_tempEmailFile);
+            Regex tokenRegex = new Regex(@"token=(.*?);");
+            string token = Uri.UnescapeDataString(tokenRegex.Match(email).Groups[1].Value);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetEmailVerified(cookies, token);
+
+            // Assert
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+        }
+
+        [Fact]
+        public async Task SetEmailVerified_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
+        {
+            // Arrange
+            IDictionary<string, string> cookie = await GetApplicationCookie(_testEmail1, _testPassword);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetEmailVerified(cookie, null);
+
+            // Assert
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(
+                await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task SetEmailVerified_Returns401UnauthorizedAndErrorResponseModelIfAuthFails()
+        {
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetEmailVerified(null, null);
+
+            // Assert
+            Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task SetEmailVerified_Returns400BadRequestIfTokenIsInvalidOrExpired()
+        {
+            // Arrange
+            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1,
+                _testPassword);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetEmailVerified(cookies, _testToken);
+
+            // Assert
+            SetEmailVerifiedResponseModel body = JsonConvert.DeserializeObject<SetEmailVerifiedResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.True(body.ExpectedError);
+            Assert.True(body.InvalidToken);
+        }
+
+        [Fact]
+        public async Task SetAltEmailVerified_Returns200OKIfAltEmailVerifiedChangeSucceeds()
+        {
+            // Arrange
+            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
+            await SetAltEmail(cookies, _testPassword, _testAltEmail);
+            await SendAltEmailVerificationEmail(cookies);
+            string email = File.ReadAllText(_tempEmailFile);
+            Regex tokenRegex = new Regex(@"token=(.*?);");
+            string token = Uri.UnescapeDataString(tokenRegex.Match(email).Groups[1].Value);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetAltEmailVerified(cookies, token);
+
+            // Assert
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+        }
+
+        [Fact]
+        public async Task SetAltEmailVerified_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
+        {
+            // Arrange
+            IDictionary<string, string> cookie = await GetApplicationCookie(_testEmail1, _testPassword);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetAltEmailVerified(cookie, null);
+
+            // Assert
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(
+                await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task SetAltEmailVerified_Returns401UnauthorizedAndErrorResponseModelIfAuthFails()
+        {
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetAltEmailVerified(null, null);
+
+            // Assert
+            Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.False(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+        }
+
+        [Fact]
+        public async Task SetAltEmailVerified_Returns400BadRequestIfTokenIsInvalidOrExpired()
+        {
+            // Arrange
+            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1,
+                _testPassword);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetAltEmailVerified(cookies, _testToken);
+
+            // Assert
+            SetAltEmailVerifiedResponseModel body = JsonConvert.DeserializeObject<SetAltEmailVerifiedResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            Assert.True(body.ExpectedError);
+            Assert.True(body.InvalidToken);
         }
 
         [Fact]
@@ -1068,58 +1277,11 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SetEmailVerified_Returns200OKIfEmailVerifiedChangeSucceeds()
-        {
-            // Arrange
-            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
-            await SendEmailVerificationEmail(cookies);
-            string email = File.ReadAllText(_tempEmailFile);
-            Regex tokenRegex = new Regex(@"token=(.*?);");
-            string token = Uri.UnescapeDataString(tokenRegex.Match(email).Groups[1].Value);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SetEmailVerified(_testAccountId, token);
-
-            // Assert
-            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-        }
-
-        [Fact]
-        public async Task SetEmailVerified_Returns400BadRequestIfAccountIdIsInvalid()
-        {
-            // Act
-            HttpResponseMessage httpResponseMessage = await SetEmailVerified(_testInvalidAccountId, null);
-
-            // Assert
-            SetEmailVerifiedResponseModel body = JsonConvert.DeserializeObject<SetEmailVerifiedResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.True(body.ExpectedError);
-            Assert.True(body.InvalidAccountId);
-        }
-
-        [Fact]
-        public async Task SetEmailVerified_Returns400BadRequestIfTokenIsInvalidOrExpired()
-        {
-            // Arrange
-            IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
-            await SignUp(antiforgeryCookies, _testEmail1, _testPassword, _testPassword);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SetEmailVerified(_testAccountId, _testToken);
-
-            // Assert
-            SetEmailVerifiedResponseModel body = JsonConvert.DeserializeObject<SetEmailVerifiedResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.True(body.ExpectedError);
-            Assert.True(body.InvalidToken);
-        }
-
-        [Fact]
         public async Task SendAltEmailVerificationEmail_Returns200OkAndSendsAltEmailVerificationEmailIfEmailIsSentSuccessfully()
         {
             // Arrange
             IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
-            await _vakAccountRepository.UpdateAltEmailAsync(_testAccountId, _testAltEmail);
+            await SetAltEmail(cookies, _testPassword, _testAltEmail);
             File.WriteAllText(_tempEmailFile, "");
 
             // Act
@@ -1176,56 +1338,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             SendAltEmailVerificationEmailResponseModel body = JsonConvert.DeserializeObject<SendAltEmailVerificationEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
             Assert.True(body.InvalidAltEmail);
-        }
-
-        [Fact]
-        public async Task SetAltEmailVerified_Returns200OKIfAltEmailVerifiedChangeSucceeds()
-        {
-            // Arrange
-            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
-            await SendAltEmailVerificationEmail(cookies);
-            string email = File.ReadAllText(_tempEmailFile);
-            Regex tokenRegex = new Regex(@"token=(.*?);");
-            string token = Uri.UnescapeDataString(tokenRegex.Match(email).Groups[1].Value);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SetAltEmailVerified(_testAccountId, token);
-
-            // Assert
-            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-        }
-
-        [Fact]
-        public async Task SetAltEmailVerified_Returns400BadRequestIfAccountIdIsInvalid()
-        {
-            // Arrange
-            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SetAltEmailVerified(_testInvalidAccountId, null);
-
-            // Assert
-            SetAltEmailVerifiedResponseModel body = JsonConvert.DeserializeObject<SetAltEmailVerifiedResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.True(body.ExpectedError);
-            Assert.True(body.InvalidAccountId);
-        }
-
-        [Fact]
-        public async Task SetAltEmailVerified_Returns400BadRequestIfTokenIsInvalidOrExpired()
-        {
-            // Arrange
-            IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
-            await SignUp(antiforgeryCookies, _testEmail1, _testPassword, _testPassword);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await SetAltEmailVerified(_testAccountId, _testToken);
-
-            // Assert
-            SetAltEmailVerifiedResponseModel body = JsonConvert.DeserializeObject<SetAltEmailVerifiedResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            Assert.True(body.ExpectedError);
-            Assert.True(body.InvalidToken);
         }
 
         [Fact]
@@ -1305,176 +1417,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.False(body.ExpectedError);
             Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
+#endregion
 
-        //[Fact]
-        //public async Task TestTwoFactor_RedirectsToLogInViewIfAuthFails()
-        //{
-        //    // Act 
-        //    HttpResponseMessage testTwoFactorGetResponse = await _httpClient.GetAsync($"{_accountControllerName}/{nameof(AccountController.TestTwoFactor)}");
-
-        //    // Assert
-        //    Assert.Equal("Redirect", testTwoFactorGetResponse.StatusCode.ToString());
-        //    Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.LogIn)}", testTwoFactorGetResponse.Headers.Location.AbsolutePath);
-        //}
-
-        //[Fact]
-        //public async Task TestTwoFactor_ReturnsTestTwoFactorCodeViewWithAntiForgeryCredentialsIfAuthSucceeds()
-        //{
-        //    // Arrange
-        //    string email = "email@email.com", password = "Password";
-
-        //            //    await SignUp(email, password);
-
-        //    HttpResponseMessage logInPostResponse = await LogIn(email, password);
-
-        //    HttpRequestMessage TestTwoFactorGetRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.TestTwoFactor)}",
-        //        HttpMethod.Get,
-        //        null,
-        //        logInPostResponse);
-
-        //    // Act
-        //    HttpResponseMessage testTwoFactorGetResponse = await _httpClient.SendAsync(TestTwoFactorGetRequest);
-
-        //    // Assert
-        //    Assert.Equal("OK", testTwoFactorGetResponse.StatusCode.ToString());
-        //    string html = await testTwoFactorGetResponse.Content.ReadAsStringAsync();
-        //    Assert.Contains(Strings.ViewTitle_TestTwoFactor, html);
-        //    string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(testTwoFactorGetResponse);
-        //    IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(testTwoFactorGetResponse);
-        //    Assert.NotNull(antiForgeryToken);
-        //    Assert.True(cookies.Keys.First().Contains(".AspNetCore.Antiforgery"));
-        //}
-
-        //[Fact]
-        //public async Task TestTwoFactor_RedirectsToManageAccountAndUpdatesEmailVerifiedAndTwoFactorEnabledIfSuccessful()
-        //{
-        //    // Arrange
-        //    string email = "email@email.com", password = "Password";
-
-        //            //    File.WriteAllText(@"Temp\SmtpTest.txt", "");
-        //    await SignUp(email, password);
-
-        //    HttpResponseMessage logInPostResponse = await LogIn(email, password);
-        //    IDictionary<string, string> applicationCookie = CookiesHelper.ExtractCookiesFromResponse(logInPostResponse);
-
-        //    HttpResponseMessage manageAccountGetResponse = await ManageAccount(CookiesHelper.ExtractCookiesFromResponse(logInPostResponse));
-        //    IDictionary<string, string> antiForgeryCookie = CookiesHelper.ExtractCookiesFromResponse(manageAccountGetResponse);
-        //    string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(manageAccountGetResponse);
-
-        //    HttpResponseMessage enabletwoFactorPostResponse = await EnableTwoFactor(applicationCookie, antiForgeryCookie, antiForgeryToken);
-
-        //    string twoFactorEmail = File.ReadAllText(@"Temp\SmtpTest.txt");
-        //    Regex codeMatch = new Regex(@" (\d{6,6})");
-        //    string code = codeMatch.Match(twoFactorEmail).Groups[1].Value;
-
-        //    // Act
-        //    HttpResponseMessage testTwoFactorPostResponse = await TestTwoFactor(code, applicationCookie);
-
-        //    // Assert
-        //    Assert.Equal("Redirect", testTwoFactorPostResponse.StatusCode.ToString());
-        //    Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.ManageAccount)}", testTwoFactorPostResponse.Headers.Location.ToString());
-        //    VakAccount account = await _vakAccountRepository.GetAccountAsync(1);
-        //    Assert.True(account.EmailVerified);
-        //    Assert.True(account.TwoFactorEnabled);
-        //}
-
-        //[Theory]
-        //[MemberData(nameof(TestTwoFactorPostData))]
-        //public async Task TestTwoFactor_TestTwoFactorViewWithErrorMessageIfModelStateIsInvalidOrCodeIsInvalid(string code)
-        //{
-        //    // Arrange
-        //    string email = "email@email.com", password = "Password";
-
-        //            //    File.WriteAllText(@"Temp\SmtpTest.txt", "");
-        //    await SignUp(email, password);
-
-        //    HttpResponseMessage logInPostResponse = await LogIn(email, password);
-        //    IDictionary<string, string> applicationCookie = CookiesHelper.ExtractCookiesFromResponse(logInPostResponse);
-
-        //    HttpResponseMessage manageAccountGetResponse = await ManageAccount(CookiesHelper.ExtractCookiesFromResponse(logInPostResponse));
-        //    IDictionary<string, string> antiForgeryCookie = CookiesHelper.ExtractCookiesFromResponse(manageAccountGetResponse);
-        //    string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(manageAccountGetResponse);
-
-        //    HttpResponseMessage enabletwoFactorPostResponse = await EnableTwoFactor(applicationCookie, antiForgeryCookie, antiForgeryToken);
-
-        //    // Act
-        //    HttpResponseMessage testTwoFactorPostResponse = await TestTwoFactor(code, applicationCookie);
-
-        //    // Assert
-        //    Assert.Equal("OK", testTwoFactorPostResponse.StatusCode.ToString());
-        //    string html = await testTwoFactorPostResponse.Content.ReadAsStringAsync();
-        //    Assert.Contains(Strings.ViewTitle_TestTwoFactor, html);
-        //    Assert.Contains(Strings.ErrorMessage_TwoFactorCode_Invalid, html);
-        //}
-
-        //public static IEnumerable<object[]> TestTwoFactorPostData()
-        //{
-        //    // Invalid format
-        //    yield return new object[] { "12345" };
-        //    // Invalid code
-        //    yield return new object[] { "123456" };
-        //}
-
-        //[Fact]
-        //public async Task TestTwoFactor_ReturnsBadRequestIfAntiForgeryCredentialsAreInvalid()
-        //{
-        //    // Arrange
-        //    string email = "email@email.com", password = "Password";
-
-        //            //    await SignUp(email, password);
-
-        //    HttpResponseMessage logInPostResponse = await LogIn(email, password);
-
-        //    IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
-        //    {
-        //        {"Code", "123456" }
-        //    };
-        //    HttpRequestMessage testTwoFactorPostRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.TestTwoFactor)}",
-        //        HttpMethod.Post,
-        //        formPostBodyData,
-        //        logInPostResponse);
-
-        //    // Act
-        //    HttpResponseMessage testTwoFactorPostResponse = await _httpClient.SendAsync(testTwoFactorPostRequest);
-
-        //    // Assert
-        //    Assert.Equal(_badRequest, testTwoFactorPostResponse.StatusCode.ToString());
-        //}
-
-        //[Fact]
-        //public async Task TestTwoFactor_RedirectsToLogInViewIfAuthFails()
-        //{
-        //    // Arrange
-        //    string email = "email@email.com", password = "Password";
-
-        //            //    await SignUp(email, password);
-
-        //    HttpResponseMessage logInPostResponse = await LogIn(email, password);
-
-        //    HttpRequestMessage testTwoFactorGetRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.TestTwoFactor)}",
-        //        HttpMethod.Get,
-        //        null,
-        //        logInPostResponse);
-        //    HttpResponseMessage testTwoFactorGetResponse = await _httpClient.SendAsync(testTwoFactorGetRequest);
-
-        //    string antiForgeryToken = await AntiForgeryTokenHelper.ExtractAntiForgeryToken(testTwoFactorGetResponse);
-        //    IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
-        //    {
-        //        {"Code", "123456" },
-        //        { "__RequestVerificationToken", antiForgeryToken }
-        //    };
-        //    HttpRequestMessage testTwoFactorPostRequest = RequestHelper.CreateWithCookiesFromResponse($"{_accountControllerName}/{nameof(AccountController.TestTwoFactor)}",
-        //        HttpMethod.Post,
-        //        formPostBodyData,
-        //        testTwoFactorGetResponse);
-
-        //    // Act
-        //    HttpResponseMessage testTwoFactorPostResponse = await _httpClient.SendAsync(testTwoFactorPostRequest);
-
-        //    // Assert
-        //    Assert.Equal("Redirect", testTwoFactorPostResponse.StatusCode.ToString());
-        //    Assert.Equal($"/{_accountControllerName}/{nameof(AccountController.LogIn)}", testTwoFactorPostResponse.Headers.Location.AbsolutePath);
-        //}   
         #region Helpers
         public async Task<HttpResponseMessage> SetTwoFactorEnabled(IDictionary<string, string> cookies,
             bool enabled)
@@ -1484,12 +1428,13 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
                 { nameof(SetTwoFactorEnabledFormModel.Enabled), enabled.ToString() }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
-                Create($"{_accountControllerName}/{nameof(AccountController.SetTwoFactorEnabled)}", HttpMethod.Post, cookies, formPostBodyData);
+                Create($"{_accountControllerName}/{nameof(AccountController.SetTwoFactorEnabled)}", HttpMethod.Post, cookies, 
+                formPostBodyData);
 
             return await _httpClient.SendAsync(httpRequestMessage);
         }
 
-        public async Task<HttpResponseMessage> SetEmailVerified(int accountId,
+        public async Task<HttpResponseMessage> SetEmailVerified(IDictionary<string, string> cookies,
             string token)
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
@@ -1497,13 +1442,13 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
                 { nameof(SetEmailVerifiedFormModel.Token), token }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
-                Create($"{_accountControllerName}/{nameof(AccountController.SetEmailVerified)}", HttpMethod.Post, 
+                Create($"{_accountControllerName}/{nameof(AccountController.SetEmailVerified)}", HttpMethod.Post, cookies,
                 formPostBodyData);
 
             return await _httpClient.SendAsync(httpRequestMessage);
         }
 
-        public async Task<HttpResponseMessage> SetAltEmailVerified(int accountId,
+        public async Task<HttpResponseMessage> SetAltEmailVerified(IDictionary<string,string> cookies,
             string token)
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
@@ -1511,7 +1456,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
                 { nameof(SetAltEmailVerifiedFormModel.Token), token }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
-                Create($"{_accountControllerName}/{nameof(AccountController.SetAltEmailVerified)}", HttpMethod.Post, 
+                Create($"{_accountControllerName}/{nameof(AccountController.SetAltEmailVerified)}", HttpMethod.Post, cookies,
                 formPostBodyData);
 
             return await _httpClient.SendAsync(httpRequestMessage);
@@ -1734,9 +1679,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> applicationAndAntiForgeryCookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1,
                 _testPassword);
-
-            await _vakAccountRepository.UpdateEmailVerifiedAsync(_testAccountId, true);
-            await _vakAccountRepository.UpdateTwoFactorEnabledAsync(_testAccountId, true);
+            _testAccount = await _vakAccountRepository.GetAsync(_testAccountId, CancellationToken.None);
+            await _vakAccountRepository.UpdateEmailVerifiedAsync(_testAccount, true, CancellationToken.None);
+            await _vakAccountRepository.UpdateTwoFactorEnabledAsync(_testAccount, true, CancellationToken.None);
 
             IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
             HttpResponseMessage httpResponseMessage = await LogIn(antiforgeryCookies, _testEmail1, _testPassword);

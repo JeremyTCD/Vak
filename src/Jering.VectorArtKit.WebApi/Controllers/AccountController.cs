@@ -1,44 +1,38 @@
 ﻿using Jering.Accounts.DatabaseInterface;
-using Jering.Security;
 using Jering.Utilities;
-using Jering.VectorArtKit.WebApi.BusinessModels;
 using Jering.VectorArtKit.WebApi.FormModels;
-using Jering.VectorArtKit.WebApi.Options;
 using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.Account;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 using Jering.Accounts;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Http;
 using Jering.VectorArtKit.WebApi.Extensions;
+using Jering.VectorArtKit.DatabaseInterface;
 
 namespace Jering.VectorArtKit.WebApi.Controllers
 {
     [Authorize]
+    [ValidateAntiForgeryToken]
     public class AccountController : Controller
     {
-        private IAccountsService<VakAccount> _accountsService;
+        private IAccountService<VakAccount> _accountService;
         private IAccountRepository<VakAccount> _vakAccountRepository;
         private IAntiforgery _antiforgery;
-        private UrlOptions _urlOptions;
 
         public AccountController(
             IAccountRepository<VakAccount> vakAccountRepository,
-            IAccountsService<VakAccount> accountsService,
-            IAntiforgery antiforgery,
-            IOptions<UrlOptions> urlOptionsWrapper
+            IAccountService<VakAccount> accountService,
+            IAntiforgery antiforgery
             )
         {
             _vakAccountRepository = vakAccountRepository;
-            _accountsService = accountsService;
-            _urlOptions = urlOptionsWrapper.Value;
+            _accountService = accountService;
             _antiforgery = antiforgery;
         }
+
         #region Session
         /// <summary>
         /// Post: /Account/LogIn
@@ -55,30 +49,24 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogIn([FromBody] LogInFormModel model)
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _vakAccountRepository.GetByEmailAsync(model.Email);
-                if (account != null && _accountsService.ValidatePassword(account, model.Password))
+                LogInActionResult result = await _accountService.LogInActionAsync(model.Email, model.Password, model.RememberMe);
+
+                if (result == LogInActionResult.TwoFactorRequired)
                 {
-                    if (account.TwoFactorEnabled)
+                    return BadRequest(new LogInResponseModel
                     {
-                        await _accountsService.TwoFactorLogInAsync(account);
-                        await _accountsService.SendTwoFactorCodeEmailAsync(account,
-                            Strings.Email_Subject_TwoFactorCode,
-                            Strings.Email_Message_TwoFactorCode);
+                        ExpectedError = true,
+                        TwoFactorRequired = true,
+                        IsPersistent = model.RememberMe
+                    });
+                }
 
-                        return BadRequest(new LogInResponseModel
-                        {
-                            ExpectedError = true,
-                            TwoFactorRequired = true,
-                            IsPersistent = model.RememberMe
-                        });
-                    }
-
-                    await _accountsService.ApplicationLogInAsync(account, new AuthenticationProperties { IsPersistent = model.RememberMe });
+                if (result == LogInActionResult.Success)
+                {
                     _antiforgery.AddAntiforgeryCookies(HttpContext);
 
                     return Ok(new LogInResponseModel
@@ -110,13 +98,12 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// <returns>
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
-        /// 200 OK and two factor cookie and application cookie (with empty string values) if auth succeeds. 
+        /// 200 OK and application cookie (with empty string values) if auth succeeds. 
         /// </returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogOff()
         {
-            await _accountsService.ApplicationLogOffAsync();
+            await _accountService.ApplicationLogOffAsync();
             return Ok();
         }
 
@@ -128,21 +115,19 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 400 BadRequest and <see cref="TwoFactorLogInResponseModel"/> if model state is invalid. 
         /// 400 BadRequest and <see cref="TwoFactorLogInResponseModel"/> if two factor credentials are invalid. 
-        /// 400 BadRequest and <see cref="TwoFactorLogInResponseModel"/> if code is expired. 
-        /// 400 BadRequest and <see cref="TwoFactorLogInResponseModel"/> if code is invalid. 
+        /// 400 BadRequest and <see cref="TwoFactorLogInResponseModel"/> if code is expired or invalid. 
         /// 200 OK, <see cref="TwoFactorLogInResponseModel"/>, two factor cookie, application 
         /// cookie and antiforgery cookies if login succeeds.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> TwoFactorLogIn([FromBody] TwoFactorLogInFormModel model)
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _accountsService.GetTwoFactorAccountAsync();
+                TwoFactorLogInActionResult result = await _accountService.TwoFactorLogInActionAsync(model.Code, model.IsPersistent);
 
-                if (account == null)
+                if (result == TwoFactorLogInActionResult.InvalidCredentials)
                 {
                     return BadRequest(new TwoFactorLogInResponseModel
                     {
@@ -151,30 +136,11 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     });
                 }
 
-                ValidateTokenResult result = _accountsService.ValidateToken(TokenServiceOptions.TotpTokenService, _accountsService.TwoFactorTokenPurpose, account, model.Code);
-
-                if (result.Valid)
+                if (result == TwoFactorLogInActionResult.Success)
                 {
-                    // Cleanup two factor cookie
-                    await _accountsService.TwoFactorLogOffAsync();
-                    await _accountsService.ApplicationLogInAsync(account, new AuthenticationProperties() { IsPersistent = model.IsPersistent });
-
                     _antiforgery.AddAntiforgeryCookies(HttpContext);
 
-                    return Ok(new TwoFactorLogInResponseModel
-                    {
-                        Username = account.Email,
-                        IsPersistent = model.IsPersistent
-                    });
-                }
-
-                if (result.Expired)
-                {
-                    return BadRequest(new TwoFactorLogInResponseModel
-                    {
-                        ExpectedError = true,
-                        ExpiredToken = true
-                    });
+                    return Ok();
                 }
 
                 ModelState.AddModelError(nameof(TwoFactorLogInFormModel.Code), Strings.ErrorMessage_TwoFactorCode_Invalid);
@@ -202,25 +168,17 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SignUp([FromBody] SignUpFormModel model)
         {
             if (ModelState.IsValid)
             {
-                CreateAccountResult<VakAccount> createAccountResult = await _accountsService.CreateAccountAsync(model.Email, model.Password);
+                SignUpActionResult result = await _accountService.SignUpActionAsync(model.Email, model.Password);
 
-                if (createAccountResult.Succeeded)
+                if (result == SignUpActionResult.Success)
                 {
-                    await _accountsService.SendEmailVerificationEmailAsync(createAccountResult.Account,
-                        Strings.Email_Subject_EmailVerification,
-                        Strings.Email_Message_EmailVerification,
-                        _urlOptions.ClientDomain);
-
-                    await _accountsService.ApplicationLogInAsync(createAccountResult.Account, new AuthenticationProperties { IsPersistent = true });
-
                     _antiforgery.AddAntiforgeryCookies(HttpContext);
 
-                    return Ok(new SignUpResponseModel { Username = createAccountResult.Account.Email });
+                    return Ok();
                 }
 
                 ModelState.AddModelError(nameof(SignUpFormModel.Email), Strings.ErrorMessage_Email_InUse);
@@ -245,20 +203,14 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendResetPasswordEmail([FromBody] SendResetPasswordEmailFormModel model)
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _vakAccountRepository.GetByEmailOrAltEmailAsync(model.Email);
-                if (account != null)
-                {
-                    await _accountsService.SendResetPasswordEmailAsync(account,
-                        model.Email,
-                        Strings.Email_Subject_ResetPassword,
-                        Strings.Email_Message_ResetPassword,
-                        _urlOptions.ClientDomain);
+                SendResetPasswordEmailActionResult result = await _accountService.SendResetPasswordEmailActionAsync(model.Email);
 
+                if (result == SendResetPasswordEmailActionResult.Success)
+                {
                     return Ok();
                 }
 
@@ -286,14 +238,13 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordFormModel model)
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _vakAccountRepository.GetByEmailAsync(model.Email);
+                ResetPasswordActionResult result = await _accountService.ResetPasswordActionAsync(model.Email, model.Token, model.NewPassword);
 
-                if (account == null)
+                if (result == ResetPasswordActionResult.InvalidEmail)
                 {
                     return BadRequest(new ResetPasswordResponseModel
                     {
@@ -302,12 +253,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     });
                 }
 
-                ValidateTokenResult validateTokenResult = _accountsService.ValidateToken(TokenServiceOptions.DataProtectionTokenService,
-                    _accountsService.ResetPasswordTokenPurpose,
-                    account,
-                    model.Token);
-
-                if (!validateTokenResult.Valid)
+                if (result == ResetPasswordActionResult.InvalidToken)
                 {
                     return BadRequest(new ResetPasswordResponseModel
                     {
@@ -316,9 +262,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     });
                 }
 
-                SetPasswordHashResult setPasswordResult = await _accountsService.SetPasswordHashAsync(account, model.NewPassword);
-
-                if (setPasswordResult.Succeeded)
+                if (result == ResetPasswordActionResult.Success)
                 {
                     return Ok(new ResetPasswordResponseModel
                     {
@@ -340,18 +284,18 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// Get: /Account/GetAccountDetails
         /// </summary>
         /// <returns>
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
         /// 200 OK and <see cref="GetAccountDetailsResponseModel"/> if auth succeeds.
         /// </returns>
-        /// <exception cref="NullReferenceException">Thrown if unable to retrieve logged in account</exception>
         [HttpGet]
         public async Task<IActionResult> GetAccountDetails()
         {
-            VakAccount account = await _accountsService.GetApplicationAccountAsync();
+            VakAccount account = await _accountService.GetAccountDetailsActionAsync();
 
             if (account == null)
             {
-                // Unexpected error - logged in but unable to retrieve account
+                // Logged in but unable to retrieve account
                 throw new NullReferenceException(nameof(account));
             }
 
@@ -375,41 +319,33 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 400 BadRequest and <see cref="SetPasswordResponseModel"/> if model state is invalid. 
         /// 400 BadRequest and <see cref="SetPasswordResponseModel"/> if current password is invalid. 
+        /// 400 BadRequest and <see cref="SetPasswordResponseModel"/> if new password is same as current password. 
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
         /// 200 OK and application cookie if password change succeeds.
         /// </returns>
-        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetPassword([FromBody] SetPasswordFormModel model)
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _accountsService.GetApplicationAccountAsync();
-                if (account == null)
+                SetPasswordActionResult result = await _accountService.SetPasswordActionAsync(model.CurrentPassword, model.NewPassword);
+
+                if (result == SetPasswordActionResult.NoLoggedInAccount)
                 {
-                    // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                    // Logged in but unable to retrieve account 
                     throw new Exception();
                 }
 
-                if (_accountsService.ValidatePassword(account, model.CurrentPassword))
+                if (result == SetPasswordActionResult.Success)
                 {
-                    SetPasswordHashResult result = await _accountsService.SetPasswordHashAsync(account, model.NewPassword);
+                    return Ok();
+                }
 
-                    if (result.Succeeded)
-                    {
-                        // Security stamp changes if password changes
-                        account = await _vakAccountRepository.GetAccountAsync(account.AccountId);
-                        await _accountsService.RefreshApplicationLogInAsync(account);
-
-                        return Ok();
-                    }
-
-                    // SetPasswordFormModel validates that NewPassword != CurrentPassword. The only way this line runs is if
-                    // password changes after VerifyPassword - possible but very unlikely.
+                if (result == SetPasswordActionResult.AlreadySet)
+                {
                     ModelState.AddModelError(nameof(SetPasswordFormModel.NewPassword), Strings.ErrorMessage_NewPassword_MustDiffer);
                 }
-                else
+                else if (result == SetPasswordActionResult.InvalidCurrentPassword)
                 {
                     ModelState.AddModelError(nameof(SetPasswordFormModel.CurrentPassword), Strings.ErrorMessage_Password_Invalid);
                 }
@@ -435,45 +371,31 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
         /// 200 OK and application cookie if email change succeeds.
         /// </returns>
-        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetEmail([FromBody] SetEmailFormModel model)
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _accountsService.GetApplicationAccountAsync();
-                if (account == null)
+                SetEmailActionResult result = await _accountService.SetEmailActionAsync(model.Password, model.NewEmail);
+
+                if (result == SetEmailActionResult.NoLoggedInAccount)
                 {
-                    // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                    // Logged in but unable to retrieve account 
                     throw new Exception();
                 }
 
-                if (_accountsService.ValidatePassword(account, model.Password))
+                if (result == SetEmailActionResult.Success)
                 {
-                    UpdateResult<VakAccount> result = await _vakAccountRepository.UpdateEmailAsync(account, model.NewEmail);
+                    return Ok();
+                }
 
-                    if (result.InvalidRowVersionOrAccountId)
-                    {
-                        throw new InvalidOperationException();
-                    }
-
-                    if (result.Succeeded)
-                    {
-                        // Security stamp changes if email changes
-                        await _accountsService.RefreshApplicationLogInAsync(result.Account);
-
-                        return Ok();
-                    }
-
-                    if (result.AlreadyUpdated)
-                    {
-                        ModelState.AddModelError(nameof(SetEmailFormModel.NewEmail), Strings.ErrorMessage_NewEmail_MustDiffer);
-                    }
-                    else if (result.DuplicateRow)
-                    {
-                        ModelState.AddModelError(nameof(SetEmailFormModel.NewEmail), Strings.ErrorMessage_Email_InUse);
-                    }
+                if (result == SetEmailActionResult.AlreadySet)
+                {
+                    ModelState.AddModelError(nameof(SetEmailFormModel.NewEmail), Strings.ErrorMessage_NewEmail_MustDiffer);
+                }
+                else if (result == SetEmailActionResult.EmailInUse)
+                {
+                    ModelState.AddModelError(nameof(SetEmailFormModel.NewEmail), Strings.ErrorMessage_Email_InUse);
                 }
                 else
                 {
@@ -496,43 +418,32 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 400 BadRequest and <see cref="SetAltEmailResponseModel"/> if model state is invalid. 
         /// 400 BadRequest and <see cref="SetAltEmailResponseModel"/> if password is invalid. 
-        /// 400 BadRequest and <see cref="SetAltEmailResponseModel"/> if new alternative email is in use. 
         /// 400 BadRequest and <see cref="SetAltEmailResponseModel"/> if new alternative email is the same 
         /// as current alternative email. 
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
         /// 200 OK if alternative email change succeeds.
         /// </returns>
-        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetAltEmail([FromBody] SetAltEmailFormModel model)
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _accountsService.GetApplicationAccountAsync();
-                if (account == null)
+                SetAltEmailActionResult result = await _accountService.SetAltEmailActionAsync(model.Password, model.NewAltEmail);
+
+                if (result == SetAltEmailActionResult.NoLoggedInAccount)
                 {
-                    // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                    // Logged in but unable to retrieve account 
                     throw new Exception();
                 }
 
-                if (_accountsService.ValidatePassword(account, model.Password))
+                if (result == SetAltEmailActionResult.Success)
                 {
-                    SetAltEmailResult result = await _accountsService.SetAltEmailAsync(account, model.NewAltEmail);
+                    return Ok();
+                }
 
-                    if (result.Succeeded)
-                    {
-                        return Ok();
-                    }
-
-                    if (result.AlreadySet)
-                    {
-                        ModelState.AddModelError(nameof(SetAltEmailFormModel.NewAltEmail), Strings.ErrorMessage_NewEmail_MustDiffer);
-                    }
-                    else if (result.InvalidNewAltEmail)
-                    {
-                        ModelState.AddModelError(nameof(SetAltEmailFormModel.NewAltEmail), Strings.ErrorMessage_Email_InUse);
-                    }
+                if (result == SetAltEmailActionResult.AlreadySet)
+                {
+                    ModelState.AddModelError(nameof(SetAltEmailFormModel.NewAltEmail), Strings.ErrorMessage_NewEmail_MustDiffer);
                 }
                 else
                 {
@@ -561,37 +472,31 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
         /// 200 OK if display name change succeeds.
         /// </returns>
-        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetDisplayName([FromBody] SetDisplayNameFormModel model)
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _accountsService.GetApplicationAccountAsync();
-                if (account == null)
+                SetDisplayNameActionResult result = await _accountService.SetDisplayNameActionAsync(model.Password, model.NewDisplayName);
+
+                if (result == SetDisplayNameActionResult.NoLoggedInAccount)
                 {
-                    // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                    // Logged in but unable to retrieve account 
                     throw new Exception();
                 }
 
-                if (_accountsService.ValidatePassword(account, model.Password))
+                if (result == SetDisplayNameActionResult.Success)
                 {
-                    SetDisplayNameResult result = await _accountsService.SetDisplayNameAsync(account, model.NewDisplayName);
+                    return Ok();
+                }
 
-                    if (result.Succeeded)
-                    {
-                        return Ok();
-                    }
-
-                    if (result.AlreadySet)
-                    {
-                        ModelState.AddModelError(nameof(SetDisplayNameFormModel.NewDisplayName), Strings.ErrorMessage_NewDisplayName_MustDiffer);
-                    }
-                    else if (result.InvalidNewDisplayName)
-                    {
-                        ModelState.AddModelError(nameof(SetDisplayNameFormModel.NewDisplayName), Strings.ErrorMessage_DisplayName_InUse);
-                    }
+                if (result == SetDisplayNameActionResult.AlreadySet)
+                {
+                    ModelState.AddModelError(nameof(SetDisplayNameFormModel.NewDisplayName), Strings.ErrorMessage_NewDisplayName_MustDiffer);
+                }
+                else if (result == SetDisplayNameActionResult.DisplayNameInUse)
+                {
+                    ModelState.AddModelError(nameof(SetDisplayNameFormModel.NewDisplayName), Strings.ErrorMessage_DisplayName_InUse);
                 }
                 else
                 {
@@ -616,31 +521,89 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
         /// 200 OK if setting of two factor enabled succeeds.
         /// </returns>
-        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetTwoFactorEnabled([FromBody] SetTwoFactorEnabledFormModel model)
         {
-            VakAccount account = await _accountsService.GetApplicationAccountAsync();
+            SetTwoFactorEnabledActionResult result = await _accountService.SetTwoFactorEnabledActionAsync(model.Enabled);
 
-            if (account == null)
+            if (result == SetTwoFactorEnabledActionResult.NoLoggedInAccount)
             {
-                // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                // Logged in but unable to retrieve account 
                 throw new Exception();
             }
 
-            SetTwoFactorEnabledResult result = await _accountsService.SetTwoFactorEnabledAsync(account, model.Enabled);
-
-            if (result.EmailUnverified)
+            if (result == SetTwoFactorEnabledActionResult.EmailUnverified)
             {
-                await _accountsService.SendTwoFactorCodeEmailAsync(account,
-                    Strings.Email_Subject_TwoFactorCode,
-                    Strings.Email_Message_TwoFactorCode);
-
                 return BadRequest(new SetTwoFactorEnabledResponseModel
                 {
                     ExpectedError = true,
                     EmailUnverified = true
+                });
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Post: /Account/SetEmailVerified
+        /// </summary>
+        /// <returns>
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
+        /// 400 BadRequest and <see cref="SetEmailVerifiedResponseModel"/> if token is invalid or expired.
+        /// 200 OK if setting of email verified succeeds.
+        /// </returns>
+        [HttpPost]
+        public async Task<IActionResult> SetEmailVerified([FromBody] SetEmailVerifiedFormModel model)
+        {
+            SetEmailVerifiedActionResult result = await _accountService.SetEmailVerifiedActionAsync(model.Token);
+
+            if (result == SetEmailVerifiedActionResult.NoLoggedInAccount)
+            {
+                // Logged in but unable to retrieve account 
+                throw new Exception();
+            }
+
+            if (result == SetEmailVerifiedActionResult.InvalidToken)
+            {
+                return BadRequest(new SetEmailVerifiedResponseModel
+                {
+                    ExpectedError = true,
+                    InvalidToken = true
+                });
+            }
+
+            return Ok();
+        }
+
+        /// <summary>
+        /// Post: /Account/SetAltEmailVerified
+        /// </summary>
+        /// <returns>
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
+        /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
+        /// 400 BadRequest and <see cref="SetAltEmailVerifiedResponseModel"/> if token is invalid or expired.
+        /// 200 OK if setting of email verified succeeds.
+        /// </returns>
+        [HttpPost]
+        public async Task<IActionResult> SetAltEmailVerified([FromBody] SetAltEmailVerifiedFormModel model)
+        {
+            // check model state? incase account id is not a string
+
+            SetAltEmailVerifiedActionResult result = await _accountService.SetAltEmailVerifiedActionAsync(model.Token);
+
+            if (result == SetAltEmailVerifiedActionResult.NoLoggedInAccount)
+            {
+                // Logged in but unable to retrieve account 
+                throw new Exception();
+            }
+
+            if (result == SetAltEmailVerifiedActionResult.InvalidToken)
+            {
+                return BadRequest(new SetAltEmailVerifiedResponseModel
+                {
+                    ExpectedError = true,
+                    InvalidToken = true
                 });
             }
 
@@ -656,68 +619,16 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
         /// 200 OK and sends email validation email if email is sent successfully.
         /// </returns>
-        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendEmailVerificationEmail()
         {
-            // nd to check modelstate?
+            SendEmailVerificationEmailActionResult result = await _accountService.SendEmailVerificationEmailActionAsync();
 
-            VakAccount account = await _accountsService.GetApplicationAccountAsync();
-
-            if (account == null)
+            if (result == SendEmailVerificationEmailActionResult.NoLoggedInAccount)
             {
-                // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                // Logged in but unable to retrieve account 
                 throw new Exception();
             }
-
-            await _accountsService.SendEmailVerificationEmailAsync(account,
-                Strings.Email_Subject_EmailVerification,
-                Strings.Email_Message_EmailVerification,
-                _urlOptions.ClientDomain);
-
-            return Ok();
-        }
-
-        /// <summary>
-        /// Post: /Account/SetEmailVerified
-        /// </summary>
-        /// <returns>
-        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
-        /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
-        /// 400 BadRequest and <see cref="SetEmailVerifiedResponseModel"/> if token is invalid or expired.
-        /// 200 OK if setting of email verified succeeds.
-        /// </returns>
-        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetEmailVerified([FromBody] SetEmailVerifiedFormModel model)
-        {
-            // check model state? incase account id is not a string
-
-            VakAccount account = await _accountsService.GetApplicationAccountAsync();
-
-            if (account == null)
-            {
-                // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
-                throw new Exception();
-            }
-
-            ValidateTokenResult result = _accountsService.ValidateToken(TokenServiceOptions.DataProtectionTokenService,
-                _accountsService.ConfirmEmailTokenPurpose,
-                account,
-                model.Token);
-
-            if (!result.Valid)
-            {
-                return BadRequest(new SetEmailVerifiedResponseModel
-                {
-                    ExpectedError = true,
-                    InvalidToken = true
-                });
-            }
-
-            await _accountsService.SetEmailVerifiedAsync(account, true);
 
             return Ok();
         }
@@ -734,24 +645,17 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendAltEmailVerificationEmail()
         {
-            VakAccount account = await _accountsService.GetApplicationAccountAsync();
+            SendAltEmailVerificationEmailActionResult result = await _accountService.SendAltEmailVerificationEmailActionAsync();
 
-            if (account == null)
+            if (result == SendAltEmailVerificationEmailActionResult.NoLoggedInAccount)
             {
-                // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                // Logged in but unable to retrieve account 
                 throw new Exception();
             }
 
-            SendAltEmailVerificationEmailResult result = await _accountsService.
-                SendAltEmailVerificationEmailAsync(account,
-                    Strings.Email_Subject_EmailVerification,
-                    Strings.Email_Message_EmailVerification,
-                    _urlOptions.ClientDomain);
-
-            if (result.InvalidAltEmail)
+            if (result == SendAltEmailVerificationEmailActionResult.NoAltEmail)
             {
                 return BadRequest(new SendAltEmailVerificationEmailResponseModel
                 {
@@ -764,49 +668,6 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         }
 
         /// <summary>
-        /// Post: /Account/SetAltEmailVerified
-        /// </summary>
-        /// <returns>
-        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
-        /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
-        /// 400 BadRequest and <see cref="SetAltEmailVerifiedResponseModel"/> if token is invalid or expired.
-        /// 200 OK if setting of email verified succeeds.
-        /// </returns>
-        /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SetAltEmailVerified([FromBody] SetAltEmailVerifiedFormModel model)
-        {
-            // check model state? incase account id is not a string
-
-            VakAccount account = await _accountsService.GetApplicationAccountAsync();
-
-            if (account == null)
-            {
-                // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
-                throw new Exception();
-            }
-
-            ValidateTokenResult result = _accountsService.ValidateToken(TokenServiceOptions.DataProtectionTokenService,
-                _accountsService.ConfirmEmailTokenPurpose,
-                account,
-                model.Token);
-
-            if (!result.Valid)
-            {
-                return BadRequest(new SetAltEmailVerifiedResponseModel
-                {
-                    ExpectedError = true,
-                    InvalidToken = true
-                });
-            }
-
-            await _accountsService.SetAltEmailVerifiedAsync(account, true);
-
-            return Ok();
-        }
-
-        /// <summary>
         /// Post: /Account/TwoFactorVerifyEmail
         /// </summary>
         /// <param name="model"></param>
@@ -814,44 +675,31 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
         /// 400 BadRequest and <see cref="TwoFactorVerifyEmailResponseModel"/> if model state is invalid.
-        /// 400 BadRequest and <see cref="TwoFactorVerifyEmailResponseModel"/> if token is expired.
-        /// 400 BadRequest and <see cref="TwoFactorVerifyEmailResponseModel"/> if token is invalid.
+        /// 400 BadRequest and <see cref="TwoFactorVerifyEmailResponseModel"/> if token is expired or invalid.
         /// 200 OK if email verification succeeds.
         /// </returns>
         /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> TwoFactorVerifyEmail([FromBody] TwoFactorVerifyEmailFormModel model)
         {
             if (ModelState.IsValid)
             {
-                VakAccount account = await _accountsService.GetApplicationAccountAsync();
+                TwoFactorVerifyEmailActionResult result = await _accountService.TwoFactorVerifyEmailActionAsync(model.Code);
 
-                if (account == null)
+                if (result == TwoFactorVerifyEmailActionResult.NoLoggedInAccount)
                 {
-                    // Unexpected error - logged in (got past authorize attribute) but unable to retrieve account
+                    // Logged in but unable to retrieve account 
                     throw new Exception();
                 }
 
-                ValidateTokenResult result = _accountsService.ValidateToken(TokenServiceOptions.TotpTokenService, _accountsService.TwoFactorTokenPurpose, account, model.Code);
-
-                if (result.Valid)
+                if (result == TwoFactorVerifyEmailActionResult.InvalidCode)
                 {
-                    await _accountsService.SetEmailVerifiedAsync(account, true);
-
+                    ModelState.AddModelError(nameof(TwoFactorVerifyEmailFormModel.Code), Strings.ErrorMessage_TwoFactorCode_Invalid);
+                }
+                else
+                {
                     return Ok();
                 }
-
-                if(result.Expired)
-                {
-                    return BadRequest(new TwoFactorVerifyEmailResponseModel
-                    {
-                        ExpectedError = true,
-                        ExpiredToken = true
-                    });
-                }
-
-                ModelState.AddModelError(nameof(TwoFactorVerifyEmailFormModel.Code), Strings.ErrorMessage_TwoFactorCode_Invalid);
             }
 
             return BadRequest(new TwoFactorVerifyEmailResponseModel

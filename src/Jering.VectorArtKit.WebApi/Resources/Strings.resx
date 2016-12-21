@@ -208,7 +208,7 @@
     <value>Invalid code.</value>
   </data>
   <data name="Email_Message_EmailVerification" xml:space="preserve">
-    <value>Please confirm your email by clicking this link: &lt;a href="{0}verify-email;token={1};accountid={2}"&gt;link&lt;/a&gt;</value>
+    <value>Please confirm your email by clicking this link: &lt;a href="{0}verify-email;token={1};"&gt;link&lt;/a&gt;</value>
   </data>
   <data name="ErrorMessage_CurrentPassword_Invalid" xml:space="preserve">
     <value>Invalid current password</value>

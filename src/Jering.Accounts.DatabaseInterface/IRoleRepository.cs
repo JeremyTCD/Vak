@@ -12,7 +12,7 @@ namespace Jering.Accounts.DatabaseInterface
         /// Creates a new Role in the Roles table
         /// </summary>
         /// <param name="name"></param>
-        Task<Role> CreateRoleAsync(string name);
+        Task<IRole> CreateRoleAsync(string name);
 
         /// <summary>
         /// 
@@ -41,6 +41,6 @@ namespace Jering.Accounts.DatabaseInterface
         /// </summary>
         /// <param name="roleId"></param>
         /// <returns></returns>
-        Task<IEnumerable<Claim>> GetRoleClaimsAsync(int roleId);
+        Task<IEnumerable<IClaim>> GetRoleClaimsAsync(int roleId);
     }
 }

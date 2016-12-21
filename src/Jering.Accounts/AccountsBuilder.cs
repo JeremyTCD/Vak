@@ -2,6 +2,8 @@
 using System;
 using Jering.Accounts.DatabaseInterface;
 using Jering.Security;
+using Jering.Accounts.DatabaseInterface.EfCore;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jering.Accounts
 {
@@ -24,6 +26,16 @@ namespace Jering.Accounts
         {
             _accountType = accountType;
             _serviceCollection = serviceCollection;
+        }
+
+        /// <summary>
+        /// Adds a <see cref="DbContext"/> service for the <seealso cref="_accountType"/>.
+        /// </summary>
+        /// <typeparam name="TDbContext">A type that implements <see cref="DbContext"/>.</typeparam>
+        /// <returns>The current <see cref="AccountsBuilder"/> instance.</returns>
+        public virtual AccountsBuilder AddDbContext<TDbContext>() where TDbContext: class
+        {
+            return AddScoped(typeof(DbContext), typeof(TDbContext));
         }
 
         /// <summary>
@@ -76,7 +88,7 @@ namespace Jering.Accounts
         /// <returns></returns>
         private AccountsBuilder AddTokenService(string tokenServiceName, Type tokenServiceType)
         {
-            _serviceCollection.Configure<AccountsServiceOptions>(options =>
+            _serviceCollection.Configure<AccountServiceOptions>(options =>
             {
                 options.TokenServiceOptions.TokenServiceMap[tokenServiceName] = tokenServiceType;
             });

@@ -1,6 +1,4 @@
 ﻿using Jering.DynamicForms;
-using Jering.VectorArtKit.WebApi.BusinessModels;
-using Jering.VectorArtKit.WebApi.Options;
 using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Microsoft.AspNetCore.Antiforgery;
@@ -15,11 +13,11 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
-using System.Data.SqlClient;
 using System.Threading.Tasks;
 using Jering.Accounts;
-using Jering.Accounts.DatabaseInterface.Dapper;
+using Jering.VectorArtKit.DatabaseInterface;
 using Jering.Mail;
+using Microsoft.EntityFrameworkCore;
 
 namespace Jering.VectorArtKit.WebApi
 {
@@ -52,10 +50,9 @@ namespace Jering.VectorArtKit.WebApi
                 options.HeaderName = "X-XSRF-TOKEN";
             });
 
-            services.AddAccounts<VakAccount>(_configurationRoot).
+            services.AddAccounts<VakAccount>().
+                AddDbContext<VakDbContext>().
                 AddAccountRepository<VakAccountRepository>().
-                AddRoleRepository<DapperRoleRepository>().
-                AddClaimRepository<DapperClaimRepository>().
                 AddDefaultTokenServices();
 
             services.AddDynamicForms();
@@ -63,23 +60,43 @@ namespace Jering.VectorArtKit.WebApi
 
             if (_hostingEnvironment.IsDevelopment())
             {
-                services.AddScoped(_ => new SqlConnection(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
-                services.AddDevelopmentEmailSender();
-                services.Configure<UrlOptions>(options =>
+                services.Configure<AccountServiceOptions>(options =>
                 {
-                    options.ClientDomain = "http://localhost:4200/";
+                    options.EmailVerificationEmailSubject = Strings.Email_Subject_EmailVerification;
+                    options.EmailVerificationEmailMessage = Strings.Email_Message_EmailVerification;
+                    options.EmailVerificationLinkDomain = "http://localhost:4200/";
+                    options.ResetPasswordEmailSubject = Strings.Email_Subject_ResetPassword;
+                    options.ResetPasswordEmailMessage = Strings.Email_Message_ResetPassword;
+                    options.ResetPasswordLinkDomain = "http://localhost:4200/";
+                    options.TwoFactorCodeEmailSubject = Strings.Email_Subject_TwoFactorCode;
+                    options.TwoFactorCodeEmailMessage = Strings.Email_Message_TwoFactorCode;
+                    options.TwoFactorCodeLinkDomain = "http://localhost:4200/";
                 });
+                services.AddDbContext<VakDbContext>(options =>
+                    options.UseSqlServer(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
+                services.AddDevelopmentEmailSender();
             }
             else
             {
-                // TODO different connection string for release
-                services.AddScoped(_ => new SqlConnection(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
-                services.AddEmailSender();
-                services.Configure<UrlOptions>(options =>
+                services.Configure<AccountServiceOptions>(options =>
                 {
+                    options.EmailVerificationEmailSubject = Strings.Email_Subject_EmailVerification;
+                    options.EmailVerificationEmailMessage = Strings.Email_Message_EmailVerification;
                     // TODO
-                    options.ClientDomain = "http://localhost:4200/";
+                    options.EmailVerificationLinkDomain = "http://localhost:4200/";
+                    options.ResetPasswordEmailSubject = Strings.Email_Subject_ResetPassword;
+                    options.ResetPasswordEmailMessage = Strings.Email_Message_ResetPassword;
+                    // TODO
+                    options.ResetPasswordLinkDomain = "http://localhost:4200/";
+                    options.TwoFactorCodeEmailSubject = Strings.Email_Subject_TwoFactorCode;
+                    options.TwoFactorCodeEmailMessage = Strings.Email_Message_TwoFactorCode;
+                    // TODO 
+                    options.TwoFactorCodeLinkDomain = "http://localhost:4200/";
                 });
+                // TODO different connection string for release
+                services.AddDbContext<VakDbContext>(options =>
+                    options.UseSqlServer(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
+                services.AddEmailSender();
             }
         }
 
@@ -149,7 +166,7 @@ namespace Jering.VectorArtKit.WebApi
                 // app.UseCors(builder => builder.AllowAnyOrigin());
             }
 
-            AccountsServiceOptions securityOptions = app.ApplicationServices.GetRequiredService<IOptions<AccountsServiceOptions>>().Value;
+            AccountServiceOptions securityOptions = app.ApplicationServices.GetRequiredService<IOptions<AccountServiceOptions>>().Value;
             // CookieAuthMiddleware for TwoFactorCookie must be registered first. Otherwise if ApplicationCookie's middleware runs
             // first and SecurityStamp is invalid, the middleware will call AccountSecurityService.SignOutAsync before a handler is created
             // for TwoFactorCookies.

@@ -13,6 +13,5 @@ namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
         public bool ExpectedError { get; set; }
 
         public string ErrorMessage { get; set; }
-        public bool ExpiredToken { get; set; }
     }
 }

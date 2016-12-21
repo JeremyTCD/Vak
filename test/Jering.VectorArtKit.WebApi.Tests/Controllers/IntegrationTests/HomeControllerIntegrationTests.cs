@@ -1,10 +1,7 @@
-﻿using Jering.VectorArtKit.WebApi.BusinessModels;
-using Moq;
+﻿using Jering.Utilities;
+using Jering.VectorArtKit.DatabaseInterface;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -14,13 +11,13 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
     public class HomeControllerIntegrationTests
     {
         private HttpClient _httpClient { get; }
-        private VakAccountRepository vakAccountRepository { get; }
-        private Func<Task> _resetAccountsTable { get; }
+        private VakAccountRepository _vakAccountRepository { get; }
         public HomeControllerIntegrationTests(ControllersFixture controllersFixture)
         {
             _httpClient = controllersFixture.HttpClient;
-            vakAccountRepository = controllersFixture.VakAccountRepository;
-            _resetAccountsTable = controllersFixture.ResetAccountsTable;
+            VakDbContext dbContext = new VakDbContext(controllersFixture.DbContextOptions);
+            _vakAccountRepository = new VakAccountRepository(dbContext, new TimeService());
+            controllersFixture.ResetAccountsTable(dbContext);
         }
     }
 }

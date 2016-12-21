@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
+using System.Threading;
 
 namespace Jering.Accounts.DatabaseInterface
 {
@@ -9,178 +10,80 @@ namespace Jering.Accounts.DatabaseInterface
     /// Functions with varying granularity are provided to avoid reading and writing contextually superfluous 
     /// information while minimizing round trips.
     /// </summary>
-    public interface IAccountRepository<TAccount>
-        where TAccount : IAccount
+    public interface IAccountRepository<TAccount> where TAccount : IAccount
     {
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="email"></param>
-        /// <param name="passwordHash"></param>
-        /// <param name="passwordLastChanged"></param>
-        /// <param name="securityStamp"></param>
-        /// <returns></returns>
-        Task<CreateResult<TAccount>> CreateAsync(string email, string passwordHash,
-            DateTimeOffset passwordLastChanged, Guid securityStamp);
+        #region Create
+        Task<TAccount> CreateAsync(string email, string password, CancellationToken cancellationToken);
+        #endregion
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="rowVersion"></param>
-        /// <returns></returns>
-        Task<DeleteResult> DeleteAsync(int accountId, byte[] rowVersion = null);
+        #region Update
+        Task<SaveChangesResult> UpdatePasswordHashAsync(TAccount account, string passwordHash, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Gets <see cref="IAccount"/> with specified <paramref name="accountId"/>. 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <returns><see cref="IAccount"/> with specified <paramref name="accountId"/> if it exists, 
-        /// null otherwise.</returns>
-        Task<TAccount> GetAccountAsync(int accountId);
+        Task<SaveChangesResult> UpdateEmailAsync(TAccount account, string email, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Gets <see cref="IAccount"/> with specified <paramref name="email"/>. 
-        /// </summary>
-        /// <param name="email"></param>
-        /// <returns><see cref="IAccount"/> with specified <paramref name="email"/> if it exists, 
-        /// null otherwise.</returns>
-        Task<TAccount> GetByEmailAsync(string email);
+        Task<SaveChangesResult> UpdateAltEmailAsync(TAccount account, string altEmail, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Adds <see cref="Role"/> with specified <paramref name="roleId"/> to <see cref="IAccount"/> with 
-        /// specified <paramref name="accountId"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="roleId"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        Task<bool> AddRoleAsync(int accountId, int roleId);
+        Task<SaveChangesResult> UpdateDisplayNameAsync(TAccount account, string displayName, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Deletes <see cref="Role"/> with specified <paramref name="roleId"/> from <see cref="IAccount"/> with 
-        /// specified <paramref name="accountId"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="roleId"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        Task<bool> DeleteRoleAsync(int accountId, int roleId);
+        Task<SaveChangesResult> UpdateTwoFactorEnabledAsync(TAccount account, bool enabled, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Gets <see cref="Role"/>s belonging to <see cref="IAccount"/> with 
-        /// specified <paramref name="accountId"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <returns><see cref="IEnumerable{Role}"/> containing <see cref="Role"/>s belonging to account with 
-        /// specified <paramref name="accountId"/>.</returns>
-        /// <remarks>Returns empty <see cref="IEnumerable{Role}"/> if account has no <see cref="Role"/>s 
-        /// or <see cref="IAccount"/> does not exist.</remarks>
-        Task<IEnumerable<Role>> GetRolesAsync(int accountId);
+        Task<SaveChangesResult> UpdateEmailVerifiedAsync(TAccount account, bool verified, CancellationToken cancellationToken);
 
-        /// <summary>
-        /// Adds <see cref="Claim"/> with specified <paramref name="claimId"/> to <see cref="IAccount"/> with 
-        /// specified <paramref name="accountId"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="claimId"></param>
-        /// <returns>True if successful, false otherwise.</returns>
-        Task<bool> AddClaimAsync(int accountId, int claimId);
+        Task<SaveChangesResult> UpdateAltEmailVerifiedAsync(TAccount account, bool verified, CancellationToken cancellationToken);
+        #endregion
 
+        #region Remove
         /// <summary>
-        /// Deletes <see cref="Claim"/> with specified <paramref name="claimId"/> from <see cref="IAccount"/> with 
-        /// specified <paramref name="accountId"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="claimId"></param>
-        /// <returns>True if successful, false othewise.</returns>
-        Task<bool> DeleteClaimAsync(int accountId, int claimId);
-
-        /// <summary>
-        /// Gets <see cref="Claim"/>s belonging to <see cref="IAccount"/> with 
-        /// specified <paramref name="accountId"/>.
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <returns><see cref="IEnumerable{Claim}"/> containing <see cref="Claim"/>s belonging to <see cref="IAccount"/> with 
-        /// specified <paramref name="accountId"/>.</returns>
-        /// <remarks>Returns empty <see cref="IEnumerable{Claim}"/> if <see cref="IAccount"/> has no <see cref="Role"/>s 
-        /// or <see cref="IAccount"/> does not exist.</remarks>
-        Task<IEnumerable<Claim>> GetClaimsAsync(int accountId);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="emailVerified"></param>
-        /// <param name="rowVersion"></param>
-        /// <returns></returns>
-        Task<UpdateResult<TAccount>> UpdateEmailVerifiedAsync(int accountId, bool emailVerified, byte[] rowVersion = null);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="passwordHash"></param>
-        /// <param name="rowVersion"></param>
-        /// <param name="passwordLastChanged"></param>
-        /// <param name="securityStamp"></param>
-        /// <returns></returns>
-        Task<UpdateResult<TAccount>> UpdatePasswordHashAsync(int accountId, string passwordHash, DateTimeOffset passwordLastChanged, Guid securityStamp, byte[] rowVersion = null);
-
-        /// <summary>
-        /// 
+        /// Removes account <paramref name="account"/> from repository.
         /// </summary>
         /// <param name="account"></param>
-        /// <param name="newEmail"></param>
-        /// <returns></returns>
-        Task<UpdateResult<TAccount>> UpdateEmailAsync(TAccount account, string newEmail);
+        void RemoveAsync(TAccount account);
+        #endregion
 
+        #region Get
         /// <summary>
-        /// 
+        /// Gets account with specified <paramref name="accountId"/>. Attempts to retrieve account from context.
+        /// If account does not exist in context, retrieves account from database.
         /// </summary>
         /// <param name="accountId"></param>
-        /// <param name="altEmail"></param>
-        /// <param name="rowVersion"></param>
-        /// <returns></returns>
-        Task<UpdateResult<TAccount>> UpdateAltEmailAsync(int accountId, string altEmail, byte[] rowVersion = null);
+        /// <param name="cancellationToken"></param>
+        /// <returns>
+        /// Account with specified <paramref name="accountId"/> if it exists. 
+        /// Null otherwise.
+        /// </returns>
+        Task<TAccount> GetAsync(int accountId, CancellationToken cancellationToken);
 
         /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="displayName"></param>
-        /// <param name="rowVersion"></param>
-        /// <returns></returns>
-        Task<UpdateResult<TAccount>> UpdateDisplayNameAsync(int accountId, string displayName, byte[] rowVersion = null);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="twoFactorEnabled"></param>
-        /// <param name="rowVersion"></param>
-        /// <returns></returns>
-        Task<UpdateResult<TAccount>> UpdateTwoFactorEnabledAsync(int accountId, bool twoFactorEnabled, byte[] rowVersion = null);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="accountId"></param>
-        /// <param name="altEmailVerified"></param>
-        /// <param name="rowVersion"></param>
-        /// <returns></returns>
-        Task<UpdateResult<TAccount>> UpdateAltEmailVerifiedAsync(int accountId, bool altEmailVerified, byte[] rowVersion = null);
-
-        /// <summary>
-        /// 
+        /// Gets account with specified <paramref name="email"/>. 
         /// </summary>
         /// <param name="email"></param>
-        /// <returns></returns>
-        Task<bool> CheckEmailInUseAsync(string email);
+        /// <returns>
+        /// Account with specified <paramref name="email"/> if it exists. 
+        /// Null otherwise.
+        /// </returns>
+        Task<TAccount> GetAsync(string email, CancellationToken cancellationToken);
+        #endregion
+
+        #region Check
+        /// <summary>
+        /// Checks whether <paramref name="email"/> is in use.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns>
+        /// True if <paramref name="email"/> is in use.
+        /// False otherwise.
+        /// </returns>
+        Task<bool> CheckEmailInUseAsync(string email, CancellationToken cancellationToken);
 
         /// <summary>
-        /// 
+        /// Checks whether <paramref name="displayName"/> is in use.
         /// </summary>
         /// <param name="displayName"></param>
-        /// <returns></returns>
-        Task<bool> CheckDisplayNameInUseAsync(string displayName);
+        /// <returns>
+        /// True if <paramref name="displayName"/> is in use.
+        /// False otherwise.
+        /// </returns>
+        Task<bool> CheckDisplayNameInUseAsync(string displayName, CancellationToken cancellationToken);
+        #endregion
     }
 }
