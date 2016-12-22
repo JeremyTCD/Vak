@@ -11,7 +11,6 @@ namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
         public bool ExpectedError { get; set; }
 
         public bool InvalidToken { get; set; }
-        public bool InvalidAccountId { get; set; }
         public string ErrorMessage { get; set; }
     }
 }
