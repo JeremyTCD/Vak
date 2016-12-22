@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApi.FormModels
 {
-    public class SetTwoFactorEnabledFormModel
+    public class SetTwoFactorEnabledActionModel
     {
         public bool Enabled { get; set; }
     }

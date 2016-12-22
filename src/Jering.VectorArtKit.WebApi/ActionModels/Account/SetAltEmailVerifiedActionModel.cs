@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Jering.VectorArtKit.WebApi.FormModels
 {
-    public class SetAltEmailVerifiedFormModel
+    public class SetAltEmailVerifiedActionModel
     {
         public string Token { get; set; }
     }
