@@ -175,8 +175,8 @@ namespace Jering.Accounts
 
         #region Account Management
         /// <summary>
-        /// Creates an account with email <paramref name="email"/> and password <paramref name="password"/>, 
-        /// logs in to account and sends email verification email.
+        /// Creates an account with email <paramref name="email"/> and password <paramref name="password"/> and
+        /// logs in to account.
         /// </summary>
         /// <param name="email"></param>
         /// <param name="password"></param>
@@ -203,8 +203,6 @@ namespace Jering.Accounts
             {
                 return SignUpActionResult.EmailInUse;
             }
-
-            await SendEmailVerificationEmailAsync(account);
 
             await ApplicationLogInAsync(account, new AuthenticationProperties { IsPersistent = true });
 

@@ -306,10 +306,6 @@ namespace Jering.Accounts.Tests.UnitTests
                 null,
                 mockPasswordService.Object);
             mockAccountService.
-                Setup(a => a.SendEmailVerificationEmailAsync(
-                    It.Is<StubAccount>(acc => acc == _testAccount))).
-                Returns(Task.CompletedTask);
-            mockAccountService.
                 Setup(a => a.ApplicationLogInAsync(
                     It.Is<StubAccount>(acc => acc == _testAccount),
                     It.Is<AuthenticationProperties>(ap => ap.IsPersistent))).
