@@ -60,8 +60,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     return BadRequest(new LogInResponseModel
                     {
                         ExpectedError = true,
-                        TwoFactorRequired = true,
-                        IsPersistent = model.RememberMe
+                        TwoFactorRequired = true
                     });
                 }
 
@@ -69,12 +68,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 {
                     _antiforgery.AddAntiforgeryCookies(HttpContext);
 
-                    return Ok(new LogInResponseModel
-                    {
-                        TwoFactorRequired = false,
-                        Username = model.Email,
-                        IsPersistent = model.RememberMe
-                    });
+                    return Ok();
                 }
 
                 // Don't reveal whether email or password was invalid
@@ -163,8 +157,8 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 400 BadRequest and <see cref="SignUpResponseModel"/> if model state is invalid. 
         /// 400 BadRequest and <see cref="SignUpResponseModel"/> if email in use.
-        /// 200 OK, <see cref="SignUpResponseModel"/>, application cookie, antiforgery cookies and sends email verification 
-        /// email if account is created successfully.
+        /// 200 OK, <see cref="SignUpResponseModel"/>, application cookie, antiforgery cookies if account is 
+        /// created successfully.
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
@@ -264,10 +258,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
                 if (result == ResetPasswordActionResult.Success)
                 {
-                    return Ok(new ResetPasswordResponseModel
-                    {
-                        Email = model.Email
-                    });
+                    return Ok();
                 }
 
                 ModelState.AddModelError(nameof(SetPasswordFormModel.NewPassword), Strings.ErrorMessage_NewPassword_MustDiffer);
@@ -522,7 +513,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of two factor enabled succeeds.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> SetTwoFactorEnabled([FromBody] SetTwoFactorEnabledFormModel model)
+        public async Task<IActionResult> SetTwoFactorEnabled([FromBody] SetTwoFactorEnabledActionModel model)
         {
             SetTwoFactorEnabledActionResult result = await _accountService.SetTwoFactorEnabledActionAsync(model.Enabled);
 
@@ -554,7 +545,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of email verified succeeds.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> SetEmailVerified([FromBody] SetEmailVerifiedFormModel model)
+        public async Task<IActionResult> SetEmailVerified([FromBody] SetEmailVerifiedActionModel model)
         {
             SetEmailVerifiedActionResult result = await _accountService.SetEmailVerifiedActionAsync(model.Token);
 
@@ -586,7 +577,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of email verified succeeds.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> SetAltEmailVerified([FromBody] SetAltEmailVerifiedFormModel model)
+        public async Task<IActionResult> SetAltEmailVerified([FromBody] SetAltEmailVerifiedActionModel model)
         {
             // check model state? incase account id is not a string
 

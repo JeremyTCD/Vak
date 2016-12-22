@@ -6,8 +6,6 @@ namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
     public class LogInResponseModel: IErrorResponseModel
     {
         public bool TwoFactorRequired { get; set; }
-        public string Username { get; set; }
-        public bool IsPersistent { get; set; }
         public SerializableError ModelState { get; set; }
         public bool ExpectedError { get; set; }
 

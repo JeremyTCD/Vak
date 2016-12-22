@@ -6,7 +6,6 @@ namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
 {
     public class SignUpResponseModel: IErrorResponseModel
     {
-        public string Username { get; set; }
         public SerializableError ModelState { get; set; }
 
         public bool ExpectedError { get; set; }

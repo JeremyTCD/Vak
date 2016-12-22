@@ -109,7 +109,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task Login_Returns200OkLoginResponseModelApplicationCookieAndAntiForgeryCookiesIfLoginSucceeds()
+        public async Task Login_Returns200OkApplicationCookieAndAntiForgeryCookiesIfLoginSucceeds()
         {
             // Arrange
             IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
@@ -124,10 +124,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.True(cookies.Keys.Contains(_applicationCookieName));
             Assert.True(cookies.Keys.Contains(_requestTokenName));
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            LogInResponseModel body = JsonConvert.DeserializeObject<LogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_testEmail1, body.Username);
-            Assert.False(body.TwoFactorRequired);
-            Assert.False(body.IsPersistent);
         }
 
         [Fact]
@@ -156,7 +152,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             LogInResponseModel body = JsonConvert.DeserializeObject<LogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
             Assert.True(body.TwoFactorRequired);
-            Assert.False(body.IsPersistent);
         }
 
         [Fact]
@@ -351,10 +346,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SignUp_Returns200OkSignUpResponseModelApplicationCookieAntiForgeryCookiesAndSendsEmailVerificationEmailIfRegistrationSucceeds()
+        public async Task SignUp_Returns200OkSignUpResponseModelApplicationCookieAndAntiForgeryCookiesIfRegistrationSucceeds()
         {
             // Arrange
-            File.WriteAllText(_tempEmailFile, "");
             IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
 
             // Act
@@ -366,9 +360,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(2, cookies.Count());
             Assert.True(cookies.Keys.Contains(_applicationCookieName));
             Assert.True(cookies.Keys.Contains(_requestTokenName));
-            string emailVerificationEmail = File.ReadAllText(_tempEmailFile);
-            Assert.Contains(Strings.Email_Subject_EmailVerification, emailVerificationEmail);
-            Assert.Contains(_testEmail1, emailVerificationEmail);
         }
 
         [Fact]
@@ -511,7 +502,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             ResetPasswordResponseModel body = JsonConvert.DeserializeObject<ResetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            Assert.Equal(_testEmail1, body.Email);
         }
 
         [Fact]
@@ -1425,7 +1415,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetTwoFactorEnabledFormModel.Enabled), enabled.ToString() }
+                { nameof(SetTwoFactorEnabledActionModel.Enabled), enabled.ToString() }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SetTwoFactorEnabled)}", HttpMethod.Post, cookies, 
@@ -1439,7 +1429,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetEmailVerifiedFormModel.Token), token }
+                { nameof(SetEmailVerifiedActionModel.Token), token }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SetEmailVerified)}", HttpMethod.Post, cookies,
@@ -1453,7 +1443,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetAltEmailVerifiedFormModel.Token), token }
+                { nameof(SetAltEmailVerifiedActionModel.Token), token }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SetAltEmailVerified)}", HttpMethod.Post, cookies,
