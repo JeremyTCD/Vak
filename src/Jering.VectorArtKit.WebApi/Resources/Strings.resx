@@ -204,9 +204,6 @@
   <data name="ErrorMessage_DisplayName_InUse" xml:space="preserve">
     <value>Display name already in use by another account.</value>
   </data>
-  <data name="ErrorMessage_TwoFactorCode_Invalid" xml:space="preserve">
-    <value>Invalid code.</value>
-  </data>
   <data name="Email_Message_EmailVerification" xml:space="preserve">
     <value>Please confirm your email by clicking this link: &lt;a href="{0}verify-email;token={1};"&gt;link&lt;/a&gt;</value>
   </data>
@@ -320,5 +317,8 @@
   </data>
   <data name="DisplayName_ConfirmNewPassword" xml:space="preserve">
     <value>Confirm new password</value>
+  </data>
+  <data name="ErrorMessage_TwoFactorCode_InvalidOrExpired" xml:space="preserve">
+    <value>Invalid or expired code.</value>
   </data>
 </root>

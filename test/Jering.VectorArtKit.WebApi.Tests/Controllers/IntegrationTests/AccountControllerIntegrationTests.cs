@@ -258,7 +258,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             TwoFactorLogInResponseModel body = JsonConvert.DeserializeObject<TwoFactorLogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_Invalid, (body.ModelState[nameof(TwoFactorLogInFormModel.Code)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired, (body.ModelState[nameof(TwoFactorLogInFormModel.Code)] as JArray)[0]);
         }
 
         [Fact]
@@ -1343,7 +1343,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             TwoFactorVerifyEmailResponseModel body = JsonConvert.DeserializeObject<TwoFactorVerifyEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_Invalid, (body.ModelState[nameof(TwoFactorVerifyEmailFormModel.Code)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired, (body.ModelState[nameof(TwoFactorVerifyEmailFormModel.Code)] as JArray)[0]);
         }
 
         [Fact]

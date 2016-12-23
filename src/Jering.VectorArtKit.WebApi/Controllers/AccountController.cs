@@ -137,7 +137,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     return Ok();
                 }
 
-                ModelState.AddModelError(nameof(TwoFactorLogInFormModel.Code), Strings.ErrorMessage_TwoFactorCode_Invalid);
+                ModelState.AddModelError(nameof(TwoFactorLogInFormModel.Code), Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired);
             }
 
             return BadRequest(new TwoFactorLogInResponseModel
@@ -685,7 +685,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
                 if (result == TwoFactorVerifyEmailActionResult.InvalidCode)
                 {
-                    ModelState.AddModelError(nameof(TwoFactorVerifyEmailFormModel.Code), Strings.ErrorMessage_TwoFactorCode_Invalid);
+                    ModelState.AddModelError(nameof(TwoFactorVerifyEmailFormModel.Code), Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired);
                 }
                 else
                 {
