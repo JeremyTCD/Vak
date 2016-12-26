@@ -5,14 +5,17 @@ import { ActivatedRoute, Router } from '@angular/router/index';
 import { Observable } from 'rxjs';
 
 import { ManageAccountComponent } from './manage-account.component';
-import { StubActivatedRoute, StubRouter } from '../../testing/router-stubs';
-import { GetAccountDetailsResponseModel } from '../shared/response-models/get-account-details.response-model';
-import { HttpService } from '../shared/http.service';
-import { StubHttpService } from '../../testing/http.service.stub';
+import { StubActivatedRoute, StubRouter } from 'testing/router-stubs';
+import { GetAccountDetailsResponseModel } from 'api/response-models/get-account-details.response-model';
+import { HttpService } from 'app/shared/http.service';
+import { StubHttpService } from 'testing/http.service.stub';
+import { DebugElementExtensions } from 'testing/debug-element-extensions';
+import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
 
 let testUsername = `testUsername`;
 let testReturnUrl = `testReturnUrl`;
 let testEmail = `testEmail`;
+let testAltEmail = `testAltEmail`;
 let testDisplayName = `testDisplayName`;
 let manageAccountComponentFixture: ComponentFixture<ManageAccountComponent>;
 let manageAccountComponent: ManageAccountComponent;
@@ -27,8 +30,8 @@ describe('ManageAccountComponent', () => {
         TestBed.configureTestingModule({
             declarations: [ManageAccountComponent],
             providers: [{ provide: ActivatedRoute, useClass: StubActivatedRoute },
-                { provide: HttpService, useClass: StubHttpService },
-                { provide: Router, useClass: StubRouter }]
+            { provide: HttpService, useClass: StubHttpService },
+            { provide: Router, useClass: StubRouter }]
         }).compileComponents();
     }));
 
@@ -51,14 +54,12 @@ describe('ManageAccountComponent', () => {
 
     describe(`Binds setTwoFactorEnabled`, () => {
         it(`Calls setTwoFactorEnabled(true) if twoFactorEnabled is false`, () => {
-            testAccountDetailsResponseModel = { twoFactorEnabled: false }
+            testAccountDetailsResponseModel = { twoFactorEnabled: false };
             stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
             manageAccountComponentFixture.detectChanges();
-
             spyOn(manageAccountComponent, `setTwoFactorEnabled`);
-            let anchor = manageAccountDebugElement.
-                queryAll(By.css(`a`)).
-                find(de => de.nativeElement.textContent.trim() === `Enable two factor auth`);
+            let anchor = DebugElementExtensions.getDescendantWithInnerHtml(manageAccountDebugElement,
+                `Enable two factor auth`);
 
             anchor.triggerEventHandler(`click`, null);
 
@@ -66,14 +67,12 @@ describe('ManageAccountComponent', () => {
         });
 
         it(`Calls setTwoFactorEnabled(false) if twoFactorEnabled is true`, () => {
-            testAccountDetailsResponseModel = { twoFactorEnabled: true }
+            testAccountDetailsResponseModel = { twoFactorEnabled: true };
             stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
             manageAccountComponentFixture.detectChanges();
-
             spyOn(manageAccountComponent, `setTwoFactorEnabled`);
-            let anchor = manageAccountDebugElement.
-                queryAll(By.css(`a`)).
-                find(de => de.nativeElement.textContent.trim() === `Disable two factor auth`);
+            let anchor = DebugElementExtensions.getDescendantWithInnerHtml(manageAccountDebugElement,
+                `Disable two factor auth`);
 
             anchor.triggerEventHandler(`click`, null);
 
@@ -82,13 +81,14 @@ describe('ManageAccountComponent', () => {
     });
 
     it(`Binds sendEmailVerificationEmail`, () => {
-        testAccountDetailsResponseModel = { emailVerified: false }
+        testAccountDetailsResponseModel = { emailVerified: false };
         stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
         manageAccountComponent.emailVerificationEmailSent = false;
         manageAccountComponentFixture.detectChanges();
-
         spyOn(manageAccountComponent, `sendEmailVerificationEmail`);
-        let anchor = manageAccountDebugElement.
+        let anchor = DebugElementExtensions.getDescendantWithInnerHtml(manageAccountDebugElement,
+            `Send verification email`);
+        let anchor2 = manageAccountDebugElement.
             queryAll(By.css(`a`)).
             find(de => de.nativeElement.textContent.trim() === `Send verification email`);
 
@@ -99,18 +99,16 @@ describe('ManageAccountComponent', () => {
 
     it(`Binds sendAltEmailVerificationEmail`, () => {
         testAccountDetailsResponseModel = {
-            altEmail: testEmail,
+            altEmail: testAltEmail,
             altEmailVerified: false,
             emailVerified: true // hide send verification email link for email
-        }
+        };
         stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
         manageAccountComponent.altEmailVerificationEmailSent = false;
         manageAccountComponentFixture.detectChanges();
-
         spyOn(manageAccountComponent, `sendAltEmailVerificationEmail`);
-        let anchor = manageAccountDebugElement.
-            queryAll(By.css(`a`)).
-            find(de => de.nativeElement.textContent.trim() === `Send verification email`);
+        let anchor = DebugElementExtensions.getDescendantWithInnerHtml(manageAccountDebugElement,
+            `Send verification email`);
 
         anchor.triggerEventHandler(`click`, null);
 
@@ -122,7 +120,7 @@ describe('ManageAccountComponent', () => {
 
         manageAccountComponent.sendEmailVerificationEmail();
 
-        expect(stubHttpService.post).toHaveBeenCalledWith(`Account/SendEmailVerificationEmail`, null);
+        expect(stubHttpService.post).toHaveBeenCalledWith(AccountControllerRelativeUrls.sendEmailVerificationEmail, null);
         expect(manageAccountComponent.emailVerificationEmailSent).toBe(true);
     });
 
@@ -131,7 +129,7 @@ describe('ManageAccountComponent', () => {
 
         manageAccountComponent.sendAltEmailVerificationEmail();
 
-        expect(stubHttpService.post).toHaveBeenCalledWith(`Account/SendAltEmailVerificationEmail`, null);
+        expect(stubHttpService.post).toHaveBeenCalledWith(AccountControllerRelativeUrls.sendAltEmailVerificationEmail, null);
         expect(manageAccountComponent.altEmailVerificationEmailSent).toBe(true);
     });
 
@@ -142,7 +140,7 @@ describe('ManageAccountComponent', () => {
 
             manageAccountComponent.setTwoFactorEnabled(true);
 
-            expect(stubHttpService.post).toHaveBeenCalledWith(`Account/SetTwoFactorEnabled`, { enabled: true });
+            expect(stubHttpService.post).toHaveBeenCalledWith(AccountControllerRelativeUrls.setTwoFactorEnabled, { enabled: true });
             expect(manageAccountComponent.accountDetails.twoFactorEnabled).toBe(true);
         });
 
@@ -158,145 +156,99 @@ describe('ManageAccountComponent', () => {
     });
 
     it(`Renders email address verified tip if accountDetails.emailVerified is true`, () => {
-        testAccountDetailsResponseModel = { emailVerified: true }
+        testAccountDetailsResponseModel = { emailVerified: true };
         stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
         manageAccountComponentFixture.detectChanges();
 
-        let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Email address verified`)).toBe(true);
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Email address unverified`)).toBe(false);
-        expect(manageAccountDebugElement.queryAll(By.css(`a`)).
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Send verification email`)).toBe(false);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(manageAccountDebugElement, `Email address verified`)).toBe(true);
     });
 
     describe(`If accountDetails.emailVerified is false`, () => {
-        it(`Renders email address unverified tip`, () => {
-            testAccountDetailsResponseModel = { emailVerified: false }
+        beforeEach(() => {
+            testAccountDetailsResponseModel = { emailVerified: false };
             stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
+        });
+
+        it(`Renders email address unverified tip`, () => {
             manageAccountComponentFixture.detectChanges();
 
-            let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-            expect(divs.
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Email address verified`)).toBe(false);
-            expect(divs.
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Email address unverified`)).toBe(true);
+            expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Email address unverified`)).toBe(true);
         });
 
         it(`Renders send verification email link if emailVerificationEmailSent is false`, () => {
-            testAccountDetailsResponseModel = { emailVerified: false }
-            stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
             manageAccountComponentFixture.detectChanges();
 
-            let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-            expect(divs.
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Email verification email sent.`)).toBe(false);
-            let anchors = manageAccountDebugElement.queryAll(By.css(`a`));
-            expect(anchors.
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Did not receive email help`)).toBe(false);
-            expect(manageAccountDebugElement.queryAll(By.css(`a`)).
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Send verification email`)).toBe(true);
+            expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Send verification email`)).toBe(true);
         });
 
         it(`Renders email verification email sent tip if emailVerificationEmailSent is true`, () => {
-            testAccountDetailsResponseModel = { emailVerified: false }
             manageAccountComponent.emailVerificationEmailSent = true;
-            stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
             manageAccountComponentFixture.detectChanges();
 
-            let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-            expect(divs.
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Email verification email sent.`)).toBe(true);
-            let anchors = manageAccountDebugElement.queryAll(By.css(`a`));
-            expect(anchors.
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Did not receive email help`)).toBe(true);
-            expect(manageAccountDebugElement.queryAll(By.css(`a`)).
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Send verification email`)).toBe(false);
+            expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Email verification email sent.`)).toBe(true);
+            expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Did not receive email help`)).toBe(true);
         });
     });
 
     it(`Renders alt email address not set tip if accountDetails.altEmail is falsey`, () => {
-        testAccountDetailsResponseModel = { altEmail: undefined }
+        testAccountDetailsResponseModel = { altEmail: undefined };
         stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
         manageAccountComponentFixture.detectChanges();
 
-        let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Alternative email address not set`)).toBe(true);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(manageAccountDebugElement, `Alternative email address not set`)).toBe(true);
     });
 
     describe(`If accountDetails.altEmail is truthy`, () => {
-        it(`Renders alt email address`, () => {
-            testAccountDetailsResponseModel = { altEmail: testEmail }
+        beforeEach(() => {
+            testAccountDetailsResponseModel = { altEmail: testAltEmail };
             stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
+        });
+
+        it(`Renders alt email address`, () => {
             manageAccountComponentFixture.detectChanges();
 
-            let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-            expect(divs.
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Alternative email address: ${testEmail}`)).toBe(true);
+            expect(DebugElementExtensions.
+                hasDescendantWithInnerHtml(manageAccountDebugElement, `Alternative email address: ${testAltEmail}`)).toBe(true);
         });
 
         it(`Renders alterntive email address verified tip if accountDetails.altEmailVerified is true`, () => {
-            testAccountDetailsResponseModel = { altEmail: testEmail, altEmailVerified: true, emailVerified: true };
-            stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
+            testAccountDetailsResponseModel.altEmailVerified = true;
+            testAccountDetailsResponseModel.emailVerified = true;
             manageAccountComponentFixture.detectChanges();
 
-            let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-            expect(divs.
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Alternative email address verified`)).toBe(true);
-            expect(divs.
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Alternative email address unverified`)).toBe(false);
-            expect(manageAccountDebugElement.queryAll(By.css(`a`)).
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Send verification email`)).toBe(false);
+            expect(DebugElementExtensions
+                .hasDescendantWithInnerHtml(manageAccountDebugElement, `Alternative email address verified`)).toBe(true);
         });
 
         describe(`If accountDetails.altEmailVerified is false`, () => {
+            beforeEach(() => {
+                testAccountDetailsResponseModel.altEmailVerified = false;
+            });
+
             it(`Renders alt email address unverified tip`, () => {
-                testAccountDetailsResponseModel = { altEmail: testEmail, altEmailVerified: false };
-                stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
                 manageAccountComponentFixture.detectChanges();
 
-                let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-                expect(divs.
-                    some(debugElement => debugElement.nativeElement.textContent.trim() === `Alternative email address verified`)).toBe(false);
-                expect(divs.
-                    some(debugElement => debugElement.nativeElement.textContent.trim() === `Alternative email address unverified`)).toBe(true);
+                expect(DebugElementExtensions.
+                    hasDescendantWithInnerHtml(manageAccountDebugElement, `Alternative email address unverified`)).toBe(true);
             });
 
             it(`Renders send verification email link if altEmailVericiationEmailSent is false`, () => {
-                testAccountDetailsResponseModel = { altEmail: testEmail, altEmailVerified: false };
                 manageAccountComponent.altEmailVerificationEmailSent = false;
-                stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
+                manageAccountComponent.emailVerificationEmailSent = true; // hide
                 manageAccountComponentFixture.detectChanges();
 
-                let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-                expect(divs.
-                    some(debugElement => debugElement.nativeElement.textContent.trim() === `Email verification email sent.`)).toBe(false);
-                let anchors = manageAccountDebugElement.queryAll(By.css(`a`));
-                expect(anchors.
-                    some(debugElement => debugElement.nativeElement.textContent.trim() === `Did not receive email help`)).toBe(false);
-                expect(manageAccountDebugElement.queryAll(By.css(`a`)).
-                    filter(debugElement => debugElement.nativeElement.textContent.trim() === `Send verification email`).
-                    length).toBe(2);
+                expect(DebugElementExtensions.
+                    hasDescendantWithInnerHtml(manageAccountDebugElement, `Send verification email`)).toBe(true);
             });
 
             it(`Renders alt email verification email sent tip if altEmailVerificationEmailSent is true`, () => {
-                testAccountDetailsResponseModel = { altEmail: testEmail, altEmailVerified: false }
                 manageAccountComponent.altEmailVerificationEmailSent = true;
-                stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
                 manageAccountComponentFixture.detectChanges();
 
-                let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-                expect(divs.
-                    some(debugElement => debugElement.nativeElement.textContent.trim() === `Email verification email sent.`)).toBe(true);
-                let anchors = manageAccountDebugElement.queryAll(By.css(`a`));
-                expect(anchors.
-                    some(debugElement => debugElement.nativeElement.textContent.trim() === `Did not receive email help`)).toBe(true);
-                // Send verification email for email still visible
-                expect(manageAccountDebugElement.queryAll(By.css(`a`)).
-                    filter(debugElement => debugElement.nativeElement.textContent.trim() === `Send verification email`).
-                    length).toBe(1);
+                expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Email verification email sent.`)).toBe(true);
+                expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Did not receive email help`)).toBe(true);
             });
         });
     });
@@ -306,23 +258,15 @@ describe('ManageAccountComponent', () => {
         stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
         manageAccountComponentFixture.detectChanges();
 
-        let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Display name: ${testDisplayName}`)).toBe(true);
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Display name not set`)).toBe(false);
+        expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Display name: ${testDisplayName}`)).toBe(true);
     });
 
     it(`Renders display name not set tip if accountDetails.displayName is falsey`, () => {
-        testAccountDetailsResponseModel = { displayName: undefined }
+        testAccountDetailsResponseModel = { displayName: undefined };
         stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
         manageAccountComponentFixture.detectChanges();
 
-        let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Display name not set`)).toBe(true);
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Display name: ${testDisplayName}`)).toBe(false);
+        expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Display name not set`)).toBe(true);
     });
 
     it(`Renders two factor auth disabled tip and enable two factor auth link if accountDetails.twoFactorEnabled is false`, () => {
@@ -330,16 +274,8 @@ describe('ManageAccountComponent', () => {
         stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
         manageAccountComponentFixture.detectChanges();
 
-        let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Two factor auth disabled`)).toBe(true);
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Two factor auth enabled`)).toBe(false);
-        let anchors = manageAccountDebugElement.queryAll(By.css(`a`));
-        expect(anchors.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Enable two factor auth`)).toBe(true);
-        expect(anchors.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Disable two factor auth`)).toBe(false);
+        expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Two factor auth disabled`)).toBe(true);
+        expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Enable two factor auth`)).toBe(true);
     });
 
     it(`Renders two factor auth enabled tip and disable two factor auth link if accountDetails.twoFactorEnabled is true`, () => {
@@ -347,16 +283,8 @@ describe('ManageAccountComponent', () => {
         stubActivatedRoute.testData = { responseModel: testAccountDetailsResponseModel };
         manageAccountComponentFixture.detectChanges();
 
-        let divs = manageAccountDebugElement.queryAll(By.css(`div`));
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Two factor auth enabled`)).toBe(true);
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Two factor auth disabled`)).toBe(false);
-        let anchors = manageAccountDebugElement.queryAll(By.css(`a`));
-        expect(anchors.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Disable two factor auth`)).toBe(true);
-        expect(anchors.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Enable two factor auth`)).toBe(false);
+        expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Two factor auth enabled`)).toBe(true);
+        expect(DebugElementExtensions.hasDescendantWithInnerHtml(manageAccountDebugElement, `Disable two factor auth`)).toBe(true);
     });
 });
 

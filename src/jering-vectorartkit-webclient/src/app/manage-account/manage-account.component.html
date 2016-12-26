@@ -30,7 +30,7 @@
             <a (click)="sendEmailVerificationEmail()">Send verification email</a>
         </div>
     </div>
-    <a routerLink="/manage-account/change-email">Change email address</a>
+    <a [routerLink]="changeEmailPath">Change email address</a>
 </div>
 <div>
     <h3>Alternative email address</h3>
@@ -55,7 +55,7 @@
             </div>
         </div>
     </div>
-    <a routerLink="/manage-account/change-alt-email">Change alt email address</a>
+    <a [routerLink]="changeAltEmailPath">Change alt email address</a>
 </div>
 <div>
     <h3>
@@ -69,7 +69,7 @@
             Display name: {{accountDetails.displayName}}
         </div>
     </div>
-    <a routerLink="/manage-account/change-display-name">Change display name</a>
+    <a [routerLink]="changeDisplayNamePath">Change display name</a>
 </div>
 <div>
     <h3>

@@ -4,8 +4,8 @@ import { Observable } from 'rxjs';
 
 import { HttpService } from './http.service';
 import { ErrorHandlerService } from './error-handler.service';
-import { environment } from '../../environments/environment';
-import { ErrorResponseModel } from './response-models/error.response-model';
+import { environment } from 'environments/environment';
+import { ErrorResponseModel } from 'api/response-models/error.response-model';
 
 let testRelativeUrl = `testRelativeUrl`;
 let testUrl = `${environment.apiDomain}${testRelativeUrl}`;

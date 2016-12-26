@@ -5,13 +5,13 @@
 <hr/>
 <div *ngIf="linkExpiredOrInvalid">
     <div>
-        Link expired
+        Link expired or invalid
     </div>
     <hr />
-    <a (click)="sendEmailVerificationEmail()">Get new email verification link</a><br />
+    <a [routerLink]="manageAccountPath">Get a new link</a><br />
 </div>
 <div *ngIf="!linkExpiredOrInvalid">
     <div>
-        Email {{userService.Username}} verified
+        Your email has been verified
     </div>
 </div>

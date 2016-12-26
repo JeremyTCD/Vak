@@ -13,9 +13,9 @@ import { DynamicControl } from '../dynamic-control/dynamic-control';
 import { DynamicForm } from './dynamic-form';
 import { Validity } from '../validity';
 import { ErrorHandlerService } from '../../error-handler.service';
-import { ErrorResponseModel } from '../../response-models/error.response-model';
-import { StubDomEvent } from '../../../../testing/dom-stubs';
-import { StubRouter, StubActivatedRoute } from '../../../../testing/router-stubs';
+import { ErrorResponseModel } from 'api/response-models/error.response-model';
+import { StubDomEvent } from 'testing/dom-stubs';
+import { StubRouter, StubActivatedRoute } from 'testing/router-stubs';
 
 let dynamicFormComponent: DynamicFormComponent;
 let stubHostComponent: StubHostComponent;
@@ -27,7 +27,7 @@ let stubErrorHandlerService: StubErrorHandlerService;
 let stubActivatedRoute: StubActivatedRoute;
 
 let testControlName = `testControlName`;
-let testFormModelName = `testFormModelName`;
+let testRequestModelName = `testRequestModelName`;
 let testSubmitUrl = `testSubmitUrl`;
 let testMessage = `testErrorMessage`;
 let testButtonText = `testButtonText`;
@@ -66,6 +66,13 @@ describe('DynamicFormComponent', () => {
         stubActivatedRoute.testData = { dynamicForm: testDynamicForm, formSubmitRelativeUrl: testSubmitUrl };
     });
 
+    it(`ngOnInit Sets dynamicForm and formSubmitRelativeUrl`, () => {
+        stubHostFixture.detectChanges();
+
+        expect(dynamicFormComponent.formSubmitRelativeUrl).toBe(testSubmitUrl);
+        expect(dynamicFormComponent.dynamicForm).toBe(testDynamicForm);
+    });
+
     it(`Emits output`, () => {
         stubHostFixture.detectChanges();
 
@@ -77,13 +84,6 @@ describe('DynamicFormComponent', () => {
 
         expect(stubHostComponent.onSubmitError).toHaveBeenCalledWith(testResponse);
         expect(stubHostComponent.onSubmitSuccess).toHaveBeenCalledWith(testResponse);
-    });
-
-    it(`ngOnInit Sets dynamicForm and formSubmitRelativeUrl`, () => {
-        stubHostFixture.detectChanges();
-
-        expect(dynamicFormComponent.formSubmitRelativeUrl).toBe(testSubmitUrl);
-        expect(dynamicFormComponent.dynamicForm).toBe(testDynamicForm);
     });
 
     it(`Renders DynamicForm DynamicControls`, () => {
@@ -135,7 +135,7 @@ describe('DynamicFormComponent', () => {
             dynamicFormComponent.onSubmit(testSubmitEvent);
 
             expect(testDynamicForm.onSubmit).toHaveBeenCalled();
-            expect(stubDynamicFormsService.submitDynamicForm).toHaveBeenCalledWith(testSubmitUrl, testDynamicForm);
+            expect(stubDynamicFormsService.submitDynamicForm).toHaveBeenCalledWith(testSubmitUrl, testDynamicForm.value);
         });
 
         it(`Emits submitSuccess event if DynamicFormServices.submitDynamicForm succeeds`, () => {
@@ -172,7 +172,7 @@ class StubErrorHandlerService {
 }
 
 class StubDynamicFormsService {
-    getDynamicForm(formModelName: string): Observable<DynamicForm> {
+    getDynamicForm(requestModelName: string): Observable<DynamicForm> {
         return Observable.of(testDynamicForm);
     };
 

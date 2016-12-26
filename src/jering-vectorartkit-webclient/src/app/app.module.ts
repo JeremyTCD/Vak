@@ -6,11 +6,11 @@ import { HttpModule } from '@angular/http';
 import { AppComponent } from './app.component';
 import { AppRouting } from './app.routing';
 
-import { UserService } from './shared/user.service';
-import { StorageService } from './shared/storage.service';
-import { HttpService } from './shared/http.service';
-import { ErrorHandlerService } from './shared/error-handler.service';
-import { AuthGuard } from './shared/auth.guard';
+import { UserService } from 'app/shared/user.service';
+import { StorageService } from 'app/shared/storage.service';
+import { HttpService } from 'app/shared/http.service';
+import { ErrorHandlerService } from 'app/shared/error-handler.service';
+import { AuthGuard } from 'app/shared/auth.guard';
 import { HomeModule } from './home/home.module';
 
 @NgModule({

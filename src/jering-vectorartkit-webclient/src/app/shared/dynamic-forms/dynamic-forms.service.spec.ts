@@ -4,15 +4,15 @@ import { Observable } from 'rxjs/Observable';
 
 import { DynamicControl } from './dynamic-control/dynamic-control';
 import { DynamicForm } from './dynamic-form/dynamic-form';
-import { DynamicFormResponseModel } from './response-models/dynamic-form.response-model';
+import { DynamicFormResponseModel } from 'api/response-models/dynamic-form.response-model';
 import { DynamicFormsService } from './dynamic-forms.service';
-import { ValidateResponseModel } from '../response-models/validate.response-model';
-import { environment } from '../../../environments/environment';
+import { ValidateResponseModel } from 'api/response-models/validate.response-model';
+import { environment } from 'environments/environment';
 import { Validity } from './validity';
 import { HttpService } from '../http.service';
-import { StubHttpService } from '../../../testing/http.service.stub';
+import { StubHttpService } from 'testing/http.service.stub';
 
-let testFormModelName = `testFormModelName`;
+let testRequestModelName = `testRequestModelName`;
 let testControlName = `testControlName`;
 let testMessage = `testMessage`;
 let testButtonText = `testButtonText`;
@@ -44,7 +44,7 @@ describe('DynamicFormsService', () => {
                 let getSpy = spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testDynamicFormResponseModel));
 
                 dynamicFormsService.
-                    getDynamicForm(testFormModelName, true).
+                    getDynamicForm(testRequestModelName, true).
                     subscribe(dynamicForm => null);
 
                 expect(stubHttpService.get).toHaveBeenCalledTimes(1);
@@ -52,7 +52,7 @@ describe('DynamicFormsService', () => {
                 expect(args[0]).toBe(`DynamicForm/GetDynamicFormWithAfTokens`);
                 let requestOptions = args[1] as RequestOptionsArgs;
                 let urlSearchParams = requestOptions.search as URLSearchParams;
-                expect(urlSearchParams.get(`formModelName`)).toBe(testFormModelName);
+                expect(urlSearchParams.get(`requestModelName`)).toBe(testRequestModelName);
             })
         );
 
@@ -62,7 +62,7 @@ describe('DynamicFormsService', () => {
                 let result: DynamicForm;
 
                 dynamicFormsService.
-                    getDynamicForm(testFormModelName, true).
+                    getDynamicForm(testRequestModelName, true).
                     subscribe(dynamicForm => result = dynamicForm);
 
                 expect(result instanceof DynamicForm).toBe(true);
@@ -73,11 +73,11 @@ describe('DynamicFormsService', () => {
         );
     });
 
-    it(`submitDynamicForm calls Http.post`, inject([DynamicFormsService, HttpService], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
+    it(`submitDynamicForm calls HttpService.post`, inject([DynamicFormsService, HttpService], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
         let getSpy = spyOn(stubHttpService, `post`).and.returnValue(Observable.of(testResponse));
 
         dynamicFormsService.
-            submitDynamicForm(testRelativeUrl, testDynamicForm).
+            submitDynamicForm(testRelativeUrl, testDynamicForm.value).
             subscribe(response => null);
 
         expect(stubHttpService.post).toHaveBeenCalledTimes(1);

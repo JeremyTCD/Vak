@@ -6,8 +6,8 @@ import { TwoFactorAuthComponent } from './two-factor-auth/two-factor-auth.compon
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { LogInRouting } from './log-in.routing';
-import { DynamicFormsModule } from '../shared/dynamic-forms/dynamic-forms.module';
-import { DynamicFormGuard } from '../shared/dynamic-forms/dynamic-form/dynamic-form.guard';
+import { DynamicFormsModule } from 'app/shared/dynamic-forms/dynamic-forms.module';
+import { DynamicFormGuard } from 'app/shared/dynamic-forms/dynamic-form/dynamic-form.guard';
 
 @NgModule({
     imports: [

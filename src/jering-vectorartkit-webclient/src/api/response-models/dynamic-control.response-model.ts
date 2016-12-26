@@ -1,4 +1,4 @@
-import { ValidatorResponseModel } from './validator.response-model'; 
+import {ValidatorResponseModel} from './validator.response-model'; 
 
 export interface DynamicControlResponseModel {
 	name?: string;

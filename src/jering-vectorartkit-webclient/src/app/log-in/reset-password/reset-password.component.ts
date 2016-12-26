@@ -1,15 +1,19 @@
 import { Component, AfterViewInit, ViewChild, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router/index';
 
-import { ResetPasswordResponseModel } from '../../shared/response-models/reset-password.response-model';
-import { DynamicFormComponent } from '../../shared/dynamic-forms/dynamic-form/dynamic-form.component';
+import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-event.model';
+import { DynamicFormComponent } from 'app/shared/dynamic-forms/dynamic-form/dynamic-form.component';
+import { AppPaths } from 'app/app.paths';
+
+import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
+import { ResetPasswordResponseModel } from 'api/response-models/reset-password.response-model';
 
 @Component({
     templateUrl: './reset-password.component.html'
 })
 export class ResetPasswordComponent implements AfterViewInit, OnInit {
-    static formModelName = `ResetPassword`;
-    static formSubmitRelativeUrl = `Account/ResetPassword`;
+    static requestModelName = `ResetPassword`;
+    static formSubmitRelativeUrl = AccountControllerRelativeUrls.resetPassword;
 
     @ViewChild(`dynamicFormComponent`) dynamicFormComponent: DynamicFormComponent;
 
@@ -17,6 +21,9 @@ export class ResetPasswordComponent implements AfterViewInit, OnInit {
     token: string;
     linkExpiredOrInvalid: boolean;
     passwordResetSuccessful: boolean;
+
+    logInPath: string = AppPaths.logInPath;
+    forgotPasswordPath: string = AppPaths.forgotPasswordPath;
 
     constructor(private _activatedRoute: ActivatedRoute) {
     }
@@ -27,15 +34,17 @@ export class ResetPasswordComponent implements AfterViewInit, OnInit {
     }
 
     ngAfterViewInit(): void {
-        this.dynamicFormComponent.dynamicForm.getDynamicControl(`Email`).value = this.email;
-        this.dynamicFormComponent.dynamicForm.getDynamicControl(`Token`).value = this.token;
+        this.dynamicFormComponent.dynamicForm.getDynamicControl(`email`).value = this.email;
+        this.dynamicFormComponent.dynamicForm.getDynamicControl(`token`).value = this.token;
     }
 
-    onSubmitSuccess(responseModel: ResetPasswordResponseModel): void {
+    onSubmitSuccess(event: SubmitEventModel): void {
         this.passwordResetSuccessful = true;
     }
 
-    onSubmitError(responseModel: ResetPasswordResponseModel): void {
+    onSubmitError(event: SubmitEventModel): void {
+        let responseModel = event.responseModel as ResetPasswordResponseModel;
+
         if (responseModel.invalidEmail || responseModel.invalidToken) {
             this.linkExpiredOrInvalid = true;
         }

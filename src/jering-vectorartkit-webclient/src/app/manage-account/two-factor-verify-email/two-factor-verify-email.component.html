@@ -1,0 +1,12 @@
+<h2>Enabled two factor authentication</h2>
+<div>
+    logo
+</div>
+<hr/>
+A two factor code has been sent to your email. Enter it to verify your email and enable two factor authentication.
+<hr/>
+<div>
+    <dynamic-form #dynamicFormComponent (submitSuccess)="onSubmitSuccess($event)"></dynamic-form>
+</div>
+<hr />
+<a [routerLink]="manageAccountPath">Cancel</a>

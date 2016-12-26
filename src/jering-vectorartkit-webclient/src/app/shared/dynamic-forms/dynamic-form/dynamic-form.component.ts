@@ -5,9 +5,10 @@ import { Subscription } from 'rxjs';
 
 import { DynamicForm } from './dynamic-form';
 import { DynamicFormsService } from '../dynamic-forms.service';
-import { ErrorResponseModel } from '../../response-models/error.response-model';
+import { ErrorResponseModel } from 'api/response-models/error.response-model';
 import { Validity } from '../validity';
 import { Check } from '../../check';
+import { SubmitEventModel} from './submit-event.model';
 
 @Component({
     selector: 'dynamic-form',
@@ -51,9 +52,9 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
         if (this.dynamicForm.onSubmit()) {
             this._submitDynamicFormSubscription = this.
                 _dynamicFormsService.
-                submitDynamicForm(this.formSubmitRelativeUrl, this.dynamicForm).
+                submitDynamicForm(this.formSubmitRelativeUrl, this.dynamicForm.value).
                 subscribe(
-                    responseModel => this.submitSuccess.emit(responseModel),
+                responseModel => this.submitSuccess.emit(new SubmitEventModel(responseModel, this.dynamicForm.value)),
                     this.handleSubmitDynamicFormError
                 );
         }
@@ -69,7 +70,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
                 let dynamicControl = this.dynamicForm.getDynamicControl(key);
                 if (dynamicControl) {
                     dynamicControl.messages = error.modelState[key];
-                    dynamicControl.validity = Validity.invalid
+                    dynamicControl.validity = Validity.invalid;
                 }
             }
         }
@@ -77,7 +78,7 @@ export class DynamicFormComponent implements OnInit, OnDestroy {
         this.dynamicForm.messages = [error.errorMessage || this.dynamicForm.message];
         this.dynamicForm.validity = Validity.invalid;
 
-        this.submitError.emit(error);
+        this.submitError.emit(new SubmitEventModel(error, this.dynamicForm.value));
     }
 
     ngOnDestroy(): void {

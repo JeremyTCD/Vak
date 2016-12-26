@@ -3,11 +3,16 @@ import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { ActivatedRoute } from '@angular/router/index';
 
-import { TwoFactorLogInResponseModel } from '../../shared/response-models/two-factor-log-in.response-model';
 import { ResetPasswordComponent } from './reset-password.component';
-import { StubActivatedRoute } from '../../../testing/router-stubs';
-import { DynamicForm } from '../../shared/dynamic-forms/dynamic-form/dynamic-form';
-import { DynamicControl } from '../../shared/dynamic-forms/dynamic-control/dynamic-control';
+import { DynamicForm } from 'app/shared/dynamic-forms/dynamic-form/dynamic-form';
+import { DynamicControl } from 'app/shared/dynamic-forms/dynamic-control/dynamic-control';
+import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-event.model';
+
+import { TwoFactorLogInResponseModel } from 'api/response-models/two-factor-log-in.response-model';
+
+import { StubActivatedRoute } from 'testing/router-stubs';
+import { StubDynamicFormComponent } from 'testing/dynamic-form.component.stub';
+import { DebugElementExtensions } from 'testing/debug-element-extensions';
 
 let testIsPersistent = true;
 let testToken = `testToken`;
@@ -16,10 +21,8 @@ let resetPasswordComponentFixture: ComponentFixture<ResetPasswordComponent>;
 let resetPasswordComponent: ResetPasswordComponent;
 let resetPasswordDebugElement: DebugElement;
 let testResetPasswordResponseModel: TwoFactorLogInResponseModel;
-let testEmailDynamicControl: DynamicControl;
-let testTokenDynamicControl: DynamicControl;
-let stubDynamicFormComponent: StubDynamicFormComponent;
 let stubActivatedRoute: StubActivatedRoute;
+let ngAfterViewInitSpy: jasmine.Spy;
 
 describe('ResetPasswordComponent', () => {
     beforeEach(async(() => {
@@ -35,12 +38,8 @@ describe('ResetPasswordComponent', () => {
         resetPasswordDebugElement = resetPasswordComponentFixture.debugElement;
         stubActivatedRoute = TestBed.get(ActivatedRoute) as StubActivatedRoute;
         stubActivatedRoute.testParams = { email: testEmail, token: testToken };
-        testEmailDynamicControl = new DynamicControl({ name: `Email` });
-        testTokenDynamicControl = new DynamicControl({ name: `Token` });
-
-        // dynamicFormComponent only rendered after initial data binding
-        resetPasswordComponentFixture.detectChanges();
-        stubDynamicFormComponent = resetPasswordComponent.dynamicFormComponent;
+        // Prevent from being called since dynamicFormComponent needs to be setup manually
+        ngAfterViewInitSpy = spyOn(resetPasswordComponent, `ngAfterViewInit`);
     });
 
     it(`ngOnInit sets email and token`, () => {
@@ -49,13 +48,29 @@ describe('ResetPasswordComponent', () => {
         expect(resetPasswordComponent.token).toBe(testToken);
     });
 
-    it(`Uses ViewChild to retrieve child DynamicFormsComponent and sets its Email and Token DynamicControls values`, () => {
-        expect(stubDynamicFormComponent).toBeDefined();
-        expect(stubDynamicFormComponent.dynamicForm.getDynamicControl(`Email`).value).toBe(testEmail);
-        expect(stubDynamicFormComponent.dynamicForm.getDynamicControl(`Token`).value).toBe(testToken);
+    it(`ngAfterViewInit sets dynamicFormComponent's Email and Token DynamicControls values`, () => {
+        resetPasswordComponentFixture.detectChanges();
+
+        expect(resetPasswordComponent.ngAfterViewInit).toHaveBeenCalledTimes(1);
+
+        let testDynamicForm = resetPasswordComponent.dynamicFormComponent.dynamicForm;
+        let testEmailDynamicControl = new DynamicControl({});
+        let testTokenDynamicControl = new DynamicControl({});
+        spyOn(testDynamicForm, `getDynamicControl`).
+            and.
+            returnValues(testEmailDynamicControl, testTokenDynamicControl);
+        ngAfterViewInitSpy.and.callThrough();
+
+        resetPasswordComponent.ngAfterViewInit();
+
+        expect(testDynamicForm.getDynamicControl).toHaveBeenCalledWith(`email`);
+        expect(testDynamicForm.getDynamicControl).toHaveBeenCalledWith(`token`);
+        expect(testEmailDynamicControl.value).toBe(testEmail);
+        expect(testTokenDynamicControl.value).toBe(testToken);
     });
 
     it(`Listens to child DynamicFormComponent outputs`, () => {
+        resetPasswordComponentFixture.detectChanges();
         spyOn(resetPasswordComponent, `onSubmitSuccess`);
         spyOn(resetPasswordComponent, `onSubmitError`);
 
@@ -68,17 +83,24 @@ describe('ResetPasswordComponent', () => {
     });
 
     it(`onSubmitSuccess sets passwordResetSuccessful to true`, () => {
-        resetPasswordComponentFixture.detectChanges();
         resetPasswordComponent.onSubmitSuccess(null);
 
         expect(resetPasswordComponent.passwordResetSuccessful).toBe(true);
     });
 
-    it(`onSubmitError sets linkExpiredOrInvalid to true if responseModel.invalidToken or responseModel.invalidEmail is true`, () => {
-        resetPasswordComponentFixture.detectChanges();
-        resetPasswordComponent.onSubmitError({ invalidToken: true, invalidEmail: true });
+    describe(`onSubmitError`, () => {
+        it(`Sets linkExpiredOrInvalid to true if responseModel.invalidEmail is true`, () => {
+            let eventModel = new SubmitEventModel({ invalidEmail: true }, null);
+            resetPasswordComponent.onSubmitError(eventModel);
 
-        expect(resetPasswordComponent.linkExpiredOrInvalid).toBe(true);
+            expect(resetPasswordComponent.linkExpiredOrInvalid).toBe(true);
+        });
+        it(`Sets linkExpiredOrInvalid to true if responseModel.invalidTokenis true`, () => {
+            let eventModel = new SubmitEventModel({ invalidToken: true }, null);
+            resetPasswordComponent.onSubmitError(eventModel);
+
+            expect(resetPasswordComponent.linkExpiredOrInvalid).toBe(true);
+        });
     });
 
     it(`Renders link expired tip and get new reset password link if linkExpiredOrInvalid is true`, () => {
@@ -86,11 +108,8 @@ describe('ResetPasswordComponent', () => {
 
         resetPasswordComponentFixture.detectChanges();
 
-        expect(resetPasswordDebugElement.queryAll(By.css(`a`)).length).toBe(1);
-        expect(resetPasswordDebugElement.query(By.css(`a`)).nativeElement.textContent.trim()).toBe(`Get new reset password link`);
-        let divs = resetPasswordDebugElement.queryAll(By.css(`div`));
-        expect(divs.length).toBe(3);
-        expect(divs.some(debugElement => debugElement.nativeElement.textContent.trim() === `Link expired`)).toBe(true);
+        expect(DebugElementExtensions.hasDescendantWithInnerHtml(resetPasswordDebugElement, `Get new reset password link`)).toBe(true);
+        expect(DebugElementExtensions.hasDescendantWithInnerHtml(resetPasswordDebugElement, `Link expired`)).toBe(true);
     });
 
     it(`Renders password reset tip and log in link if passwordResetSuccessful is true`, () => {
@@ -98,12 +117,9 @@ describe('ResetPasswordComponent', () => {
 
         resetPasswordComponentFixture.detectChanges();
 
-        expect(resetPasswordDebugElement.queryAll(By.css(`a`)).length).toBe(1);
-        expect(resetPasswordDebugElement.query(By.css(`a`)).nativeElement.textContent.trim()).toBe(`Log in`);
-        let divs = resetPasswordDebugElement.queryAll(By.css(`div`));
-        expect(divs.length).toBe(3);
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Password has been reset for account associated with email: ${testEmail}`)).toBe(true);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(resetPasswordDebugElement, `Password has been reset for account associated with email: ${testEmail}`)).toBe(true);
+        expect(DebugElementExtensions.hasDescendantWithInnerHtml(resetPasswordDebugElement, `Log in`)).toBe(true);
     });
 
     it(`Renders reset password tip and dynamic form if passwordResetSuccessful and linkExpiredOrInvalid
@@ -113,27 +129,13 @@ describe('ResetPasswordComponent', () => {
 
             resetPasswordComponentFixture.detectChanges();
 
+            expect(DebugElementExtensions.
+                hasDescendantWithInnerHtml(resetPasswordDebugElement, `Reset password for account associated with email: ${testEmail}`)).toBe(true);
             expect(resetPasswordDebugElement.queryAll(By.css(`dynamic-form`)).length).toBe(1);
-            let divs = resetPasswordDebugElement.queryAll(By.css(`div`));
-            expect(divs.length).toBe(3);
-            expect(divs.
-                some(debugElement => debugElement.nativeElement.textContent.trim() === `Reset password for account associated with email: ${testEmail}`)).toBe(true);
+            expect(DebugElementExtensions.hasDescendantWithInnerHtml(resetPasswordDebugElement, `Get new reset password link`)).toBe(false);
+            expect(DebugElementExtensions.hasDescendantWithInnerHtml(resetPasswordDebugElement, `Link expired`)).toBe(false);
+            expect(DebugElementExtensions.
+                hasDescendantWithInnerHtml(resetPasswordDebugElement, `Password has been reset for account associated with email: ${testEmail}`)).toBe(false);
+            expect(DebugElementExtensions.hasDescendantWithInnerHtml(resetPasswordDebugElement, `Log in`)).toBe(false);
         });
 });
-
-@Component({
-    selector: `dynamic-form`,
-    template: `<a (click)=submitSuccess.emit()></a><a (click)=submitError.emit()></a>`
-})
-class StubDynamicFormComponent {
-    @Output() submitSuccess = new EventEmitter<any>();
-    @Output() submitError = new EventEmitter<any>();
-    dynamicForm: DynamicForm = new DynamicForm([testEmailDynamicControl, testTokenDynamicControl], null, null);
-}
-
-class StubUserService {
-    logIn(username: string, isPersistent: boolean): void {
-    }
-
-    returnUrl: string;
-}

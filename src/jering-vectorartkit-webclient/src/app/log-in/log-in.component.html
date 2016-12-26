@@ -5,6 +5,6 @@
 <hr />
 <dynamic-form (submitSuccess)="onSubmitSuccess($event)" (submitError)="onSubmitError($event)"></dynamic-form>
 <hr />
-<a routerLink="/log-in/forgot-password">Forgot password</a><br />
+<a [routerLink]="forgotPasswordPath">Forgot password</a><br />
 <!-- TODO consider adding return url -->
-<a routerLink="/sign-up">Sign up</a>
+<a [routerLink]="signUpPath">Sign up</a>

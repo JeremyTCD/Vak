@@ -1,11 +1,11 @@
-<a routerLink="home">Logo</a><br />
+<a [routerLink]="homePath">Logo</a><br />
 <div *ngIf="userService.loggedIn">
     <a>My VakKits</a><br />
     <a>My VakUnits</a><br />
 </div>
 <div *ngIf="!userService.loggedIn">
-    <a routerLink="sign-up">Sign up</a><br />
-    <a routerLink="log-in">Log in</a><br />
+    <a [routerLink]="signUpPath">Sign up</a><br />
+    <a [routerLink]="logInPath">Log in</a><br />
 </div>
 <a>Overview</a><br />
 <a>VakUnit gallery</a><br />
@@ -13,7 +13,7 @@
 <a>Help</a><br />
 <div *ngIf="userService.loggedIn">
     <a>Account:{{userService.username}}</a><br />
-    <a routerLink="/manage-account">Manage account</a><br />
+    <a [routerLink]="manageAccountPath">Manage account</a><br />
     <a (click)="logOff()">Log off</a>
 </div>
 <div>

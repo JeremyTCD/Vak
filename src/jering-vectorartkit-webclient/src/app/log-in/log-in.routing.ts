@@ -5,14 +5,15 @@ import { LogInComponent } from './log-in.component';
 import { TwoFactorAuthComponent } from './two-factor-auth/two-factor-auth.component';
 import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 import { ResetPasswordComponent } from './reset-password/reset-password.component';
-import { DynamicFormGuard } from '../shared/dynamic-forms/dynamic-form/dynamic-form.guard';
+import { DynamicFormGuard } from 'app/shared/dynamic-forms/dynamic-form/dynamic-form.guard';
+import { AppSegments } from 'app/app.segments';
 
 const logInRoutes: Routes = [
     {
         path: '',
         component: LogInComponent,
         data: {
-            formModelName: LogInComponent.formModelName,
+            requestModelName: LogInComponent.requestModelName,
             formSubmitRelativeUrl: LogInComponent.formSubmitRelativeUrl,
             getAfToken: true
         },
@@ -21,10 +22,10 @@ const logInRoutes: Routes = [
         }
     },
     {
-        path: 'two-factor-auth',
+        path: AppSegments.twoFactorAuthSegment,
         component: TwoFactorAuthComponent,
         data: {
-            formModelName: TwoFactorAuthComponent.formModelName,
+            requestModelName: TwoFactorAuthComponent.requestModelName,
             formSubmitRelativeUrl: TwoFactorAuthComponent.formSubmitRelativeUrl
         },
         resolve: {
@@ -32,10 +33,10 @@ const logInRoutes: Routes = [
         }
     },
     {
-        path: 'forgot-password',
+        path: AppSegments.forgotPasswordSegment,
         component: ForgotPasswordComponent,
         data: {
-            formModelName: ForgotPasswordComponent.formModelName,
+            requestModelName: ForgotPasswordComponent.requestModelName,
             formSubmitRelativeUrl: ForgotPasswordComponent.formSubmitRelativeUrl,
             getAfToken: true
         },
@@ -44,10 +45,10 @@ const logInRoutes: Routes = [
         }
     },
     {
-        path: 'reset-password',
+        path: AppSegments.resetPasswordSegment,
         component: ResetPasswordComponent,
         data: {
-            formModelName: ResetPasswordComponent.formModelName,
+            requestModelName: ResetPasswordComponent.requestModelName,
             formSubmitRelativeUrl: ResetPasswordComponent.formSubmitRelativeUrl,
             getAfToken: true
         },

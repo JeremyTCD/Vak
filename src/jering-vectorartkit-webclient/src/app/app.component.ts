@@ -1,16 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { HttpService } from './shared/http.service';
-import { UserService } from './shared/user.service';
+import { HttpService } from 'app/shared/http.service';
+import { UserService } from 'app/shared/user.service';
+import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
+import { AppPaths } from 'app/app.paths';
 
 @Component({
     selector: 'app',
     templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
-    private _logOffRelativeUrl = `Account/LogOff`;
+    private _logOffRelativeUrl = AccountControllerRelativeUrls.logOff;
     title = 'Vector Art Kit';
+
+    homePath = AppPaths.homePath;
+    signUpPath = AppPaths.signUpPath;
+    logInPath = AppPaths.logInPath;
+    manageAccountPath = AppPaths.manageAccountPath;
 
     constructor(public userService: UserService,
         private _httpService: HttpService,
@@ -25,7 +32,7 @@ export class AppComponent implements OnInit {
             _httpService.
             post(this._logOffRelativeUrl, null).
             subscribe(responseModel => {
-                this._router.navigate([`/home`]);
+                this._router.navigate([this.homePath]);
             },
             undefined,
             () => {

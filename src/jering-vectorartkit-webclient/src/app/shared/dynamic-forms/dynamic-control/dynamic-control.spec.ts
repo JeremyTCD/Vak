@@ -4,7 +4,7 @@ import { DynamicControlAsyncValidator } from './dynamic-control-async-validator'
 import { DynamicControlValidatorResult } from './dynamic-control-validator-result';
 import { DynamicForm } from '../dynamic-form/dynamic-form';
 import { Validity } from '../validity';
-import { StubDomEvent, StubDomElement } from '../../../../testing/dom-stubs';
+import { StubDomEvent, StubDomElement } from 'testing/dom-stubs';
 
 let dynamicControl: DynamicControl;
 let testDynamicForm: DynamicForm;
@@ -54,7 +54,7 @@ describe(`DynamicControl`, () => {
 
         dynamicControl.onChange(stubInputEvent);
 
-        expect(dynamicControl.value).toBe(true);
+        expect(dynamicControl.value).toBe(`true`);
         expect(dynamicControl.dirty).toBe(true);
         expect(dynamicControl.blurred).toBe(true);
         expect(dynamicControl.validate).toHaveBeenCalledTimes(1);

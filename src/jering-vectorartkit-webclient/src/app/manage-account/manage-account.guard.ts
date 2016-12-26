@@ -2,8 +2,9 @@
 import { Resolve, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 
-import { GetAccountDetailsResponseModel } from '../shared/response-models/get-account-details.response-model';
-import { HttpService } from '../shared/http.service';
+import { GetAccountDetailsResponseModel } from 'api/response-models/get-account-details.response-model';
+import { HttpService } from 'app/shared/http.service';
+import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
 
 @Injectable()
 export class ManageAccountGuard implements Resolve<GetAccountDetailsResponseModel> {
@@ -11,6 +12,6 @@ export class ManageAccountGuard implements Resolve<GetAccountDetailsResponseMode
 
     resolve(): Observable<GetAccountDetailsResponseModel>{
         let returnUrl = this._router.routerState.snapshot.url;
-        return this._httpService.get(`Account/GetAccountDetails`);
+        return this._httpService.get(AccountControllerRelativeUrls.getAccountDetails);
     };
 }

@@ -3,9 +3,13 @@ import { Response } from '@angular/http';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 
+import { environment } from 'environments/environment';
+
+import { ErrorResponseModel } from 'api/response-models/error.response-model';
+
+import { AppPaths } from 'app/app.paths';
+
 import { Check } from './check';
-import { environment } from '../../environments/environment';
-import { ErrorResponseModel } from './response-models/error.response-model';
 import { UserService } from './user.service';
 
 /**
@@ -20,7 +24,7 @@ export class ErrorHandlerService {
      */
     handleUnauthorizedError(): void {
         this._userService.logOff();
-        this._router.navigate([`/log-in`, { returnUrl: this._location.path() }]);
+        this._router.navigate([AppPaths.logInPath, { returnUrl: this._location.path() }]);
     }
 
     /**
@@ -28,11 +32,11 @@ export class ErrorHandlerService {
      */
     handleCriticalError(error: any): void {
         if (!Check.isValue(error)){
-            this._router.navigate([`/error`]);
+            this._router.navigate([AppPaths.errorPath]);
         }
 
         if (Check.isString(error)) {
-            this._router.navigate([`/error`, { errorMessage: error }]);
+            this._router.navigate([AppPaths.errorPath, { errorMessage: error }]);
             return;
         }
 
@@ -40,7 +44,7 @@ export class ErrorHandlerService {
 
         // TODO should inserted string be escaped etc? read up on xss and angular2
         if (environment.production) {
-            errorMessage = (error as ErrorResponseModel).errorMessage
+            errorMessage = (error as ErrorResponseModel).errorMessage;
         } else {
             // Print entire object
             for (let key in error) {
@@ -49,7 +53,7 @@ export class ErrorHandlerService {
         }
 
         if (Check.isValue(errorMessage)) {
-            this._router.navigate([`/error`,
+            this._router.navigate([AppPaths.errorPath,
                 {
                     errorMessage: errorMessage
                 }
@@ -58,6 +62,6 @@ export class ErrorHandlerService {
             return;
         }
 
-        this._router.navigate([`/error`]);
+        this._router.navigate([AppPaths.errorPath]);
     }
 }

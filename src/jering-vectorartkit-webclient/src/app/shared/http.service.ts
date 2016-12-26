@@ -2,9 +2,9 @@
 import { Http, Headers, RequestOptions, RequestOptionsArgs, Response, RequestMethod } from '@angular/http';
 import { Observable } from 'rxjs';
 
-import { environment } from '../../environments/environment';
+import { environment } from 'environments/environment';
 import { ErrorHandlerService } from './error-handler.service';
-import { ErrorResponseModel } from './response-models/error.response-model';
+import { ErrorResponseModel } from 'api/response-models/error.response-model';
 
 /**
  * Provides Http helpers

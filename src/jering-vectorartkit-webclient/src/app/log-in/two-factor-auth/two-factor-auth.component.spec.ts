@@ -4,12 +4,19 @@ import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { Router, ActivatedRoute } from '@angular/router/index';
 
-import { TwoFactorLogInResponseModel } from '../../shared/response-models/two-factor-log-in.response-model';
 import { TwoFactorAuthComponent } from './two-factor-auth.component';
-import { StubRouter, StubActivatedRoute } from '../../../testing/router-stubs';
-import { UserService } from '../../shared/user.service';
-import { DynamicForm } from '../../shared/dynamic-forms/dynamic-form/dynamic-form';
-import { DynamicControl } from '../../shared/dynamic-forms/dynamic-control/dynamic-control';
+import { UserService } from 'app/shared/user.service';
+import { DynamicForm } from 'app/shared/dynamic-forms/dynamic-form/dynamic-form';
+import { DynamicControl } from 'app/shared/dynamic-forms/dynamic-control/dynamic-control';
+import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-event.model';
+import { AppPaths } from 'app/app.paths';
+
+import { TwoFactorLogInResponseModel } from 'api/response-models/two-factor-log-in.response-model';
+
+import { StubUserService } from 'testing/user.service.stub';
+import { StubRouter, StubActivatedRoute } from 'testing/router-stubs';
+import { StubDynamicFormComponent } from 'testing/dynamic-form.component.stub';
+import { DebugElementExtensions } from 'testing/debug-element-extensions';
 
 let testIsPersistent = true;
 let testUsername = `testUsername`;
@@ -18,19 +25,20 @@ let twoFactorAuthComponentFixture: ComponentFixture<TwoFactorAuthComponent>;
 let twoFactorAuthComponent: TwoFactorAuthComponent;
 let twoFactorAuthDebugElement: DebugElement;
 let testTwoFactorAuthResponseModel: TwoFactorLogInResponseModel;
-let testDynamicControl: DynamicControl;
 let stubDynamicFormComponent: StubDynamicFormComponent;
 let stubRouter: StubRouter;
 let stubUserService: StubUserService;
 let stubActivatedRoute: StubActivatedRoute;
+let ngAfterViewInitSpy: jasmine.Spy;
+
 
 describe('TwoFactorAuthComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [TwoFactorAuthComponent, StubDynamicFormComponent],
             providers: [{ provide: Router, useClass: StubRouter },
-                { provide: UserService, useClass: StubUserService },
-                { provide: ActivatedRoute, useClass: StubActivatedRoute }]
+            { provide: UserService, useClass: StubUserService },
+            { provide: ActivatedRoute, useClass: StubActivatedRoute }]
         }).compileComponents();
     }));
 
@@ -41,18 +49,42 @@ describe('TwoFactorAuthComponent', () => {
         stubRouter = TestBed.get(Router) as StubRouter;
         stubUserService = TestBed.get(UserService) as StubUserService;
         stubActivatedRoute = TestBed.get(ActivatedRoute) as StubActivatedRoute;
-        stubActivatedRoute.testParams = { returnUrl: testReturnUrl, isPersistent: testIsPersistent };
-        testDynamicControl = new DynamicControl({ name: `IsPersistent` });
-        twoFactorAuthComponentFixture.detectChanges();
-        stubDynamicFormComponent = twoFactorAuthComponent.dynamicFormComponent;
+        stubActivatedRoute.testParams = {
+            username: testUsername,
+            returnUrl: testReturnUrl,
+            isPersistent: testIsPersistent.toString()
+        };
+        // Prevent from being called since dynamicFormComponent needs to be setup manually
+        ngAfterViewInitSpy = spyOn(twoFactorAuthComponent, `ngAfterViewInit`);
     });
 
-    it(`Uses ViewChild to retrieve child DynamicFormsComponent and sets its IsPersistent DynamicControl's value`, () => {
-        expect(stubDynamicFormComponent).toBeDefined();
-        expect(testDynamicControl.value).toBe(testIsPersistent);
+    it(`ngOnInit sets isPersistent, username and returnUrl`, () => {
+        twoFactorAuthComponentFixture.detectChanges();
+        expect(twoFactorAuthComponent.isPersistent).toBe(testIsPersistent);
+        expect(twoFactorAuthComponent.username).toBe(testUsername);
+        expect(twoFactorAuthComponent.returnUrl).toBe(testReturnUrl);
+    });
+
+    it(`ngAfterViewInit sets dynamicFormComponent's IsPersistent DynamicControl's value`, () => {
+        twoFactorAuthComponentFixture.detectChanges();
+
+        expect(twoFactorAuthComponent.ngAfterViewInit).toHaveBeenCalledTimes(1);
+
+        let testDynamicForm = twoFactorAuthComponent.dynamicFormComponent.dynamicForm;
+        let testIsPersistentDynamicControl = new DynamicControl({});
+        spyOn(testDynamicForm, `getDynamicControl`).
+            and.
+            returnValue(testIsPersistentDynamicControl);
+        ngAfterViewInitSpy.and.callThrough();
+
+        twoFactorAuthComponent.ngAfterViewInit();
+
+        expect(testDynamicForm.getDynamicControl).toHaveBeenCalledWith(`isPersistent`);
+        expect(testIsPersistentDynamicControl.value).toBe(testIsPersistent.toString());
     });
 
     it(`Listens to child DynamicFormComponent output`, () => {
+        twoFactorAuthComponentFixture.detectChanges();
         spyOn(twoFactorAuthComponent, `onSubmitSuccess`);
         spyOn(twoFactorAuthComponent, `onSubmitError`);
         let anchorDebugElement = twoFactorAuthDebugElement.query(By.css(`a`));
@@ -64,54 +96,44 @@ describe('TwoFactorAuthComponent', () => {
     });
 
     describe(`onSubmitSuccess`, () => {
-        beforeEach(() => {
-            testTwoFactorAuthResponseModel = { username: testUsername, isPersistent: testIsPersistent }
-        });
-
         it(`Calls UseService.login`, () => {
+            twoFactorAuthComponent.username = testUsername;
+            twoFactorAuthComponent.isPersistent = testIsPersistent;
             spyOn(stubUserService, `logIn`);
 
-            twoFactorAuthComponent.onSubmitSuccess(testTwoFactorAuthResponseModel);
+            twoFactorAuthComponent.onSubmitSuccess(null);
 
             expect(stubUserService.logIn).toHaveBeenCalledWith(testUsername, testIsPersistent);
         });
 
         it(`Navigates to home if ActivatedRoute.snapshot.params.returnUrl is null`, () => {
-            stubActivatedRoute.testParams = { returnUrl: null, isPersistent: testIsPersistent };
+            twoFactorAuthComponent.returnUrl = null;
             spyOn(stubRouter, `navigate`);
             spyOn(stubUserService, `logIn`);
 
-            twoFactorAuthComponent.onSubmitSuccess(testTwoFactorAuthResponseModel);
+            twoFactorAuthComponent.onSubmitSuccess(null);
 
-            expect(stubRouter.navigate).toHaveBeenCalledWith([`/home`]);
+            expect(stubRouter.navigate).toHaveBeenCalledWith([AppPaths.homePath]);
         });
 
         it(`Navigates to return url if ActivatedRoute.snapshot.params.returnUrl is defined`, () => {
+            twoFactorAuthComponent.returnUrl = testReturnUrl;
             spyOn(stubRouter, `navigate`);
             spyOn(stubUserService, `logIn`);
 
-            twoFactorAuthComponent.onSubmitSuccess(testTwoFactorAuthResponseModel);
+            twoFactorAuthComponent.onSubmitSuccess(null);
 
             expect(stubRouter.navigate).toHaveBeenCalledWith([testReturnUrl]);
         });
     });
 
-    describe(`onSubmitError`, () => {
-        it(`Sets codeExpired to true if twoFactorAuthResponseModel.expiredCredentials is true`, () => {
-            testTwoFactorAuthResponseModel = { expiredCredentials: true }
+    it(`onSubmitError sets codeExpired to true if twoFactorAuthResponseModel.expiredCredentials is true`, () => {
+        testTwoFactorAuthResponseModel = { expiredCredentials: true };
+        let eventModel = new SubmitEventModel(testTwoFactorAuthResponseModel, null);
 
-            twoFactorAuthComponent.onSubmitError(testTwoFactorAuthResponseModel);
+        twoFactorAuthComponent.onSubmitError(eventModel);
 
-            expect(twoFactorAuthComponent.codeExpired).toBe(true);
-        });
-
-        it(`Sets codeExpired to true if twoFactorAuthResponseModel.expiredToken is true`, () => {
-            testTwoFactorAuthResponseModel = { expiredToken: true }
-
-            twoFactorAuthComponent.onSubmitError(testTwoFactorAuthResponseModel);
-
-            expect(twoFactorAuthComponent.codeExpired).toBe(true);
-        });
+        expect(twoFactorAuthComponent.codeExpired).toBe(true);
     });
 
     it(`Renders DynamicForm if codeExpired is false`, () => {
@@ -119,41 +141,20 @@ describe('TwoFactorAuthComponent', () => {
         twoFactorAuthComponentFixture.detectChanges();
 
         expect(twoFactorAuthDebugElement.queryAll(By.css(`dynamic-form`)).length).toBe(1);
-        let divs = twoFactorAuthDebugElement.queryAll(By.css(`div`));
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Code expired. Log in again to obtain a new code.`)).toBe(false);
-        let anchors = twoFactorAuthDebugElement.queryAll(By.css(`a`));
-        expect(anchors.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Log in`)).toBe(false);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(twoFactorAuthDebugElement, `Code expired. Log in again to obtain a new code.`)).toBe(false);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(twoFactorAuthDebugElement, `Log in`)).toBe(false);
     });
 
     it(`Renders code expired tip and log in link if codeExpired is true`, () => {
         twoFactorAuthComponent.codeExpired = true;
         twoFactorAuthComponentFixture.detectChanges();
 
-        let divs = twoFactorAuthDebugElement.queryAll(By.css(`div`));
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Code expired. Log in again to obtain a new code.`)).toBe(true);
-        let anchors = twoFactorAuthDebugElement.queryAll(By.css(`a`));
-        expect(anchors.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Log in`)).toBe(true);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(twoFactorAuthDebugElement, `Code expired. Log in again to obtain a new code.`)).toBe(true);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(twoFactorAuthDebugElement, `Log in`)).toBe(true);
         expect(twoFactorAuthDebugElement.queryAll(By.css(`dynamic-form`)).length).toBe(0);
     });
 });
-
-@Component({
-    selector: `dynamic-form`,
-    template: `<a (click)="submitSuccess.emit();submitError.emit()"></a>`
-})
-class StubDynamicFormComponent {
-    @Output() submitSuccess = new EventEmitter<Response>();
-    @Output() submitError = new EventEmitter<Response>();
-    dynamicForm: DynamicForm = new DynamicForm([testDynamicControl], null, null);
-}
-
-class StubUserService {
-    logIn(username: string, isPersistent: boolean): void {
-    }
-
-    returnUrl: string;
-}

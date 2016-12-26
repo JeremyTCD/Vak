@@ -4,6 +4,9 @@ import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 
 import { ForgotPasswordComponent } from './forgot-password.component';
 
+import { StubDynamicFormComponent } from 'testing/dynamic-form.component.stub';
+import { DebugElementExtensions } from 'testing/debug-element-extensions';
+
 let forgotPasswordComponentFixture: ComponentFixture<ForgotPasswordComponent>;
 let forgotPasswordComponent: ForgotPasswordComponent;
 let forgotPasswordDebugElement: DebugElement;
@@ -35,27 +38,30 @@ describe('ForgotPasswordComponent', () => {
     });
 
     it(`onSubmitSuccess sets submitSuccessful to true`, () => {
-        forgotPasswordComponentFixture.detectChanges();
         forgotPasswordComponent.onSubmitSuccess(null);
 
         expect(forgotPasswordComponent.submitSuccessful).toBe(true);
     });
 
     it(`onSubmitError sets submitSuccessful to true`, () => {
-        forgotPasswordComponentFixture.detectChanges();
         forgotPasswordComponent.onSubmitError(null);
 
         expect(forgotPasswordComponent.submitSuccessful).toBe(true);
     });
 
     it(`Renders reset password instructions and dynamic form if submitSuccessful is false`, () => {
+        forgotPasswordComponent.submitSuccessful = false;
+
         forgotPasswordComponentFixture.detectChanges();
 
-        expect(forgotPasswordDebugElement.queryAll(By.css(`dynamic-form`)).length).toBe(1);
-        let divs = forgotPasswordDebugElement.queryAll(By.css(`div`));
-        expect(divs.length).toBe(3);
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Reset password instructions`)).toBe(true);
+        expect(forgotPasswordDebugElement.
+            queryAll(By.css(`dynamic-form`)).length).toBe(1);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(forgotPasswordDebugElement, `Reset password instructions`)).toBe(true);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(forgotPasswordDebugElement, `Reset password link sent`)).toBe(false);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(forgotPasswordDebugElement, `Did not receive email help`)).toBe(false);
     });
 
     it(`Renders reset password link sent tip and did not recieve email tip if submitSuccessful is true`, () => {
@@ -63,21 +69,11 @@ describe('ForgotPasswordComponent', () => {
 
         forgotPasswordComponentFixture.detectChanges();
 
-        let anchors = forgotPasswordDebugElement.queryAll(By.css(`a`));
-        expect(anchors.length).toBe(2);
-        expect(anchors.some(debugElement => debugElement.nativeElement.textContent.trim() === `Did not receive email help`)).toBe(true);
-        let divs = forgotPasswordDebugElement.queryAll(By.css(`div`));
-        expect(divs.length).toBe(3);
-        expect(divs.
-            some(debugElement => debugElement.nativeElement.textContent.trim() === `Reset password link sent`)).toBe(true);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(forgotPasswordDebugElement, `Reset password instructions`)).toBe(false);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(forgotPasswordDebugElement, `Reset password link sent`)).toBe(true);
+        expect(DebugElementExtensions.
+            hasDescendantWithInnerHtml(forgotPasswordDebugElement, `Did not receive email help`)).toBe(true);
     });
 });
-
-@Component({
-    selector: `dynamic-form`,
-    template: `<a (click)="submitSuccess.emit();submitError.emit();"></a>`
-})
-class StubDynamicFormComponent {
-    @Output() submitSuccess = new EventEmitter<any>();
-    @Output() submitError = new EventEmitter<any>();
-}

@@ -1,19 +1,23 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { SetPasswordResponseModel } from '../../shared/response-models/set-password.response-model';
+import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-event.model';
+import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
+import { AppPaths } from 'app/app.paths';
 
 @Component({
     templateUrl: './change-password.component.html'
 })
 export class ChangePasswordComponent {
-    static formModelName = `SetPassword`;
-    static formSubmitRelativeUrl = `Account/SetPassword`;
+    static requestModelName = `SetPassword`;
+    static formSubmitRelativeUrl = AccountControllerRelativeUrls.setPassword;
+
+    manageAccountPath: string = AppPaths.manageAccountPath;
 
     constructor(private _router: Router) {
     }
 
-    onSubmitSuccess(responseModel: SetPasswordResponseModel): void {
-        this._router.navigate([`/manage-account`]);
+    onSubmitSuccess(event: SubmitEventModel): void {
+        this._router.navigate([this.manageAccountPath]);
     }
 }

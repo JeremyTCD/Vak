@@ -3,13 +3,16 @@ import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
-import { ChangeDisplayNameComponent } from './change-display-name.component';
-import { StubRouter } from '../../../testing/router-stubs';
+import { AppPaths } from 'app/app.paths';
 
-let testSubmitSuccessElementId = "testSubmitSuccessElementId";
-let changeAltEmailComponentFixture: ComponentFixture<ChangeDisplayNameComponent>;
-let changeAltEmailComponent: ChangeDisplayNameComponent;
-let changeAltEmailDebugElement: DebugElement;
+import { ChangeDisplayNameComponent } from './change-display-name.component';
+import { StubRouter } from 'testing/router-stubs';
+import { StubDynamicFormComponent } from 'testing/dynamic-form.component.stub';
+
+let testSubmitSuccessElementId = 'testSubmitSuccessElementId';
+let changeDisplayNameComponentFixture: ComponentFixture<ChangeDisplayNameComponent>;
+let changeDisplayNameComponent: ChangeDisplayNameComponent;
+let changeDisplayNameDebugElement: DebugElement;
 let stubRouter: StubRouter;
 
 describe('ChangeDisplayNameComponent', () => {
@@ -21,36 +24,29 @@ describe('ChangeDisplayNameComponent', () => {
     }));
 
     beforeEach(() => {
-        changeAltEmailComponentFixture = TestBed.createComponent(ChangeDisplayNameComponent);
-        changeAltEmailComponent = changeAltEmailComponentFixture.componentInstance;
-        changeAltEmailDebugElement = changeAltEmailComponentFixture.debugElement;
+        changeDisplayNameComponentFixture = TestBed.createComponent(ChangeDisplayNameComponent);
+        changeDisplayNameComponent = changeDisplayNameComponentFixture.componentInstance;
+        changeDisplayNameDebugElement = changeDisplayNameComponentFixture.debugElement;
         stubRouter = TestBed.get(Router) as StubRouter;
-        changeAltEmailComponentFixture.detectChanges();
     });
 
     it(`Listens to child DynamicFormComponent outputs`, () => {
-        spyOn(changeAltEmailComponent, `onSubmitSuccess`);
+        changeDisplayNameComponentFixture.detectChanges();
+        spyOn(changeDisplayNameComponent, `onSubmitSuccess`);
 
-        changeAltEmailDebugElement.
-            query(By.css(`#${testSubmitSuccessElementId}`)).
-            triggerEventHandler('click', null);
+        let anchorDebugElements = changeDisplayNameDebugElement.queryAll(By.css(`a`));
 
-        expect(changeAltEmailComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
+        anchorDebugElements.forEach(debugElement => debugElement.triggerEventHandler('click', null));
+
+
+        expect(changeDisplayNameComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
     });
 
     it(`onSubmitSuccess sets calls Router.navigate`, () => {
         spyOn(stubRouter, `navigate`);
 
-        changeAltEmailComponent.onSubmitSuccess(null);
+        changeDisplayNameComponent.onSubmitSuccess(null);
 
-        expect(stubRouter.navigate).toHaveBeenCalledWith([`/manage-account`]);
+        expect(stubRouter.navigate).toHaveBeenCalledWith([AppPaths.manageAccountPath]);
     });
 });
-
-@Component({
-    selector: `dynamic-form`,
-    template: `<a id=${testSubmitSuccessElementId} (click)=submitSuccess.emit()></a>`
-})
-class StubDynamicFormComponent {
-    @Output() submitSuccess = new EventEmitter<any>();
-}

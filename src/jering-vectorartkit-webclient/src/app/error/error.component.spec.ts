@@ -6,7 +6,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 
 import { ErrorComponent } from './error.component';
-import { StubActivatedRoute } from '../../testing/router-stubs';
+import { StubActivatedRoute } from 'testing/router-stubs';
 
 let errorComponent: ErrorComponent;
 let errorComponentFixture: ComponentFixture<ErrorComponent>;

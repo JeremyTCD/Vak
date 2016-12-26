@@ -5,9 +5,9 @@ import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/switch';
 import 'rxjs/add/operator/do';
 
-import { environment } from '../../../../environments/environment';
+import { environment } from 'environments/environment';
 import { Check } from '../../check';
-import { ValidatorResponseModel } from '../response-models/validator.response-model';
+import { ValidatorResponseModel } from 'api/response-models/validator.response-model';
 import { DynamicControlValidator } from './dynamic-control-validator';
 import { DynamicControlAsyncValidator } from './dynamic-control-async-validator';
 import { DynamicControl } from './dynamic-control';
@@ -111,7 +111,8 @@ export class DynamicControlValidators {
      *   control values do not differ
      */
     static validateDiffers(validatorResponseModel: ValidatorResponseModel): DynamicControlValidator {
-        let otherControlName = validatorResponseModel.options[`OtherProperty`];
+        let otherProperty = validatorResponseModel.options[`OtherProperty`];
+        let otherControlName = otherProperty.charAt(0).toLowerCase() + otherProperty.slice(1);
 
         return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             let otherValue = dynamicControl.parent.getDynamicControl(otherControlName).value;
@@ -185,7 +186,9 @@ export class DynamicControlValidators {
      * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control values do not match
      */
     static validateMatches(validatorResponseModel: ValidatorResponseModel, dynamicControl: DynamicControl): DynamicControlValidator {
-        let otherControlName = validatorResponseModel.options[`OtherProperty`];
+        let otherProperty = validatorResponseModel.options[`OtherProperty`];
+        let otherControlName = otherProperty.charAt(0).toLowerCase() + otherProperty.slice(1);
+
         dynamicControl.providerSiblingsNames.push(otherControlName);
 
         return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {

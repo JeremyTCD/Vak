@@ -1,5 +1,5 @@
-﻿import { ValidatorResponseModel } from '../response-models/validator.response-model';
-import { DynamicControlResponseModel } from '../response-models/dynamic-control.response-model';
+﻿import { ValidatorResponseModel } from 'api/response-models/validator.response-model';
+import { DynamicControlResponseModel } from 'api/response-models/dynamic-control.response-model';
 import { DynamicControlValidator } from './dynamic-control-validator';
 import { DynamicControlAsyncValidator } from './dynamic-control-async-validator';
 import { DynamicControlValidators } from './dynamic-control-validators';
@@ -110,7 +110,7 @@ export class DynamicControl{
      * and tryValidateParent.
      */
     onChange(event: any): void {
-        this.value = event.target.checked;
+        this.value = event.target.checked.toString();
         this.blurred = true;
         this.dirty = true;
 
@@ -121,7 +121,7 @@ export class DynamicControl{
     /**
      * Validates parent if parent is defined and submit has been attempted on it.
      */
-    tryValidateParent() {
+    tryValidateParent(): void {
         if (this.parent &&
             this.parent.submitAttempted) {
             this.parent.validate();
@@ -162,6 +162,6 @@ export class DynamicControl{
     }
 
     dispose(): void {
-        this.unsubscribeAsyncValidator()
+        this.unsubscribeAsyncValidator();
     }
 }

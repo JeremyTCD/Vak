@@ -1,7 +1,7 @@
 ﻿import { DynamicControl } from '../dynamic-control/dynamic-control';
 import { DynamicForm } from './dynamic-form';
 import { Validity } from '../validity';
-import { StubDomEvent, StubDomElement } from '../../../../testing/dom-stubs';
+import { StubDomEvent, StubDomElement } from 'testing/dom-stubs';
 
 let dynamicForm: DynamicForm;
 let testDynamicControl: DynamicControl;

@@ -5,8 +5,10 @@ ${
     Template(Settings settings)
     {
         settings.
-			IncludeProject("Jering.DynamicForms");      
-			settings.OutputFilenameFactory = file => {
+			IncludeProject("Jering.VectorArtKit.WebApi").
+            IncludeProject("Jering.DynamicForms");
+
+		settings.OutputFilenameFactory = file => {
 				return PascalToKebab($"{file.Classes.First().Name}.ts");
 			};
     }
@@ -32,7 +34,7 @@ ${
 		if(interfaceName.Contains("ResponseModel") && !ImportedInterfaces.Contains(interfaceName))
 		{
 			ImportedInterfaces.Add(interfaceName);
-			return $"import {{ {interfaceName} }} from './{PascalToKebab(interfaceName)}';";
+			return $"import {{{interfaceName}}} from './{PascalToKebab(interfaceName)}';";
 		}
 		else
 		{

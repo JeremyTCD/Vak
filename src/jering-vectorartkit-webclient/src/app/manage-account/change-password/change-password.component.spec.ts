@@ -3,13 +3,16 @@ import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
+import { AppPaths } from 'app/app.paths';
 import { ChangePasswordComponent } from './change-password.component';
-import { StubRouter } from '../../../testing/router-stubs';
 
-let testSubmitSuccessElementId = "testSubmitSuccessElementId";
-let changeAltEmailComponentFixture: ComponentFixture<ChangePasswordComponent>;
-let changeAltEmailComponent: ChangePasswordComponent;
-let changeAltEmailDebugElement: DebugElement;
+import { StubDynamicFormComponent } from 'testing/dynamic-form.component.stub';
+import { StubRouter } from 'testing/router-stubs';
+
+let testSubmitSuccessElementId = 'testSubmitSuccessElementId';
+let changePasswordComponentFixture: ComponentFixture<ChangePasswordComponent>;
+let changePasswordComponent: ChangePasswordComponent;
+let changePasswordDebugElement: DebugElement;
 let stubRouter: StubRouter;
 
 describe('ChangePasswordComponent', () => {
@@ -21,36 +24,27 @@ describe('ChangePasswordComponent', () => {
     }));
 
     beforeEach(() => {
-        changeAltEmailComponentFixture = TestBed.createComponent(ChangePasswordComponent);
-        changeAltEmailComponent = changeAltEmailComponentFixture.componentInstance;
-        changeAltEmailDebugElement = changeAltEmailComponentFixture.debugElement;
+        changePasswordComponentFixture = TestBed.createComponent(ChangePasswordComponent);
+        changePasswordComponent = changePasswordComponentFixture.componentInstance;
+        changePasswordDebugElement = changePasswordComponentFixture.debugElement;
         stubRouter = TestBed.get(Router) as StubRouter;
-        changeAltEmailComponentFixture.detectChanges();
     });
 
     it(`Listens to child DynamicFormComponent outputs`, () => {
-        spyOn(changeAltEmailComponent, `onSubmitSuccess`);
+        changePasswordComponentFixture.detectChanges();
+        spyOn(changePasswordComponent, `onSubmitSuccess`);
+        let anchorDebugElements = changePasswordDebugElement.queryAll(By.css(`a`));
 
-        changeAltEmailDebugElement.
-            query(By.css(`#${testSubmitSuccessElementId}`)).
-            triggerEventHandler('click', null);
+        anchorDebugElements.forEach(debugElement => debugElement.triggerEventHandler('click', null));
 
-        expect(changeAltEmailComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
+        expect(changePasswordComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
     });
 
     it(`onSubmitSuccess sets calls Router.navigate`, () => {
         spyOn(stubRouter, `navigate`);
 
-        changeAltEmailComponent.onSubmitSuccess(null);
+        changePasswordComponent.onSubmitSuccess(null);
 
-        expect(stubRouter.navigate).toHaveBeenCalledWith([`/manage-account`]);
+        expect(stubRouter.navigate).toHaveBeenCalledWith([AppPaths.manageAccountPath]);
     });
 });
-
-@Component({
-    selector: `dynamic-form`,
-    template: `<a id=${testSubmitSuccessElementId} (click)=submitSuccess.emit()></a>`
-})
-class StubDynamicFormComponent {
-    @Output() submitSuccess = new EventEmitter<any>();
-}

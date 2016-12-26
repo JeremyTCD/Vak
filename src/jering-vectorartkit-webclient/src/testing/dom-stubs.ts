@@ -4,7 +4,7 @@
     }
 
     preventDefault(): null {
-        return null
+        return null;
     }
 }
 

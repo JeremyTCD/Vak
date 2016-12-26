@@ -1,19 +1,24 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { SetDisplayNameResponseModel } from '../../shared/response-models/set-display-name.response-model';
+import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-event.model';
+import { AppPaths } from 'app/app.paths';
+
+import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
 
 @Component({
     templateUrl: './change-display-name.component.html'
 })
 export class ChangeDisplayNameComponent {
-    static formModelName = `SetDisplayName`;
-    static formSubmitRelativeUrl = `Account/SetDisplayName`;
+    static requestModelName = `SetDisplayName`;
+    static formSubmitRelativeUrl = AccountControllerRelativeUrls.setDisplayName;
+
+    manageAccountPath: string = AppPaths.manageAccountPath;
 
     constructor(private _router: Router) {
     }
 
-    onSubmitSuccess(responseModel: SetDisplayNameResponseModel): void {
-        this._router.navigate([`/manage-account`]);
+    onSubmitSuccess(event: SubmitEventModel): void {
+        this._router.navigate([this.manageAccountPath]);
     }
 }

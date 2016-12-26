@@ -3,14 +3,19 @@ import { Routes, RouterModule } from '@angular/router';
 
 import { ManageAccountComponent } from './manage-account.component';
 import { ManageAccountGuard } from './manage-account.guard';
-import { AuthGuard } from '../shared/auth.guard';
 import { ChangeAltEmailComponent } from './change-alt-email/change-alt-email.component';
 import { ChangeEmailComponent } from './change-email/change-email.component';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { ChangeDisplayNameComponent } from './change-display-name/change-display-name.component';
 import { VerifyEmailComponent } from './verify-email/verify-email.component';
 import { VerifyEmailGuard } from './verify-email/verify-email.guard';
-import { DynamicFormGuard } from '../shared/dynamic-forms/dynamic-form/dynamic-form.guard';
+import { VerifyAltEmailComponent } from './verify-alt-email/verify-alt-email.component';
+import { VerifyAltEmailGuard } from './verify-alt-email/verify-alt-email.guard';
+import { TwoFactorVerifyEmailComponent } from './two-factor-verify-email/two-factor-verify-email.component';
+
+import { AuthGuard } from 'app/shared/auth.guard';
+import { DynamicFormGuard } from 'app/shared/dynamic-forms/dynamic-form/dynamic-form.guard';
+import { AppSegments } from 'app/app.segments';
 
 const manageAccountRoutes: Routes = [
     {
@@ -25,17 +30,35 @@ const manageAccountRoutes: Routes = [
                 }
             },
             {
-                path: 'verify-email',
+                path: AppSegments.verifyEmailSegment,
                 component: VerifyEmailComponent,
                 resolve: {
                     responseModel: VerifyEmailGuard
                 }
             },
             {
-                path: 'change-alt-email',
+                path: AppSegments.verifyAltEmailSegment,
+                component: VerifyAltEmailComponent,
+                resolve: {
+                    responseModel: VerifyAltEmailGuard
+                }
+            },
+            {
+                path: AppSegments.twoFactorVerifyEmailSegment,
+                component: TwoFactorVerifyEmailComponent,
+                data: {
+                    requestModelName: TwoFactorVerifyEmailComponent.requestModelName,
+                    formSubmitRelativeUrl: TwoFactorVerifyEmailComponent.formSubmitRelativeUrl
+                },
+                resolve: {
+                    dynamicForm: DynamicFormGuard
+                }
+            },
+            {
+                path: AppSegments.changeAltEmailSegment,
                 component: ChangeAltEmailComponent,
                 data: {
-                    formModelName: ChangeAltEmailComponent.formModelName,
+                    requestModelName: ChangeAltEmailComponent.requestModelName,
                     formSubmitRelativeUrl: ChangeAltEmailComponent.formSubmitRelativeUrl
                 },
                 resolve: {
@@ -43,10 +66,10 @@ const manageAccountRoutes: Routes = [
                 }
             },
             {
-                path: 'change-email',
+                path: AppSegments.changeEmailSegment,
                 component: ChangeEmailComponent,
                 data: {
-                    formModelName: ChangeEmailComponent.formModelName,
+                    requestModelName: ChangeEmailComponent.requestModelName,
                     formSubmitRelativeUrl: ChangeEmailComponent.formSubmitRelativeUrl
                 },
                 resolve: {
@@ -54,10 +77,10 @@ const manageAccountRoutes: Routes = [
                 }
             },
             {
-                path: 'change-display-name',
+                path: AppSegments.changeDisplayNameSegment,
                 component: ChangeDisplayNameComponent,
                 data: {
-                    formModelName: ChangeDisplayNameComponent.formModelName,
+                    requestModelName: ChangeDisplayNameComponent.requestModelName,
                     formSubmitRelativeUrl: ChangeDisplayNameComponent.formSubmitRelativeUrl
                 },
                 resolve: {
@@ -65,10 +88,10 @@ const manageAccountRoutes: Routes = [
                 }
             },
             {
-                path: 'change-password',
+                path: AppSegments.changePasswordSegment,
                 component: ChangePasswordComponent,
                 data: {
-                    formModelName: ChangePasswordComponent.formModelName,
+                    requestModelName: ChangePasswordComponent.requestModelName,
                     formSubmitRelativeUrl: ChangePasswordComponent.formSubmitRelativeUrl
                 },
                 resolve: {

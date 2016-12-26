@@ -6,5 +6,4 @@ export interface ResetPasswordResponseModel {
 	invalidEmail?: boolean;
 	expectedError?: boolean;
 	errorMessage?: string;
-	email?: string;
 }

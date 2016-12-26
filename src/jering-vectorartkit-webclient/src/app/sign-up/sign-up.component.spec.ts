@@ -5,8 +5,15 @@ import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { Router } from '@angular/router/index';
 
 import { SignUpComponent } from './sign-up.component';
-import { StubRouter } from '../../testing/router-stubs';
-import { UserService } from '../shared/user.service';
+import { AppPaths } from 'app/app.paths';
+import { UserService } from 'app/shared/user.service';
+import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-event.model';
+
+import { SignUpRequestModel } from 'api/request-models/sign-up.request-model';
+
+import { StubRouter } from 'testing/router-stubs';
+import { StubDynamicFormComponent } from 'testing/dynamic-form.component.stub';
+import { StubUserService } from 'testing/user.service.stub';
 
 let testUsername = `testUsername`;
 let signUpComponentFixture: ComponentFixture<SignUpComponent>;
@@ -47,24 +54,13 @@ describe('SignUpComponent', () => {
         it(`Navigates to /home and calls UserService.logIn`, () => {
             spyOn(stubRouter, `navigate`);
             spyOn(stubUserService, `logIn`);
+            let requestModel: SignUpRequestModel = { email: testUsername };
+            let eventModel: SubmitEventModel = new SubmitEventModel(null, requestModel);
 
-            signUpComponent.onSubmitSuccess({username: testUsername});
+            signUpComponent.onSubmitSuccess(eventModel);
 
-            expect(stubRouter.navigate).toHaveBeenCalledWith([`/home`]);
+            expect(stubRouter.navigate).toHaveBeenCalledWith([AppPaths.homePath]);
             expect(stubUserService.logIn).toHaveBeenCalledWith(testUsername, true);
         });
     });
 });
-
-@Component({
-    selector: `dynamic-form`,
-    template: `<a (click)=submitSuccess.emit()></a>`
-})
-class StubDynamicFormComponent {
-    @Output() submitSuccess = new EventEmitter<Response>();
-}
-
-class StubUserService {
-    logIn(username: string, isPersistent: boolean): void {
-    }
-}

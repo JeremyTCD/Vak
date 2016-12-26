@@ -14,6 +14,7 @@ export class UserService {
 
     username: string;
     loggedIn: boolean;
+    isPersistent: boolean;
 
     constructor(private _storageService: StorageService) { }
 
@@ -35,6 +36,7 @@ export class UserService {
      */
     logIn(username: string, isPersistent: boolean): void {
         this.username = username;
+        this.isPersistent = isPersistent;
         this._storageService.setItem(this._storageName, username, isPersistent);
         this.loggedIn = true;
     }
@@ -43,5 +45,10 @@ export class UserService {
         this.username = null;
         this._storageService.removeItem(this._storageName);
         this.loggedIn = false;
+    }
+
+    changeUsername(username: string) {
+        this.username = username;
+        this._storageService.setItem(this._storageName, username, this.isPersistent);
     }
 }

@@ -2,7 +2,7 @@
 
 import { DynamicFormsService } from '../dynamic-forms.service';
 import { DynamicControlValidator } from './dynamic-control-validator';
-import { ValidatorResponseModel } from '../response-models/validator.response-model';
+import { ValidatorResponseModel } from 'api/response-models/validator.response-model';
 import { DynamicControl } from './dynamic-control';
 import { Validity } from '../validity';
 import { DynamicControlValidatorResult } from './dynamic-control-validator-result';
@@ -50,7 +50,7 @@ export class DynamicControlAsyncValidator {
             complete: () => {
                 // Do nothing
             }
-        }
+        };
 
         this.subscription = this.subjectAsObservable.subscribe(this.observer);
     }

@@ -3,54 +3,62 @@ import { By } from '@angular/platform-browser';
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { Router } from '@angular/router';
 
-import { ChangeEmailComponent } from './change-email.component';
-import { StubRouter } from '../../../testing/router-stubs';
+import { SetEmailRequestModel } from 'api/request-models/set-email.request-model';
 
-let testSubmitSuccessElementId = "testSubmitSuccessElementId";
-let changeAltEmailComponentFixture: ComponentFixture<ChangeEmailComponent>;
-let changeAltEmailComponent: ChangeEmailComponent;
-let changeAltEmailDebugElement: DebugElement;
+import { StubRouter } from 'testing/router-stubs';
+import { StubUserService } from 'testing/user.service.stub';
+import { StubDynamicFormComponent } from 'testing/dynamic-form.component.stub';
+
+import { ChangeEmailComponent } from './change-email.component';
+import { UserService } from 'app/shared/user.service';
+import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-event.model';
+import { AppPaths } from 'app/app.paths';
+
+
+let testNewUsername = `testNewUsername`;
+let testSubmitSuccessElementId = `testSubmitSuccessElementId`;
+let changeEmailComponentFixture: ComponentFixture<ChangeEmailComponent>;
+let changeEmailComponent: ChangeEmailComponent;
+let changeEmailDebugElement: DebugElement;
 let stubRouter: StubRouter;
+let stubUserService: StubUserService;
 
 describe('ChangeEmailComponent', () => {
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [ChangeEmailComponent, StubDynamicFormComponent],
-            providers: [{ provide: Router, useClass: StubRouter}]
+            providers: [{ provide: Router, useClass: StubRouter },
+                { provide: UserService, useClass: StubUserService }]
         }).compileComponents();
     }));
 
     beforeEach(() => {
-        changeAltEmailComponentFixture = TestBed.createComponent(ChangeEmailComponent);
-        changeAltEmailComponent = changeAltEmailComponentFixture.componentInstance;
-        changeAltEmailDebugElement = changeAltEmailComponentFixture.debugElement;
+        changeEmailComponentFixture = TestBed.createComponent(ChangeEmailComponent);
+        changeEmailComponent = changeEmailComponentFixture.componentInstance;
+        changeEmailDebugElement = changeEmailComponentFixture.debugElement;
         stubRouter = TestBed.get(Router) as StubRouter;
-        changeAltEmailComponentFixture.detectChanges();
+        stubUserService = TestBed.get(UserService) as StubUserService;
     });
 
     it(`Listens to child DynamicFormComponent outputs`, () => {
-        spyOn(changeAltEmailComponent, `onSubmitSuccess`);
+        changeEmailComponentFixture.detectChanges();
+        spyOn(changeEmailComponent, `onSubmitSuccess`);
+        let anchorDebugElements = changeEmailDebugElement.queryAll(By.css(`a`));
 
-        changeAltEmailDebugElement.
-            query(By.css(`#${testSubmitSuccessElementId}`)).
-            triggerEventHandler('click', null);
+        anchorDebugElements.forEach(debugElement => debugElement.triggerEventHandler('click', null));
 
-        expect(changeAltEmailComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
+        expect(changeEmailComponent.onSubmitSuccess).toHaveBeenCalledTimes(1);
     });
 
-    it(`onSubmitSuccess sets calls Router.navigate`, () => {
+    it(`onSubmitSuccess sets calls UserService.changeUsername and Router.navigate`, () => {
         spyOn(stubRouter, `navigate`);
+        spyOn(stubUserService, `changeUsername`);
+        let requestModel: SetEmailRequestModel = { newEmail: testNewUsername };
+        let eventModel: SubmitEventModel = new SubmitEventModel(null, requestModel);
 
-        changeAltEmailComponent.onSubmitSuccess(null);
+        changeEmailComponent.onSubmitSuccess(eventModel);
 
-        expect(stubRouter.navigate).toHaveBeenCalledWith([`/manage-account`]);
+        expect(stubUserService.changeUsername).toHaveBeenCalledWith(testNewUsername);
+        expect(stubRouter.navigate).toHaveBeenCalledWith([AppPaths.manageAccountPath]);
     });
 });
-
-@Component({
-    selector: `dynamic-form`,
-    template: `<a id=${testSubmitSuccessElementId} (click)=submitSuccess.emit()></a>`
-})
-class StubDynamicFormComponent {
-    @Output() submitSuccess = new EventEmitter<any>();
-}

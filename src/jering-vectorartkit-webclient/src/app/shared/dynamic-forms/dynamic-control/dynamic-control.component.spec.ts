@@ -97,7 +97,7 @@ describe('DynamicControlComponent', () => {
                 return true;
             }
             return false;
-        })
+        });
 
         expect(pendingDebugElement).toBeDefined();
     });

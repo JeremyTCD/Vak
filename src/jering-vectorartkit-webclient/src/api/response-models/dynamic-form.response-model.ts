@@ -1,4 +1,4 @@
-import { DynamicControlResponseModel } from './dynamic-control.response-model'; 
+import {DynamicControlResponseModel} from './dynamic-control.response-model'; 
 
 export interface DynamicFormResponseModel {
 	errorMessage?: string;

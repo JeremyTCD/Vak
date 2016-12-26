@@ -4,10 +4,11 @@ import { Observable } from 'rxjs';
 
 import { UserService } from './user.service';
 import { StorageService } from './storage.service';
+import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
 
 let testUsername = `testUsername`;
 let testStorageName = `vakUsername`;
-let testLogOffRelativeUrl = `Account/LogOff`;
+let testLogOffRelativeUrl = AccountControllerRelativeUrls.logOff;
 let testResponse = new Response(
     new ResponseOptions({
     })

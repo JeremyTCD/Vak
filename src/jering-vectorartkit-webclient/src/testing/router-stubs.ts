@@ -16,11 +16,6 @@ export class StubActivatedRoute {
         this._subject.next(params);
     }
 
-    // ActivatedRoute.snapshot.params
-    get snapshot() {
-        return { params: this.testParams };
-    }
-
     private _data = new ReplaySubject(1);
     public data: Observable<any> = this._data.asObservable();
     private _testData: {};
@@ -30,6 +25,10 @@ export class StubActivatedRoute {
         this._data.next(data);
     }
 
+    // ActivatedRoute.snapshot
+    get snapshot() {
+        return { params: this.testParams, data: this.testData }; 
+    }
 }
 
 export class StubRouter {

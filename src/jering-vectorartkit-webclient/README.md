@@ -1,31 +1,37 @@
-# JeringVectorartkitWebclient
+# Vector Art Kit Web Client
 
-This project was generated with [angular-cli](https://github.com/angular/angular-cli) version 1.0.0-beta.22.
+## Description
+An Angular 2 web client for Vector Art Kit.
 
-## Development server
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## Architecture
+This project follows the architectural style recommended by Angular 2.
 
-## Code scaffolding
+## Testing Methodology
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive/pipe/service/class`.
+### Stubs
+To keep tests DRY, stubs must be created for commonly used services and components. To facilitate 
+easy importing, stubs must:
+- Be located in src/testing.
+- Have file names ending in ".stub".  
+- Export class names that follow the format Stub\<service/component name\>.
 
-## Build
+Note that stubs are only necessary for injected types. Most types can just be spied on.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `-prod` flag for a production build.
+### Specs
 
-## Running unit tests
+#### Component Specs
+Component specs must test the following:
+- Every function.
+- All bindings.
+- Rendering that utilizes control structures (ngIf, ngSelect etc).
+  - Why?
+    - Control structures utilize non strongly typed expressions. Also, multiple levels of nested control structures
+      can be hard to verify through visual inspection.
+Style tips:
+- Avoid calling detectChanges unecessarily to minimize test durations.
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+#### Style Tips For All Specs
+- Only test 1 outcome of a binary control flow statement. Consider the following if statement: if condition x is true, 
+  operation y occurs. It can be inferred that when condition x is false, y cannot possibly occur. Therefore it is only
+  necessary to test either for when x is true or when x is false.
 
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-Before running the tests make sure you are serving the app via `ng serve`.
-
-## Deploying to Github Pages
-
-Run `ng github-pages:deploy` to deploy to Github Pages.
-
-## Further help
-
-To get more help on the `angular-cli` use `ng --help` or go check out the [Angular-CLI README](https://github.com/angular/angular-cli/blob/master/README.md).

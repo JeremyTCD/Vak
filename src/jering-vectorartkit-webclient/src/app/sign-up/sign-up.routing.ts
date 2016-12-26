@@ -2,14 +2,14 @@
 import { Routes, RouterModule } from '@angular/router';
 
 import { SignUpComponent } from './sign-up.component';
-import { DynamicFormGuard } from '../shared/dynamic-forms/dynamic-form/dynamic-form.guard';
+import { DynamicFormGuard } from 'app/shared/dynamic-forms/dynamic-form/dynamic-form.guard';
 
 const signUpRoutes: Routes = [
     {
         path: '',
         component: SignUpComponent,
         data: {
-            formModelName: SignUpComponent.formModelName,
+            requestModelName: SignUpComponent.requestModelName,
             formSubmitRelativeUrl: SignUpComponent.formSubmitRelativeUrl,
             getAfToken: true
         },

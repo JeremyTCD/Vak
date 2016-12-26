@@ -1,0 +1,17 @@
+<h2>Verify alternative email</h2>
+<div>
+    logo
+</div>
+<hr/>
+<div *ngIf="linkExpiredOrInvalid">
+    <div>
+        Link expired or invalid
+    </div>
+    <hr />
+    <a [routerLink]="manageAccountPath">Get a new link</a><br />
+</div>
+<div *ngIf="!linkExpiredOrInvalid">
+    <div>
+        Your alternative email has been verified
+    </div>
+</div>
