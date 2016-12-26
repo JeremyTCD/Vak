@@ -1,4 +1,5 @@
 ﻿using Jering.DataAnnotations;
+using Jering.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -89,7 +90,7 @@ namespace Jering.DynamicForms
                 return new DynamicControlResponseModel()
                 {
                     // Name must start with lowercase character for consistency with request models
-                    Name = char.ToLowerInvariant(propertyInfo.Name[0]) + propertyInfo.Name.Substring(1),
+                    Name = propertyInfo.Name.firstCharToLowercase(),
                     Order = dynamicControlAttribute.Order,
                     TagName = dynamicControlAttribute.TagName,
                     ValidatorResponseModels = validatorResponseModel,
