@@ -25,6 +25,7 @@ export class ManageAccountComponent implements OnInit, OnDestroy {
     changeEmailPath: string = AppPaths.changeEmailPath;
     changeAltEmailPath: string = AppPaths.changeAltEmailPath;
     changeDisplayNamePath: string = AppPaths.changeDisplayNamePath;
+    changePasswordPath: string = AppPaths.changePasswordPath;
 
     /**
      * Retrieves and sets responseModel
