@@ -2,6 +2,7 @@
 using Jering.DynamicForms;
 using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.Extensions;
+using Jering.VectorArtKit.WebApi.RequestModels.DynamicForm;
 using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForms;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
@@ -32,44 +33,26 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// <summary>
         /// Gets <see cref="DynamicFormResponseModel"/> for a form model.
         /// </summary>
-        /// <param name="formModelName"></param>
+        /// <param name="requestModelName"></param>
         /// <returns>
-        /// 200 OK, <see cref="DynamicFormResponseModel"/> and anti-forgery cookies if <paramref name="formModelName"/> is the name of an existing form model.
-        /// 404 NotFound and <see cref="ErrorResponseModel"/> if <paramref name="formModelName"/> is not the name of an existing form model.
+        /// 200 OK, anti-forgery cookies if getAfTokens is true and <see cref="DynamicFormResponseModel"/> if request model name is 
+        /// the name of an existing dynamic form model.
+        /// 404 NotFound and <see cref="ErrorResponseModel"/> if request model name is not the name of an existing dynamic form model.
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        public IActionResult GetDynamicFormWithAfTokens(string formModelName)
+        public IActionResult GetDynamicForm(GetDynamicFormRequestModel model)
         {
-            Type type = Type.GetType($"Jering.VectorArtKit.WebApi.FormModels.{formModelName}FormModel");
-
-            if (type == null)
-            {
-                return NotFound();
-            }
-
-            _antiforgery.AddAntiforgeryCookies(HttpContext);
-
-            return Ok(_dynamicFormsBuilder.BuildDynamicFormResponseModel(type.GetTypeInfo()));
-        }
-
-        /// <summary>
-        /// Gets <see cref="DynamicFormResponseModel"/> for a form model.
-        /// </summary>
-        /// <param name="formModelName"></param>
-        /// <returns>
-        /// 200 OK and <see cref="DynamicFormResponseModel"/> if <paramref name="formModelName"/> is the name of an existing form model.
-        /// 404 NotFound and <see cref="ErrorResponseModel"/> if <paramref name="formModelName"/> is not the name of an existing form model.
-        /// </returns>
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult GetDynamicForm(string formModelName)
-        {
-            Type type = Type.GetType($"Jering.VectorArtKit.WebApi.FormModels.{formModelName}FormModel");
+            Type type = Type.GetType($"Jering.VectorArtKit.WebApi.RequestModels.{model.requestModelName}RequestModel");
 
             if(type == null)
             {
                 return NotFound();
+            }
+
+            if (model.getAfTokens)
+            {
+                _antiforgery.AddAntiforgeryCookies(HttpContext);
             }
 
             return Ok(_dynamicFormsBuilder.BuildDynamicFormResponseModel(type.GetTypeInfo()));

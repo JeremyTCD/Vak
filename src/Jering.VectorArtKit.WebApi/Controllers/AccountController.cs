@@ -1,6 +1,6 @@
 ﻿using Jering.Accounts.DatabaseInterface;
 using Jering.Utilities;
-using Jering.VectorArtKit.WebApi.FormModels;
+using Jering.VectorArtKit.WebApi.RequestModels;
 using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.Account;
 using Microsoft.AspNetCore.Authorization;
@@ -49,7 +49,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> LogIn([FromBody] LogInFormModel model)
+        public async Task<IActionResult> LogIn([FromBody] LogInRequestModel model)
         {
             if (ModelState.IsValid)
             {
@@ -115,7 +115,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> TwoFactorLogIn([FromBody] TwoFactorLogInFormModel model)
+        public async Task<IActionResult> TwoFactorLogIn([FromBody] TwoFactorLogInRequestModel model)
         {
             if (ModelState.IsValid)
             {
@@ -137,7 +137,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     return Ok();
                 }
 
-                ModelState.AddModelError(nameof(TwoFactorLogInFormModel.Code), Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired);
+                ModelState.AddModelError(nameof(TwoFactorLogInRequestModel.Code), Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired);
             }
 
             return BadRequest(new TwoFactorLogInResponseModel
@@ -162,7 +162,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> SignUp([FromBody] SignUpFormModel model)
+        public async Task<IActionResult> SignUp([FromBody] SignUpRequestModel model)
         {
             if (ModelState.IsValid)
             {
@@ -175,7 +175,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     return Ok();
                 }
 
-                ModelState.AddModelError(nameof(SignUpFormModel.Email), Strings.ErrorMessage_Email_InUse);
+                ModelState.AddModelError(nameof(SignUpRequestModel.Email), Strings.ErrorMessage_Email_InUse);
             }
 
             return BadRequest(new SignUpResponseModel
@@ -197,7 +197,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> SendResetPasswordEmail([FromBody] SendResetPasswordEmailFormModel model)
+        public async Task<IActionResult> SendResetPasswordEmail([FromBody] SendResetPasswordEmailRequestModel model)
         {
             if (ModelState.IsValid)
             {
@@ -208,7 +208,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     return Ok();
                 }
 
-                ModelState.AddModelError(nameof(SendResetPasswordEmailFormModel.Email), Strings.ErrorMessage_Email_Invalid);
+                ModelState.AddModelError(nameof(SendResetPasswordEmailRequestModel.Email), Strings.ErrorMessage_Email_Invalid);
             }
 
             return BadRequest(new SendResetPasswordEmailResponseModel
@@ -232,7 +232,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordFormModel model)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestModel model)
         {
             if (ModelState.IsValid)
             {
@@ -261,7 +261,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                     return Ok();
                 }
 
-                ModelState.AddModelError(nameof(SetPasswordFormModel.NewPassword), Strings.ErrorMessage_NewPassword_MustDiffer);
+                ModelState.AddModelError(nameof(SetPasswordRequestModel.NewPassword), Strings.ErrorMessage_NewPassword_MustDiffer);
             }
 
             return BadRequest(new ResetPasswordResponseModel
@@ -315,7 +315,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK and application cookie if password change succeeds.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> SetPassword([FromBody] SetPasswordFormModel model)
+        public async Task<IActionResult> SetPassword([FromBody] SetPasswordRequestModel model)
         {
             if (ModelState.IsValid)
             {
@@ -334,11 +334,11 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
                 if (result == SetPasswordActionResult.AlreadySet)
                 {
-                    ModelState.AddModelError(nameof(SetPasswordFormModel.NewPassword), Strings.ErrorMessage_NewPassword_MustDiffer);
+                    ModelState.AddModelError(nameof(SetPasswordRequestModel.NewPassword), Strings.ErrorMessage_NewPassword_MustDiffer);
                 }
                 else if (result == SetPasswordActionResult.InvalidCurrentPassword)
                 {
-                    ModelState.AddModelError(nameof(SetPasswordFormModel.CurrentPassword), Strings.ErrorMessage_Password_Invalid);
+                    ModelState.AddModelError(nameof(SetPasswordRequestModel.CurrentPassword), Strings.ErrorMessage_Password_Invalid);
                 }
             }
 
@@ -363,7 +363,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK and application cookie if email change succeeds.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> SetEmail([FromBody] SetEmailFormModel model)
+        public async Task<IActionResult> SetEmail([FromBody] SetEmailRequestModel model)
         {
             if (ModelState.IsValid)
             {
@@ -382,15 +382,15 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
                 if (result == SetEmailActionResult.AlreadySet)
                 {
-                    ModelState.AddModelError(nameof(SetEmailFormModel.NewEmail), Strings.ErrorMessage_NewEmail_MustDiffer);
+                    ModelState.AddModelError(nameof(SetEmailRequestModel.NewEmail), Strings.ErrorMessage_NewEmail_MustDiffer);
                 }
                 else if (result == SetEmailActionResult.EmailInUse)
                 {
-                    ModelState.AddModelError(nameof(SetEmailFormModel.NewEmail), Strings.ErrorMessage_Email_InUse);
+                    ModelState.AddModelError(nameof(SetEmailRequestModel.NewEmail), Strings.ErrorMessage_Email_InUse);
                 }
                 else
                 {
-                    ModelState.AddModelError(nameof(SetEmailFormModel.Password), Strings.ErrorMessage_Password_Invalid);
+                    ModelState.AddModelError(nameof(SetEmailRequestModel.Password), Strings.ErrorMessage_Password_Invalid);
                 }
             }
 
@@ -415,7 +415,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if alternative email change succeeds.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> SetAltEmail([FromBody] SetAltEmailFormModel model)
+        public async Task<IActionResult> SetAltEmail([FromBody] SetAltEmailRequestModel model)
         {
             if (ModelState.IsValid)
             {
@@ -434,11 +434,11 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
                 if (result == SetAltEmailActionResult.AlreadySet)
                 {
-                    ModelState.AddModelError(nameof(SetAltEmailFormModel.NewAltEmail), Strings.ErrorMessage_NewEmail_MustDiffer);
+                    ModelState.AddModelError(nameof(SetAltEmailRequestModel.NewAltEmail), Strings.ErrorMessage_NewEmail_MustDiffer);
                 }
                 else
                 {
-                    ModelState.AddModelError(nameof(SetAltEmailFormModel.Password), Strings.ErrorMessage_Password_Invalid);
+                    ModelState.AddModelError(nameof(SetAltEmailRequestModel.Password), Strings.ErrorMessage_Password_Invalid);
                 }
             }
 
@@ -464,7 +464,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if display name change succeeds.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> SetDisplayName([FromBody] SetDisplayNameFormModel model)
+        public async Task<IActionResult> SetDisplayName([FromBody] SetDisplayNameRequestModel model)
         {
             if (ModelState.IsValid)
             {
@@ -483,15 +483,15 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
                 if (result == SetDisplayNameActionResult.AlreadySet)
                 {
-                    ModelState.AddModelError(nameof(SetDisplayNameFormModel.NewDisplayName), Strings.ErrorMessage_NewDisplayName_MustDiffer);
+                    ModelState.AddModelError(nameof(SetDisplayNameRequestModel.NewDisplayName), Strings.ErrorMessage_NewDisplayName_MustDiffer);
                 }
                 else if (result == SetDisplayNameActionResult.DisplayNameInUse)
                 {
-                    ModelState.AddModelError(nameof(SetDisplayNameFormModel.NewDisplayName), Strings.ErrorMessage_DisplayName_InUse);
+                    ModelState.AddModelError(nameof(SetDisplayNameRequestModel.NewDisplayName), Strings.ErrorMessage_DisplayName_InUse);
                 }
                 else
                 {
-                    ModelState.AddModelError(nameof(SetDisplayNameFormModel.Password), Strings.ErrorMessage_Password_Invalid);
+                    ModelState.AddModelError(nameof(SetDisplayNameRequestModel.Password), Strings.ErrorMessage_Password_Invalid);
                 }
             }
 
@@ -513,7 +513,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of two factor enabled succeeds.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> SetTwoFactorEnabled([FromBody] SetTwoFactorEnabledActionModel model)
+        public async Task<IActionResult> SetTwoFactorEnabled([FromBody] SetTwoFactorEnabledRequestModel model)
         {
             SetTwoFactorEnabledActionResult result = await _accountService.SetTwoFactorEnabledActionAsync(model.Enabled);
 
@@ -545,7 +545,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of email verified succeeds.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> SetEmailVerified([FromBody] SetEmailVerifiedActionModel model)
+        public async Task<IActionResult> SetEmailVerified([FromBody] SetEmailVerifiedRequestModel model)
         {
             SetEmailVerifiedActionResult result = await _accountService.SetEmailVerifiedActionAsync(model.Token);
 
@@ -577,7 +577,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of email verified succeeds.
         /// </returns>
         [HttpPost]
-        public async Task<IActionResult> SetAltEmailVerified([FromBody] SetAltEmailVerifiedActionModel model)
+        public async Task<IActionResult> SetAltEmailVerified([FromBody] SetAltEmailVerifiedRequestModel model)
         {
             // check model state? incase account id is not a string
 
@@ -671,7 +671,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        public async Task<IActionResult> TwoFactorVerifyEmail([FromBody] TwoFactorVerifyEmailFormModel model)
+        public async Task<IActionResult> TwoFactorVerifyEmail([FromBody] TwoFactorVerifyEmailRequestModel model)
         {
             if (ModelState.IsValid)
             {
@@ -685,7 +685,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
                 if (result == TwoFactorVerifyEmailActionResult.InvalidCode)
                 {
-                    ModelState.AddModelError(nameof(TwoFactorVerifyEmailFormModel.Code), Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired);
+                    ModelState.AddModelError(nameof(TwoFactorVerifyEmailRequestModel.Code), Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired);
                 }
                 else
                 {

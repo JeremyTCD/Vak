@@ -7,10 +7,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.VectorArtKit.WebApi.FormModels
+namespace Jering.VectorArtKit.WebApi.RequestModels
 {
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_Submit), typeof(Strings))]
-    public class TwoFactorLogInFormModel
+    public class TwoFactorLogInRequestModel
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_TwoFactorCode_Required), typeof(Strings))]
         [DynamicControl("input", nameof(Strings.DisplayName_TwoFactorCode), typeof(Strings), 0)]

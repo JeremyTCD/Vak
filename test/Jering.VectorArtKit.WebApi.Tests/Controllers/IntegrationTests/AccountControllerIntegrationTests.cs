@@ -1,7 +1,8 @@
 ﻿using Jering.Utilities;
 using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.Controllers;
-using Jering.VectorArtKit.WebApi.FormModels;
+using Jering.VectorArtKit.WebApi.RequestModels;
+using Jering.VectorArtKit.WebApi.RequestModels.DynamicForm;
 using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.Account;
 using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
@@ -88,8 +89,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             LogInResponseModel body = JsonConvert.DeserializeObject<LogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Email_Required, (body.ModelState[nameof(LogInFormModel.Email)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(LogInFormModel.Password)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Email_Required, (body.ModelState[nameof(LogInRequestModel.Email)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(LogInRequestModel.Password)] as JArray)[0]);
         }
 
         [Fact]
@@ -258,7 +259,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             TwoFactorLogInResponseModel body = JsonConvert.DeserializeObject<TwoFactorLogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired, (body.ModelState[nameof(TwoFactorLogInFormModel.Code)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired, (body.ModelState[nameof(TwoFactorLogInRequestModel.Code)] as JArray)[0]);
         }
 
         [Fact]
@@ -277,7 +278,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             TwoFactorLogInResponseModel body = JsonConvert.DeserializeObject<TwoFactorLogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_Required, (body.ModelState[nameof(TwoFactorLogInFormModel.Code)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_Required, (body.ModelState[nameof(TwoFactorLogInRequestModel.Code)] as JArray)[0]);
         }
 
         [Fact]
@@ -308,9 +309,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             SetPasswordResponseModel body = JsonConvert.DeserializeObject<SetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Email_Invalid, (body.ModelState[nameof(SignUpFormModel.Email)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_Password_TooSimple, (body.ModelState[nameof(SignUpFormModel.Password)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_ConfirmPassword_Differs, (body.ModelState[nameof(SignUpFormModel.ConfirmPassword)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Email_Invalid, (body.ModelState[nameof(SignUpRequestModel.Email)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_TooSimple, (body.ModelState[nameof(SignUpRequestModel.Password)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_ConfirmPassword_Differs, (body.ModelState[nameof(SignUpRequestModel.ConfirmPassword)] as JArray)[0]);
         }
 
         [Fact]
@@ -327,7 +328,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             SetPasswordResponseModel body = JsonConvert.DeserializeObject<SetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Email_InUse, (body.ModelState[nameof(SignUpFormModel.Email)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Email_InUse, (body.ModelState[nameof(SignUpRequestModel.Email)] as JArray)[0]);
         }
 
         [Fact]
@@ -392,7 +393,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SendResetPasswordEmailResponseModel body = JsonConvert.DeserializeObject<SendResetPasswordEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Email_Invalid, (body.ModelState[nameof(SendResetPasswordEmailFormModel.Email)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Email_Invalid, (body.ModelState[nameof(SendResetPasswordEmailRequestModel.Email)] as JArray)[0]);
         }
 
         [Fact]
@@ -409,7 +410,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SendResetPasswordEmailResponseModel body = JsonConvert.DeserializeObject<SendResetPasswordEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Email_Required, (body.ModelState[nameof(SendResetPasswordEmailFormModel.Email)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Email_Required, (body.ModelState[nameof(SendResetPasswordEmailRequestModel.Email)] as JArray)[0]);
         }
 
         [Fact]
@@ -444,8 +445,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             ResetPasswordResponseModel body = JsonConvert.DeserializeObject<ResetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(ResetPasswordFormModel.NewPassword)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_ConfirmPassword_Required, (body.ModelState[nameof(ResetPasswordFormModel.ConfirmPassword)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(ResetPasswordRequestModel.NewPassword)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_ConfirmPassword_Required, (body.ModelState[nameof(ResetPasswordRequestModel.ConfirmPassword)] as JArray)[0]);
         }
 
         [Fact]
@@ -551,7 +552,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             ResetPasswordResponseModel body = JsonConvert.DeserializeObject<ResetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_NewPassword_MustDiffer, (body.ModelState[nameof(ResetPasswordFormModel.NewPassword)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_NewPassword_MustDiffer, (body.ModelState[nameof(ResetPasswordRequestModel.NewPassword)] as JArray)[0]);
         }
 
         [Fact]
@@ -666,10 +667,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetPasswordResponseModel body = JsonConvert.DeserializeObject<SetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(SetPasswordFormModel.CurrentPassword)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_NewPassword_MustDiffer, (body.ModelState[nameof(SetPasswordFormModel.NewPassword)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_NewPassword_Required, (body.ModelState[nameof(SetPasswordFormModel.NewPassword)] as JArray)[1]);
-            Assert.Equal(Strings.ErrorMessage_ConfirmPassword_Required, (body.ModelState[nameof(SetPasswordFormModel.ConfirmNewPassword)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(SetPasswordRequestModel.CurrentPassword)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_NewPassword_MustDiffer, (body.ModelState[nameof(SetPasswordRequestModel.NewPassword)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_NewPassword_Required, (body.ModelState[nameof(SetPasswordRequestModel.NewPassword)] as JArray)[1]);
+            Assert.Equal(Strings.ErrorMessage_ConfirmPassword_Required, (body.ModelState[nameof(SetPasswordRequestModel.ConfirmNewPassword)] as JArray)[0]);
         }
 
         [Fact]
@@ -685,7 +686,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetPasswordResponseModel body = JsonConvert.DeserializeObject<SetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Password_Invalid, (body.ModelState[nameof(SetPasswordFormModel.CurrentPassword)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_Invalid, (body.ModelState[nameof(SetPasswordRequestModel.CurrentPassword)] as JArray)[0]);
         }
 
         [Fact]
@@ -701,7 +702,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetPasswordResponseModel body = JsonConvert.DeserializeObject<SetPasswordResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_NewPassword_MustDiffer, (body.ModelState[nameof(SetPasswordFormModel.NewPassword)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_NewPassword_MustDiffer, (body.ModelState[nameof(SetPasswordRequestModel.NewPassword)] as JArray)[0]);
         }
 
         [Fact]
@@ -765,8 +766,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetEmailResponseModel body = JsonConvert.DeserializeObject<SetEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(SetEmailFormModel.Password)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_NewEmail_Required, (body.ModelState[nameof(SetEmailFormModel.NewEmail)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(SetEmailRequestModel.Password)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_NewEmail_Required, (body.ModelState[nameof(SetEmailRequestModel.NewEmail)] as JArray)[0]);
         }
 
         [Fact]
@@ -782,7 +783,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetEmailResponseModel body = JsonConvert.DeserializeObject<SetEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Password_Invalid, (body.ModelState[nameof(SetEmailFormModel.Password)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_Invalid, (body.ModelState[nameof(SetEmailRequestModel.Password)] as JArray)[0]);
         }
 
         [Fact]
@@ -800,7 +801,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetEmailResponseModel body = JsonConvert.DeserializeObject<SetEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Email_InUse, (body.ModelState[nameof(SetEmailFormModel.NewEmail)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Email_InUse, (body.ModelState[nameof(SetEmailRequestModel.NewEmail)] as JArray)[0]);
         }
 
         [Fact]
@@ -816,7 +817,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetEmailResponseModel body = JsonConvert.DeserializeObject<SetEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_NewEmail_MustDiffer, (body.ModelState[nameof(SetEmailFormModel.NewEmail)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_NewEmail_MustDiffer, (body.ModelState[nameof(SetEmailRequestModel.NewEmail)] as JArray)[0]);
         }
 
         [Fact]
@@ -877,8 +878,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetAltEmailResponseModel body = JsonConvert.DeserializeObject<SetAltEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(SetAltEmailFormModel.Password)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_NewAltEmail_Required, (body.ModelState[nameof(SetAltEmailFormModel.NewAltEmail)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(SetAltEmailRequestModel.Password)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_NewAltEmail_Required, (body.ModelState[nameof(SetAltEmailRequestModel.NewAltEmail)] as JArray)[0]);
         }
 
         [Fact]
@@ -894,7 +895,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetAltEmailResponseModel body = JsonConvert.DeserializeObject<SetAltEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Password_Invalid, (body.ModelState[nameof(SetAltEmailFormModel.Password)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_Invalid, (body.ModelState[nameof(SetAltEmailRequestModel.Password)] as JArray)[0]);
         }
 
         [Fact]
@@ -911,7 +912,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetAltEmailResponseModel body = JsonConvert.DeserializeObject<SetAltEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_NewEmail_MustDiffer, (body.ModelState[nameof(SetAltEmailFormModel.NewAltEmail)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_NewEmail_MustDiffer, (body.ModelState[nameof(SetAltEmailRequestModel.NewAltEmail)] as JArray)[0]);
         }
 
         [Fact]
@@ -972,8 +973,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetDisplayNameResponseModel body = JsonConvert.DeserializeObject<SetDisplayNameResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(SetDisplayNameFormModel.Password)] as JArray)[0]);
-            Assert.Equal(Strings.ErrorMessage_NewDisplayName_Required, (body.ModelState[nameof(SetDisplayNameFormModel.NewDisplayName)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_Required, (body.ModelState[nameof(SetDisplayNameRequestModel.Password)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_NewDisplayName_Required, (body.ModelState[nameof(SetDisplayNameRequestModel.NewDisplayName)] as JArray)[0]);
         }
 
         [Fact]
@@ -989,7 +990,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetDisplayNameResponseModel body = JsonConvert.DeserializeObject<SetDisplayNameResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Password_Invalid, (body.ModelState[nameof(SetDisplayNameFormModel.Password)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Password_Invalid, (body.ModelState[nameof(SetDisplayNameRequestModel.Password)] as JArray)[0]);
         }
 
         [Fact]
@@ -1007,7 +1008,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetDisplayNameResponseModel body = JsonConvert.DeserializeObject<SetDisplayNameResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_DisplayName_InUse, (body.ModelState[nameof(SetDisplayNameFormModel.NewDisplayName)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_DisplayName_InUse, (body.ModelState[nameof(SetDisplayNameRequestModel.NewDisplayName)] as JArray)[0]);
         }
 
         [Fact]
@@ -1024,7 +1025,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             SetDisplayNameResponseModel body = JsonConvert.DeserializeObject<SetDisplayNameResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_NewDisplayName_MustDiffer, (body.ModelState[nameof(SetDisplayNameFormModel.NewDisplayName)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_NewDisplayName_MustDiffer, (body.ModelState[nameof(SetDisplayNameRequestModel.NewDisplayName)] as JArray)[0]);
         }
 
         [Fact]
@@ -1343,7 +1344,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             TwoFactorVerifyEmailResponseModel body = JsonConvert.DeserializeObject<TwoFactorVerifyEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired, (body.ModelState[nameof(TwoFactorVerifyEmailFormModel.Code)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_InvalidOrExpired, (body.ModelState[nameof(TwoFactorVerifyEmailRequestModel.Code)] as JArray)[0]);
         }
 
         [Fact]
@@ -1359,7 +1360,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             TwoFactorVerifyEmailResponseModel body = JsonConvert.DeserializeObject<TwoFactorVerifyEmailResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_Required, (body.ModelState[nameof(TwoFactorVerifyEmailFormModel.Code)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_TwoFactorCode_Required, (body.ModelState[nameof(TwoFactorVerifyEmailRequestModel.Code)] as JArray)[0]);
         }
 
         [Fact]
@@ -1415,7 +1416,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetTwoFactorEnabledActionModel.Enabled), enabled.ToString() }
+                { nameof(SetTwoFactorEnabledRequestModel.Enabled), enabled.ToString() }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SetTwoFactorEnabled)}", HttpMethod.Post, cookies, 
@@ -1429,7 +1430,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetEmailVerifiedActionModel.Token), token }
+                { nameof(SetEmailVerifiedRequestModel.Token), token }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SetEmailVerified)}", HttpMethod.Post, cookies,
@@ -1443,7 +1444,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetAltEmailVerifiedActionModel.Token), token }
+                { nameof(SetAltEmailVerifiedRequestModel.Token), token }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SetAltEmailVerified)}", HttpMethod.Post, cookies,
@@ -1457,8 +1458,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetDisplayNameFormModel.Password), password },
-                { nameof(SetDisplayNameFormModel.NewDisplayName), newDisplayName }
+                { nameof(SetDisplayNameRequestModel.Password), password },
+                { nameof(SetDisplayNameRequestModel.NewDisplayName), newDisplayName }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SetDisplayName)}", HttpMethod.Post, cookies, formPostBodyData);
@@ -1471,8 +1472,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetAltEmailFormModel.Password), password },
-                { nameof(SetAltEmailFormModel.NewAltEmail), newAltEmail }
+                { nameof(SetAltEmailRequestModel.Password), password },
+                { nameof(SetAltEmailRequestModel.NewAltEmail), newAltEmail }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SetAltEmail)}", HttpMethod.Post, cookies, formPostBodyData);
@@ -1484,8 +1485,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetEmailFormModel.Password), password },
-                { nameof(SetEmailFormModel.NewEmail), newEmail }
+                { nameof(SetEmailRequestModel.Password), password },
+                { nameof(SetEmailRequestModel.NewEmail), newEmail }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SetEmail)}", HttpMethod.Post, cookies, formPostBodyData);
@@ -1498,9 +1499,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SetPasswordFormModel.CurrentPassword), currentPassword },
-                { nameof(SetPasswordFormModel.NewPassword), newPassword },
-                { nameof(SetPasswordFormModel.ConfirmNewPassword), confirmNewPassword }
+                { nameof(SetPasswordRequestModel.CurrentPassword), currentPassword },
+                { nameof(SetPasswordRequestModel.NewPassword), newPassword },
+                { nameof(SetPasswordRequestModel.ConfirmNewPassword), confirmNewPassword }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SetPassword)}", HttpMethod.Post, cookies, formPostBodyData);
@@ -1513,10 +1514,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(ResetPasswordFormModel.Email), email},
-                { nameof(ResetPasswordFormModel.Token), token },
-                { nameof(ResetPasswordFormModel.NewPassword), newPassword },
-                { nameof(ResetPasswordFormModel.ConfirmPassword), confirmNewPassword }
+                { nameof(ResetPasswordRequestModel.Email), email},
+                { nameof(ResetPasswordRequestModel.Token), token },
+                { nameof(ResetPasswordRequestModel.NewPassword), newPassword },
+                { nameof(ResetPasswordRequestModel.ConfirmPassword), confirmNewPassword }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.ResetPassword)}",
@@ -1531,7 +1532,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SendResetPasswordEmailFormModel.Email), email}
+                { nameof(SendResetPasswordEmailRequestModel.Email), email}
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.SendResetPasswordEmail)}",
                 HttpMethod.Post,
@@ -1565,7 +1566,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(TwoFactorLogInFormModel.Code), code},
+                { nameof(TwoFactorLogInRequestModel.Code), code},
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.TwoFactorLogIn)}", HttpMethod.Post, cookies, formPostBodyData);
@@ -1573,18 +1574,12 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             return await _httpClient.SendAsync(httpRequestMessage);
         }
 
-        public async Task<HttpResponseMessage> GetDynamicFormWithAfTokens(string formModelName)
+        public async Task<HttpResponseMessage> GetDynamicForm(string requestModelName, bool getAfTokens)
         {
             HttpRequestMessage getDynamicFormGetRequest = RequestHelper.Create($"{_dynamicFormsControllerName}/" +
-                $"{nameof(DynamicFormController.GetDynamicFormWithAfTokens)}?formModelName={formModelName}", HttpMethod.Get, null);
-
-            return await _httpClient.SendAsync(getDynamicFormGetRequest);
-        }
-
-        public async Task<HttpResponseMessage> GetDynamicForm(string formModelName)
-        {
-            HttpRequestMessage getDynamicFormGetRequest = RequestHelper.Create($"{_dynamicFormsControllerName}/" +
-                $"{nameof(DynamicFormController.GetDynamicForm)}?formModelName={formModelName}", HttpMethod.Get, null);
+                $"{nameof(DynamicFormController.GetDynamicForm)}?" +
+                $"{nameof(GetDynamicFormRequestModel.requestModelName)}={requestModelName}" +
+                $"&{nameof(GetDynamicFormRequestModel.getAfTokens)}={getAfTokens}", HttpMethod.Get, null);
 
             return await _httpClient.SendAsync(getDynamicFormGetRequest);
         }
@@ -1594,9 +1589,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(SignUpFormModel.Email), email},
-                { nameof(SignUpFormModel.Password), password},
-                { nameof(SignUpFormModel.ConfirmPassword),  confirmPassword}
+                { nameof(SignUpRequestModel.Email), email},
+                { nameof(SignUpRequestModel.Password), password},
+                { nameof(SignUpRequestModel.ConfirmPassword),  confirmPassword}
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.SignUp)}", HttpMethod.Post, cookies, formPostBodyData);
@@ -1608,8 +1603,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(LogInFormModel.Email), email},
-                { nameof(LogInFormModel.Password), password}
+                { nameof(LogInRequestModel.Email), email},
+                { nameof(LogInRequestModel.Password), password}
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
                 Create($"{_accountControllerName}/{nameof(AccountController.LogIn)}", HttpMethod.Post, cookies, formPostBodyData);
@@ -1637,7 +1632,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
             {
-                { nameof(TwoFactorVerifyEmailFormModel.Code), code}
+                { nameof(TwoFactorVerifyEmailRequestModel.Code), code}
             };
 
             HttpRequestMessage httpRequestMessage = RequestHelper.
@@ -1651,7 +1646,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         public async Task<IDictionary<string, string>> GetAnonymousAntiforgeryCookies()
         {
-            HttpResponseMessage httpResponseMessage = await GetDynamicFormWithAfTokens(nameof(SignUpFormModel).Replace("FormModel", ""));
+            HttpResponseMessage httpResponseMessage = await GetDynamicForm(nameof(SignUpRequestModel).Replace("RequestModel", ""), true);
             return CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
         }
 

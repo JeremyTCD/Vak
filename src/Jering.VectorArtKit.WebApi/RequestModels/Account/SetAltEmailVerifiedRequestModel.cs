@@ -8,10 +8,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.VectorArtKit.WebApi.FormModels
+namespace Jering.VectorArtKit.WebApi.RequestModels
 {
-    public class SetTwoFactorEnabledActionModel
+    public class SetAltEmailVerifiedRequestModel
     {
-        public bool Enabled { get; set; }
+        public string Token { get; set; }
     }
 }

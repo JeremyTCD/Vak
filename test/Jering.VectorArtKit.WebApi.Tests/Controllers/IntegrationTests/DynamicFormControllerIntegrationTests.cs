@@ -2,6 +2,7 @@
 using Jering.Utilities;
 using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.Controllers;
+using Jering.VectorArtKit.WebApi.RequestModels.DynamicForm;
 using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForms;
 using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
@@ -41,47 +42,14 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task GetDynamicForm_Returns200OkGetDynamicFormModelIfFormModelNameIsTheNameOfAnExistingFormModel()
+        public async Task GetDynamicForm_Returns200OkAntiForgeryTokensIfGetAfTokensIsTrueAndGetDynamicFormModelIfFormModelNameIsTheNameOfAnExistingFormModel()
         {
             //Arrange
-            string signUpFormModelName = "SignUp";
+            string signUpRequestModelName = "SignUp";
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/" +
-                $"{nameof(DynamicFormController.GetDynamicForm)}?formModelName={signUpFormModelName}", HttpMethod.Get, null);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
-
-            // Assert
-            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            DynamicFormResponseModel body = JsonConvert.DeserializeObject<DynamicFormResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.NotNull(body);
-            Assert.Equal(3, body.DynamicControlResponseModels.Count);
-        }
-
-        [Fact]
-        public async Task GetDynamicForm_Returns404NotFoundAndErrorResponseModelIfFormModelNameIsNotTheNameOfAnExistingFormModel()
-        {
-            // Arrange
-            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/" +
-                $"{nameof(DynamicFormController.GetDynamicForm)}?formModelName={_testFormModelName}", HttpMethod.Get, null);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
-
-            // Assert
-            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_notFound, httpResponseMessage.StatusCode.ToString());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
-        }
-
-        [Fact]
-        public async Task GetDynamicFormWithAfTokens_Returns200OkGetDynamicFormModelAndAntiForgeryCookiesIfFormModelNameIsTheNameOfAnExistingFormModel()
-        {
-            //Arrange
-            string signUpFormModelName = "SignUp";
-            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/" +
-                $"{nameof(DynamicFormController.GetDynamicFormWithAfTokens)}?formModelName={signUpFormModelName}", HttpMethod.Get, null);
+                $"{nameof(DynamicFormController.GetDynamicForm)}?" + 
+                $"{nameof(GetDynamicFormRequestModel.requestModelName)}={signUpRequestModelName}" +
+                $"&{nameof(GetDynamicFormRequestModel.getAfTokens)}={true}", HttpMethod.Get, null);
 
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
@@ -98,11 +66,11 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task GetDynamicFormWithAfTokens_Returns404NotFoundAndErrorResponseModelIfFormModelNameIsNotTheNameOfAnExistingFormModel()
+        public async Task GetDynamicForm_Returns404NotFoundAndErrorResponseModelIfFormModelNameIsNotTheNameOfAnExistingFormModel()
         {
             // Arrange
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/" +
-                $"{nameof(DynamicFormController.GetDynamicFormWithAfTokens)}?formModelName={_testFormModelName}", HttpMethod.Get, null);
+                $"{nameof(DynamicFormController.GetDynamicForm)}?{nameof(GetDynamicFormRequestModel.requestModelName)}={_testFormModelName}", HttpMethod.Get, null);
 
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);

@@ -4,10 +4,10 @@ using Jering.VectorArtKit.WebApi.Controllers;
 using Jering.VectorArtKit.WebApi.Resources;
 using System.ComponentModel.DataAnnotations;
 
-namespace Jering.VectorArtKit.WebApi.FormModels
+namespace Jering.VectorArtKit.WebApi.RequestModels
 {
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_SignUp), typeof(Strings))]
-    public class SignUpFormModel
+    public class SignUpRequestModel
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_Email_Required), typeof(Strings))]
         [ValidateEmailAddress(nameof(Strings.ErrorMessage_Email_Invalid), typeof(Strings))]
