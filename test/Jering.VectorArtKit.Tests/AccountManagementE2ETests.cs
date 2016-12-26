@@ -52,13 +52,9 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         }
 
         [Fact]
-        public void SignUpSendsEmailLogsIntoAccountAndNavigatesToHome()
+        public void SignUpLogsIntoAccountAndNavigatesToHome()
         {
-            ClearEmailFile();
-
             SignUp(_testEmail, _testPassword, _testPassword);
-
-            Assert.False(string.IsNullOrEmpty(ReadEmailFile()));
         }
 
         [Fact]
@@ -166,11 +162,11 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         {
             _webDriver.Navigate().GoToUrl(_baseUrl + _signUpRelativeUrl);
 
-            _webDriver.Wait(wd => wd.FindElements(By.Id("Email")).Count > 0, _waitTime);
+            _webDriver.Wait(wd => wd.FindElements(By.Id("email")).Count > 0, _waitTime);
 
-            _webDriver.FindElement(By.Id("Email")).SendKeys(email);
-            _webDriver.FindElement(By.Id("Password")).SendKeys(password);
-            _webDriver.FindElement(By.Id("ConfirmPassword")).SendKeys(password);
+            _webDriver.FindElement(By.Id("email")).SendKeys(email);
+            _webDriver.FindElement(By.Id("password")).SendKeys(password);
+            _webDriver.FindElement(By.Id("confirmPassword")).SendKeys(password);
 
             _webDriver.FindElement(By.XPath("//button[text()='Sign up']")).Click();
 
@@ -190,10 +186,10 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         {
             _webDriver.Navigate().GoToUrl(_baseUrl + _logInRelativeUrl);
 
-            _webDriver.Wait(wd => wd.FindElements(By.Id("Email")).Count > 0, _waitTime);
+            _webDriver.Wait(wd => wd.FindElements(By.Id("email")).Count > 0, _waitTime);
 
-            _webDriver.FindElement(By.Id("Email")).SendKeys(email);
-            _webDriver.FindElement(By.Id("Password")).SendKeys(password);
+            _webDriver.FindElement(By.Id("email")).SendKeys(email);
+            _webDriver.FindElement(By.Id("password")).SendKeys(password);
 
             _webDriver.FindElement(By.XPath("//button[text()='Log in']")).Click();
 
@@ -205,9 +201,9 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         {
             _webDriver.Navigate().GoToUrl(_baseUrl + _forgotPasswordRelativeUrl);
 
-            _webDriver.Wait(wd => wd.FindElements(By.Id("Email")).Count > 0, _waitTime);
+            _webDriver.Wait(wd => wd.FindElements(By.Id("email")).Count > 0, _waitTime);
 
-            _webDriver.FindElement(By.Id("Email")).SendKeys(email);
+            _webDriver.FindElement(By.Id("email")).SendKeys(email);
 
             _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
 
@@ -218,10 +214,10 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         {
             _webDriver.Navigate().GoToUrl(resetPasswordUrl);
 
-            _webDriver.Wait(wd => wd.FindElements(By.Id("NewPassword")).Count > 0, _waitTime);
+            _webDriver.Wait(wd => wd.FindElements(By.Id("newPassword")).Count > 0, _waitTime);
 
-            _webDriver.FindElement(By.Id("NewPassword")).SendKeys(newPassword);
-            _webDriver.FindElement(By.Id("ConfirmPassword")).SendKeys(newPassword);
+            _webDriver.FindElement(By.Id("newPassword")).SendKeys(newPassword);
+            _webDriver.FindElement(By.Id("confirmPassword")).SendKeys(newPassword);
 
             _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
 
@@ -239,10 +235,10 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         {
             _webDriver.Navigate().GoToUrl(_baseUrl + _manageAccountRelativeUrl);
 
-            _webDriver.Wait(wd => wd.FindElements(By.Id("Email")).Count > 0, _waitTime);
+            _webDriver.Wait(wd => wd.FindElements(By.Id("email")).Count > 0, _waitTime);
 
-            _webDriver.FindElement(By.Id("Email")).SendKeys(email);
-            _webDriver.FindElement(By.Id("Password")).SendKeys(password);
+            _webDriver.FindElement(By.Id("email")).SendKeys(email);
+            _webDriver.FindElement(By.Id("password")).SendKeys(password);
 
             _webDriver.FindElement(By.XPath("//button[text()='Log in']")).Click();
 
@@ -254,10 +250,10 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         {
             _webDriver.Navigate().GoToUrl(_baseUrl + _changeAltEmailRelativeUrl);
 
-            _webDriver.Wait(wd => wd.FindElements(By.Id("Password")).Count > 0, _waitTime);
+            _webDriver.Wait(wd => wd.FindElements(By.Id("password")).Count > 0, _waitTime);
 
-            _webDriver.FindElement(By.Id("Password")).SendKeys(password);
-            _webDriver.FindElement(By.Id("NewAltEmail")).SendKeys(newAltEmail);
+            _webDriver.FindElement(By.Id("password")).SendKeys(password);
+            _webDriver.FindElement(By.Id("newAltEmail")).SendKeys(newAltEmail);
 
             _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
 
@@ -269,10 +265,10 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         {
             _webDriver.Navigate().GoToUrl(_baseUrl + _changeEmailRelativeUrl);
 
-            _webDriver.Wait(wd => wd.FindElements(By.Id("Password")).Count > 0, _waitTime);
+            _webDriver.Wait(wd => wd.FindElements(By.Id("password")).Count > 0, _waitTime);
 
-            _webDriver.FindElement(By.Id("Password")).SendKeys(password);
-            _webDriver.FindElement(By.Id("NewEmail")).SendKeys(newEmail);
+            _webDriver.FindElement(By.Id("password")).SendKeys(password);
+            _webDriver.FindElement(By.Id("newEmail")).SendKeys(newEmail);
 
             _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
 
@@ -284,10 +280,10 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         {
             _webDriver.Navigate().GoToUrl(_baseUrl + _changeDisplayNameRelativeUrl);
 
-            _webDriver.Wait(wd => wd.FindElements(By.Id("Password")).Count > 0, _waitTime);
+            _webDriver.Wait(wd => wd.FindElements(By.Id("password")).Count > 0, _waitTime);
 
-            _webDriver.FindElement(By.Id("Password")).SendKeys(password);
-            _webDriver.FindElement(By.Id("NewDisplayName")).SendKeys(newDisplayName);
+            _webDriver.FindElement(By.Id("password")).SendKeys(password);
+            _webDriver.FindElement(By.Id("newDisplayName")).SendKeys(newDisplayName);
 
             _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
 
@@ -299,11 +295,11 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         {
             _webDriver.Navigate().GoToUrl(_baseUrl + _changePasswordRelativeUrl);
 
-            _webDriver.Wait(wd => wd.FindElements(By.Id("CurrentPassword")).Count > 0, _waitTime);
+            _webDriver.Wait(wd => wd.FindElements(By.Id("currentPassword")).Count > 0, _waitTime);
 
-            _webDriver.FindElement(By.Id("CurrentPassword")).SendKeys(password);
-            _webDriver.FindElement(By.Id("NewPassword")).SendKeys(newPassword);
-            _webDriver.FindElement(By.Id("ConfirmNewPassword")).SendKeys(newPassword);
+            _webDriver.FindElement(By.Id("currentPassword")).SendKeys(password);
+            _webDriver.FindElement(By.Id("newPassword")).SendKeys(newPassword);
+            _webDriver.FindElement(By.Id("confirmNewPassword")).SendKeys(newPassword);
 
             _webDriver.FindElement(By.XPath("//button[text()='Submit']")).Click();
 
