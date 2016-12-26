@@ -88,7 +88,8 @@ namespace Jering.DynamicForms
 
                 return new DynamicControlResponseModel()
                 {
-                    Name = propertyInfo.Name,
+                    // Name must start with lowercase character for consistency with request models
+                    Name = char.ToLowerInvariant(propertyInfo.Name[0]) + propertyInfo.Name.Substring(1),
                     Order = dynamicControlAttribute.Order,
                     TagName = dynamicControlAttribute.TagName,
                     ValidatorResponseModels = validatorResponseModel,

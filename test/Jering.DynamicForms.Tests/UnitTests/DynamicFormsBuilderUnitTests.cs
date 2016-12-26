@@ -21,7 +21,7 @@ namespace Jering.DynamicForms.Tests.UnitTests
             DynamicControlResponseModel result = dynamicFormsBuilder.BuildDynamicControlResponseModel(propertyInfo);
 
             // Assert
-            Assert.Equal("Email", result.Name);
+            Assert.Equal("email", result.Name);
             Assert.Equal(0, result.Order);
             Assert.Equal("input", result.TagName);
             Assert.NotNull(result.ValidatorResponseModels);
