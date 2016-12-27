@@ -20,7 +20,8 @@ export class VerifyEmailComponent implements OnInit {
     ngOnInit(): void {
         let responseModel: SetEmailVerifiedResponseModel = this._activatedRoute.snapshot.data[`responseModel`];
 
-        if (responseModel && responseModel.invalidToken) {
+        // Api only returns a response model for errors. Unexpected errors are filtered out by HttpService
+        if (responseModel) {
             this.linkExpiredOrInvalid = true;
         }
     }
