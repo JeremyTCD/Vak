@@ -1,6 +1,8 @@
 {
   "version": "1.0.0-*",
-
+  "buildOptions": {
+    "xmlDoc": true
+  },
   "dependencies": {
     "Jering.Accounts.DatabaseInterface": "1.0.0",
     "Jering.Utilities": "1.0.0",

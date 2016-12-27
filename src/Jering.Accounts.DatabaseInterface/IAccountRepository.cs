@@ -30,6 +30,17 @@ namespace Jering.Accounts.DatabaseInterface
         Task<SaveChangesResult> UpdateEmailVerifiedAsync(TAccount account, bool verified, CancellationToken cancellationToken);
 
         Task<SaveChangesResult> UpdateAltEmailVerifiedAsync(TAccount account, bool verified, CancellationToken cancellationToken);
+        Task<SaveChangesResult> UpdateAsync(TAccount account,
+            CancellationToken cancellationToken,
+            string altEmail = null,
+            bool? altEmailVerified = null,
+            string displayName = null,
+            string email = null,
+            bool? emailVerified = null,
+            string passwordHash = null,
+            DateTimeOffset? passwordLastChanged = null,
+            Guid? securityStamp = null,
+            bool? twoFactorEnabled = null);
         #endregion
 
         #region Remove

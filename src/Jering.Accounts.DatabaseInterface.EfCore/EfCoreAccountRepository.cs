@@ -190,6 +190,48 @@ namespace Jering.Accounts.DatabaseInterface.EfCore
 
             return await _dbContext.SaveChangesAndCatchAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// Updates an account. Note that this function cannot be used to assign null to any field/column. 
+        /// </summary>
+        /// <param name="account"></param>
+        /// <param name="cancellationToken"></param>
+        /// <param name="altEmail"></param>
+        /// <param name="altEmailVerified"></param>
+        /// <param name="displayName"></param>
+        /// <param name="email"></param>
+        /// <param name="emailVerified"></param>
+        /// <param name="passwordHash"></param>
+        /// <param name="passwordLastChanged"></param>
+        /// <param name="securityStamp"></param>
+        /// <param name="twoFactorEnabled"></param>
+        /// <returns>
+        /// <see cref = "SaveChangesResult" />.
+        /// </returns>
+        public async Task<SaveChangesResult> UpdateAsync(TAccount account,
+            CancellationToken cancellationToken,
+            string altEmail = null,
+            bool? altEmailVerified = null,
+            string displayName = null,
+            string email = null,
+            bool? emailVerified = null, 
+            string passwordHash = null,
+            DateTimeOffset? passwordLastChanged = null,
+            Guid? securityStamp = null,
+            bool? twoFactorEnabled = null)
+        {
+            account.AltEmail = altEmail ?? account.AltEmail;
+            account.AltEmailVerified = altEmailVerified ?? account.AltEmailVerified;
+            account.DisplayName = displayName ?? account.DisplayName;
+            account.Email = email ?? account.Email;
+            account.EmailVerified = emailVerified ?? account.EmailVerified;
+            account.PasswordHash = passwordHash ?? account.PasswordHash;
+            account.PasswordLastChanged = passwordLastChanged ?? account.PasswordLastChanged;
+            account.SecurityStamp = securityStamp ?? account.SecurityStamp;
+            account.TwoFactorEnabled = twoFactorEnabled ?? account.TwoFactorEnabled;
+
+            return await _dbContext.SaveChangesAndCatchAsync(cancellationToken);
+        }
         #endregion
 
         #region Remove
