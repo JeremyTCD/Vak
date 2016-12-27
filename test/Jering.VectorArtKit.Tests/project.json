@@ -19,7 +19,7 @@
     "Selenium.WebDriver.ChromeDriver": "2.25.0.8"
   },
   "frameworks": {
-    "net451": {
+    "net462": {
     }
   }
 }
