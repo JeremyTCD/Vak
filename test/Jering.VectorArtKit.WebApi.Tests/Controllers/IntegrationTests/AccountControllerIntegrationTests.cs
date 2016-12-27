@@ -1110,6 +1110,22 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
+        public async Task SetEmailVerified_Returns400BadRequestAndSetEmailVerifiedResponseModelIfModelStateIsInvalid()
+        { 
+            // Arrange
+            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetEmailVerified(cookies, "");
+
+            // Assert
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Token_Required, (body.ModelState[nameof(SetEmailVerifiedRequestModel.Token)] as JArray)[0]);
+        }
+
+        [Fact]
         public async Task SetEmailVerified_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
@@ -1140,7 +1156,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SetEmailVerified_Returns400BadRequestIfTokenIsInvalidOrExpired()
+        public async Task SetEmailVerified_Returns400BadRequestAndSetEmailVerifiedResponseModelIfTokenIsInvalidOrExpired()
         {
             // Arrange
             IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1,
@@ -1175,6 +1191,22 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
+        public async Task SetAltEmailVerified_Returns400BadRequestAndSetAltEmailVerifiedResponseModelIfModelStateIsInvalid()
+        {
+            // Arrange
+            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
+
+            // Act
+            HttpResponseMessage httpResponseMessage = await SetAltEmailVerified(cookies, "");
+
+            // Assert
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Token_Required, (body.ModelState[nameof(SetAltEmailVerifiedRequestModel.Token)] as JArray)[0]);
+        }
+
+        [Fact]
         public async Task SetAltEmailVerified_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
         {
             // Arrange
@@ -1205,7 +1237,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SetAltEmailVerified_Returns400BadRequestIfTokenIsInvalidOrExpired()
+        public async Task SetAltEmailVerified_Returns400BadRequestAndSetAltEmailVerifiedResponseModelIfTokenIsInvalidOrExpired()
         {
             // Arrange
             IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1,
@@ -1364,7 +1396,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task TwoFactorVerifyEmail_Returns200OkIfEmailVerificationSucceeds()
+        public async Task TwoFactorVerifyEmail_Returns200OkIfEmailVerifiedAndTwoFactorEnabledAreSuccessfullySetToTrue()
         {
             // Arrange
             IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);

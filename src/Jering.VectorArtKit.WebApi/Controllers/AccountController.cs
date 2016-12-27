@@ -541,30 +541,40 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// <returns>
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
+        /// 400 BadRequest and <see cref="SetEmailVerifiedResponseModel"/> if model state is invalid.
         /// 400 BadRequest and <see cref="SetEmailVerifiedResponseModel"/> if token is invalid or expired.
         /// 200 OK if setting of email verified succeeds.
         /// </returns>
         [HttpPost]
         public async Task<IActionResult> SetEmailVerified([FromBody] SetEmailVerifiedRequestModel model)
         {
-            SetEmailVerifiedActionResult result = await _accountService.SetEmailVerifiedActionAsync(model.Token);
-
-            if (result == SetEmailVerifiedActionResult.NoLoggedInAccount)
+            if (ModelState.IsValid)
             {
-                // Logged in but unable to retrieve account 
-                throw new Exception();
-            }
+                SetEmailVerifiedActionResult result = await _accountService.SetEmailVerifiedActionAsync(model.Token);
 
-            if (result == SetEmailVerifiedActionResult.InvalidToken)
-            {
-                return BadRequest(new SetEmailVerifiedResponseModel
+                if (result == SetEmailVerifiedActionResult.NoLoggedInAccount)
                 {
-                    ExpectedError = true,
-                    InvalidToken = true
-                });
+                    // Logged in but unable to retrieve account 
+                    throw new Exception();
+                }
+
+                if (result == SetEmailVerifiedActionResult.InvalidToken)
+                {
+                    return BadRequest(new SetEmailVerifiedResponseModel
+                    {
+                        ExpectedError = true,
+                        InvalidToken = true
+                    });
+                }
+
+                return Ok();
             }
 
-            return Ok();
+            return BadRequest(new SetEmailVerifiedResponseModel
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
         }
 
         /// <summary>
@@ -573,32 +583,40 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// <returns>
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
+        /// 400 BadRequest and <see cref="SetAltEmailVerifiedResponseModel"/> if model state is invalid.
         /// 400 BadRequest and <see cref="SetAltEmailVerifiedResponseModel"/> if token is invalid or expired.
         /// 200 OK if setting of email verified succeeds.
         /// </returns>
         [HttpPost]
         public async Task<IActionResult> SetAltEmailVerified([FromBody] SetAltEmailVerifiedRequestModel model)
         {
-            // check model state? incase account id is not a string
-
-            SetAltEmailVerifiedActionResult result = await _accountService.SetAltEmailVerifiedActionAsync(model.Token);
-
-            if (result == SetAltEmailVerifiedActionResult.NoLoggedInAccount)
+            if (ModelState.IsValid)
             {
-                // Logged in but unable to retrieve account 
-                throw new Exception();
-            }
+                SetAltEmailVerifiedActionResult result = await _accountService.SetAltEmailVerifiedActionAsync(model.Token);
 
-            if (result == SetAltEmailVerifiedActionResult.InvalidToken)
-            {
-                return BadRequest(new SetAltEmailVerifiedResponseModel
+                if (result == SetAltEmailVerifiedActionResult.NoLoggedInAccount)
                 {
-                    ExpectedError = true,
-                    InvalidToken = true
-                });
+                    // Logged in but unable to retrieve account 
+                    throw new Exception();
+                }
+
+                if (result == SetAltEmailVerifiedActionResult.InvalidToken)
+                {
+                    return BadRequest(new SetAltEmailVerifiedResponseModel
+                    {
+                        ExpectedError = true,
+                        InvalidToken = true
+                    });
+                }
+
+                return Ok();
             }
 
-            return Ok();
+            return BadRequest(new SetAltEmailVerifiedResponseModel
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
         }
 
         /// <summary>
@@ -667,7 +685,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
         /// 400 BadRequest and <see cref="TwoFactorVerifyEmailResponseModel"/> if model state is invalid.
         /// 400 BadRequest and <see cref="TwoFactorVerifyEmailResponseModel"/> if token is expired or invalid.
-        /// 200 OK if email verification succeeds.
+        /// 200 OK if email verified and two factor enabled are successfully set to true.
         /// </returns>
         /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
