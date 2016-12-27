@@ -1044,6 +1044,7 @@ namespace Jering.Accounts
                 _options.EmailVerificationEmailSubject,
                 string.Format(_options.EmailVerificationEmailMessage, 
                     _options.EmailVerificationLinkDomain,
+                    _options.AltEmailVerificationLinkPath,
                     WebUtility.UrlEncode(token)));
 
             await _emailService.SendEmailAsync(mimeMessage);
@@ -1067,6 +1068,7 @@ namespace Jering.Accounts
                 _options.EmailVerificationEmailSubject,
                 string.Format(_options.EmailVerificationEmailMessage, 
                     _options.EmailVerificationLinkDomain,
+                    _options.EmailVerificationLinkPath,
                     WebUtility.UrlEncode(token)));
 
             await _emailService.SendEmailAsync(mimeMessage);
@@ -1089,6 +1091,7 @@ namespace Jering.Accounts
                 _options.ResetPasswordEmailSubject,
                 string.Format(_options.ResetPasswordEmailMessage,
                     _options.ResetPasswordLinkDomain,
+                    _options.ResetPasswordLinkPath,
                     WebUtility.UrlEncode(token),
                     WebUtility.UrlEncode(account.Email)));
 

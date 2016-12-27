@@ -65,12 +65,14 @@ namespace Jering.VectorArtKit.WebApi
                     options.EmailVerificationEmailSubject = Strings.Email_Subject_EmailVerification;
                     options.EmailVerificationEmailMessage = Strings.Email_Message_EmailVerification;
                     options.EmailVerificationLinkDomain = "http://localhost:4200/";
+                    options.EmailVerificationLinkPath = "manage-account/verify-email";
+                    options.AltEmailVerificationLinkPath = "manage-account/verify-alt-email";
                     options.ResetPasswordEmailSubject = Strings.Email_Subject_ResetPassword;
                     options.ResetPasswordEmailMessage = Strings.Email_Message_ResetPassword;
                     options.ResetPasswordLinkDomain = "http://localhost:4200/";
+                    options.ResetPasswordLinkPath = "log-in/reset-password";
                     options.TwoFactorCodeEmailSubject = Strings.Email_Subject_TwoFactorCode;
                     options.TwoFactorCodeEmailMessage = Strings.Email_Message_TwoFactorCode;
-                    options.TwoFactorCodeLinkDomain = "http://localhost:4200/";
                 });
                 services.AddDbContext<VakDbContext>(options =>
                     options.UseSqlServer(_configurationRoot["Data:DefaultConnection:ConnectionString"]));
@@ -90,8 +92,6 @@ namespace Jering.VectorArtKit.WebApi
                     options.ResetPasswordLinkDomain = "http://localhost:4200/";
                     options.TwoFactorCodeEmailSubject = Strings.Email_Subject_TwoFactorCode;
                     options.TwoFactorCodeEmailMessage = Strings.Email_Message_TwoFactorCode;
-                    // TODO 
-                    options.TwoFactorCodeLinkDomain = "http://localhost:4200/";
                 });
                 // TODO different connection string for release
                 services.AddDbContext<VakDbContext>(options =>

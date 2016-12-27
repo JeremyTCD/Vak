@@ -29,14 +29,16 @@ namespace Jering.Accounts
         public string EmailVerificationEmailSubject { get; set; }
         public string EmailVerificationEmailMessage { get; set; }
         public string EmailVerificationLinkDomain { get; set; }
+        public string EmailVerificationLinkPath { get; set; }
+        public string AltEmailVerificationLinkPath { get; set; }
 
         public string ResetPasswordEmailSubject { get; set; }
         public string ResetPasswordEmailMessage { get; set; }
         public string ResetPasswordLinkDomain { get; set; }
+        public string ResetPasswordLinkPath { get; set; }
 
         public string TwoFactorCodeEmailSubject { get; set; }
         public string TwoFactorCodeEmailMessage { get; set; }
-        public string TwoFactorCodeLinkDomain { get; set; }
 
         public string ConfirmEmailTokenPurpose { get; set; } = "EmailConfirmation";
         public string TwoFactorTokenPurpose { get; set; } = "TwoFactor";
