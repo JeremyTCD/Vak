@@ -732,7 +732,7 @@ namespace Jering.Accounts
         }
 
         /// <summary>
-        /// Sets email verified of logged in account to true if <paramref name="code"/> is valid. 
+        /// Sets email verified and two factor enabled of logged in account to true if <paramref name="code"/> is valid. 
         /// </summary>
         /// <param name="code"></param>
         /// <returns>
@@ -741,7 +741,7 @@ namespace Jering.Accounts
         /// <see cref="TwoFactorVerifyEmailActionResult.NoLoggedInAccount"/> if unable to retrieve logged in account.
         /// <see cref="TwoFactorVerifyEmailActionResult.InvalidCode"/> if code is invalid.
         /// </returns>
-        /// <exception cref="Exception">Thrown if database update fails unexpectedly.</exception>
+        /// <exception cref="Exception">Thrown if a database update fails unexpectedly.</exception>
         public virtual async Task<TwoFactorVerifyEmailActionResult> TwoFactorVerifyEmailActionAsync(string code)
         {
             if (string.IsNullOrEmpty(code))
@@ -771,9 +771,10 @@ namespace Jering.Accounts
                 return TwoFactorVerifyEmailActionResult.InvalidCode;
             }
 
-            SaveChangesResult result = await _accountRepository.UpdateEmailVerifiedAsync(account,
-                true,
-                _cancellationToken);
+            SaveChangesResult result = await _accountRepository.UpdateAsync(account,
+                _cancellationToken,
+                emailVerified: true,
+                twoFactorEnabled: true);
 
             if (result == SaveChangesResult.ConcurrencyError)
             {

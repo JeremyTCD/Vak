@@ -2011,9 +2011,12 @@ namespace Jering.Accounts.Tests.UnitTests
             _testAccountServiceOptions.TwoFactorTokenPurpose = _testTokenPurpose;
             Mock<IAccountRepository<StubAccount>> mockAccountRepository = new Mock<IAccountRepository<StubAccount>>();
             mockAccountRepository.
-                Setup(a => a.UpdateEmailVerifiedAsync(It.Is<StubAccount>(acc => acc == _testAccount),
+                Setup(a => a.UpdateAsync(It.Is<StubAccount>(acc => acc == _testAccount),
+                    It.Is<CancellationToken>(c => c == CancellationToken.None),
+                    null, null, null, null,
                     It.Is<bool>(b => b == true),
-                    It.Is<CancellationToken>(c => c == CancellationToken.None))).
+                    null, null, null,
+                    It.Is<bool>(b => b == true))).
                 ReturnsAsync(SaveChangesResult.Success);
 
             Mock<AccountService<StubAccount>> mockAccountService = new Mock<AccountService<StubAccount>>(
@@ -2053,10 +2056,13 @@ namespace Jering.Accounts.Tests.UnitTests
             _testAccountServiceOptions.TwoFactorTokenPurpose = _testTokenPurpose;
             Mock<IAccountRepository<StubAccount>> mockAccountRepository = new Mock<IAccountRepository<StubAccount>>();
             mockAccountRepository.
-                Setup(a => a.UpdateEmailVerifiedAsync(It.Is<StubAccount>(acc => acc == _testAccount),
+                Setup(a => a.UpdateAsync(It.Is<StubAccount>(acc => acc == _testAccount),
+                    It.Is<CancellationToken>(c => c == CancellationToken.None),
+                    null, null, null, null,
                     It.Is<bool>(b => b == true),
-                    It.Is<CancellationToken>(c => c == CancellationToken.None))).
-                ReturnsAsync(SaveChangesResult.ConcurrencyError);
+                    null, null, null,
+                    It.Is<bool>(b => b == true))).
+            ReturnsAsync(SaveChangesResult.ConcurrencyError);
 
             Mock<AccountService<StubAccount>> mockAccountService = new Mock<AccountService<StubAccount>>(
                 null,
