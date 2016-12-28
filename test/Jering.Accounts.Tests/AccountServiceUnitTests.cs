@@ -25,6 +25,7 @@ namespace Jering.Accounts.Tests.UnitTests
         private const string _testNewEmail = "testNewEmail";
         private const string _testAltEmail = "testAltEmail";
         private const string _testNewAltEmail = "testNewAltEmail";
+        private const string _testDisplayName = "testDisplayName";
         private const string _testNewDisplayName = "testNewDisplayName";
         private const bool _testNewTwoFactorEnabled = true;
         private const string _testPassword = "testPassword";
@@ -2177,6 +2178,116 @@ namespace Jering.Accounts.Tests.UnitTests
             // Assert
             Assert.Equal(TwoFactorVerifyEmailActionResult.NoLoggedInAccount, result);
             mockAccountService.VerifyAll();
+        }
+        #endregion
+
+        #region Utility
+        [Fact]
+        public async Task CheckEmailInUseActionAsync_ReturnsTrueIfEmailIsInUse()
+        {
+            // Arrange
+            Mock<IAccountRepository<StubAccount>> mockAccountRepository = new Mock<IAccountRepository<StubAccount>>();
+            mockAccountRepository.
+                Setup(a => a.CheckEmailInUseAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<CancellationToken>(c => c == CancellationToken.None))).
+                ReturnsAsync(true);
+
+            AccountService<StubAccount> accountService = new AccountService<StubAccount>(
+                null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null,
+                null);
+
+            // Act
+            bool result = await accountService.CheckEmailInUseActionAsync(_testEmail);
+
+            // Assert
+            Assert.True(result);
+            mockAccountRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CheckEmailInUseActionAsync_ReturnsFalseIfEmailIsNotInUse()
+        {
+            // Arrange
+            Mock<IAccountRepository<StubAccount>> mockAccountRepository = new Mock<IAccountRepository<StubAccount>>();
+            mockAccountRepository.
+                Setup(a => a.CheckEmailInUseAsync(It.Is<string>(s => s == _testEmail),
+                    It.Is<CancellationToken>(c => c == CancellationToken.None))).
+                ReturnsAsync(false);
+
+            AccountService<StubAccount> accountService = new AccountService<StubAccount>(
+                null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null,
+                null);
+
+            // Act
+            bool result = await accountService.CheckEmailInUseActionAsync(_testEmail);
+
+            // Assert
+            Assert.False(result);
+            mockAccountRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CheckDisplayNameInUseActionAsync_ReturnsTrueIfDisplayNameIsInUse()
+        {
+            // Arrange
+            Mock<IAccountRepository<StubAccount>> mockAccountRepository = new Mock<IAccountRepository<StubAccount>>();
+            mockAccountRepository.
+                Setup(a => a.CheckDisplayNameInUseAsync(It.Is<string>(s => s == _testDisplayName),
+                    It.Is<CancellationToken>(c => c == CancellationToken.None))).
+                ReturnsAsync(true);
+
+            AccountService<StubAccount> accountService = new AccountService<StubAccount>(
+                null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null,
+                null);
+
+            // Act
+            bool result = await accountService.CheckDisplayNameInUseActionAsync(_testDisplayName);
+
+            // Assert
+            Assert.True(result);
+            mockAccountRepository.VerifyAll();
+        }
+
+        [Fact]
+        public async Task CheckDisplayNameInUseActionAsync_ReturnsFalseIfDisplayNameIsNotInUse()
+        {
+            // Arrange
+            Mock<IAccountRepository<StubAccount>> mockAccountRepository = new Mock<IAccountRepository<StubAccount>>();
+            mockAccountRepository.
+                Setup(a => a.CheckDisplayNameInUseAsync(It.Is<string>(s => s == _testDisplayName),
+                    It.Is<CancellationToken>(c => c == CancellationToken.None))).
+                ReturnsAsync(false);
+
+            AccountService<StubAccount> accountService = new AccountService<StubAccount>(
+                null,
+                null,
+                null,
+                mockAccountRepository.Object,
+                null,
+                null,
+                null);
+
+            // Act
+            bool result = await accountService.CheckDisplayNameInUseActionAsync(_testDisplayName);
+
+            // Assert
+            Assert.False(result);
+            mockAccountRepository.VerifyAll();
         }
         #endregion
 

@@ -151,5 +151,10 @@ namespace Jering.Accounts
 
         Task<TwoFactorVerifyEmailActionResult> TwoFactorVerifyEmailActionAsync(string code);
         #endregion
+
+        #region Utility
+        Task<bool> CheckEmailInUseActionAsync(string email);
+        Task<bool> CheckDisplayNameInUseActionAsync(string displayName);
+        #endregion
     }
 }

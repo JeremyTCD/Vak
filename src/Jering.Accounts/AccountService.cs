@@ -156,12 +156,12 @@ namespace Jering.Accounts
                 return TwoFactorLogInActionResult.InvalidCredentials;
             }
 
-            ValidateTokenResult validateTokenResult = ValidateToken(TokenServiceOptions.TotpTokenService, 
-                _options.TwoFactorTokenPurpose, 
-                account, 
+            ValidateTokenResult validateTokenResult = ValidateToken(TokenServiceOptions.TotpTokenService,
+                _options.TwoFactorTokenPurpose,
+                account,
                 code);
 
-            if(validateTokenResult == ValidateTokenResult.Valid)
+            if (validateTokenResult == ValidateTokenResult.Valid)
             {
                 await TwoFactorLogOffAsync();
                 await ApplicationLogInAsync(account, new AuthenticationProperties() { IsPersistent = isPersistent });
@@ -786,6 +786,44 @@ namespace Jering.Accounts
         }
         #endregion
 
+        #region Utility
+        /// <summary>
+        /// Checks whether <paramref name="email"/> is in use.
+        /// </summary>
+        /// <param name="email"></param>
+        /// <returns>
+        /// True if <paramref name="email"/> is in use.
+        /// False if <paramref name="email"/> is not in use.
+        /// </returns>
+        public virtual async Task<bool> CheckEmailInUseActionAsync(string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new ArgumentException(nameof(email));
+            }
+
+            return await _accountRepository.CheckEmailInUseAsync(email, _cancellationToken);
+        }
+
+        /// <summary>
+        /// Checks whether <paramref name="displayName"/> is in use.
+        /// </summary>
+        /// <param name="displayName"></param>
+        /// <returns>
+        /// True if <paramref name="displayName"/> is in use.
+        /// False if <paramref name="displayName"/> is not in use.
+        /// </returns>
+        public virtual async Task<bool> CheckDisplayNameInUseActionAsync(string displayName)
+        {
+            if (string.IsNullOrEmpty(displayName))
+            {
+                throw new ArgumentException(nameof(displayName));
+            }
+
+            return await _accountRepository.CheckDisplayNameInUseAsync(displayName, _cancellationToken);
+        }
+        #endregion
+
         #region Helpers
         #region Crypto
         /// <summary>
@@ -1037,12 +1075,12 @@ namespace Jering.Accounts
                 throw new ArgumentNullException(nameof(account));
             }
 
-            string token = GetToken(TokenServiceOptions.DataProtectionTokenService, 
+            string token = GetToken(TokenServiceOptions.DataProtectionTokenService,
                 _options.ConfirmAltEmailTokenPurpose, account);
 
             MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.AltEmail,
                 _options.EmailVerificationEmailSubject,
-                string.Format(_options.EmailVerificationEmailMessage, 
+                string.Format(_options.EmailVerificationEmailMessage,
                     _options.EmailVerificationLinkDomain,
                     _options.AltEmailVerificationLinkPath,
                     WebUtility.UrlEncode(token)));
@@ -1066,7 +1104,7 @@ namespace Jering.Accounts
 
             MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
                 _options.EmailVerificationEmailSubject,
-                string.Format(_options.EmailVerificationEmailMessage, 
+                string.Format(_options.EmailVerificationEmailMessage,
                     _options.EmailVerificationLinkDomain,
                     _options.EmailVerificationLinkPath,
                     WebUtility.UrlEncode(token)));
@@ -1113,7 +1151,7 @@ namespace Jering.Accounts
 
             MimeMessage mimeMessage = _emailService.CreateMimeMessage(account.Email,
                 _options.TwoFactorCodeEmailSubject,
-                string.Format(_options.TwoFactorCodeEmailMessage, 
+                string.Format(_options.TwoFactorCodeEmailMessage,
                     token));
 
             await _emailService.SendEmailAsync(mimeMessage);
