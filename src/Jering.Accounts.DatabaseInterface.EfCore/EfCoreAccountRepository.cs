@@ -284,6 +284,7 @@ namespace Jering.Accounts.DatabaseInterface.EfCore
         /// Checks whether <paramref name="email"/> is in use.
         /// </summary>
         /// <param name="email"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns>
         /// True if <paramref name="email"/> is in use.
         /// False otherwise.
@@ -299,6 +300,7 @@ namespace Jering.Accounts.DatabaseInterface.EfCore
         /// Checks whether <paramref name="displayName"/> is in use.
         /// </summary>
         /// <param name="displayName"></param>
+        /// <param name="cancellationToken"></param>
         /// <returns>
         /// True if <paramref name="displayName"/> is in use.
         /// False otherwise.
