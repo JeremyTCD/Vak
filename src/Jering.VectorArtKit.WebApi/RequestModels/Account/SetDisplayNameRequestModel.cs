@@ -22,7 +22,7 @@ namespace Jering.VectorArtKit.WebApi.RequestModels.Account
         [AsyncValidate(nameof(Strings.ErrorMessage_DisplayName_InUse),
             typeof(Strings),
             nameof(AccountController),
-            nameof(AccountController.CheckDisplayNameInUse))]
+            nameof(AccountController.ValidateDisplayNameNotInUse))]
         [DynamicControl("input", nameof(Strings.DisplayName_NewDisplayName), typeof(Strings), 1)]
         [DynamicControlProperty("type", "text")]
         public string NewDisplayName { get; set; }

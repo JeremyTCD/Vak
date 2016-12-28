@@ -3,6 +3,7 @@ using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.Controllers;
 using Jering.VectorArtKit.WebApi.RequestModels.Account;
 using Jering.VectorArtKit.WebApi.RequestModels.DynamicForm;
+using Jering.VectorArtKit.WebApi.RequestModels.Shared;
 using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.Account;
 using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
@@ -1445,10 +1446,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         #region Utility
         [Fact]
-        public async Task CheckEmailInUse_Returns400BadRequestAndErrorResponseModelIfModelStateIsInvalid()
+        public async Task ValidateEmailNotInUse_Returns400BadRequestAndErrorResponseModelIfModelStateIsInvalid()
         {
             // Arrange
-            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.CheckEmailInUse)}", 
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.ValidateEmailNotInUse)}", 
                 HttpMethod.Get, null);
 
             // Act 
@@ -1456,19 +1457,19 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
             // Assert
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            CheckInUseResponseModel body = JsonConvert.DeserializeObject<CheckInUseResponseModel>(await httpResponseMessage.
+            ValidateValueResponseModel body = JsonConvert.DeserializeObject<ValidateValueResponseModel>(await httpResponseMessage.
                 Content.
                 ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Value_Required, (body.ModelState[nameof(CheckInUseRequestModel.Value)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Value_Required, (body.ModelState[nameof(ValidateValueRequestModel.Value)] as JArray)[0]);
         }
 
         [Fact]
-        public async Task CheckEmailInUse_Returns200OkAndCheckInUseResponseModelIfValueIsCheckedSuccessfully()
+        public async Task ValidateEmailNotInUse_Returns200OkAndValidateValueResponseModelIfValueIsCheckedSuccessfully()
         {
             // Arrange
             HttpRequestMessage httpRequestMessage = RequestHelper.
-                Create($"{_accountControllerName}/{nameof(AccountController.CheckEmailInUse)}?{nameof(CheckInUseRequestModel.Value)}={_testEmail1}",
+                Create($"{_accountControllerName}/{nameof(AccountController.ValidateEmailNotInUse)}?{nameof(ValidateValueRequestModel.Value)}={_testEmail1}",
                 HttpMethod.Get, null);
 
             // Act 
@@ -1476,17 +1477,17 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
             // Assert
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            CheckInUseResponseModel body = JsonConvert.DeserializeObject<CheckInUseResponseModel>(await httpResponseMessage.
+            ValidateValueResponseModel body = JsonConvert.DeserializeObject<ValidateValueResponseModel>(await httpResponseMessage.
                 Content.
                 ReadAsStringAsync());
-            Assert.False(body.InUse);
+            Assert.True(body.Valid);
         }
 
         [Fact]
-        public async Task CheckDisplayNameInUse_Returns400BadRequestAndErrorResponseModelIfModelStateIsInvalid()
+        public async Task ValidateDisplayNameNotInUse_Returns400BadRequestAndErrorResponseModelIfModelStateIsInvalid()
         {
             // Arrange
-            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.CheckDisplayNameInUse)}",
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.ValidateDisplayNameNotInUse)}",
                 HttpMethod.Get, null);
 
             // Act 
@@ -1494,19 +1495,19 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
             // Assert
             Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
-            CheckInUseResponseModel body = JsonConvert.DeserializeObject<CheckInUseResponseModel>(await httpResponseMessage.
+            ValidateValueResponseModel body = JsonConvert.DeserializeObject<ValidateValueResponseModel>(await httpResponseMessage.
                 Content.
                 ReadAsStringAsync());
             Assert.True(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_Value_Required, (body.ModelState[nameof(CheckInUseRequestModel.Value)] as JArray)[0]);
+            Assert.Equal(Strings.ErrorMessage_Value_Required, (body.ModelState[nameof(ValidateValueRequestModel.Value)] as JArray)[0]);
         }
 
         [Fact]
-        public async Task CheckDisplayNameInUse_Returns200OkAndCheckInUseResponseModelIfValueIsCheckedSuccessfully()
+        public async Task ValidateDisplayNameNotInUse_Returns200OkAndValidateValueResponseModelIfValueIsCheckedSuccessfully()
         {
             // Arrange
             HttpRequestMessage httpRequestMessage = RequestHelper.
-                Create($"{_accountControllerName}/{nameof(AccountController.CheckDisplayNameInUse)}?{nameof(CheckInUseRequestModel.Value)}={_testDisplayName}",
+                Create($"{_accountControllerName}/{nameof(AccountController.ValidateDisplayNameNotInUse)}?{nameof(ValidateValueRequestModel.Value)}={_testDisplayName}",
                 HttpMethod.Get, null);
 
             // Act 
@@ -1514,10 +1515,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
             // Assert
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            CheckInUseResponseModel body = JsonConvert.DeserializeObject<CheckInUseResponseModel>(await httpResponseMessage.
+            ValidateValueResponseModel body = JsonConvert.DeserializeObject<ValidateValueResponseModel>(await httpResponseMessage.
                 Content.
                 ReadAsStringAsync());
-            Assert.False(body.InUse);
+            Assert.True(body.Valid);
         }
         #endregion
 

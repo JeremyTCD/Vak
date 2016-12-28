@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Antiforgery;
 using Jering.VectorArtKit.WebApi.Extensions;
 using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.RequestModels.Account;
+using Jering.VectorArtKit.WebApi.RequestModels.Shared;
+using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 
 namespace Jering.VectorArtKit.WebApi.Controllers
 {
@@ -737,27 +739,27 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
         #region Utility
         /// <summary>
-        /// Checks whether an email is in use.
+        /// Validates that an email is not in use by any account.
         /// </summary>
         /// <param name="model"></param>
         /// <returns>
-        /// 200 OK and <see cref="CheckInUseResponseModel"/> if value is checked successfully.
+        /// 200 OK and <see cref="ValidateValueResponseModel"/> if value is validated successfully.
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if model state is invalid.
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> CheckEmailInUse(CheckInUseRequestModel model)
+        public async Task<IActionResult> ValidateEmailNotInUse(ValidateValueRequestModel model)
         {
             if (ModelState.IsValid)
             {
-                return Ok(new CheckInUseResponseModel()
+                return Ok(new ValidateValueResponseModel()
                 {
-                    InUse = await _vakAccountRepository.
-                        CheckEmailInUseAsync(model.Value, HttpContext.RequestAborted)
+                    Valid = !(await _vakAccountRepository.
+                        CheckEmailInUseAsync(model.Value, HttpContext.RequestAborted))
                 });
             }
 
-            return BadRequest(new CheckInUseResponseModel
+            return BadRequest(new ValidateValueResponseModel
             {
                 ExpectedError = true,
                 ModelState = new SerializableError(ModelState)
@@ -766,27 +768,27 @@ namespace Jering.VectorArtKit.WebApi.Controllers
 
 
         /// <summary>
-        /// Checks whether a display name is in use.
+        /// Checks whether a display name is in use by any account.
         /// </summary>
         /// <param name="model"></param>
         /// <returns>
-        /// 200 OK and <see cref="CheckInUseResponseModel"/> if value is checked successfully.
+        /// 200 OK and <see cref="ValidateValueResponseModel"/> if value is validated successfully.
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if model state is invalid.
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> CheckDisplayNameInUse(CheckInUseRequestModel model)
+        public async Task<IActionResult> ValidateDisplayNameNotInUse(ValidateValueRequestModel model)
         {
             if (ModelState.IsValid)
             {
-                return Ok(new CheckInUseResponseModel()
+                return Ok(new ValidateValueResponseModel()
                 {
-                    InUse = await _vakAccountRepository.
-                        CheckDisplayNameInUseAsync(model.Value, HttpContext.RequestAborted)
+                    Valid = !(await _vakAccountRepository.
+                        CheckDisplayNameInUseAsync(model.Value, HttpContext.RequestAborted))
                 });
             }
 
-            return BadRequest(new CheckInUseResponseModel
+            return BadRequest(new ValidateValueResponseModel
             {
                 ExpectedError = true,
                 ModelState = new SerializableError(ModelState)

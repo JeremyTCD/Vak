@@ -20,7 +20,8 @@ namespace Jering.VectorArtKit.WebApi.RequestModels.Account
 
         [ValidateRequired(nameof(Strings.ErrorMessage_NewEmail_Required), typeof(Strings))]
         [ValidateEmailAddress(nameof(Strings.ErrorMessage_Email_Invalid), typeof(Strings))]
-        [AsyncValidate(nameof(Strings.ErrorMessage_Email_InUse), typeof(Strings), nameof(AccountController), nameof(AccountController.CheckEmailInUse))]
+        [AsyncValidate(nameof(Strings.ErrorMessage_Email_InUse), typeof(Strings), nameof(AccountController), 
+            nameof(AccountController.ValidateEmailNotInUse))]
         [DynamicControl("input", nameof(Strings.DisplayName_NewEmail), typeof(Strings), 1)]
         [DynamicControlProperty("type", "email")]
         public string NewEmail { get; set; }

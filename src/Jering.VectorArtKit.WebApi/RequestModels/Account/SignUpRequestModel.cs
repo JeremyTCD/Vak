@@ -11,7 +11,8 @@ namespace Jering.VectorArtKit.WebApi.RequestModels.Account
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_Email_Required), typeof(Strings))]
         [ValidateEmailAddress(nameof(Strings.ErrorMessage_Email_Invalid), typeof(Strings))]
-        [AsyncValidate(nameof(Strings.ErrorMessage_Email_InUse), typeof(Strings), nameof(AccountController), nameof(AccountController.CheckEmailInUse))]
+        [AsyncValidate(nameof(Strings.ErrorMessage_Email_InUse), typeof(Strings), nameof(AccountController), 
+            nameof(AccountController.ValidateEmailNotInUse))]
         [DynamicControl("input", nameof(Strings.DisplayName_Email), typeof(Strings), 0)]
         [DynamicControlProperty("type", "email")]
         public string Email { get; set; }
