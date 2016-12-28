@@ -324,4 +324,7 @@
   <data name="ErrorMessage_Token_Required" xml:space="preserve">
     <value>Token required.</value>
   </data>
+  <data name="ErrorMessage_Value_Required" xml:space="preserve">
+    <value>Value required.</value>
+  </data>
 </root>

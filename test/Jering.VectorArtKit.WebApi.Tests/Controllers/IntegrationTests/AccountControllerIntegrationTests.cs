@@ -1,7 +1,7 @@
 ﻿using Jering.Utilities;
 using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.Controllers;
-using Jering.VectorArtKit.WebApi.RequestModels;
+using Jering.VectorArtKit.WebApi.RequestModels.Account;
 using Jering.VectorArtKit.WebApi.RequestModels.DynamicForm;
 using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.Account;
@@ -44,6 +44,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         private const string _testInvalidPassword = "testInvalidPassword";
         private const string _testPassword = "testPassword";
         private const string _testToken = "testToken";
+        private const string _testDisplayName = "testDisplayName";
         private const string _testNewDisplayName = "testNewDisplayName";
         private const string _cookieTokenName = "AF-TOKEN";
         private const string _requestTokenName = "XSRF-TOKEN";
@@ -1440,7 +1441,85 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             Assert.False(body.ExpectedError);
             Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
-#endregion
+        #endregion
+
+        #region Utility
+        [Fact]
+        public async Task CheckEmailInUse_Returns400BadRequestAndErrorResponseModelIfModelStateIsInvalid()
+        {
+            // Arrange
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.CheckEmailInUse)}", 
+                HttpMethod.Get, null);
+
+            // Act 
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+
+            // Assert
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            CheckInUseResponseModel body = JsonConvert.DeserializeObject<CheckInUseResponseModel>(await httpResponseMessage.
+                Content.
+                ReadAsStringAsync());
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Value_Required, (body.ModelState[nameof(CheckInUseRequestModel.Value)] as JArray)[0]);
+        }
+
+        [Fact]
+        public async Task CheckEmailInUse_Returns200OkAndCheckInUseResponseModelIfValueIsCheckedSuccessfully()
+        {
+            // Arrange
+            HttpRequestMessage httpRequestMessage = RequestHelper.
+                Create($"{_accountControllerName}/{nameof(AccountController.CheckEmailInUse)}?{nameof(CheckInUseRequestModel.Value)}={_testEmail1}",
+                HttpMethod.Get, null);
+
+            // Act 
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+
+            // Assert
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            CheckInUseResponseModel body = JsonConvert.DeserializeObject<CheckInUseResponseModel>(await httpResponseMessage.
+                Content.
+                ReadAsStringAsync());
+            Assert.False(body.InUse);
+        }
+
+        [Fact]
+        public async Task CheckDisplayNameInUse_Returns400BadRequestAndErrorResponseModelIfModelStateIsInvalid()
+        {
+            // Arrange
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.CheckDisplayNameInUse)}",
+                HttpMethod.Get, null);
+
+            // Act 
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+
+            // Assert
+            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
+            CheckInUseResponseModel body = JsonConvert.DeserializeObject<CheckInUseResponseModel>(await httpResponseMessage.
+                Content.
+                ReadAsStringAsync());
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Value_Required, (body.ModelState[nameof(CheckInUseRequestModel.Value)] as JArray)[0]);
+        }
+
+        [Fact]
+        public async Task CheckDisplayNameInUse_Returns200OkAndCheckInUseResponseModelIfValueIsCheckedSuccessfully()
+        {
+            // Arrange
+            HttpRequestMessage httpRequestMessage = RequestHelper.
+                Create($"{_accountControllerName}/{nameof(AccountController.CheckDisplayNameInUse)}?{nameof(CheckInUseRequestModel.Value)}={_testDisplayName}",
+                HttpMethod.Get, null);
+
+            // Act 
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+
+            // Assert
+            Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
+            CheckInUseResponseModel body = JsonConvert.DeserializeObject<CheckInUseResponseModel>(await httpResponseMessage.
+                Content.
+                ReadAsStringAsync());
+            Assert.False(body.InUse);
+        }
+        #endregion
 
         #region Helpers
         public async Task<HttpResponseMessage> SetTwoFactorEnabled(IDictionary<string, string> cookies,

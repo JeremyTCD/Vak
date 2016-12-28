@@ -519,6 +519,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Value required..
+        /// </summary>
+        public static string ErrorMessage_Value_Required {
+            get {
+                return ResourceManager.GetString("ErrorMessage_Value_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to An email has been sent to {0}..
         /// </summary>
         public static string SendTwoFactorCode_EmailSent {

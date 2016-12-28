@@ -1,6 +1,5 @@
 ﻿using Jering.Accounts.DatabaseInterface;
 using Jering.Utilities;
-using Jering.VectorArtKit.WebApi.RequestModels;
 using Jering.VectorArtKit.WebApi.Resources;
 using Jering.VectorArtKit.WebApi.ResponseModels.Account;
 using Microsoft.AspNetCore.Authorization;
@@ -11,11 +10,11 @@ using Jering.Accounts;
 using Microsoft.AspNetCore.Antiforgery;
 using Jering.VectorArtKit.WebApi.Extensions;
 using Jering.VectorArtKit.DatabaseInterface;
+using Jering.VectorArtKit.WebApi.RequestModels.Account;
 
 namespace Jering.VectorArtKit.WebApi.Controllers
 {
     [Authorize]
-    [ValidateAntiForgeryToken]
     public class AccountController : Controller
     {
         private IAccountService<VakAccount> _accountService;
@@ -49,6 +48,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogIn([FromBody] LogInRequestModel model)
         {
             if (ModelState.IsValid)
@@ -95,6 +95,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK and application cookie (with empty string values) if auth succeeds. 
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogOff()
         {
             await _accountService.ApplicationLogOffAsync();
@@ -115,6 +116,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> TwoFactorLogIn([FromBody] TwoFactorLogInRequestModel model)
         {
             if (ModelState.IsValid)
@@ -162,6 +164,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SignUp([FromBody] SignUpRequestModel model)
         {
             if (ModelState.IsValid)
@@ -197,6 +200,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendResetPasswordEmail([FromBody] SendResetPasswordEmailRequestModel model)
         {
             if (ModelState.IsValid)
@@ -232,6 +236,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestModel model)
         {
             if (ModelState.IsValid)
@@ -280,6 +285,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK and <see cref="GetAccountDetailsResponseModel"/> if auth succeeds.
         /// </returns>
         [HttpGet]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetAccountDetails()
         {
             VakAccount account = await _accountService.GetAccountDetailsActionAsync();
@@ -315,6 +321,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK and application cookie if password change succeeds.
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetPassword([FromBody] SetPasswordRequestModel model)
         {
             if (ModelState.IsValid)
@@ -363,6 +370,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK and application cookie if email change succeeds.
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetEmail([FromBody] SetEmailRequestModel model)
         {
             if (ModelState.IsValid)
@@ -415,6 +423,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if alternative email change succeeds.
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetAltEmail([FromBody] SetAltEmailRequestModel model)
         {
             if (ModelState.IsValid)
@@ -464,6 +473,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if display name change succeeds.
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetDisplayName([FromBody] SetDisplayNameRequestModel model)
         {
             if (ModelState.IsValid)
@@ -513,6 +523,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of two factor enabled succeeds.
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetTwoFactorEnabled([FromBody] SetTwoFactorEnabledRequestModel model)
         {
             SetTwoFactorEnabledActionResult result = await _accountService.SetTwoFactorEnabledActionAsync(model.Enabled);
@@ -546,6 +557,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of email verified succeeds.
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetEmailVerified([FromBody] SetEmailVerifiedRequestModel model)
         {
             if (ModelState.IsValid)
@@ -588,6 +600,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of email verified succeeds.
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetAltEmailVerified([FromBody] SetAltEmailVerifiedRequestModel model)
         {
             if (ModelState.IsValid)
@@ -629,6 +642,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK and sends email validation email if email is sent successfully.
         /// </returns>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendEmailVerificationEmail()
         {
             SendEmailVerificationEmailActionResult result = await _accountService.SendEmailVerificationEmailActionAsync();
@@ -654,6 +668,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendAltEmailVerificationEmail()
         {
             SendAltEmailVerificationEmailActionResult result = await _accountService.SendAltEmailVerificationEmailActionAsync();
@@ -689,6 +704,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> TwoFactorVerifyEmail([FromBody] TwoFactorVerifyEmailRequestModel model)
         {
             if (ModelState.IsValid)
@@ -712,6 +728,65 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             }
 
             return BadRequest(new TwoFactorVerifyEmailResponseModel
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
+        }
+        #endregion
+
+        #region Utility
+        /// <summary>
+        /// Checks whether an email is in use.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// 200 OK and <see cref="CheckInUseResponseModel"/> if value is checked successfully.
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if model state is invalid.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> CheckEmailInUse(CheckInUseRequestModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                return Ok(new CheckInUseResponseModel()
+                {
+                    InUse = await _vakAccountRepository.
+                        CheckEmailInUseAsync(model.Value, HttpContext.RequestAborted)
+                });
+            }
+
+            return BadRequest(new CheckInUseResponseModel
+            {
+                ExpectedError = true,
+                ModelState = new SerializableError(ModelState)
+            });
+        }
+
+
+        /// <summary>
+        /// Checks whether a display name is in use.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns>
+        /// 200 OK and <see cref="CheckInUseResponseModel"/> if value is checked successfully.
+        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if model state is invalid.
+        /// </returns>
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> CheckDisplayNameInUse(CheckInUseRequestModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                return Ok(new CheckInUseResponseModel()
+                {
+                    InUse = await _vakAccountRepository.
+                        CheckDisplayNameInUseAsync(model.Value, HttpContext.RequestAborted)
+                });
+            }
+
+            return BadRequest(new CheckInUseResponseModel
             {
                 ExpectedError = true,
                 ModelState = new SerializableError(ModelState)
