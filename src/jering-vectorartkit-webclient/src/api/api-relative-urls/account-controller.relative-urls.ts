@@ -20,5 +20,7 @@ export class AccountControllerRelativeUrls  {
     static sendEmailVerificationEmail: string = `Account/SendEmailVerificationEmail`;
     static sendAltEmailVerificationEmail: string = `Account/SendAltEmailVerificationEmail`;
     static twoFactorVerifyEmail: string = `Account/TwoFactorVerifyEmail`;
+    static checkEmailInUse: string = `Account/CheckEmailInUse`;
+    static checkDisplayNameInUse: string = `Account/CheckDisplayNameInUse`;
     
 }
