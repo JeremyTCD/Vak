@@ -1,7 +1,7 @@
 ﻿using Jering.DataAnnotations;
 using Jering.VectorArtKit.WebApi.Resources;
 
-namespace Jering.VectorArtKit.WebApi.RequestModels
+namespace Jering.VectorArtKit.WebApi.RequestModels.Account
 {
     public class SetEmailVerifiedRequestModel
     {

@@ -2,7 +2,7 @@
 using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.Resources;
 
-namespace Jering.VectorArtKit.WebApi.RequestModels
+namespace Jering.VectorArtKit.WebApi.RequestModels.Account
 {
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_Submit), typeof(Strings))]
     public class ResetPasswordRequestModel

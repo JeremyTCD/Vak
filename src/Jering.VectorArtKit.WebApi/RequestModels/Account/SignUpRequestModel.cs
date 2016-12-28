@@ -4,14 +4,14 @@ using Jering.VectorArtKit.WebApi.Controllers;
 using Jering.VectorArtKit.WebApi.Resources;
 using System.ComponentModel.DataAnnotations;
 
-namespace Jering.VectorArtKit.WebApi.RequestModels
+namespace Jering.VectorArtKit.WebApi.RequestModels.Account
 {
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_SignUp), typeof(Strings))]
     public class SignUpRequestModel
     {
         [ValidateRequired(nameof(Strings.ErrorMessage_Email_Required), typeof(Strings))]
         [ValidateEmailAddress(nameof(Strings.ErrorMessage_Email_Invalid), typeof(Strings))]
-        [AsyncValidate(nameof(Strings.ErrorMessage_Email_InUse), typeof(Strings), nameof(DynamicFormController), nameof(DynamicFormController.ValidateEmailNotInUse))]
+        [AsyncValidate(nameof(Strings.ErrorMessage_Email_InUse), typeof(Strings), nameof(AccountController), nameof(AccountController.CheckEmailInUse))]
         [DynamicControl("input", nameof(Strings.DisplayName_Email), typeof(Strings), 0)]
         [DynamicControlProperty("type", "email")]
         public string Email { get; set; }

@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.VectorArtKit.WebApi.RequestModels
+namespace Jering.VectorArtKit.WebApi.RequestModels.Account
 {
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_Submit), typeof(Strings))]
     public class SetAltEmailRequestModel
@@ -20,7 +20,6 @@ namespace Jering.VectorArtKit.WebApi.RequestModels
 
         [ValidateRequired(nameof(Strings.ErrorMessage_NewAltEmail_Required), typeof(Strings))]
         [ValidateEmailAddress(nameof(Strings.ErrorMessage_Email_Invalid), typeof(Strings))]
-        [AsyncValidate(nameof(Strings.ErrorMessage_Email_InUse), typeof(Strings), nameof(DynamicFormController), nameof(DynamicFormController.ValidateEmailNotInUse))]
         [DynamicControl("input", nameof(Strings.DisplayName_NewAltEmail), typeof(Strings), 1)]
         [DynamicControlProperty("type", "email")]
         public string NewAltEmail { get; set; }

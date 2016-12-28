@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Jering.VectorArtKit.WebApi.RequestModels
+namespace Jering.VectorArtKit.WebApi.RequestModels.Account
 {
     [DynamicForm(nameof(Strings.ErrorMessage_Form_Invalid), nameof(Strings.ButtonText_Submit), typeof(Strings))]
     public class SetDisplayNameRequestModel
@@ -21,8 +21,8 @@ namespace Jering.VectorArtKit.WebApi.RequestModels
         [ValidateRequired(nameof(Strings.ErrorMessage_NewDisplayName_Required), typeof(Strings))]
         [AsyncValidate(nameof(Strings.ErrorMessage_DisplayName_InUse),
             typeof(Strings),
-            nameof(DynamicFormController),
-            nameof(DynamicFormController.ValidateDisplayNameNotInUse))]
+            nameof(AccountController),
+            nameof(AccountController.CheckDisplayNameInUse))]
         [DynamicControl("input", nameof(Strings.DisplayName_NewDisplayName), typeof(Strings), 1)]
         [DynamicControlProperty("type", "text")]
         public string NewDisplayName { get; set; }
