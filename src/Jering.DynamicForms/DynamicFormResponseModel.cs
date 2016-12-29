@@ -9,19 +9,6 @@ namespace Jering.DynamicForms
     /// </summary>
     public class DynamicFormResponseModel
     {
-        /// <summary>
-        /// Error message
-        /// </summary>
-        public string ErrorMessage { get; set; }
-
-        /// <summary>
-        /// Button text
-        /// </summary>
-        public string ButtonText { get; set; }
-
-        /// <summary>
-        /// Dynamic controls
-        /// </summary>
-        public List<DynamicControlResponseModel> DynamicControlResponseModels { get; set; }
+        public DynamicFormData DynamicFormData { get; set; }
     }
 }
