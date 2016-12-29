@@ -5,3 +5,5 @@ export interface SignUpRequestModel {
 	password?: string;
 	confirmPassword?: string;
 }
+
+export const signUpRequestModelName: string = `SignUpRequestModel`;

@@ -1,8 +1,14 @@
- 
 
-export interface SetEmailVerifiedResponseModel {
-	modelState?: { [key: string]: any; };
-	expectedError?: boolean;
-	invalidToken?: boolean;
-	errorMessage?: string;
-}
+
+
+    export interface SetEmailVerifiedResponseModel {
+	    modelState?: { [key: string]: any; };
+	    expectedError?: boolean;
+	    invalidToken?: boolean;
+	    errorMessage?: string;
+    }
+
+    
+
+        
+

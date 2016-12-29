@@ -6,3 +6,5 @@ export interface ResetPasswordRequestModel {
 	newPassword?: string;
 	confirmPassword?: string;
 }
+
+export const resetPasswordRequestModelName: string = `ResetPasswordRequestModel`;

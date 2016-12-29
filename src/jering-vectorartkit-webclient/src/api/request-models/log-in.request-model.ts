@@ -5,3 +5,5 @@ export interface LogInRequestModel {
 	password?: string;
 	rememberMe?: string;
 }
+
+export const logInRequestModelName: string = `LogInRequestModel`;

@@ -5,3 +5,5 @@ export interface SetPasswordRequestModel {
 	newPassword?: string;
 	confirmNewPassword?: string;
 }
+
+export const setPasswordRequestModelName: string = `SetPasswordRequestModel`;

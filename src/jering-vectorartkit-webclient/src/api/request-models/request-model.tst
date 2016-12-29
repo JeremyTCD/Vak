@@ -24,8 +24,15 @@ ${
 				.Trim()
 				.ToLower();
 	}
+
+    string nameName(Class c){
+        return c.name + "Name";
+    }
 }$Classes(*RequestModel)[
 
 export interface $Name {$Properties[
 	$name?: string;]
-}]
+}
+
+export const $nameName: string = `$Name`;
+]

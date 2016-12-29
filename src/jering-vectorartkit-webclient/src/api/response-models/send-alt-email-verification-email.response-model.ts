@@ -1,8 +1,14 @@
- 
 
-export interface SendAltEmailVerificationEmailResponseModel {
-	modelState?: { [key: string]: any; };
-	expectedError?: boolean;
-	errorMessage?: string;
-	invalidAltEmail?: boolean;
-}
+
+
+    export interface SendAltEmailVerificationEmailResponseModel {
+	    modelState?: { [key: string]: any; };
+	    expectedError?: boolean;
+	    errorMessage?: string;
+	    invalidAltEmail?: boolean;
+    }
+
+    
+
+        
+
