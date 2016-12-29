@@ -27,7 +27,7 @@ namespace Jering.VectorArtKit.WebApi
         private IHostingEnvironment _hostingEnvironment { get; }
         // Matches default resolver settings used by MVC
         private JsonSerializerSettings _jsonSerializationSettings { get; } =
-            new JsonSerializerSettings() { ContractResolver = new DefaultContractResolver() { NamingStrategy = new CamelCaseNamingStrategy() } };
+            new JsonSerializerSettings() { ContractResolver = new CamelCasePropertyNamesContractResolver() };
 
         public Startup(IHostingEnvironment env)
         {
@@ -43,7 +43,8 @@ namespace Jering.VectorArtKit.WebApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.AddMvc().
+                AddJsonOptions(options => options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver());
             services.Configure<AntiforgeryOptions>(options =>
             {
                 options.CookieName = "AF-TOKEN";
