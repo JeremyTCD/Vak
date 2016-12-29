@@ -5,7 +5,7 @@ namespace Jering.DynamicForms
     /// <summary>
     /// Data that defines a dynamic control.
     /// </summary>
-    public class DynamicControlResponseModel
+    public class DynamicControlData
     {
         /// <summary>
         /// Control name
@@ -33,13 +33,13 @@ namespace Jering.DynamicForms
         public Dictionary<string, string> Properties { get; set; }
 
         /// <summary>
-        /// List of <see cref="ValidatorResponseModel"/>
+        /// List of <see cref="ValidatorData"/>
         /// </summary>
-        public List<ValidatorResponseModel> ValidatorResponseModels { get; set; }
+        public List<ValidatorData> ValidatorData { get; set; }
 
         /// <summary>
-        /// Async validator <see cref="ValidatorResponseModel"/> 
+        /// Async validator <see cref="ValidatorData"/> 
         /// </summary>
-        public ValidatorResponseModel AsyncValidatorResponseModel { get; set; }
+        public ValidatorData AsyncValidatorData { get; set; }
     }
 }

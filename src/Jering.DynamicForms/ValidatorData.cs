@@ -5,7 +5,7 @@ namespace Jering.DynamicForms
     /// <summary>
     /// Data that defines a control validator
     /// </summary>
-    public class ValidatorResponseModel
+    public class ValidatorData
     {
         /// <summary>
         /// Validator name  
