@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "Microsoft.Extensions.Caching.Abstractions": "1.1.0",
+    "Microsoft.Extensions.DependencyModel": "1.1.0",
     "System.Runtime": "4.3.0",
     "System.Runtime.InteropServices": "4.3.0"
   },
