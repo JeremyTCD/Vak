@@ -111,7 +111,7 @@ export class DynamicControlValidators {
      *   control values do not differ
      */
     static validateDiffers(validatorData: ValidatorData): DynamicControlValidator {
-        let otherProperty = validatorData.options[`OtherProperty`];
+        let otherProperty = validatorData.options[`otherProperty`];
         let otherControlName = otherProperty.charAt(0).toLowerCase() + otherProperty.slice(1);
 
         return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
@@ -166,7 +166,7 @@ export class DynamicControlValidators {
      * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value does not have specified length
      */
     static validateLength(validatorData: ValidatorData): DynamicControlValidator {
-        let length = parseInt(validatorData.options[`Length`], 10);
+        let length = parseInt(validatorData.options[`length`], 10);
 
         return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             if (!Check.isValue(dynamicControl.value) || dynamicControl.value.length === length) {
@@ -186,7 +186,7 @@ export class DynamicControlValidators {
      * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control values do not match
      */
     static validateMatches(validatorData: ValidatorData, dynamicControl: DynamicControl): DynamicControlValidator {
-        let otherProperty = validatorData.options[`OtherProperty`];
+        let otherProperty = validatorData.options[`otherProperty`];
         let otherControlName = otherProperty.charAt(0).toLowerCase() + otherProperty.slice(1);
 
         dynamicControl.providerSiblingsNames.push(otherControlName);
@@ -211,7 +211,7 @@ export class DynamicControlValidators {
      * - DynamicControlValidatorResult with validity = Validity.invalid and message set to an error message if control value`s length is less than specified minimum length length
      */
     static validateMinLength(validatorData: ValidatorData): DynamicControlValidator {
-        let length = parseInt(validatorData.options[`MinLength`], 10);
+        let length = parseInt(validatorData.options[`minLength`], 10);
 
         return (dynamicControl: DynamicControl): DynamicControlValidatorResult => {
             if (!Check.isValue(dynamicControl.value) || dynamicControl.value.length >= length) {

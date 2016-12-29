@@ -30,7 +30,7 @@ export class DynamicControlAsyncValidator {
             debounceTime(200).
             map((value: string) => {
                 return dynamicFormsService.
-                    validateValue(validatorData.options[`RelativeUrl`], value);
+                    validateValue(validatorData.options[`relativeUrl`], value);
             }).
             switch();
 
