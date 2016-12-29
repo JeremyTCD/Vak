@@ -14,12 +14,13 @@ namespace Jering.DynamicForms
         /// <param name="services"></param>
         public static void AddDynamicForms(this IServiceCollection services)
         {
-            services.AddScoped<IDynamicFormService, DynamicFormService>();
+            // DynamicFormService lazily generates and caches DynamicFormData 
+            services.AddSingleton<IDynamicFormService, DynamicFormService>();
             services.AddScoped<IDynamicFormBuilder, DynamicFormBuilder>();
 
             // Misc
-            services.AddScoped<IAssemblyService, AssemblyService>();
-            services.AddScoped<IMemoryCacheService, MemoryCacheService>();
+            // AssemblyService caches referencing assemblies
+            services.AddSingleton<IAssemblyService, AssemblyService>();
         }
     }
 }
