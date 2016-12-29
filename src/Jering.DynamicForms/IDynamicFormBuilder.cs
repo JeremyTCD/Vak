@@ -7,14 +7,14 @@ namespace Jering.DynamicForms
     /// <summary>
     /// 
     /// </summary>
-    public interface IDynamicFormsBuilder
+    public interface IDynamicFormBuilder
     {
         /// <summary>
         /// 
         /// </summary>
         /// <param name="typeInfo"></param>
         /// <returns></returns>
-        DynamicFormResponseModel BuildDynamicFormResponseModel(TypeInfo typeInfo);
+        DynamicFormData BuildDynamicFormData(TypeInfo typeInfo);
 
 
         /// <summary>
@@ -22,13 +22,13 @@ namespace Jering.DynamicForms
         /// </summary>
         /// <param name="propertyInfo"></param>
         /// <returns></returns>
-        DynamicControlResponseModel BuildDynamicControlResponseModel(PropertyInfo propertyInfo);
+        DynamicControlData BuildDynamicControlData(PropertyInfo propertyInfo);
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="validationAttribute"></param>
         /// <returns></returns>
-        ValidatorResponseModel BuildDynamicControlValidatorResponseModel(ValidationAttribute validationAttribute);
+        ValidatorData BuildDynamicControlValidatorData(ValidationAttribute validationAttribute);
     }
 }

@@ -8,27 +8,27 @@ using Xunit;
 
 namespace Jering.DynamicForms.Tests.UnitTests
 {
-    public class DynamicFormsBuilderUnitTests
+    public class DynamicFormBuilderUnitTests
     {
         [Fact]
-        public void BuildDynamicControlResponseModel_CreatesDynamicControlResponseModelFromPropertyInfo()
+        public void BuildDynamicControlData_CreatesDynamicControlDataFromPropertyInfo()
         {
             // Arrange
-            PropertyInfo propertyInfo = typeof(DummyFormModel).GetProperty(nameof(DummyFormModel.Email));
-            DynamicFormsBuilder dynamicFormsBuilder = new DynamicFormsBuilder();
+            PropertyInfo propertyInfo = typeof(DummyRequestModel).GetProperty(nameof(DummyRequestModel.Email));
+            DynamicFormBuilder dynamicFormsBuilder = new DynamicFormBuilder();
 
             // Act
-            DynamicControlResponseModel result = dynamicFormsBuilder.BuildDynamicControlResponseModel(propertyInfo);
+            DynamicControlData result = dynamicFormsBuilder.BuildDynamicControlData(propertyInfo);
 
             // Assert
             Assert.Equal("email", result.Name);
             Assert.Equal(0, result.Order);
             Assert.Equal("input", result.TagName);
-            Assert.NotNull(result.ValidatorResponseModels);
-            Assert.Equal(result.ValidatorResponseModels.Count, 1);
-            Assert.Equal("validateMatches", result.ValidatorResponseModels[0].Name);
-            Assert.NotNull(result.AsyncValidatorResponseModel);
-            Assert.Equal("asyncValidate", result.AsyncValidatorResponseModel.Name);
+            Assert.NotNull(result.ValidatorData);
+            Assert.Equal(result.ValidatorData.Count, 1);
+            Assert.Equal("validateMatches", result.ValidatorData[0].Name);
+            Assert.NotNull(result.AsyncValidatorData);
+            Assert.Equal("asyncValidate", result.AsyncValidatorData.Name);
             Assert.Equal(DummyStrings.Dummy, result.DisplayName);
             Assert.NotNull(result.Properties);
             Assert.Equal(result.Properties["type"], "email");
@@ -36,58 +36,58 @@ namespace Jering.DynamicForms.Tests.UnitTests
         }
 
         [Fact]
-        public void BuildDynamicControlResponseModel_ReturnsNullForPropertyInfoWithNoDynamicControlAttribute()
+        public void BuildDynamicControlData_ReturnsNullForPropertyInfoWithNoDynamicControlAttribute()
         {
             // Arrange
-            DynamicFormsBuilder dynamicFormsBuilder = new DynamicFormsBuilder();
-            PropertyInfo propertyInfo = typeof(DummyFormModel).GetProperty(nameof(DummyFormModel.Password));
+            DynamicFormBuilder dynamicFormsBuilder = new DynamicFormBuilder();
+            PropertyInfo propertyInfo = typeof(DummyRequestModel).GetProperty(nameof(DummyRequestModel.Password));
 
             // Act
-            DynamicControlResponseModel result = dynamicFormsBuilder.BuildDynamicControlResponseModel(propertyInfo);
+            DynamicControlData result = dynamicFormsBuilder.BuildDynamicControlData(propertyInfo);
 
             // Assert
             Assert.Null(result);
         }
 
         [Fact]
-        public void BuildDynamicFormResponseModel_CreatesDynamicFormResponseModelFromTypeInfo()
+        public void BuildDynamicFormData_CreatesDynamicFormDataFromTypeInfo()
         {
             // Arrange
-            DynamicFormsBuilder dynamicFormsBuilder = new DynamicFormsBuilder();
-            Mock<DynamicFormsBuilder> mockBuilder = new Mock<DynamicFormsBuilder>();
-            mockBuilder.Setup(b => b.BuildDynamicControlResponseModel(It.IsAny<PropertyInfo>())).Returns(new DynamicControlResponseModel());
+            DynamicFormBuilder dynamicFormsBuilder = new DynamicFormBuilder();
+            Mock<DynamicFormBuilder> mockBuilder = new Mock<DynamicFormBuilder>();
+            mockBuilder.Setup(b => b.BuildDynamicControlData(It.IsAny<PropertyInfo>())).Returns(new DynamicControlData());
             mockBuilder.CallBase = true;
 
             // Act
-            DynamicFormResponseModel result = mockBuilder.Object.BuildDynamicFormResponseModel(typeof(DummyFormModel).GetTypeInfo());
+            DynamicFormData result = mockBuilder.Object.BuildDynamicFormData(typeof(DummyRequestModel).GetTypeInfo());
 
             // Assert
             Assert.NotNull(result);
             mockBuilder.VerifyAll();
-            Assert.Equal(3, result.DynamicControlResponseModels.Count);
+            Assert.Equal(3, result.DynamicControlData.Count);
             Assert.Equal(DummyStrings.Dummy, result.ErrorMessage);
             Assert.Equal(DummyStrings.Dummy, result.ButtonText);
         }
 
         [Fact]
-        public void BuildDynamicFormResponseModel_ThrowsArgumentExceptionIfTypeInfoDoesNotHaveADynamicFormAttribute()
+        public void BuildDynamicFormData_ThrowsArgumentExceptionIfTypeInfoDoesNotHaveADynamicFormAttribute()
         {
             // Arrange
-            DynamicFormsBuilder dynamicFormsBuilder = new DynamicFormsBuilder();
+            DynamicFormBuilder dynamicFormsBuilder = new DynamicFormBuilder();
 
             // Act and Assert
-            Assert.Throws<ArgumentException>(() => dynamicFormsBuilder.BuildDynamicFormResponseModel(typeof(DummyFormModel_NoDynamicFormAttribute).GetTypeInfo()));
+            Assert.Throws<ArgumentException>(() => dynamicFormsBuilder.BuildDynamicFormData(typeof(DummyRequestModel_NoDynamicFormAttribute).GetTypeInfo()));
         }
 
         [Fact]
-        public void BuildDynamicControlValidatorResponseModel_CreatesDynamicControlValidatorResponseModelFromValidationAttribute()
+        public void BuildDynamicControlValidatorData_CreatesDynamicControlValidatorDataFromValidationAttribute()
         {
             // Arrange
-            DynamicFormsBuilder dynamicFormsBuilder = new DynamicFormsBuilder();
+            DynamicFormBuilder dynamicFormsBuilder = new DynamicFormBuilder();
             DummyValidationAttribute dummyValidationAttribute = new DummyValidationAttribute("dummyString", 0, nameof(DummyStrings.Dummy), typeof(DummyStrings));
 
             // Act
-            ValidatorResponseModel result = dynamicFormsBuilder.BuildDynamicControlValidatorResponseModel(dummyValidationAttribute);
+            ValidatorData result = dynamicFormsBuilder.BuildDynamicControlValidatorData(dummyValidationAttribute);
 
             // Assert
             Assert.Equal("dummyValidation", result.Name);
@@ -98,14 +98,14 @@ namespace Jering.DynamicForms.Tests.UnitTests
         }
 
         [Fact]
-        public void BuildDynamicControlValidatorResponseModel_CreatesDynamicControlValidatorResponseModelFromAsyncValidationAttribute()
+        public void BuildDynamicControlValidatorData_CreatesDynamicControlValidatorDataFromAsyncValidationAttribute()
         {
             // Arrange
-            DynamicFormsBuilder dynamicFormsBuilder = new DynamicFormsBuilder();
+            DynamicFormBuilder dynamicFormsBuilder = new DynamicFormBuilder();
             AsyncValidateAttribute dummyValidationAttribute = new AsyncValidateAttribute(nameof(DummyStrings.Dummy), typeof(DummyStrings), "testController", "testAction");
 
             // Act
-            ValidatorResponseModel result = dynamicFormsBuilder.BuildDynamicControlValidatorResponseModel(dummyValidationAttribute);
+            ValidatorData result = dynamicFormsBuilder.BuildDynamicControlValidatorData(dummyValidationAttribute);
 
             // Assert
             Assert.Equal("asyncValidate", result.Name);
@@ -114,13 +114,13 @@ namespace Jering.DynamicForms.Tests.UnitTests
             Assert.Equal(result.Options[nameof(AsyncValidateAttribute.RelativeUrl)], "test/testAction");
         }
 
-        private class DummyFormModel_NoDynamicFormAttribute
+        private class DummyRequestModel_NoDynamicFormAttribute
         {
 
         }
 
         [DynamicForm(nameof(DummyStrings.Dummy), nameof(DummyStrings.Dummy), typeof(DummyStrings))]
-        private class DummyFormModel
+        private class DummyRequestModel
         {
             [ValidateMatches("Password", nameof(DummyStrings.Dummy), typeof(DummyStrings))]
             [AsyncValidate(nameof(DummyStrings.Dummy), typeof(DummyStrings), "TestController", "TestAction")]
