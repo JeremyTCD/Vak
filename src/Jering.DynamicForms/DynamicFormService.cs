@@ -1,29 +1,30 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.Caching.Memory;
 using Jering.Utilities;
+using System.Collections.Concurrent;
 
 namespace Jering.DynamicForms
 {
     public class DynamicFormService : IDynamicFormService
     {
+        private ConcurrentDictionary<string, DynamicFormData> _formData { get; }
+        private string _assemblyName { get; }
         private IDynamicFormBuilder _dynamicFormBuilder { get; }
-        private IMemoryCacheService _memoryCacheService { get; }
         private IAssemblyService _assemblyService { get; }
 
         /// <summary>
         /// Constructs a new instance of <see cref="DynamicFormService"/>.
         /// </summary>
-        /// <param name="memoryCache"></param>
+        /// <param name="assemblyService"></param>
         /// <param name="dynamicFormBuilder"></param>
         public DynamicFormService(IDynamicFormBuilder dynamicFormBuilder,
-            IAssemblyService assemblyService,
-            IMemoryCacheService memoryCache)
+            IAssemblyService assemblyService)
         {
             _dynamicFormBuilder = dynamicFormBuilder;
-            _memoryCacheService = memoryCache;
             _assemblyService = assemblyService;
+            _formData = new ConcurrentDictionary<string, DynamicFormData>();
+            _assemblyName = typeof(DynamicFormService).GetTypeInfo().Assembly.GetName().Name;
         }
 
         /// <summary>
@@ -41,30 +42,25 @@ namespace Jering.DynamicForms
                 throw new ArgumentException(nameof(modelName));
             }
 
-            DynamicFormData data = _memoryCacheService.Get(modelName) as DynamicFormData;
+            return _formData.GetOrAdd(modelName, FormDataGenerator);
+        }
 
-            if (data == null)
+
+        #region Helpers
+        private DynamicFormData FormDataGenerator(string modelName)
+        {
+            Type type = _assemblyService.
+                GetReferencingAssemblies(_assemblyName).
+                SelectMany(a => a.ExportedTypes).
+                FirstOrDefault(e => e.Name == modelName);
+
+            if (type != null)
             {
-                Assembly assembly = _assemblyService.GetEntryAssembly();
-                Type type = assembly.
-                    ExportedTypes.
-                    First(exportedType => exportedType.Name == modelName);
-
-                if (type != null)
-                {
-                    data = _dynamicFormBuilder.BuildDynamicFormData(type.GetTypeInfo());
-
-                    if (data != null)
-                    {
-                        _memoryCacheService.
-                            Set(modelName,
-                                data,
-                                new MemoryCacheEntryOptions().SetPriority(CacheItemPriority.NeverRemove));
-                    }
-                }
+                return _dynamicFormBuilder.BuildDynamicFormData(type.GetTypeInfo());
             }
 
-            return data;
-        }
+            return null;
+        } 
+        #endregion
     }
 }
