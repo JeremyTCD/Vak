@@ -9,13 +9,14 @@ import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-e
 import { AppPaths } from 'app/app.paths';
 
 import { TwoFactorLogInResponseModel } from 'api/response-models/two-factor-log-in.response-model';
+import { twoFactorLogInRequestModelName} from 'api/request-models/two-factor-log-in.request-model';
 import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
 
 @Component({
     templateUrl: './two-factor-auth.component.html'
 })
 export class TwoFactorAuthComponent implements AfterViewInit {
-    static requestModelName = `TwoFactorLogIn`;
+    static requestModelName = twoFactorLogInRequestModelName;
     static formSubmitRelativeUrl = AccountControllerRelativeUrls.twoFactorLogIn;
 
     @ViewChild(`dynamicFormComponent`) dynamicFormComponent: DynamicFormComponent;

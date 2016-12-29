@@ -7,12 +7,14 @@ import { AppPaths } from 'app/app.paths';
 
 import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
 import { ResetPasswordResponseModel } from 'api/response-models/reset-password.response-model';
+import { resetPasswordRequestModelName } from 'api/request-models/reset-password.request-model';
+
 
 @Component({
     templateUrl: './reset-password.component.html'
 })
 export class ResetPasswordComponent implements AfterViewInit, OnInit {
-    static requestModelName = `ResetPassword`;
+    static requestModelName = resetPasswordRequestModelName;
     static formSubmitRelativeUrl = AccountControllerRelativeUrls.resetPassword;
 
     @ViewChild(`dynamicFormComponent`) dynamicFormComponent: DynamicFormComponent;

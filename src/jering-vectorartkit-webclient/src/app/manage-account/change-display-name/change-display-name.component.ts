@@ -5,12 +5,13 @@ import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-e
 import { AppPaths } from 'app/app.paths';
 
 import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
+import { setDisplayNameRequestModelName } from 'api/request-models/set-display-name.request-model';
 
 @Component({
     templateUrl: './change-display-name.component.html'
 })
 export class ChangeDisplayNameComponent {
-    static requestModelName = `SetDisplayName`;
+    static requestModelName = setDisplayNameRequestModelName;
     static formSubmitRelativeUrl = AccountControllerRelativeUrls.setDisplayName;
 
     manageAccountPath: string = AppPaths.manageAccountPath;

@@ -9,14 +9,14 @@ import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-e
 import { AppPaths } from 'app/app.paths';
 
 import { SignUpResponseModel} from 'api/response-models/sign-up.response-model';
-import { SignUpRequestModel } from 'api/request-models/sign-up.request-model';
+import { SignUpRequestModel, signUpRequestModelName } from 'api/request-models/sign-up.request-model';
 import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
 
 @Component({
     templateUrl: './sign-up.component.html'
 })
 export class SignUpComponent {
-    static requestModelName = `SignUp`;
+    static requestModelName = signUpRequestModelName;
     static formSubmitRelativeUrl = AccountControllerRelativeUrls.signUp;
 
     // TODO: Fetch this for localization

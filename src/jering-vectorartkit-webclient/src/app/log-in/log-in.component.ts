@@ -7,14 +7,14 @@ import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-e
 import { AppPaths } from 'app/app.paths';
 
 import { LogInResponseModel } from 'api/response-models/log-in.response-model';
-import { LogInRequestModel } from 'api/request-models/log-in.request-model';
+import { LogInRequestModel, logInRequestModelName } from 'api/request-models/log-in.request-model';
 import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
 
 @Component({
     templateUrl: './log-in.component.html'
 })
 export class LogInComponent {
-    static requestModelName = `LogIn`;
+    static requestModelName = logInRequestModelName;
     static formSubmitRelativeUrl = AccountControllerRelativeUrls.logIn;
 
     forgotPasswordPath: string = AppPaths.forgotPasswordPath;

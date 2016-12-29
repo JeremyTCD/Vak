@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-event.model';
 
 import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
+import { sendResetPasswordEmailRequestModelName } from 'api/request-models/send-reset-password-email.request-model';
 
 import { AppPaths } from 'app/app.paths';
 
@@ -10,7 +11,7 @@ import { AppPaths } from 'app/app.paths';
     templateUrl: './forgot-password.component.html'
 })
 export class ForgotPasswordComponent {
-    static requestModelName = `SendResetPasswordEmail`;
+    static requestModelName = sendResetPasswordEmailRequestModelName;
     static formSubmitRelativeUrl = AccountControllerRelativeUrls.sendResetPasswordEmail;
 
     submitSuccessful: boolean;

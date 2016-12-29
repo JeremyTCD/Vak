@@ -5,12 +5,13 @@ import { SubmitEventModel } from 'app/shared/dynamic-forms/dynamic-form/submit-e
 import { AppPaths } from 'app/app.paths';
 
 import { AccountControllerRelativeUrls } from 'api/api-relative-urls/account-controller.relative-urls';
+import { setAltEmailRequestModelName } from 'api/request-models/set-alt-email.request-model';
 
 @Component({
     templateUrl: './change-alt-email.component.html'
 })
 export class ChangeAltEmailComponent {
-    static requestModelName = `SetAltEmail`;
+    static requestModelName = setAltEmailRequestModelName;
     static formSubmitRelativeUrl = AccountControllerRelativeUrls.setAltEmail;
 
     manageAccountPath: string = AppPaths.manageAccountPath;
