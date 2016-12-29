@@ -1,45 +1,45 @@
 ﻿using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.Extensions;
 using Jering.VectorArtKit.WebApi.RequestModels.DynamicForm;
+using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForm;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Reflection;
 
 namespace Jering.VectorArtKit.WebApi.Controllers
 {
     public class DynamicFormController : Controller
     {
-        private IDynamicFormsBuilder _dynamicFormsBuilder {get;set;}
-        private IAntiforgery _antiforgery;
+        private IDynamicFormBuilder _dynamicFormsBuilder {get;set;}
+        private IAntiforgery _antiforgery { get; set; }
+        private IDynamicFormService _dynamicFormService { get; set; }
 
-        public DynamicFormController(IDynamicFormsBuilder dynamicFormsBuilder,
+        public DynamicFormController(IDynamicFormBuilder dynamicFormsBuilder,
+            IDynamicFormService dynamicFormService,
             IAntiforgery antiforgery)
         {
             _antiforgery = antiforgery;
             _dynamicFormsBuilder = dynamicFormsBuilder;
+            _dynamicFormService = dynamicFormService;
         }
 
-        // Logic should be moved to service
-
         /// <summary>
-        /// Gets <see cref="DynamicFormResponseModel"/> for a form model.
+        /// Gets <see cref="GetDynamicFormResponseModel"/> for a form model.
         /// </summary>
         /// <param name="requestModelName"></param>
         /// <returns>
-        /// 200 OK, anti-forgery cookies if getAfTokens is true and <see cref="DynamicFormResponseModel"/> if request model name is 
-        /// the name of an existing dynamic form model.
-        /// 404 NotFound and <see cref="ErrorResponseModel"/> if request model name is not the name of an existing dynamic form model.
+        /// 200 OK, anti-forgery cookies if getAfTokens is true and <see cref="GetDynamicFormResponseModel"/> if request 
+        /// model name is the name of an existing model with a <see cref="DynamicFormAttribute"/>.
+        /// 404 NotFound and <see cref="ErrorResponseModel"/> if request model name is not the name of 
+        /// an existing model with a <see cref="DynamicFormAttribute"/>.
         /// </returns>
         [HttpGet]
         [AllowAnonymous]
         public IActionResult GetDynamicForm(GetDynamicFormRequestModel model)
         {
-            // TODO cannot be account specific 
-            Type type = Type.GetType($"Jering.VectorArtKit.WebApi.RequestModels.Account.{model.requestModelName}RequestModel");
+            DynamicFormData data = _dynamicFormService.GetDynamicFormAction(model.requestModelName);
 
-            if(type == null)
+            if(data == null)
             {
                 return NotFound();
             }
@@ -49,7 +49,10 @@ namespace Jering.VectorArtKit.WebApi.Controllers
                 _antiforgery.AddAntiforgeryCookies(HttpContext);
             }
 
-            return Ok(_dynamicFormsBuilder.BuildDynamicFormResponseModel(type.GetTypeInfo()));
+            return Ok(new GetDynamicFormResponseModel()
+            {
+                DynamicFormData = data
+            });
         }
     }
 }

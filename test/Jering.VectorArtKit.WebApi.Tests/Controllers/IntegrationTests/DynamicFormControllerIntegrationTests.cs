@@ -1,15 +1,15 @@
-﻿using Jering.DynamicForms;
-using Jering.Utilities;
+﻿using Jering.Utilities;
 using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.Controllers;
+using Jering.VectorArtKit.WebApi.RequestModels.Account;
 using Jering.VectorArtKit.WebApi.RequestModels.DynamicForm;
 using Jering.VectorArtKit.WebApi.Resources;
+using Jering.VectorArtKit.WebApi.ResponseModels.DynamicForm;
 using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -40,10 +40,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task GetDynamicForm_Returns200OkAntiForgeryTokensIfGetAfTokensIsTrueAndGetDynamicFormModelIfFormModelNameIsTheNameOfAnExistingFormModel()
+        public async Task GetDynamicForm_Returns200OkAntiForgeryTokensIfGetAfTokensIsTrueAndGetDynamicFormResponseModelIfFormModelNameIsTheNameOfAnExistingFormModel()
         {
             //Arrange
-            string signUpRequestModelName = "SignUp";
+            string signUpRequestModelName = nameof(SignUpRequestModel);
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/" +
                 $"{nameof(DynamicFormController.GetDynamicForm)}?" +
                 $"{nameof(GetDynamicFormRequestModel.requestModelName)}={signUpRequestModelName}" +
@@ -54,9 +54,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
             // Assert
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
-            DynamicFormResponseModel body = JsonConvert.DeserializeObject<DynamicFormResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
+            GetDynamicFormResponseModel body = JsonConvert.DeserializeObject<GetDynamicFormResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.NotNull(body);
-            Assert.Equal(3, body.DynamicControlResponseModels.Count);
+            Assert.Equal(3, body.DynamicFormData.DynamicControlData.Count);
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
             Assert.Equal(2, cookies.Count());
             Assert.True(cookies.Keys.Contains("AF-TOKEN"));
