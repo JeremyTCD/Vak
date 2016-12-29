@@ -4,9 +4,10 @@ import { Observable } from 'rxjs/Observable';
 
 import { DynamicControl } from './dynamic-control/dynamic-control';
 import { DynamicForm } from './dynamic-form/dynamic-form';
-import { DynamicFormResponseModel } from 'api/response-models/dynamic-form.response-model';
+import { GetDynamicFormResponseModel } from 'api/response-models/get-dynamic-form.response-model';
+import { DynamicFormData} from 'api/response-models/get-dynamic-form.response-model';
 import { DynamicFormsService } from './dynamic-forms.service';
-import { ValidateResponseModel } from 'api/response-models/validate.response-model';
+import { ValidateValueResponseModel } from 'api/response-models/validate-value.response-model';
 import { environment } from 'environments/environment';
 import { Validity } from './validity';
 import { HttpService } from '../http.service';
@@ -20,7 +21,8 @@ let testRelativeUrl = `testRelativeUrl`;
 let testDynamicControl: DynamicControl;
 let testDynamicForm: DynamicForm;
 let testResponse: Response;
-let testDynamicFormResponseModel: DynamicFormResponseModel;
+let testGetDynamicFormResponseModel: GetDynamicFormResponseModel;
+let testDynamicFormData: DynamicFormData;
 
 describe('DynamicFormsService', () => {
     beforeEach(() => {
@@ -36,12 +38,13 @@ describe('DynamicFormsService', () => {
 
     describe(`getDynamicForm`, () => {
         beforeEach(() => {
-            testDynamicFormResponseModel = { dynamicControlResponseModels: [], errorMessage: testMessage, buttonText: testButtonText};
+            testDynamicFormData = { dynamicControlData: [], errorMessage: testMessage, buttonText: testButtonText }
+            testGetDynamicFormResponseModel = { dynamicFormData: testDynamicFormData };
         });
 
         it('Calls Http.get',
             inject([DynamicFormsService, HttpService], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
-                let getSpy = spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testDynamicFormResponseModel));
+                let getSpy = spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testGetDynamicFormResponseModel));
 
                 dynamicFormsService.
                     getDynamicForm(testRequestModelName, true).
@@ -56,9 +59,9 @@ describe('DynamicFormsService', () => {
             })
         );
 
-        it(`Maps response to a DynamicFormResponseModel if Http.get succeeds`,
+        it(`Maps response to a GetDynamicFormResponseModel if Http.get succeeds`,
             inject([DynamicFormsService, HttpService], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
-                spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testDynamicFormResponseModel));
+                spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testGetDynamicFormResponseModel));
                 let result: DynamicForm;
 
                 dynamicFormsService.
@@ -115,10 +118,10 @@ describe('DynamicFormsService', () => {
 
         it(`Maps ValidateResponseModel to a Validity value if Http.get succeeds`,
             inject([DynamicFormsService, HttpService], (dynamicFormsService: DynamicFormsService, stubHttpService: StubHttpService) => {
-                let testValidateResponseModel: ValidateResponseModel = {valid: true};
+                let responseModel: ValidateValueResponseModel = {valid: true};
                 testResponse = new Response(
                     new ResponseOptions({
-                        body: JSON.stringify(testValidateResponseModel)
+                        body: JSON.stringify(responseModel)
                     })
                 );
                 spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testResponse));

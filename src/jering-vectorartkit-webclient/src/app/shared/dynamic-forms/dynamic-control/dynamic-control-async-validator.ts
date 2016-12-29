@@ -2,7 +2,7 @@
 
 import { DynamicFormsService } from '../dynamic-forms.service';
 import { DynamicControlValidator } from './dynamic-control-validator';
-import { ValidatorResponseModel } from 'api/response-models/validator.response-model';
+import { ValidatorData } from 'api/response-models/get-dynamic-form.response-model';
 import { DynamicControl } from './dynamic-control';
 import { Validity } from '../validity';
 import { DynamicControlValidatorResult } from './dynamic-control-validator-result';
@@ -23,14 +23,14 @@ export class DynamicControlAsyncValidator {
      * - Directly sets dynamicControl.validity to Validity.valid if query observable returns Validity.valid
      * - Otherwise, directly sets dynamicControl.validity to Validity.invalid
      */
-    constructor(validatorResponseModel: ValidatorResponseModel, dynamicControl: DynamicControl,
+    constructor(validatorData: ValidatorData, dynamicControl: DynamicControl,
         dynamicFormsService: DynamicFormsService) {
 
         this.subjectAsObservable = this.subject.
             debounceTime(200).
             map((value: string) => {
                 return dynamicFormsService.
-                    validateValue(validatorResponseModel.options[`RelativeUrl`], value);
+                    validateValue(validatorData.options[`RelativeUrl`], value);
             }).
             switch();
 
@@ -40,7 +40,7 @@ export class DynamicControlAsyncValidator {
                     dynamicControl.validity = Validity.valid;
                 } else {
                     dynamicControl.validity = Validity.invalid;
-                    dynamicControl.messages.push(validatorResponseModel.errorMessage);
+                    dynamicControl.messages.push(validatorData.errorMessage);
                 }
                 dynamicControl.tryValidateParent();
             },

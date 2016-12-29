@@ -1,5 +1,5 @@
-﻿import { ValidatorResponseModel } from 'api/response-models/validator.response-model';
-import { DynamicControlResponseModel } from 'api/response-models/dynamic-control.response-model';
+﻿import { ValidatorData } from 'api/response-models/get-dynamic-form.response-model';
+import { DynamicControlData } from 'api/response-models/get-dynamic-form.response-model';
 import { DynamicControlValidator } from './dynamic-control-validator';
 import { DynamicControlAsyncValidator } from './dynamic-control-async-validator';
 import { DynamicControlValidators } from './dynamic-control-validators';
@@ -28,20 +28,20 @@ export class DynamicControl{
     dependentSiblings: DynamicControl[] = [];
     validity: Validity = Validity.unknown;
 
-    constructor(controlResponseModel: DynamicControlResponseModel, dynamicFormsService?: DynamicFormsService) {
-        this.name = controlResponseModel.name || '';
-        this.displayName = controlResponseModel.displayName || '';
-        this.order = controlResponseModel.order === undefined ? 1 : controlResponseModel.order;
-        this.tagName = controlResponseModel.tagName || '';
+    constructor(dynamicControlData: DynamicControlData, dynamicFormsService?: DynamicFormsService) {
+        this.name = dynamicControlData.name || '';
+        this.displayName = dynamicControlData.displayName || '';
+        this.order = dynamicControlData.order === undefined ? 1 : dynamicControlData.order;
+        this.tagName = dynamicControlData.tagName || '';
         this.validators = [];
-        let validatorModels = controlResponseModel.validatorResponseModels || [];
-        for (let validatorModel of validatorModels) {
-            this.validators.push(DynamicControlValidators[validatorModel.name](validatorModel, this));
+        let validatorData = dynamicControlData.validatorData || [];
+        for (let validatorDatum of validatorData) {
+            this.validators.push(DynamicControlValidators[validatorDatum.name](validatorDatum, this));
         }
-        this.asyncValidator = controlResponseModel.asyncValidatorResponseModel ?
-            new DynamicControlAsyncValidator(controlResponseModel.asyncValidatorResponseModel, this, dynamicFormsService) :
+        this.asyncValidator = dynamicControlData.asyncValidatorData ?
+            new DynamicControlAsyncValidator(dynamicControlData.asyncValidatorData, this, dynamicFormsService) :
             null;
-        this.properties = controlResponseModel.properties || {};
+        this.properties = dynamicControlData.properties || {};
     }
 
     /**

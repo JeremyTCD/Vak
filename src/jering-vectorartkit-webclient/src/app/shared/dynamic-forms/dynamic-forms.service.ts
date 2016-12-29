@@ -4,9 +4,10 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
 
-import { DynamicFormResponseModel } from 'api/response-models/dynamic-form.response-model';
+import { GetDynamicFormResponseModel } from 'api/response-models/get-dynamic-form.response-model';
+import { DynamicFormData } from 'api/response-models/get-dynamic-form.response-model';
 import { ErrorResponseModel } from 'api/response-models/error.response-model';
-import { ValidateResponseModel } from 'api/response-models/validate.response-model';
+import { ValidateValueResponseModel } from 'api/response-models/validate-value.response-model';
 import { GetDynamicFormRequestModel } from 'api/request-models/get-dynamic-form.request-model';
 import { DynamicFormControllerRelativeUrls } from 'api/api-relative-urls/dynamic-form-controller.relative-urls';
 
@@ -45,21 +46,22 @@ export class DynamicFormsService {
     }
 
     /**
-     * Converts a DynamicFormResponseModel into a DynamicForm
+     * Converts a GetDynamicFormResponseModel into a DynamicForm
      *
      * Returns
      * - DynamicForm
      */
-    private dynamicFormFromResponseModel(formResponseModel: DynamicFormResponseModel): DynamicForm {
+    private dynamicFormFromResponseModel(getDynamicFormResponseModel: GetDynamicFormResponseModel): DynamicForm {
+        let dynamicFormData: DynamicFormData = getDynamicFormResponseModel.dynamicFormData; 
         let dynamicControls: DynamicControl[] = [];
 
-        for (let controlResponseModel of formResponseModel.dynamicControlResponseModels) {
-            dynamicControls.push(new DynamicControl(controlResponseModel, this));
+        for (let dynamicControlDatum of dynamicFormData.dynamicControlData) {
+            dynamicControls.push(new DynamicControl(dynamicControlDatum, this));
         }
 
         let dynamicForm = new DynamicForm(dynamicControls.sort((dynamicControl1, dynamicControl2) => dynamicControl1.order - dynamicControl2.order),
-            formResponseModel.errorMessage,
-            formResponseModel.buttonText);
+            dynamicFormData.errorMessage,
+            dynamicFormData.buttonText);
         dynamicForm.setupContext();
 
         return dynamicForm;
@@ -104,7 +106,7 @@ export class DynamicFormsService {
      * - Validity.invalid if ValidateResponseModel.valid is false
      * - Validity.valid otherwise
      */
-    private validityFromResponseModel(responseModel: ValidateResponseModel): Validity{
+    private validityFromResponseModel(responseModel: ValidateValueResponseModel): Validity{
         if (responseModel.valid === false) {
             return Validity.invalid;
         }
