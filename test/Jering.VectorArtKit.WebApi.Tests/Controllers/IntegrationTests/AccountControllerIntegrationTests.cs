@@ -1758,7 +1758,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         public async Task<IDictionary<string, string>> GetAnonymousAntiforgeryCookies()
         {
-            HttpResponseMessage httpResponseMessage = await GetDynamicForm(nameof(SignUpRequestModel).Replace("RequestModel", ""), true);
+            HttpResponseMessage httpResponseMessage = await GetDynamicForm(nameof(SignUpRequestModel), true);
             return CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
         }
 
