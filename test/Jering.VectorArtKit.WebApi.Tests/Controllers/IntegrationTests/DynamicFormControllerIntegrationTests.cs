@@ -40,14 +40,13 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task GetDynamicForm_Returns200OkAntiForgeryTokensIfGetAfTokensIsTrueAndGetDynamicFormResponseModelIfFormModelNameIsTheNameOfAnExistingFormModel()
+        public async Task GetDynamicForm_Returns200OkAndGetDynamicFormResponseModelIfFormModelNameIsTheNameOfAnExistingFormModel()
         {
             //Arrange
             string signUpRequestModelName = nameof(SignUpRequestModel);
             HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_dynamicFormControllerName}/" +
                 $"{nameof(DynamicFormController.GetDynamicForm)}?" +
-                $"{nameof(GetDynamicFormRequestModel.requestModelName)}={signUpRequestModelName}" +
-                $"&{nameof(GetDynamicFormRequestModel.getAfTokens)}={true}", HttpMethod.Get, null);
+                $"{nameof(GetDynamicFormRequestModel.requestModelName)}={signUpRequestModelName}", HttpMethod.Get, null);
 
             // Act
             HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
@@ -57,10 +56,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             GetDynamicFormResponseModel body = JsonConvert.DeserializeObject<GetDynamicFormResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.NotNull(body);
             Assert.Equal(3, body.DynamicFormData.DynamicControlData.Count);
-            IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
-            Assert.Equal(2, cookies.Count());
-            Assert.True(cookies.Keys.Contains("AF-TOKEN"));
-            Assert.True(cookies.Keys.Contains("XSRF-TOKEN"));
         }
 
         [Fact]

@@ -11,14 +11,11 @@ namespace Jering.VectorArtKit.WebApi.Controllers
     public class DynamicFormController : Controller
     {
         private IDynamicFormBuilder _dynamicFormsBuilder {get;set;}
-        private IAntiforgery _antiforgery { get; set; }
         private IDynamicFormService _dynamicFormService { get; set; }
 
         public DynamicFormController(IDynamicFormBuilder dynamicFormsBuilder,
-            IDynamicFormService dynamicFormService,
-            IAntiforgery antiforgery)
+            IDynamicFormService dynamicFormService)
         {
-            _antiforgery = antiforgery;
             _dynamicFormsBuilder = dynamicFormsBuilder;
             _dynamicFormService = dynamicFormService;
         }
@@ -28,13 +25,12 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </summary>
         /// <param name="requestModelName"></param>
         /// <returns>
-        /// 200 OK, anti-forgery cookies if getAfTokens is true and <see cref="GetDynamicFormResponseModel"/> if request 
-        /// model name is the name of an existing model with a <see cref="DynamicFormAttribute"/>.
+        /// 200 OK and <see cref="GetDynamicFormResponseModel"/> if request model name is the name of an existing model 
+        /// with a <see cref="DynamicFormAttribute"/>.
         /// 404 NotFound and <see cref="ErrorResponseModel"/> if request model name is not the name of 
         /// an existing model with a <see cref="DynamicFormAttribute"/>.
         /// </returns>
         [HttpGet]
-        [AllowAnonymous]
         public IActionResult GetDynamicForm(GetDynamicFormRequestModel model)
         {
             DynamicFormData data = _dynamicFormService.GetDynamicFormAction(model.requestModelName);
@@ -42,11 +38,6 @@ namespace Jering.VectorArtKit.WebApi.Controllers
             if(data == null)
             {
                 return NotFound();
-            }
-
-            if (model.getAfTokens)
-            {
-                _antiforgery.AddAntiforgeryCookies(HttpContext);
             }
 
             return Ok(new GetDynamicFormResponseModel()
