@@ -30,6 +30,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         private string _accountControllerName { get; } = nameof(AccountController).Replace("Controller", "");
         private string _dynamicFormsControllerName { get; } = nameof(DynamicFormController).Replace("Controller", "");
+        private string _antiForgeryControllerName { get; } = nameof(AntiForgeryController).Replace("Controller", "");
         private const string _badRequest = "BadRequest";
         private const string _unauthorized = "Unauthorized";
         private const string _ok = "OK";
@@ -1686,12 +1687,11 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             return await _httpClient.SendAsync(httpRequestMessage);
         }
 
-        public async Task<HttpResponseMessage> GetDynamicForm(string requestModelName, bool getAfTokens)
+        public async Task<HttpResponseMessage> GetDynamicForm(string requestModelName)
         {
             HttpRequestMessage getDynamicFormGetRequest = RequestHelper.Create($"{_dynamicFormsControllerName}/" +
                 $"{nameof(DynamicFormController.GetDynamicForm)}?" +
-                $"{nameof(GetDynamicFormRequestModel.requestModelName)}={requestModelName}" +
-                $"&{nameof(GetDynamicFormRequestModel.getAfTokens)}={getAfTokens}", HttpMethod.Get, null);
+                $"{nameof(GetDynamicFormRequestModel.requestModelName)}={requestModelName}", HttpMethod.Get, null);
 
             return await _httpClient.SendAsync(getDynamicFormGetRequest);
         }
@@ -1758,7 +1758,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         public async Task<IDictionary<string, string>> GetAnonymousAntiforgeryCookies()
         {
-            HttpResponseMessage httpResponseMessage = await GetDynamicForm(nameof(SignUpRequestModel), true);
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_antiForgeryControllerName}/" +
+                $"{nameof(AntiForgeryController.GetAntiForgeryTokens)}", HttpMethod.Get, null);
+            HttpResponseMessage httpResponseMessage = await _httpClient.SendAsync(httpRequestMessage);
+
             return CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
         }
 
