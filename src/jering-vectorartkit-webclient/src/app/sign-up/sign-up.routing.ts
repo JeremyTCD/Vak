@@ -10,8 +10,7 @@ const signUpRoutes: Routes = [
         component: SignUpComponent,
         data: {
             requestModelName: SignUpComponent.requestModelName,
-            formSubmitRelativeUrl: SignUpComponent.formSubmitRelativeUrl,
-            getAfToken: true
+            formSubmitRelativeUrl: SignUpComponent.formSubmitRelativeUrl
         },
         resolve: {
             dynamicForm: DynamicFormGuard

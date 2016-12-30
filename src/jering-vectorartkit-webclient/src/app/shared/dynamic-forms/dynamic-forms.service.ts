@@ -30,8 +30,8 @@ export class DynamicFormsService {
      * Returns
      * - Observable<DynamicForm> if get request succeeds.
      */
-    getDynamicForm(requestModelName: string, getAfToken: boolean): Observable<DynamicForm> {
-        let requestModel: GetDynamicFormRequestModel = { requestModelName: requestModelName, getAfTokens: getAfToken ? `true`: `false` };
+    getDynamicForm(requestModelName: string): Observable<DynamicForm> {
+        let requestModel: GetDynamicFormRequestModel = { requestModelName: requestModelName };
         let urlSearchParams = new URLSearchParams();
 
         for (let key in requestModel) {

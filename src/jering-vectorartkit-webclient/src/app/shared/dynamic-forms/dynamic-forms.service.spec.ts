@@ -47,7 +47,7 @@ describe('DynamicFormsService', () => {
                 let getSpy = spyOn(stubHttpService, `get`).and.returnValue(Observable.of(testGetDynamicFormResponseModel));
 
                 dynamicFormsService.
-                    getDynamicForm(testRequestModelName, true).
+                    getDynamicForm(testRequestModelName).
                     subscribe(dynamicForm => null);
 
                 expect(stubHttpService.get).toHaveBeenCalledTimes(1);
@@ -65,7 +65,7 @@ describe('DynamicFormsService', () => {
                 let result: DynamicForm;
 
                 dynamicFormsService.
-                    getDynamicForm(testRequestModelName, true).
+                    getDynamicForm(testRequestModelName).
                     subscribe(dynamicForm => result = dynamicForm);
 
                 expect(result instanceof DynamicForm).toBe(true);
