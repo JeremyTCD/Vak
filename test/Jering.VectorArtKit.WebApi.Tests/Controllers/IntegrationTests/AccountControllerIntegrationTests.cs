@@ -1,4 +1,5 @@
 ﻿using Jering.Utilities;
+using Jering.Mvc;
 using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.Controllers;
 using Jering.VectorArtKit.WebApi.RequestModels.Account;

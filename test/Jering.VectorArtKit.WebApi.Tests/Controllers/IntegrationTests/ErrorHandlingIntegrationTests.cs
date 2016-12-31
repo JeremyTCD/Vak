@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using Jering.VectorArtKit.WebApi.Resources;
 using Microsoft.AspNetCore.Authorization;
 using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
+using Jering.Mvc;
 
 namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Controllers.IntegrationTests
 {
