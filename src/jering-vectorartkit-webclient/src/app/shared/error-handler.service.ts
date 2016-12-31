@@ -30,7 +30,7 @@ export class ErrorHandlerService {
     /**
      * Handle unexpected errors that cannot be recovered from
      */
-    handleCriticalError(error: any): void {
+    handleUnexpectedError(error: any): void {
         if (!Check.isValue(error)){
             this._router.navigate([AppPaths.errorPath]);
         }
