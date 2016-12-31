@@ -189,8 +189,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             LogInResponseModel body = JsonConvert.DeserializeObject<LogInResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -589,8 +589,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -602,8 +602,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -702,8 +702,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -817,8 +817,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -912,8 +912,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -1025,8 +1025,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -1099,7 +1099,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
 
         [Fact]
         public async Task SetEmailVerified_Returns400BadRequestAndSetEmailVerifiedResponseModelIfModelStateIsInvalid()
-        { 
+        {
             // Arrange
             IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
 
@@ -1139,8 +1139,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -1220,8 +1220,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -1274,7 +1274,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SendEmailVerificationEmail_Returns400BadRequestAndErrorResponseModelIfAuthFails()
+        public async Task SendEmailVerificationEmail_Returns401UnauthorizedAndErrorResponseModelIfAuthFails()
         {
             // Act
             HttpResponseMessage httpResponseMessage = await SendEmailVerificationEmail(null);
@@ -1283,8 +1283,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(
                 await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -1321,7 +1321,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task SendAltEmailVerificationEmail_Returns400BadRequestAndErrorResponseModelIfAuthFails()
+        public async Task SendAltEmailVerificationEmail_Returns401UnauthorizedAndErrorResponseModelIfAuthFails()
         {
             // Act
             HttpResponseMessage httpResponseMessage = await SendAltEmailVerificationEmail(null);
@@ -1330,8 +1330,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(
                 await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -1409,8 +1409,8 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
+            Assert.True(body.ExpectedError);
+            Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
         [Fact]
@@ -1435,7 +1435,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         public async Task ValidateEmailNotInUse_Returns400BadRequestAndErrorResponseModelIfModelStateIsInvalid()
         {
             // Arrange
-            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.ValidateEmailNotInUse)}", 
+            HttpRequestMessage httpRequestMessage = RequestHelper.Create($"{_accountControllerName}/{nameof(AccountController.ValidateEmailNotInUse)}",
                 HttpMethod.Get, null);
 
             // Act 
@@ -1517,7 +1517,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
                 { nameof(SetTwoFactorEnabledRequestModel.Enabled), enabled.ToString() }
             };
             HttpRequestMessage httpRequestMessage = RequestHelper.
-                Create($"{_accountControllerName}/{nameof(AccountController.SetTwoFactorEnabled)}", HttpMethod.Post, cookies, 
+                Create($"{_accountControllerName}/{nameof(AccountController.SetTwoFactorEnabled)}", HttpMethod.Post, cookies,
                 formPostBodyData);
 
             return await _httpClient.SendAsync(httpRequestMessage);
@@ -1537,7 +1537,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             return await _httpClient.SendAsync(httpRequestMessage);
         }
 
-        public async Task<HttpResponseMessage> SetAltEmailVerified(IDictionary<string,string> cookies,
+        public async Task<HttpResponseMessage> SetAltEmailVerified(IDictionary<string, string> cookies,
             string token)
         {
             IDictionary<string, string> formPostBodyData = new Dictionary<string, string>
@@ -1733,9 +1733,9 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             };
 
             HttpRequestMessage httpRequestMessage = RequestHelper.
-                Create($"{_accountControllerName}/{nameof(AccountController.TwoFactorVerifyEmail)}", 
-                HttpMethod.Post, 
-                cookies, 
+                Create($"{_accountControllerName}/{nameof(AccountController.TwoFactorVerifyEmail)}",
+                HttpMethod.Post,
+                cookies,
                 formPostBodyData);
 
             return await _httpClient.SendAsync(httpRequestMessage);
