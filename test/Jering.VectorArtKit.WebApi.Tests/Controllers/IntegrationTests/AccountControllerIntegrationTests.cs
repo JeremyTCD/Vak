@@ -113,7 +113,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task Login_Returns200OkApplicationCookieAndAntiForgeryCookiesIfLoginSucceeds()
+        public async Task Login_Returns200OkApplicationCookieAndAntiForgeryCookieIfLoginSucceeds()
         {
             // Arrange
             IDictionary<string, string> antiforgeryCookies = await GetAnonymousAntiforgeryCookies();
@@ -159,7 +159,7 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         }
 
         [Fact]
-        public async Task LogOff_Returns200OkAndTwoFactorCookieAndApplicationCookieIfAuthIsSuccessful()
+        public async Task LogOff_Returns200OkAntiForgeryCookieAndTwoFactorCookieAndApplicationCookieIfAuthIsSuccessful()
         {
             //Arrange
             IDictionary<string, string> applicationAndAntiForgeryCookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1,
@@ -171,9 +171,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
             IDictionary<string, string> cookies = CookiesHelper.ExtractCookiesFromResponse(httpResponseMessage);
-            Assert.Equal(1, cookies.Count);
-            Assert.Contains(_applicationCookieName, cookies.Keys);
+            Assert.Equal(2, cookies.Count);
+            Assert.True(cookies.Keys.Contains(_applicationCookieName));
             Assert.Equal("", cookies[_applicationCookieName]);
+            Assert.True(cookies.Keys.Contains(_requestTokenName));
         }
 
         [Fact]
@@ -562,10 +563,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
         public async Task GetAccountDetails_Returns200OkAndGetAccountDetailsResponseModelIfAuthSucceeds()
         {
             // Arrange
-            IDictionary<string, string> cookies = await GetApplicationAndAuthenticatedAntiforgeryCookies(_testEmail1, _testPassword);
+            IDictionary<string, string> cookie = await GetApplicationCookie(_testEmail1, _testPassword);
 
             // Act
-            HttpResponseMessage httpResponseMessage = await GetAccountDetails(cookies);
+            HttpResponseMessage httpResponseMessage = await GetAccountDetails(cookie);
 
             // Assert
             Assert.Equal(_ok, httpResponseMessage.StatusCode.ToString());
@@ -588,22 +589,6 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             // Assert
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.False(body.ExpectedError);
-            Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
-        }
-
-        [Fact]
-        public async Task GetAccountDetails_Returns400BadRequestAndErrorResponseModelIfAntiForgeryCredentialsAreInvalid()
-        {
-            // Arrange 
-            IDictionary<string, string> cookie = await GetApplicationCookie(_testEmail1, _testPassword);
-
-            // Act
-            HttpResponseMessage httpResponseMessage = await GetAccountDetails(cookie);
-
-            // Assert
-            ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
-            Assert.Equal(_badRequest, httpResponseMessage.StatusCode.ToString());
             Assert.False(body.ExpectedError);
             Assert.Equal(Strings.ErrorMessage_UnexpectedError, body.ErrorMessage);
         }
@@ -1732,10 +1717,10 @@ namespace Jering.VectorArtKit.WebApi.Tests.Controllers.IntegrationTests
             return await _httpClient.SendAsync(httpRequestMessage);
         }
 
-        public async Task<HttpResponseMessage> GetAccountDetails(IDictionary<string, string> cookies)
+        public async Task<HttpResponseMessage> GetAccountDetails(IDictionary<string, string> cookie)
         {
             HttpRequestMessage httpRequestMessage = RequestHelper.
-                Create($"{_accountControllerName}/{nameof(AccountController.GetAccountDetails)}", HttpMethod.Get, cookies, null);
+                Create($"{_accountControllerName}/{nameof(AccountController.GetAccountDetails)}", HttpMethod.Get, cookie, null);
 
             return await _httpClient.SendAsync(httpRequestMessage);
         }

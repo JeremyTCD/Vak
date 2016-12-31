@@ -94,13 +94,15 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// <returns>
         /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
-        /// 200 OK and application cookie (with empty string values) if auth succeeds. 
+        /// 200 OK, anti-forgery cookie and application cookie (with empty string values) if auth succeeds. 
         /// </returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogOff()
         {
             await _accountService.ApplicationLogOffAsync();
+            _antiforgery.AddAntiforgeryCookies(HttpContext);
+
             return Ok();
         }
 
@@ -282,12 +284,10 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// Get: /Account/GetAccountDetails
         /// </summary>
         /// <returns>
-        /// 400 BadRequest and <see cref="ErrorResponseModel"/> if anti-forgery credentials are invalid.
         /// 401 Unauthorized and <see cref="ErrorResponseModel>"/> if auth fails.
         /// 200 OK and <see cref="GetAccountDetailsResponseModel"/> if auth succeeds.
         /// </returns>
         [HttpGet]
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetAccountDetails()
         {
             VakAccount account = await _accountService.GetAccountDetailsActionAsync();
