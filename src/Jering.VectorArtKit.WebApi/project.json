@@ -22,7 +22,8 @@
     "Jering.DynamicForms": "1.0.0",
     "Microsoft.AspNetCore.Antiforgery": "1.1.0",
     "Microsoft.AspNetCore.Cors": "1.1.0",
-    "Jering.Accounts": "1.0.0"
+    "Jering.Accounts": "1.0.0",
+    "Jering.Mvc": "1.0.0"
   },
 
   "tools": {

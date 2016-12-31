@@ -8,11 +8,11 @@ using System;
 using System.Threading.Tasks;
 using Jering.Accounts;
 using Microsoft.AspNetCore.Antiforgery;
-using Jering.VectorArtKit.WebApi.Extensions;
 using Jering.VectorArtKit.DatabaseInterface;
 using Jering.VectorArtKit.WebApi.RequestModels.Account;
 using Jering.VectorArtKit.WebApi.RequestModels.Shared;
 using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
+using Jering.Mvc;
 
 namespace Jering.VectorArtKit.WebApi.Controllers
 {
@@ -50,7 +50,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> LogIn([FromBody] LogInRequestModel model)
         {
             if (ModelState.IsValid)
@@ -97,7 +97,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK, anti-forgery cookie and application cookie (with empty string values) if auth succeeds. 
         /// </returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> LogOff()
         {
             await _accountService.ApplicationLogOffAsync();
@@ -120,7 +120,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> TwoFactorLogIn([FromBody] TwoFactorLogInRequestModel model)
         {
             if (ModelState.IsValid)
@@ -168,7 +168,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SignUp([FromBody] SignUpRequestModel model)
         {
             if (ModelState.IsValid)
@@ -204,7 +204,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SendResetPasswordEmail([FromBody] SendResetPasswordEmailRequestModel model)
         {
             if (ModelState.IsValid)
@@ -240,7 +240,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         [HttpPost]
         [AllowAnonymous]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestModel model)
         {
             if (ModelState.IsValid)
@@ -323,7 +323,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK and application cookie if password change succeeds.
         /// </returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SetPassword([FromBody] SetPasswordRequestModel model)
         {
             if (ModelState.IsValid)
@@ -372,7 +372,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK and application cookie if email change succeeds.
         /// </returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SetEmail([FromBody] SetEmailRequestModel model)
         {
             if (ModelState.IsValid)
@@ -425,7 +425,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if alternative email change succeeds.
         /// </returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SetAltEmail([FromBody] SetAltEmailRequestModel model)
         {
             if (ModelState.IsValid)
@@ -475,7 +475,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if display name change succeeds.
         /// </returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SetDisplayName([FromBody] SetDisplayNameRequestModel model)
         {
             if (ModelState.IsValid)
@@ -525,7 +525,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of two factor enabled succeeds.
         /// </returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SetTwoFactorEnabled([FromBody] SetTwoFactorEnabledRequestModel model)
         {
             SetTwoFactorEnabledActionResult result = await _accountService.SetTwoFactorEnabledActionAsync(model.Enabled);
@@ -559,7 +559,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of email verified succeeds.
         /// </returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SetEmailVerified([FromBody] SetEmailVerifiedRequestModel model)
         {
             if (ModelState.IsValid)
@@ -602,7 +602,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK if setting of email verified succeeds.
         /// </returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SetAltEmailVerified([FromBody] SetAltEmailVerifiedRequestModel model)
         {
             if (ModelState.IsValid)
@@ -644,7 +644,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// 200 OK and sends email validation email if email is sent successfully.
         /// </returns>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SendEmailVerificationEmail()
         {
             SendEmailVerificationEmailActionResult result = await _accountService.SendEmailVerificationEmailActionAsync();
@@ -670,7 +670,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> SendAltEmailVerificationEmail()
         {
             SendAltEmailVerificationEmailActionResult result = await _accountService.SendAltEmailVerificationEmailActionAsync();
@@ -706,7 +706,7 @@ namespace Jering.VectorArtKit.WebApi.Controllers
         /// </returns>
         /// <exception cref="Exception">Thrown if unable to retrieve logged in account</exception>
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        [ValidateAfToken]
         public async Task<IActionResult> TwoFactorVerifyEmail([FromBody] TwoFactorVerifyEmailRequestModel model)
         {
             if (ModelState.IsValid)
