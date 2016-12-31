@@ -1,4 +1,5 @@
-﻿using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
+﻿using Jering.Mvc;
+using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
@@ -16,5 +17,7 @@ namespace Jering.VectorArtKit.WebApi.ResponseModels.Account
         public bool ExpectedError { get; set; }
 
         public string ErrorMessage { get; set; }
+        public bool AuthenticationError { get; set; }
+        public bool AntiForgeryError { get; set; }
     }
 }
