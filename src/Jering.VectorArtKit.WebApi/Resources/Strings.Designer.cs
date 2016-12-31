@@ -348,6 +348,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         }
         
         /// <summary>
+        ///    Looks up a localized string similar to Invalid anti-forgery tokens.
+        /// </summary>
+        public static string ErrorMessage_InvalidAntiForgeryTokens {
+            get {
+                return ResourceManager.GetString("ErrorMessage_InvalidAntiForgeryTokens", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///    Looks up a localized string similar to Invalid email or password..
         /// </summary>
         public static string ErrorMessage_LogIn_Failed {
@@ -506,6 +515,15 @@ namespace Jering.VectorArtKit.WebApi.Resources {
         public static string ErrorMessage_TwoFactorCode_Required {
             get {
                 return ResourceManager.GetString("ErrorMessage_TwoFactorCode_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///    Looks up a localized string similar to Unauthorized.
+        /// </summary>
+        public static string ErrorMessage_Unauthorized {
+            get {
+                return ResourceManager.GetString("ErrorMessage_Unauthorized", resourceCulture);
             }
         }
         

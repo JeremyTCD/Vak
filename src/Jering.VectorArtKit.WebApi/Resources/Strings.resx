@@ -327,4 +327,10 @@
   <data name="ErrorMessage_Value_Required" xml:space="preserve">
     <value>Value required.</value>
   </data>
+  <data name="ErrorMessage_InvalidAntiForgeryTokens" xml:space="preserve">
+    <value>Invalid anti-forgery tokens</value>
+  </data>
+  <data name="ErrorMessage_Unauthorized" xml:space="preserve">
+    <value>Unauthorized</value>
+  </data>
 </root>
