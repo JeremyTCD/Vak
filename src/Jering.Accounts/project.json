@@ -6,7 +6,8 @@
   "dependencies": {
     "Jering.Accounts.DatabaseInterface": "1.0.0",
     "Jering.Mail": "1.0.0",
-    "Jering.Security": "1.0.0"
+    "Jering.Security": "1.0.0",
+    "Microsoft.Extensions.DependencyInjection.Abstractions": "1.1.0"
   },
 
   "frameworks": {

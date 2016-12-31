@@ -1,5 +1,6 @@
 ﻿using Jering.Utilities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Jering.DynamicForms
 {
@@ -15,12 +16,12 @@ namespace Jering.DynamicForms
         public static void AddDynamicForms(this IServiceCollection services)
         {
             // DynamicFormService lazily generates and caches DynamicFormData 
-            services.AddSingleton<IDynamicFormService, DynamicFormService>();
+            services.TryAddSingleton<IDynamicFormService, DynamicFormService>();
             services.AddScoped<IDynamicFormBuilder, DynamicFormBuilder>();
 
             // Misc
             // AssemblyService caches referencing assemblies
-            services.AddSingleton<IAssemblyService, AssemblyService>();
+            services.TryAddSingleton<IAssemblyService, AssemblyService>();
         }
     }
 }
