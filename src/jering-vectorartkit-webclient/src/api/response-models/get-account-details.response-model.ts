@@ -12,6 +12,8 @@
 	    modelState?: { [key: string]: any; };
 	    expectedError?: boolean;
 	    errorMessage?: string;
+	    authenticationError?: boolean;
+	    antiForgeryError?: boolean;
     }
 
     

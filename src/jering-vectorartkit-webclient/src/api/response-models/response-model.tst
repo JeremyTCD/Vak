@@ -11,7 +11,7 @@ ${
     {
         settings.
 			IncludeProject("Jering.VectorArtKit.WebApi").
-            IncludeProject("Jering.DynamicForms");
+            IncludeProject("Jering.Mvc");
 
 		settings.OutputFilenameFactory = file => {
 				return PascalToKebab($"{file.Classes.First().Name}.ts");
