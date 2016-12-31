@@ -939,6 +939,8 @@ namespace Jering.Accounts
         public virtual async Task ApplicationLogOffAsync()
         {
             await _httpContext.Authentication.SignOutAsync(_options.CookieOptions.ApplicationCookieOptions.AuthenticationScheme);
+
+            _httpContext.User = null;
         }
 
         /// <summary>
