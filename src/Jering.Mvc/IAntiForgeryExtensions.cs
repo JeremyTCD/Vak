@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Http;
 
-namespace Jering.VectorArtKit.WebApi.Extensions
+namespace Jering.Mvc
 {
     public static class IAntiforgeryExtensions
     {
