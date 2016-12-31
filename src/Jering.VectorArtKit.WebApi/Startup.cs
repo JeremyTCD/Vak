@@ -56,8 +56,9 @@ namespace Jering.VectorArtKit.WebApi
                 AddDbContext<VakDbContext>().
                 AddAccountRepository<VakAccountRepository>().
                 AddDefaultTokenServices();
-
+            services.AddValidateAfToken();
             services.AddDynamicForms();
+
             services.AddCors();
 
             if (_hostingEnvironment.IsDevelopment())
