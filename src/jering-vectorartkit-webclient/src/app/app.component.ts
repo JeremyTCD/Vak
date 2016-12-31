@@ -24,6 +24,7 @@ export class AppComponent implements OnInit {
         private _router: Router) { }
 
     ngOnInit(): void {
+        this._httpService.init();
         this.userService.init();
     }
 
