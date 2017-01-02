@@ -11,7 +11,7 @@ using Jering.Mvc.Resources;
 namespace Jering.Mvc
 {
     /// <summary>
-    /// Validates anti-forgery token
+    /// Validates anti-forgery token and handles outcome
     /// </summary>
     public class ValidateAfTokenAuthorizationFilter : IAsyncAuthorizationFilter
     {
@@ -49,6 +49,8 @@ namespace Jering.Mvc
             }
             catch (AntiforgeryValidationException)
             {
+                _antiforgery.AddAntiforgeryCookies(context.HttpContext);
+
                 context.Result = new BadRequestObjectResult(new ErrorResponseModel { ExpectedError = true,
                         ErrorMessage = MvcStrings.ErrorMessage_InvalidAntiForgeryToken,
                         AntiForgeryError = true

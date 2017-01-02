@@ -109,7 +109,7 @@ namespace Jering.VectorArtKit.WebApi
             // TODO read up on logging
             //loggerFactory.AddConsole(_configurationRoot.GetSection("Logging"));
 
-            //Sets body to a general error message for all unexpected error responses with no bodies and status code >= 400 or < 600.
+            //Sets body to a general error message for all error responses (status code >= 400 or < 600) and no bodies.
             app.UseStatusCodePages(new StatusCodePagesOptions()
             {
                 HandleAsync = (StatusCodeContext context) =>
@@ -119,6 +119,7 @@ namespace Jering.VectorArtKit.WebApi
                     if (context.HttpContext.Response.StatusCode == 401)
                     {
                         responseModel.ExpectedError = true;
+                        responseModel.AuthenticationError = true;
                         responseModel.ErrorMessage = Strings.ErrorMessage_Unauthorized;
                     }
                     else

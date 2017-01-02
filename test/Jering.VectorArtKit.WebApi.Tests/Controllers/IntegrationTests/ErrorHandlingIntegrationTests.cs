@@ -71,6 +71,7 @@ namespace Jering.VectorArtKit.WebApplication.Controllers.IntegrationTests.Contro
             ErrorResponseModel body = JsonConvert.DeserializeObject<ErrorResponseModel>(await httpResponseMessage.Content.ReadAsStringAsync());
             Assert.Equal(_unauthorized, httpResponseMessage.StatusCode.ToString());
             Assert.True(body.ExpectedError);
+            Assert.True(body.AuthenticationError);
             Assert.Equal(Strings.ErrorMessage_Unauthorized, body.ErrorMessage);
         }
 
