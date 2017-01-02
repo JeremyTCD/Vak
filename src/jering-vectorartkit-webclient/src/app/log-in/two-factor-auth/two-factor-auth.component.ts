@@ -42,7 +42,7 @@ export class TwoFactorAuthComponent implements AfterViewInit {
     }
 
     onSubmitSuccess(event: SubmitEventModel): void {
-        this._userService.logIn(this.username, this.isPersistent);
+        this._userService.logIn(this.username);
         this._router.navigate([this.returnUrl ? this.returnUrl : AppPaths.homePath]);
     }
 

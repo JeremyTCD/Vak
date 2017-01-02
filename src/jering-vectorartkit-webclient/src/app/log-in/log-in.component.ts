@@ -32,7 +32,7 @@ export class LogInComponent {
     onSubmitSuccess(event: SubmitEventModel): void {
         let requestModel: LogInRequestModel = event.requestModel as LogInRequestModel;
 
-        this._userService.logIn(requestModel.email, requestModel.rememberMe === `true`);
+        this._userService.logIn(requestModel.email);
         this._router.navigate([this.returnUrl ? this.returnUrl : AppPaths.homePath]);
     }
 

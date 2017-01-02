@@ -30,7 +30,6 @@ export class SignUpComponent {
         let requestModel = event.requestModel as SignUpRequestModel;
 
         this._router.navigate([AppPaths.homePath]);
-        // Store username in persistent storage to minimize engagement barriers
-        this._userService.logIn(requestModel.email, true);
+        this._userService.logIn(requestModel.email);
     }
 }

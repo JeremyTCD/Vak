@@ -52,7 +52,7 @@ describe(`UserService`, () => {
         inject([UserService, StorageService], (userService: UserService, stubStorageService: StubStorageService) => {
             spyOn(stubStorageService, `setItem`);
 
-            userService.logIn(testUsername, true);
+            userService.logIn(testUsername);
 
             expect(stubStorageService.setItem).toHaveBeenCalledWith(testStorageName, testUsername, true);
             expect(userService.loggedIn).toBe(true);
