@@ -1,4 +1,4 @@
-﻿import { Http, RequestOptionsArgs, Response, ResponseOptions, RequestMethod } from '@angular/http';
+﻿import { Http, RequestOptionsArgs, Response, ResponseOptions, RequestOptions, RequestMethod } from '@angular/http';
 import { TestBed, inject } from '@angular/core/testing';
 import { Observable } from 'rxjs';
 
@@ -56,7 +56,7 @@ describe(`HttpService`, () => {
                 testResponse = new Response(new ResponseOptions({}));
                 let spy = spyOn(http, `request`).and.returnValue(Observable.of(testResponse));
 
-                httpService.request(testRelativeUrl, {});
+                httpService.request(new RequestOptions({ url: testRelativeUrl }));
 
                 let args = spy.calls.first().args;
                 expect(args[0]).toBe(testUrl);
@@ -73,7 +73,7 @@ describe(`HttpService`, () => {
                 let result: StubResponseModel;
 
                 httpService.
-                    request(testRelativeUrl, {}).
+                    request(new RequestOptions({ url: testRelativeUrl })).
                     subscribe(responseModel => result = responseModel);
 
                 expect(result).toEqual(stubResponseModel);
@@ -103,7 +103,7 @@ describe(`HttpService`, () => {
                     let result: StubResponseModel;
 
                     httpService.
-                        request(testRelativeUrl, {}).
+                        request(new RequestOptions({ url: testRelativeUrl })).
                         subscribe(responseModel => result = responseModel);
 
                     expect(result).toEqual(errorResponseModel);
@@ -119,7 +119,7 @@ describe(`HttpService`, () => {
                     spyOn(http, `request`).and.returnValue(Observable.throw(testResponse));
 
                     httpService.
-                        request(testRelativeUrl, {}).
+                        request(new RequestOptions({ url: testRelativeUrl })).
                         subscribe(testObserver);
 
                     expect(nextOrErrorCalled).toBe(false);
@@ -137,7 +137,7 @@ describe(`HttpService`, () => {
                     spyOn(http, `request`).and.returnValue(Observable.throw(testResponse));
 
                     httpService.
-                        request(testRelativeUrl, {}).
+                        request(new RequestOptions({ url: testRelativeUrl })).
                         subscribe(testObserver);
 
                     expect(nextOrErrorCalled).toBe(false);
@@ -154,7 +154,7 @@ describe(`HttpService`, () => {
                     spyOn(http, `request`).and.returnValue(Observable.throw(testErrorObject));
 
                     httpService.
-                        request(testRelativeUrl, {}).
+                        request(new RequestOptions({ url: testRelativeUrl })).
                         subscribe(testObserver);
 
                     expect(nextOrErrorCalled).toBe(false);
@@ -170,7 +170,7 @@ describe(`HttpService`, () => {
                     spyOn(errorHandlerService, `handleCriticalError`);
 
                     httpService.
-                        request(testRelativeUrl, {}).
+                        request(new RequestOptions({ url: testRelativeUrl })).
                         subscribe(testObserver);
 
                     expect(nextOrErrorCalled).toBe(false);
