@@ -1,6 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
 import { Headers, RequestOptions } from '@angular/http';
-import { Subject, Observable } from 'rxjs';
 
 import { HttpService } from './http.service';
 import { StorageService } from './storage.service';
