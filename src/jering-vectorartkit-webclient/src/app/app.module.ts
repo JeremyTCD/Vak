@@ -6,6 +6,7 @@ import { HttpModule } from '@angular/http';
 import { AppComponent } from './app.component';
 import { AppRouting } from './app.routing';
 
+import { CookieService } from 'app/shared/cookie.service';
 import { UserService } from 'app/shared/user.service';
 import { StorageService } from 'app/shared/storage.service';
 import { HttpService } from 'app/shared/http.service';
@@ -22,7 +23,8 @@ import { HomeModule } from './home/home.module';
         HomeModule
     ],
     declarations: [AppComponent],
-    providers: [UserService,
+    providers: [CookieService,
+        UserService,
         StorageService,
         HttpService,
         ErrorHandlerService,
