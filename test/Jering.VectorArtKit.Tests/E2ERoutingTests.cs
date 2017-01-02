@@ -1,23 +1,17 @@
 ﻿using Jering.VectorArtKit.EndToEnd.Tests;
 using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Support.UI;
 using System;
 using Xunit;
 using System.Data.SqlClient;
-using Microsoft.Extensions.Configuration;
 using System.IO;
-using System.Threading.Tasks;
 using System.Data;
 using Dapper;
 using System.Text.RegularExpressions;
-using System.Threading;
-using OpenQA.Selenium.Interactions;
 
 namespace Jering.VectorArtKit.Tests.EndToEnd
 {
     [Collection("E2ECollection")]
-    public class AccountManagementE2ETests
+    public class E2ERoutingTests
     {
         private int _waitTime = 5000;
         private const string _baseUrl = "http://localhost:4200/";
@@ -46,7 +40,7 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         private SqlConnection _sqlConnection { get; }
         private Action _resetAccountsTable { get; }
 
-        public AccountManagementE2ETests(E2EFixture fixture)
+        public E2ERoutingTests(E2EFixture fixture)
         {
             _webDriver = fixture.WebDriver;
             _sqlConnection = fixture.SqlConnection;
@@ -54,7 +48,7 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
             _resetAccountsTable();
         }
 
-        #region Components
+        #region Routes
         [Fact]
         public void SignUp_SignUpLogsIntoAccountAndNavigatesToHome()
         {
@@ -609,7 +603,7 @@ namespace Jering.VectorArtKit.Tests.EndToEnd
         }
         #endregion
 
-        #region Misc
+        #region Guards
         [Fact]
         public void HttpServiceRedirectsToLogInIfServerSendsUnauthorizedHttpResponse()
         {
