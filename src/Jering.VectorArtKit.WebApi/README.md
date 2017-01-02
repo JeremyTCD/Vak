@@ -12,8 +12,8 @@ must return simple enum results. Actions must then convert these results into re
 easy to reuse logic contained in services. For example, only the actions would need to be changed to convert 
 an api into a fully fledged razor application.
 
-### Form/Action Models
-Actions with parameters must have either a request model wrapping the parameters. These models facilitate strong typing in 
+### Request Models
+Actions with parameters must have a request model wrapping the parameters. These models facilitate strong typing in 
 tests and client side operations. For example, request models are copied to client projects to facilitate strongly typed creation of requests.
 
 ### Response Models
