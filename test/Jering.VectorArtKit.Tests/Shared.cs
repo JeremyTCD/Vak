@@ -4,11 +4,8 @@ using System.Data.SqlClient;
 using System.IO;
 using Dapper;
 using Xunit;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
 using System.Diagnostics;
 using OpenQA.Selenium.Remote;
-using System.Threading;
 
 namespace Jering.VectorArtKit.EndToEnd.Tests
 {

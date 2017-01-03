@@ -4,7 +4,33 @@
 An Angular 2 web client for Vector Art Kit.
 
 ## Architecture
-This project follows the architectural style recommended by Angular 2.
+### Security
+#### Csrf protection
+- If anti-forgery cookies are not available when app component initializes, a request is sent to retrieve them.
+- Until the cookies arrive, post requests are paused. 
+- When an account is logged into, fresh cookies are sent by the api.
+- When an account is logged out of, fresh cookies are sent by the api.
+- If a request fails anti-forgery validation, the api sends fresh cookies and the request is retried.
+
+Note that cross origin resource sharing (CORS) must be setup so as to prevent other domains from accessing the request token
+cookie.
+#### WithCredentials
+All XmlHttpRequests are sent with withCredentials set to true. This means the application cookie is always attched if it is
+available. This is necessary for authentication.
+## Style
+In general, this project follows the styles recommended by Angular 2 (https://angular.io/docs/ts/latest/guide/style-guide.html).
+The following are styles specific to this project.
+### Naming
+#### Components
+Verb or Noun. For example log-in or account-details. Names should be verbose and relevant to users. 
+### Disposal
+Any type that utilizes observables, subjects, event emitters or any other persistent types must have a dispose function that releases resources.
+Dispose should be called on these objects in ngOnDestroy of the component that creates these objects. In addition, ngOnDestroy must
+itself release resources that the component owns.
+### Error Handling
+Angular2  throws errors where necessary. These errors are caught by its ErrorHandler 
+class and printed to the console. This project needs some way to catch errors globally and to navigate
+to ErrorComponent on errors.
 
 ## Testing Methodology
 

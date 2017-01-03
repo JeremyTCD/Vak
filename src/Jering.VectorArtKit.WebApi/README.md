@@ -20,10 +20,19 @@ tests and client side operations. For example, request models are copied to clie
 Each action has a response model. Response models implement the IErrorResponseModel interface. This enforces a consistent 
 shape for responses from all actions. Also, response models are copied to client projects to facilitate strongly 
 typed handling of responses by web client projects.
+#### Casing
+All json keys are converted to camelCase. This is consistent with json specifications. 
+
+### Naming
+#### Actions
+Verb or Verb + Noun. For example, LogIn or GetAccountDetails
+
+## Error Handling
+The ExceptionHandler middleware catches uncaught exceptions. It sets the status code of responses to 500 and them blank bodies. Only
+unexpected or unrecoverable errors should be allowed to bubble up to the ExceptionHandler middleware. This is since the responses it 
+generates provide the client no means for recovery. 
 
 ## Testing Methodology
 All actions must be integration tested. This is necessary since significant aspects of action logic are defined using annotations and
 other forms of configuration. For example, the ValidateAntiForgeryAttribute and the HttpPostAttribute attributes define critical behaviours 
 that must be tested for.
-
-

@@ -1,6 +1,5 @@
 ﻿using Jering.DynamicForms;
 using Jering.VectorArtKit.WebApi.Resources;
-using Jering.VectorArtKit.WebApi.ResponseModels.Shared;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics;
