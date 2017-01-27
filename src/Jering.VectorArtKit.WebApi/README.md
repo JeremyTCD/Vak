@@ -6,11 +6,12 @@ Web API for Vector Art Kit
 ## Architecture
 Every end point is defined by an action. 
 
-### Role Of An Action
+### Actions
 Actions serve as routers. Request parameters must be passed on to a service that can handle the request. Services
 must return simple enum results. Actions must then convert these results into responses. This pattern makes it
 easy to reuse logic contained in services. For example, only the actions would need to be changed to convert 
-an api into a fully fledged razor application.
+an api into a fully fledged razor application. Additionally, it makes it easier to test the application. Only
+services need to unit tested. Actions only need to be integration tested.
 
 ### Request Models
 Actions with parameters must have a request model wrapping the parameters. These models facilitate strong typing in 
@@ -36,3 +37,20 @@ generates provide the client no means for recovery.
 All actions must be integration tested. This is necessary since significant aspects of action logic are defined using annotations and
 other forms of configuration. For example, the ValidateAntiForgeryAttribute and the HttpPostAttribute attributes define critical behaviours 
 that must be tested for.
+
+## Search
+This API utilizes ElasticSearch for search. The following are the search functionalities 
+provided along with the chosen solutions for them.
+
+### VakUnit Gallery Search
+- Best-field queries with tie_breaker for base result.
+- Multi-field queries for relevance tuning.
+- Copy_To for cross-fields entity search.
+- Edge n-gram for search as you type.
+- In general, copy functionality from youtube.
+
+### My VakUnits Search
+
+### My VakKits Search
+
+### VakItem Search
