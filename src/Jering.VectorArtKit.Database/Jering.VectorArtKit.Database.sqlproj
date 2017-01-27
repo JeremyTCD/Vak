@@ -63,6 +63,9 @@
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\tables\AccountClaims.sql" />
+    <Build Include="dbo\tables\VakUnitTags.sql" />
+    <Build Include="dbo\tables\VakUnits.sql" />
+    <Build Include="dbo\tables\Tags.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\tables\AccountRoles.sql" />
