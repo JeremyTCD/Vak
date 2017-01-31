@@ -7,6 +7,9 @@ namespace Jering.VectorArtKit.DatabaseInterface
         // By convention, each entity will be setup to map to a table with the same name as 
         // the DbSet<TEntity> property that exposes the entity on the derived context
         public virtual DbSet<VakAccount> Accounts { get; set; }
+        public virtual DbSet<VakUnit> VakUnits { get; set; }
+        public virtual DbSet<VakUnitTag> VakUnitTags { get; set; }
+        public virtual DbSet<Tag> Tags { get; set; }
         //public virtual DbSet<AccountClaims> AccountClaims { get; set; }
         //public virtual DbSet<AccountRoles> AccountRoles { get; set; }
         //public virtual DbSet<Claim> Claims { get; set; }
@@ -33,6 +36,68 @@ namespace Jering.VectorArtKit.DatabaseInterface
                     .Property(e => e.RowVersion)
                     .ValueGeneratedOnAddOrUpdate()
                     .IsConcurrencyToken();
+            });
+
+            modelBuilder.Entity<VakUnit>(entity =>
+            {
+                entity
+                    .Property(e => e.VakUnitId)
+                    .ValueGeneratedOnAdd();
+
+                entity
+                    .HasKey(e => e.VakUnitId)
+                    .HasName("PK_dbo_VakUnits");
+
+                entity
+                    .Property(e => e.RowVersion)
+                    .ValueGeneratedOnAddOrUpdate()
+                    .IsConcurrencyToken();
+
+                entity.HasIndex(e => e.AccountId)
+                    .HasName("IX_dbo_VakUnits_AccountId");
+
+                entity.HasOne(d => d.VakAccount)
+                    .WithMany(p => p.VakUnits)
+                    .HasForeignKey(d => d.AccountId)
+                    .HasConstraintName("FK_dbo_VakUnits_dbo_Accounts");
+            });
+
+            modelBuilder.Entity<Tag>(entity =>
+            {
+                entity
+                    .Property(e => e.TagId)
+                    .ValueGeneratedOnAdd();
+
+                entity
+                    .HasKey(e => e.TagId)
+                    .HasName("PK_dbo_Tags");
+
+                entity
+                    .Property(e => e.RowVersion)
+                    .ValueGeneratedOnAddOrUpdate()
+                    .IsConcurrencyToken();
+            });
+
+            modelBuilder.Entity<VakUnitTag>(entity =>
+            {
+                entity.HasKey(e => new { e.TagId, e.VakUnitId})
+                    .HasName("PK_dbo_VakUnitTags");
+
+                entity.HasIndex(e => e.TagId)
+                    .HasName("IX_dbo_VakUnitTags_TagId");
+
+                entity.HasIndex(e => e.VakUnitId)
+                    .HasName("IX_dbo_VakUnitTags_VakUnitId");
+
+                entity.HasOne(d => d.Tag)
+                    .WithMany(p => p.VakUnitTags)
+                    .HasForeignKey(d => d.TagId)
+                    .HasConstraintName("FK_dbo_VakUnitTags_dbo_Tags");
+
+                entity.HasOne(d => d.VakUnit)
+                    .WithMany(p => p.VakUnitTags)
+                    .HasForeignKey(d => d.VakUnitId)
+                    .HasConstraintName("FK_dbo_VakUnitTags_dbo_VakUnits");
             });
 
             //modelBuilder.Entity<AccountClaims>(entity =>

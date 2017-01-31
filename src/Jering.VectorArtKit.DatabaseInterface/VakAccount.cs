@@ -1,10 +1,16 @@
 ﻿using System;
 using Jering.Accounts.DatabaseInterface;
+using System.Collections.Generic;
 
 namespace Jering.VectorArtKit.DatabaseInterface
 {
     public class VakAccount : IAccount
     {
+        public VakAccount()
+        {
+            VakUnits = new HashSet<VakUnit>();
+        }
+
         public int AccountId { get; set; }
 
         public string AltEmail { get; set; }
@@ -26,5 +32,7 @@ namespace Jering.VectorArtKit.DatabaseInterface
         public Guid SecurityStamp { get; set; }
 
         public bool TwoFactorEnabled { get; set; }
+
+        public ICollection<VakUnit> VakUnits { get; set; }
     }
 }
