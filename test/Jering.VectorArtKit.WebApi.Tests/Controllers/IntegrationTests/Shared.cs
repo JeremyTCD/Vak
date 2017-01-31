@@ -1,5 +1,4 @@
-﻿using Dapper;
-using Jering.VectorArtKit.DatabaseInterface;
+﻿using Jering.VectorArtKit.DatabaseInterface;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
@@ -9,8 +8,6 @@ using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Data;
-using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
