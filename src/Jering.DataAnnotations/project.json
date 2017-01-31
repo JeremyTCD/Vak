@@ -12,6 +12,6 @@
     "System.Runtime.InteropServices": "4.3.0"
   },
   "frameworks": {
-    "netcoreapp1.1": {    }
+    "netstandard1.6": {    }
   }
 }
