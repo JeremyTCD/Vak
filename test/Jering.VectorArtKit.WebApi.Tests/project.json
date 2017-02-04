@@ -1,7 +1,7 @@
 {
   "Data": {
     "DefaultConnection": {
-      "ConnectionString": "Data Source=JEREMY-PC;Initial Catalog=Jering.VectorArtKit;Integrated Security=True;"
+      "ConnectionString": "Data Source=JEREMY-PC;Initial Catalog=VectorArtKit;Integrated Security=True;"
     }
   },
   "version": "1.0.0-*",

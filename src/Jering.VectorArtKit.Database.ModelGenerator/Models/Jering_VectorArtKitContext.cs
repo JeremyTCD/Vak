@@ -19,7 +19,7 @@ namespace Jering.VectorArtKit.Database.ModelGenerator.Models
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             #warning To protect potentially sensitive information in your connection string, you should move it out of source code. See http://go.microsoft.com/fwlink/?LinkId=723263 for guidance on storing connection strings.
-            optionsBuilder.UseSqlServer(@"Data Source=JEREMY-PC;Initial Catalog=Jering.VectorArtKit;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;");
+            optionsBuilder.UseSqlServer(@"Data Source=JEREMY-PC;Initial Catalog=VectorArtKit;Integrated Security=True;Connect Timeout=60;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
