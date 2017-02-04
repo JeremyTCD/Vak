@@ -24,6 +24,7 @@
     <IncludeCompositeObjects>True</IncludeCompositeObjects>
     <TargetDatabaseSet>True</TargetDatabaseSet>
     <TargetFrameworkProfile />
+    <IsChangeTrackingOn>True</IsChangeTrackingOn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -60,12 +61,14 @@
     <Folder Include="Properties" />
     <Folder Include="dbo" />
     <Folder Include="dbo\tables" />
+    <Folder Include="dbo\functions" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\tables\AccountClaims.sql" />
     <Build Include="dbo\tables\VakUnitTags.sql" />
     <Build Include="dbo\tables\VakUnits.sql" />
     <Build Include="dbo\tables\Tags.sql" />
+    <Build Include="dbo\functions\ufnToRawJsonArray.sql" />
   </ItemGroup>
   <ItemGroup>
     <Build Include="dbo\tables\AccountRoles.sql" />
