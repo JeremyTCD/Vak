@@ -98,6 +98,16 @@ Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Mvc", "src\Jering.Mv
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.Database.ModelGenerator", "src\Jering.VectorArtKit.Database.ModelGenerator\Jering.VectorArtKit.Database.ModelGenerator.xproj", "{478F870D-C752-4672-9B9E-0D353181AF22}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.Search", "src\Jering.VectorArtKit.Search\Jering.VectorArtKit.Search.xproj", "{80F7EC1B-7340-4AB3-A777-C5A1F4DDA737}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Etl.Rdb2Es", "src\Jering.Etl.Rdb2Es\Jering.Etl.Rdb2Es.xproj", "{3CAC0D37-D71F-4F04-90CF-E6FD0545A451}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Options", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Options\Options\src\Microsoft.Extensions.Options\Microsoft.Extensions.Options.xproj", "{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Options.ConfigurationExtensions", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Options\Options\src\Microsoft.Extensions.Options.ConfigurationExtensions\Microsoft.Extensions.Options.ConfigurationExtensions.xproj", "{6ACF4BAB-2F09-4DA6-B273-27E4282865EB}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Etl.Rdb2Es.Tests", "test\Jering.Etl.Rdb2Es.Tests\Jering.Etl.Rdb2Es.Tests.xproj", "{E761BE0F-19CF-428E-ACCB-AE0181157323}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -258,6 +268,26 @@ Global
 		{478F870D-C752-4672-9B9E-0D353181AF22}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{478F870D-C752-4672-9B9E-0D353181AF22}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{478F870D-C752-4672-9B9E-0D353181AF22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80F7EC1B-7340-4AB3-A777-C5A1F4DDA737}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80F7EC1B-7340-4AB3-A777-C5A1F4DDA737}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80F7EC1B-7340-4AB3-A777-C5A1F4DDA737}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80F7EC1B-7340-4AB3-A777-C5A1F4DDA737}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3CAC0D37-D71F-4F04-90CF-E6FD0545A451}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3CAC0D37-D71F-4F04-90CF-E6FD0545A451}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3CAC0D37-D71F-4F04-90CF-E6FD0545A451}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3CAC0D37-D71F-4F04-90CF-E6FD0545A451}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6ACF4BAB-2F09-4DA6-B273-27E4282865EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6ACF4BAB-2F09-4DA6-B273-27E4282865EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6ACF4BAB-2F09-4DA6-B273-27E4282865EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6ACF4BAB-2F09-4DA6-B273-27E4282865EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E761BE0F-19CF-428E-ACCB-AE0181157323}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E761BE0F-19CF-428E-ACCB-AE0181157323}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E761BE0F-19CF-428E-ACCB-AE0181157323}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E761BE0F-19CF-428E-ACCB-AE0181157323}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -286,5 +316,8 @@ Global
 		{937AF00E-0861-45F5-9E59-A20F00A39867} = {76C1A6FF-74F0-4474-A6EB-2593B93C2874}
 		{31961EF6-636A-45C0-AE22-2953D168E6E5} = {76C1A6FF-74F0-4474-A6EB-2593B93C2874}
 		{478F870D-C752-4672-9B9E-0D353181AF22} = {76C1A6FF-74F0-4474-A6EB-2593B93C2874}
+		{80F7EC1B-7340-4AB3-A777-C5A1F4DDA737} = {76C1A6FF-74F0-4474-A6EB-2593B93C2874}
+		{3CAC0D37-D71F-4F04-90CF-E6FD0545A451} = {76C1A6FF-74F0-4474-A6EB-2593B93C2874}
+		{E761BE0F-19CF-428E-ACCB-AE0181157323} = {8978B5AE-BAF8-41A9-91F9-E80CEFE15E6E}
 	EndGlobalSection
 EndGlobal
