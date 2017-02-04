@@ -1,0 +1,21 @@
+﻿{
+  "settings": {
+    "number_of_shards": 1
+  },
+  "mappings": {
+    "vak_unit": {
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "tags": {
+          "type": "string"
+        },
+        "accountId": {
+          "type": "long"
+        }
+      }
+    }
+  }
+}
+ 
