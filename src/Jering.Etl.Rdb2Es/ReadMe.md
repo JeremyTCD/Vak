@@ -26,3 +26,6 @@ This project extracts data from Jering.VectoraArtKit.Database and indexes data i
 - Is selecting from Sql Server as Json more efficient than joining client side?
 - Support high availability
   - Distributed system logic
+- Sql Server rowverion used for versioning. Each rowversion value is an 8 byte unsigned integer. It can be cast to bigint but will not 
+  be valid after a certain point since bigint is signed. This point is unlikely to be reached but a workaround could prevent a 
+  catastrophe.

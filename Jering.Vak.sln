@@ -1,112 +1,65 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Jering.VectorArtKit.Database", "src\Jering.VectorArtKit.Database\Jering.VectorArtKit.Database.sqlproj", "{C0564FAF-A954-4B58-AAB3-E176CE97BC35}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.WebApi", "src\Jering.VectorArtKit.WebApi\Jering.VectorArtKit.WebApi.xproj", "{A9C1E71F-CD6D-403D-A716-B287B74D4E82}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Accounts.DatabaseInterface", "src\Jering.Accounts.DatabaseInterface\Jering.Accounts.DatabaseInterface.xproj", "{DBDEE019-4817-4027-A068-AC510C3325E7}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AEED3B5D-F786-4DCD-8D28-AF198C25C52D}"
-	ProjectSection(SolutionItems) = preProject
-		global.json = global.json
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{76C1A6FF-74F0-4474-A6EB-2593B93C2874}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8978B5AE-BAF8-41A9-91F9-E80CEFE15E6E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.DatabaseInterface.Tests", "test\Jering.VectorArtKit.DatabaseInterface.Tests\Jering.VectorArtKit.DatabaseInterface.Tests.xproj", "{10F447A8-2224-44FA-9565-5F3724EBBF23}"
+Project("{00D1A9C2-B5F0-4AF3-8072-F6C62B433612}") = "Jering.VectorArtKit.Database", "src\Jering.VectorArtKit.Database\Jering.VectorArtKit.Database.sqlproj", "{C0564FAF-A954-4B58-AAB3-E176CE97BC35}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Security", "src\Jering.Security\Jering.Security.xproj", "{D333B72F-BACC-46DF-B153-E1F17F0CBFEB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.VectorArtKit.WebApi", "src\Jering.VectorArtKit.WebApi\Jering.VectorArtKit.WebApi.csproj", "{A9C1E71F-CD6D-403D-A716-B287B74D4E82}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Security.Tests", "test\Jering.Security.Tests\Jering.Security.Tests.xproj", "{30AD707D-F8D3-4D13-BE73-222BEDA8C365}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Accounts.DatabaseInterface", "src\Jering.Accounts.DatabaseInterface\Jering.Accounts.DatabaseInterface.csproj", "{DBDEE019-4817-4027-A068-AC510C3325E7}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.WebApi.Tests", "test\Jering.VectorArtKit.WebApi.Tests\Jering.VectorArtKit.WebApi.Tests.xproj", "{E14F8A5D-64E2-42B4-B5D4-E43588C00EF4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.VectorArtKit.DatabaseInterface.Tests", "test\Jering.VectorArtKit.DatabaseInterface.Tests\Jering.VectorArtKit.DatabaseInterface.Tests.csproj", "{10F447A8-2224-44FA-9565-5F3724EBBF23}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.DatabaseInterface", "src\Jering.VectorArtKit.DatabaseInterface\Jering.VectorArtKit.DatabaseInterface.xproj", "{53220B05-143A-4686-8E63-30B58A82D3C3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Security", "src\Jering.Security\Jering.Security.csproj", "{D333B72F-BACC-46DF-B153-E1F17F0CBFEB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DataAnnotations", "src\Jering.DataAnnotations\Jering.DataAnnotations.xproj", "{1747DFA1-2D71-4666-A629-7460C67FBFFB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Security.Tests", "test\Jering.Security.Tests\Jering.Security.Tests.csproj", "{30AD707D-F8D3-4D13-BE73-222BEDA8C365}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DataAnnotations.Tests", "test\Jering.DataAnnotations.Tests\Jering.DataAnnotations.Tests.xproj", "{89229A9D-F465-4FCA-8E8F-9A4D61009158}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.VectorArtKit.WebApi.Tests", "test\Jering.VectorArtKit.WebApi.Tests\Jering.VectorArtKit.WebApi.Tests.csproj", "{E14F8A5D-64E2-42B4-B5D4-E43588C00EF4}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Mail", "src\Jering.Mail\Jering.Mail.xproj", "{9E03C554-A038-4328-9053-7C65AD08E9CC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.VectorArtKit.DatabaseInterface", "src\Jering.VectorArtKit.DatabaseInterface\Jering.VectorArtKit.DatabaseInterface.csproj", "{53220B05-143A-4686-8E63-30B58A82D3C3}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Mail.Tests", "test\Jering.Mail.Tests\Jering.Mail.Tests.xproj", "{521E8077-86AA-4BA8-9ECB-05FCB2C241F0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.DataAnnotations", "src\Jering.DataAnnotations\Jering.DataAnnotations.csproj", "{1747DFA1-2D71-4666-A629-7460C67FBFFB}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DynamicForms", "src\Jering.DynamicForms\Jering.DynamicForms.xproj", "{E5356355-2687-4738-9456-368824112988}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.DataAnnotations.Tests", "test\Jering.DataAnnotations.Tests\Jering.DataAnnotations.Tests.csproj", "{89229A9D-F465-4FCA-8E8F-9A4D61009158}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.DynamicForms.Tests", "test\Jering.DynamicForms.Tests\Jering.DynamicForms.Tests.xproj", "{987D60F4-915F-4386-A216-09043838C6F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Mail", "src\Jering.Mail\Jering.Mail.csproj", "{9E03C554-A038-4328-9053-7C65AD08E9CC}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "jering-vectorartkit-webclient", "src\jering-vectorartkit-webclient\jering-vectorartkit-webclient.xproj", "{408B0629-E225-4D5A-97C7-9F4B62051961}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Mail.Tests", "test\Jering.Mail.Tests\Jering.Mail.Tests.csproj", "{521E8077-86AA-4BA8-9ECB-05FCB2C241F0}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Dapper", "..\..\..\..\Desktop\LibrariesAndTools\Dapper\dapper-dot-net\Dapper\Dapper.xproj", "{FAC24C3F-68F9-4247-A4B9-21D487E99275}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.DynamicForms", "src\Jering.DynamicForms\Jering.DynamicForms.csproj", "{E5356355-2687-4738-9456-368824112988}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Utilities", "src\Jering.Utilities\Jering.Utilities.xproj", "{40AAD063-D8C2-459D-B546-FF4043CAB85E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.DynamicForms.Tests", "test\Jering.DynamicForms.Tests\Jering.DynamicForms.Tests.csproj", "{987D60F4-915F-4386-A216-09043838C6F1}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.Tests", "test\Jering.VectorArtKit.Tests\Jering.VectorArtKit.Tests.xproj", "{E4D4480A-BBDB-448C-AE21-6E918B008119}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "jering-vectorartkit-webclient", "src\jering-vectorartkit-webclient\jering-vectorartkit-webclient.csproj", "{408B0629-E225-4D5A-97C7-9F4B62051961}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Utilities.Tests", "test\Jering.Utilities.Tests\Jering.Utilities.Tests.xproj", "{FB450CBA-5790-4BC1-A202-220D09165B74}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Utilities", "src\Jering.Utilities\Jering.Utilities.csproj", "{40AAD063-D8C2-459D-B546-FF4043CAB85E}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Accounts", "src\Jering.Accounts\Jering.Accounts.xproj", "{835B48E5-2A12-43D1-AE35-F63D27E18CD2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.VectorArtKit.Tests", "test\Jering.VectorArtKit.Tests\Jering.VectorArtKit.Tests.csproj", "{E4D4480A-BBDB-448C-AE21-6E918B008119}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Accounts.Tests", "test\Jering.Accounts.Tests\Jering.Accounts.Tests.xproj", "{D039CB30-3C11-4355-A178-16E1887824EF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Utilities.Tests", "test\Jering.Utilities.Tests\Jering.Utilities.Tests.csproj", "{FB450CBA-5790-4BC1-A202-220D09165B74}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.EntityFrameworkCore", "..\..\..\..\Desktop\LibrariesAndTools\EntityFramework\src\Microsoft.EntityFrameworkCore\Microsoft.EntityFrameworkCore.xproj", "{1E51A414-42FF-44E1-A556-2114BFDBBB8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Accounts", "src\Jering.Accounts\Jering.Accounts.csproj", "{835B48E5-2A12-43D1-AE35-F63D27E18CD2}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.EntityFrameworkCore.Design", "..\..\..\..\Desktop\LibrariesAndTools\EntityFramework\src\Microsoft.EntityFrameworkCore.Design\Microsoft.EntityFrameworkCore.Design.xproj", "{715FF1E8-BF9A-44DA-A6FC-8354F724246D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Accounts.Tests", "test\Jering.Accounts.Tests\Jering.Accounts.Tests.csproj", "{D039CB30-3C11-4355-A178-16E1887824EF}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.EntityFrameworkCore.Relational", "..\..\..\..\Desktop\LibrariesAndTools\EntityFramework\src\Microsoft.EntityFrameworkCore.Relational\Microsoft.EntityFrameworkCore.Relational.xproj", "{349FB2B2-629B-4059-B442-95B170B3C364}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Accounts.DatabaseInterface.EfCore", "src\Jering.Accounts.DatabaseInterface.EfCore\Jering.Accounts.DatabaseInterface.EfCore.csproj", "{937AF00E-0861-45F5-9E59-A20F00A39867}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.EntityFrameworkCore.Relational.Design", "..\..\..\..\Desktop\LibrariesAndTools\EntityFramework\src\Microsoft.EntityFrameworkCore.Relational.Design\Microsoft.EntityFrameworkCore.Relational.Design.xproj", "{6FC81DB2-C8E5-454C-8308-FFBCAD8A31FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Mvc", "src\Jering.Mvc\Jering.Mvc.csproj", "{31961EF6-636A-45C0-AE22-2953D168E6E5}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.EntityFrameworkCore.SqlServer", "..\..\..\..\Desktop\LibrariesAndTools\EntityFramework\src\Microsoft.EntityFrameworkCore.SqlServer\Microsoft.EntityFrameworkCore.SqlServer.xproj", "{F1F9A469-0B7F-4049-A524-02584F85AD04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.VectorArtKit.Database.ModelGenerator", "src\Jering.VectorArtKit.Database.ModelGenerator\Jering.VectorArtKit.Database.ModelGenerator.csproj", "{478F870D-C752-4672-9B9E-0D353181AF22}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.EntityFrameworkCore.SqlServer.Design", "..\..\..\..\Desktop\LibrariesAndTools\EntityFramework\src\Microsoft.EntityFrameworkCore.SqlServer.Design\Microsoft.EntityFrameworkCore.SqlServer.Design.xproj", "{BA4D5093-DA57-460A-A349-060E7D498BD1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.VectorArtKit.Search", "src\Jering.VectorArtKit.Search\Jering.VectorArtKit.Search.csproj", "{80F7EC1B-7340-4AB3-A777-C5A1F4DDA737}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Accounts.DatabaseInterface.EfCore", "src\Jering.Accounts.DatabaseInterface.EfCore\Jering.Accounts.DatabaseInterface.EfCore.xproj", "{937AF00E-0861-45F5-9E59-A20F00A39867}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Etl.Rdb2Es", "src\Jering.Etl.Rdb2Es\Jering.Etl.Rdb2Es.csproj", "{3CAC0D37-D71F-4F04-90CF-E6FD0545A451}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.xproj", "{079EFA1F-0B0A-4853-B27B-5780D111CD85}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Abstractions", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.Abstractions\Microsoft.AspNetCore.Mvc.Abstractions.xproj", "{1154203C-7579-4525-906E-BC55268421C1}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.ApiExplorer", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.ApiExplorer\Microsoft.AspNetCore.Mvc.ApiExplorer.xproj", "{A2B72833-5D70-4C42-AE85-E0319926FB8A}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Core", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.Core\Microsoft.AspNetCore.Mvc.Core.xproj", "{C48DA9D7-ACB5-4408-AA79-27ECB60A67EF}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Cors", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.Cors\Microsoft.AspNetCore.Mvc.Cors.xproj", "{9A07EEA2-942E-4969-9D41-799B6E2D1FF5}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.DataAnnotations", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.DataAnnotations\Microsoft.AspNetCore.Mvc.DataAnnotations.xproj", "{2DD786CA-7AF7-437A-B499-801A589B9A1C}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Formatters.Json", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.Formatters.Json\Microsoft.AspNetCore.Mvc.Formatters.Json.xproj", "{3FC8D9D6-9352-43A3-8E81-422F270085B7}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Localization", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.Localization\Microsoft.AspNetCore.Mvc.Localization.xproj", "{50893B10-5735-4F35-9995-F81DA3F0189E}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.Razor\Microsoft.AspNetCore.Mvc.Razor.xproj", "{314E9AD6-2FFC-4A92-A8AD-510658C64F1E}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.Razor.Host", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.Razor.Host\Microsoft.AspNetCore.Mvc.Razor.Host.xproj", "{520B3AA4-363A-497C-8C15-80423C5AFC85}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.TagHelpers", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.TagHelpers\Microsoft.AspNetCore.Mvc.TagHelpers.xproj", "{B2347320-308E-4D2B-AEC8-005DFA68B0C9}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Mvc.ViewFeatures", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.ViewFeatures\Microsoft.AspNetCore.Mvc.ViewFeatures.xproj", "{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.AspNetCore.Antiforgery", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.AntiForgery\Antiforgery\src\Microsoft.AspNetCore.Antiforgery\Microsoft.AspNetCore.Antiforgery.xproj", "{46FB03FB-7A44-4106-BDDE-D6F5417544AB}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Mvc", "src\Jering.Mvc\Jering.Mvc.xproj", "{31961EF6-636A-45C0-AE22-2953D168E6E5}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.Database.ModelGenerator", "src\Jering.VectorArtKit.Database.ModelGenerator\Jering.VectorArtKit.Database.ModelGenerator.xproj", "{478F870D-C752-4672-9B9E-0D353181AF22}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.VectorArtKit.Search", "src\Jering.VectorArtKit.Search\Jering.VectorArtKit.Search.xproj", "{80F7EC1B-7340-4AB3-A777-C5A1F4DDA737}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Etl.Rdb2Es", "src\Jering.Etl.Rdb2Es\Jering.Etl.Rdb2Es.xproj", "{3CAC0D37-D71F-4F04-90CF-E6FD0545A451}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Options", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Options\Options\src\Microsoft.Extensions.Options\Microsoft.Extensions.Options.xproj", "{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Microsoft.Extensions.Options.ConfigurationExtensions", "..\..\..\..\Desktop\LibrariesAndTools\AspNetCore.Options\Options\src\Microsoft.Extensions.Options.ConfigurationExtensions\Microsoft.Extensions.Options.ConfigurationExtensions.xproj", "{6ACF4BAB-2F09-4DA6-B273-27E4282865EB}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Jering.Etl.Rdb2Es.Tests", "test\Jering.Etl.Rdb2Es.Tests\Jering.Etl.Rdb2Es.Tests.xproj", "{E761BE0F-19CF-428E-ACCB-AE0181157323}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Jering.Etl.Rdb2Es.Tests", "test\Jering.Etl.Rdb2Es.Tests\Jering.Etl.Rdb2Es.Tests.csproj", "{E761BE0F-19CF-428E-ACCB-AE0181157323}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -176,9 +129,6 @@ Global
 		{408B0629-E225-4D5A-97C7-9F4B62051961}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{408B0629-E225-4D5A-97C7-9F4B62051961}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{408B0629-E225-4D5A-97C7-9F4B62051961}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FAC24C3F-68F9-4247-A4B9-21D487E99275}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FAC24C3F-68F9-4247-A4B9-21D487E99275}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FAC24C3F-68F9-4247-A4B9-21D487E99275}.Release|Any CPU.Build.0 = Release|Any CPU
 		{40AAD063-D8C2-459D-B546-FF4043CAB85E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{40AAD063-D8C2-459D-B546-FF4043CAB85E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40AAD063-D8C2-459D-B546-FF4043CAB85E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -199,67 +149,10 @@ Global
 		{D039CB30-3C11-4355-A178-16E1887824EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D039CB30-3C11-4355-A178-16E1887824EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D039CB30-3C11-4355-A178-16E1887824EF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1E51A414-42FF-44E1-A556-2114BFDBBB8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1E51A414-42FF-44E1-A556-2114BFDBBB8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1E51A414-42FF-44E1-A556-2114BFDBBB8A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{715FF1E8-BF9A-44DA-A6FC-8354F724246D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{715FF1E8-BF9A-44DA-A6FC-8354F724246D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{715FF1E8-BF9A-44DA-A6FC-8354F724246D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{349FB2B2-629B-4059-B442-95B170B3C364}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{349FB2B2-629B-4059-B442-95B170B3C364}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{349FB2B2-629B-4059-B442-95B170B3C364}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6FC81DB2-C8E5-454C-8308-FFBCAD8A31FF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6FC81DB2-C8E5-454C-8308-FFBCAD8A31FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6FC81DB2-C8E5-454C-8308-FFBCAD8A31FF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F1F9A469-0B7F-4049-A524-02584F85AD04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F1F9A469-0B7F-4049-A524-02584F85AD04}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F1F9A469-0B7F-4049-A524-02584F85AD04}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA4D5093-DA57-460A-A349-060E7D498BD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA4D5093-DA57-460A-A349-060E7D498BD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA4D5093-DA57-460A-A349-060E7D498BD1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{937AF00E-0861-45F5-9E59-A20F00A39867}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{937AF00E-0861-45F5-9E59-A20F00A39867}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{937AF00E-0861-45F5-9E59-A20F00A39867}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{937AF00E-0861-45F5-9E59-A20F00A39867}.Release|Any CPU.Build.0 = Release|Any CPU
-		{079EFA1F-0B0A-4853-B27B-5780D111CD85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{079EFA1F-0B0A-4853-B27B-5780D111CD85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{079EFA1F-0B0A-4853-B27B-5780D111CD85}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1154203C-7579-4525-906E-BC55268421C1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1154203C-7579-4525-906E-BC55268421C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1154203C-7579-4525-906E-BC55268421C1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A2B72833-5D70-4C42-AE85-E0319926FB8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A2B72833-5D70-4C42-AE85-E0319926FB8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A2B72833-5D70-4C42-AE85-E0319926FB8A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C48DA9D7-ACB5-4408-AA79-27ECB60A67EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C48DA9D7-ACB5-4408-AA79-27ECB60A67EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C48DA9D7-ACB5-4408-AA79-27ECB60A67EF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9A07EEA2-942E-4969-9D41-799B6E2D1FF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9A07EEA2-942E-4969-9D41-799B6E2D1FF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9A07EEA2-942E-4969-9D41-799B6E2D1FF5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2DD786CA-7AF7-437A-B499-801A589B9A1C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2DD786CA-7AF7-437A-B499-801A589B9A1C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2DD786CA-7AF7-437A-B499-801A589B9A1C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3FC8D9D6-9352-43A3-8E81-422F270085B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3FC8D9D6-9352-43A3-8E81-422F270085B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3FC8D9D6-9352-43A3-8E81-422F270085B7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{50893B10-5735-4F35-9995-F81DA3F0189E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{50893B10-5735-4F35-9995-F81DA3F0189E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{50893B10-5735-4F35-9995-F81DA3F0189E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{314E9AD6-2FFC-4A92-A8AD-510658C64F1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{314E9AD6-2FFC-4A92-A8AD-510658C64F1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{314E9AD6-2FFC-4A92-A8AD-510658C64F1E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{520B3AA4-363A-497C-8C15-80423C5AFC85}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B2347320-308E-4D2B-AEC8-005DFA68B0C9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3F8B8FC1-9FE4-4788-8991-367113E8D7AD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{46FB03FB-7A44-4106-BDDE-D6F5417544AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{46FB03FB-7A44-4106-BDDE-D6F5417544AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{46FB03FB-7A44-4106-BDDE-D6F5417544AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{31961EF6-636A-45C0-AE22-2953D168E6E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{31961EF6-636A-45C0-AE22-2953D168E6E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{31961EF6-636A-45C0-AE22-2953D168E6E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -276,14 +169,6 @@ Global
 		{3CAC0D37-D71F-4F04-90CF-E6FD0545A451}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3CAC0D37-D71F-4F04-90CF-E6FD0545A451}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3CAC0D37-D71F-4F04-90CF-E6FD0545A451}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA4EF3CE-1829-4E0E-8281-BD503FF8A682}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6ACF4BAB-2F09-4DA6-B273-27E4282865EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6ACF4BAB-2F09-4DA6-B273-27E4282865EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6ACF4BAB-2F09-4DA6-B273-27E4282865EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6ACF4BAB-2F09-4DA6-B273-27E4282865EB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E761BE0F-19CF-428E-ACCB-AE0181157323}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E761BE0F-19CF-428E-ACCB-AE0181157323}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E761BE0F-19CF-428E-ACCB-AE0181157323}.Release|Any CPU.ActiveCfg = Release|Any CPU

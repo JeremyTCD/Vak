@@ -25,9 +25,9 @@ namespace Jering.VectorArtKit.Indexer
             services.
                 //AddLogging().
                 AddSingleton(_ => new SqlConnection(_configurationRoot["Extractor:ConnectionString"])).
-                AddSingleton<Extractor>().
-                AddLogging();
+                AddSingleton<Extractor>();
 
+            // This is AddLogging with the last options set to AddTransient
             services.
                 AddSingleton(typeof(IOptions<>), typeof(OptionsManager<>)).
                 AddSingleton(typeof(IOptionsMonitor<>), typeof(OptionsMonitor<>)).
