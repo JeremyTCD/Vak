@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 
 /// <summary>
-/// Inspired by http://www.binaryclips.com/2016/03/selenium-webdriver-in-c-how-to-use.html
+/// http://www.binaryclips.com/2016/03/selenium-webdriver-in-c-how-to-use.html
 /// </summary>
 public class ReusableWebDriver : RemoteWebDriver
 {
